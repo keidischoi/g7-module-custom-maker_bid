@@ -1,16 +1,37 @@
 (function () {
   function add() {
-    var a = document.getElementById('maker-bid-nav');
-    if (!a) {
-      a = document.createElement('a');
-      a.id = 'maker-bid-nav';
-      a.href = '/maker-bid';
-      a.textContent = '의뢰/입찰';
-      document.body.appendChild(a);
+    var existing = document.getElementById('maker-bid-nav');
+    var navs = document.querySelectorAll('nav');
+    var nav = null;
+    for (var i = 0; i < navs.length; i++) {
+      var html = navs[i].innerHTML || '';
+      if (html.indexOf('/shop/products') !== -1 || html.indexOf('/boards/popular') !== -1) {
+        nav = navs[i];
+        break;
+      }
     }
-    a.style.cssText = 'position:fixed;top:14px;right:16px;z-index:99999;padding:8px 12px;border-radius:8px;background:#111;color:#fff;text-decoration:none;font-size:14px;';
+    if (!nav && navs.length) nav = navs[0];
+    if (!nav) return;
+
+    if (existing && existing.parentNode !== nav) {
+      existing.parentNode.removeChild(existing);
+      existing = null;
+    }
+    if (existing) {
+      nav.appendChild(existing);
+      return;
+    }
+
+    var sample = nav.querySelector('a');
+    var a = document.createElement('a');
+    a.id = 'maker-bid-nav';
+    a.href = '/maker-bid';
+    a.textContent = '의뢰/입찰';
+    if (sample && sample.className) a.className = sample.className;
+    nav.appendChild(a);
   }
   add();
   document.addEventListener('DOMContentLoaded', add);
-  setInterval(add, 1500);
+  setTimeout(add, 300);
+  setTimeout(add, 1000);
 })();
