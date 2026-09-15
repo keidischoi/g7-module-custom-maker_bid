@@ -2,7 +2,7 @@
 
 namespace Modules\Custom\MakerBid\Listeners;
 
-use App\Contracts\HookListenerInterface;
+use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
@@ -21,18 +21,20 @@ class UserMenuListener implements HookListenerInterface
                 'priority' => 20,
                 'sync' => true,
             ],
-            'core.menu.after_list' => [
-                'method' => 'filterMenus',
-                'type' => 'filter',
-                'priority' => 20,
-                'sync' => true,
-            ],
         ];
+    }
+
+    public function handle(...$args): void
+    {
     }
 
     public function filterMenus($menus = [])
     {
-        $item = [
+        if (! is_array($menus)) {
+            return $menus;
+        }
+
+        $menus[] = [
             'name' => ['ko' => '의뢰/입찰', 'en' => 'Request / Bid'],
             'slug' => 'maker-bid',
             'url' => '/maker-bid',
@@ -40,12 +42,6 @@ class UserMenuListener implements HookListenerInterface
             'order' => 25,
             'is_active' => true,
         ];
-
-        if (! is_array($menus)) {
-            return $menus;
-        }
-
-        $menus[] = $item;
 
         return $menus;
     }
