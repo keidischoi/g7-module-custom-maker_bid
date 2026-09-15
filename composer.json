@@ -1,0 +1,11 @@
+{
+  "name": "custom/maker-bid",
+  "description": "Maker commission bidding for Gnuboard 7",
+  "type": "g7-module",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Modules\\Custom\\MakerBid\\": "src/"
+    }
+  }
+}
