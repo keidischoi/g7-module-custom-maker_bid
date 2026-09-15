@@ -20,10 +20,10 @@
       "meta": { "title": "의뢰 상세" }
     },
     {
-      "path": "*/board/maker-bid",
-      "layout": "jobs_list",
+      "path": "*/cmb_maker_nav",
+      "layout": "cmb_maker_nav",
       "auth_required": false,
-      "meta": { "title": "의뢰/입찰" }
+      "meta": { "title": " " }
     }
   ]
 }

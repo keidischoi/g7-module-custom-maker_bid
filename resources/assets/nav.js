@@ -1,45 +1,40 @@
 (function () {
-  function findRow() {
-    var nodes = document.querySelectorAll('a, button, span, div');
-    for (var i = 0; i < nodes.length; i++) {
-      var t = (nodes[i].textContent || '').replace(/\s+/g, '');
-      if (t === '자유게시판' || t === '공지사항' || t === '쇼핑') {
-        return nodes[i].parentElement;
+  var LABEL = '의뢰/입찰';
+  var PATH = '/maker-bid';
+  var BTN_ID = 'cmb-nav-jobs';
+  var CLS =
+    'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 inline-flex items-center gap-1.5';
+  var ACTIVE =
+    'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 inline-flex items-center gap-1.5';
+
+  function makeBtn() {
+    var btn = document.createElement('button');
+    btn.id = BTN_ID;
+    btn.type = 'button';
+    btn.className = location.pathname.indexOf('/maker-bid') === 0 ? ACTIVE : CLS;
+    btn.textContent = LABEL;
+    btn.addEventListener('click', function () {
+      if (window.G7Core && typeof window.G7Core.navigate === 'function') {
+        window.G7Core.navigate(PATH);
+      } else {
+        location.href = PATH;
       }
-    }
-    var header = document.getElementById('desktop_header');
-    if (header && header.querySelector('nav')) return header.querySelector('nav');
-    return header || null;
+    });
+    return btn;
   }
 
-  function add() {
-    var row = findRow();
+  function insert() {
+    if (document.getElementById(BTN_ID)) return;
+    var shop = document.querySelector('[data-testid="nav-shop"]');
+    var home = document.querySelector('[data-testid="nav-home"]');
+    var row = (shop && shop.parentNode) || (home && home.parentNode);
     if (!row) return;
-    var existing = document.getElementById('maker-bid-nav');
-    if (existing && existing.parentNode !== row) {
-      existing.parentNode.removeChild(existing);
-      existing = null;
-    }
-    if (!existing) {
-      existing = document.createElement('a');
-      existing.id = 'maker-bid-nav';
-      existing.href = '/maker-bid';
-      existing.textContent = '의뢰/입찰';
-      var sample = row.querySelector('a:last-of-type') || row.querySelector('a');
-      if (sample && sample.className) existing.className = sample.className;
-      existing.style.color = 'inherit';
-      existing.style.whiteSpace = 'nowrap';
-    }
-    if (row.lastElementChild !== existing) row.appendChild(existing);
+    row.appendChild(makeBtn());
   }
 
-  add();
-  document.addEventListener('DOMContentLoaded', add);
-  setTimeout(add, 200);
-  setTimeout(add, 800);
-  setTimeout(add, 2000);
-  if (window.MutationObserver) {
-    var ob = new MutationObserver(function () { add(); });
-    ob.observe(document.body, { childList: true, subtree: true });
-  }
+  insert();
+  document.addEventListener('DOMContentLoaded', insert);
+  setTimeout(insert, 200);
+  setTimeout(insert, 800);
+  setTimeout(insert, 2000);
 })();

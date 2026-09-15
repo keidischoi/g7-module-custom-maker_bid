@@ -6,27 +6,14 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
+    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.2.1';
+
     public static function getSubscribedHooks(): array
     {
         return [
-            'core.layout.filter_child_data' => [
-                'method' => 'filterLayout',
-                'priority' => 55,
-                'type' => 'filter',
-                'sync' => true,
-            ],
-            'core.layout.filter_merged' => [
-                'method' => 'filterLayout',
-                'priority' => 55,
-                'type' => 'filter',
-                'sync' => true,
-            ],
-            'core.layout_extension.after_apply' => [
-                'method' => 'filterLayout',
-                'priority' => 910,
-                'type' => 'filter',
-                'sync' => true,
-            ],
+            'core.layout.filter_child_data' => ['method' => 'patch', 'priority' => 46, 'type' => 'filter', 'sync' => true],
+            'core.layout.filter_merged' => ['method' => 'patch', 'priority' => 46, 'type' => 'filter', 'sync' => true],
+            'core.layout_extension.after_apply' => ['method' => 'patch', 'priority' => 46, 'type' => 'filter', 'sync' => true],
         ];
     }
 
@@ -34,32 +21,44 @@ class UserMenuListener implements HookListenerInterface
     {
     }
 
-    public function filterLayout(mixed $layout = null): mixed
+    public function patch(mixed $layout = null): mixed
     {
         try {
             if (! is_array($layout)) {
                 return $layout;
             }
-            if (! isset($layout['scripts']) || ! is_array($layout['scripts'])) {
-                $layout['scripts'] = [];
+            $name = (string) ($layout['layout_name'] ?? '');
+            if (str_starts_with($name, 'admin') || str_contains($name, 'admin')) {
+                return $layout;
             }
-            $exists = false;
-            foreach ($layout['scripts'] as $script) {
-                if (is_array($script) && (($script['id'] ?? '') === 'maker_bid_nav_js')) {
-                    $exists = true;
+            $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
+            $found = false;
+            foreach ($scripts as $script) {
+                if (is_array($script) && (($script['id'] ?? '') === 'cmb_maker_nav' || str_contains((string) ($script['src'] ?? ''), 'custom-maker_bid/assets/nav.js'))) {
+                    $found = true;
                     break;
                 }
             }
-            if (! $exists) {
-                $layout['scripts'][] = [
-                    'id' => 'maker_bid_nav_js',
-                    'src' => '/api/modules/custom-maker_bid/assets/nav.js',
+            if (! $found) {
+                $scripts[] = [
+                    'id' => 'cmb_maker_nav',
+                    'src' => self::SCRIPT_SRC,
+                    'async' => true,
+                    'optional' => true,
+                    'required' => false,
+                    'failOnError' => false,
+                    'errorHandling' => [
+                        '404' => ['handler' => 'suppress'],
+                        '500' => ['handler' => 'suppress'],
+                        'default' => ['handler' => 'suppress'],
+                    ],
+                    'onError' => ['handler' => 'suppress'],
                 ];
+                $layout['scripts'] = $scripts;
             }
-
-            return $layout;
         } catch (\Throwable) {
-            return $layout;
         }
+
+        return $layout;
     }
 }
