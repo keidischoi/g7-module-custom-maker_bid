@@ -5,7 +5,13 @@
       "path": "*/maker-bid",
       "layout": "jobs_list",
       "auth_required": false,
-      "meta": { "title": "의뢰/입찰" }
+      "meta": { "title": "의뢰" }
+    },
+    {
+      "path": "*/maker-bid/bids",
+      "layout": "jobs_bids",
+      "auth_required": false,
+      "meta": { "title": "입찰" }
     },
     {
       "path": "*/maker-bid/new",
