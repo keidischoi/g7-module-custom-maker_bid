@@ -69,19 +69,12 @@ class Module extends AbstractModule
                 'url' => '/maker-bid',
                 'icon' => 'fa-gavel',
                 'order' => 25,
-                'location' => 'home',
             ],
         ];
     }
 
     public function getHookListeners(): array
     {
-        return [
-            [
-                'hook' => 'core.menu.user',
-                'listener' => \Modules\Custom\MakerBid\Listeners\UserMenuListener::class,
-                'priority' => 20,
-            ],
-        ];
+        return [];
     }
 }
