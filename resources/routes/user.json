@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "routes": [
+    {
+      "path": "*/maker-bid",
+      "layout": "jobs_list",
+      "auth_required": false,
+      "meta": { "title": "제작 의뢰" }
+    },
+    {
+      "path": "*/maker-bid/:id",
+      "layout": "jobs_show",
+      "auth_required": false,
+      "meta": { "title": "의뢰 상세" }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_show",
+  "meta": { "title": "의뢰 상세" },
+  "data_sources": [
+    {
+      "id": "job",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/jobs/{{route.id}}",
+      "method": "GET",
+      "auto_fetch": true
+    }
+  ],
+  "components": [
+    {
+      "id": "page",
+      "type": "basic",
+      "name": "Div",
+      "props": { "className": "max-w-3xl mx-auto px-4 py-12 space-y-4" },
+      "children": [
+        { "id": "h", "type": "basic", "name": "H1", "text": "{{job.data.title}}" },
+        { "id": "t", "type": "basic", "name": "P", "text": "유형 {{job.data.type}} · 예산 {{job.data.budget}} · {{job.data.status}}" },
+        { "id": "desc", "type": "basic", "name": "P", "text": "{{job.data.description}}" },
+        { "id": "bids_h", "type": "basic", "name": "H2", "text": "입찰" },
+        {
+          "id": "bid",
+          "type": "basic",
+          "name": "P",
+          "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid" },
+          "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days}}일 · {{$bid.status}}"
+        }
+      ]
+    }
+  ]
+}

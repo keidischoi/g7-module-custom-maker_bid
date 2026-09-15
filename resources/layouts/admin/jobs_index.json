@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_index",
+  "extends": "_admin_base",
+  "meta": { "title": "제작 의뢰" },
+  "data_sources": [
+    {
+      "id": "jobs",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "admin-page-content" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title mb-2" }, "text": "제작 의뢰" },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm mb-6" }, "text": "3D 출력 · 디자인 · 상품 제작 의뢰와 입찰" },
+          {
+            "id": "row",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10" },
+            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "children": [
+              { "id": "t", "type": "basic", "name": "P", "text": "{{$item.title}}  [{{$item.type}}]  {{$item.status}}  입찰 {{$item.bids_count}}" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
