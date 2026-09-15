@@ -1,18 +1,12 @@
 {
   "identifier": "custom-maker_bid",
   "vendor": "custom",
-  "name": { "ko": "제작 의뢰", "en": "Maker Bid" },
+  "name": { "ko": "의뢰/입찰", "en": "Maker Bid" },
   "description": {
     "ko": "3D 출력, 디자인, 상품 제작 의뢰와 입찰",
-    "en": "Commission and bidding for 3D print, design, and manufacturing"
+    "en": "Commission and bidding"
   },
-  "version": "0.1.1",
+  "version": "0.2.0",
   "g7_version": ">=7.0.0",
-  "license": "MIT",
-  "github_url": "https://github.com/keidischoi/g7-module-custom-maker_bid",
-  "assets": {
-    "global": [
-      "/api/modules/custom-maker_bid/assets/nav.js"
-    ]
-  }
+  "license": "MIT"
 }
