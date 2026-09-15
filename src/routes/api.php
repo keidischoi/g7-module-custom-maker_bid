@@ -3,7 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobAdminController;
+use Modules\Custom\MakerBid\Http\Controllers\AssetController;
 use Modules\Custom\MakerBid\Http\Controllers\JobController;
+
+Route::get('assets/nav.js', [AssetController::class, 'nav'])->name('assets.nav');
 
 Route::get('jobs', [JobController::class, 'index'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->name('jobs.show');
