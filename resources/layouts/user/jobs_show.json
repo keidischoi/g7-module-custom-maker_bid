@@ -1,6 +1,7 @@
 {
   "version": "1.0.0",
   "layout_name": "jobs_show",
+  "extends": "_user_base",
   "meta": { "title": "의뢰 상세" },
   "data_sources": [
     {
@@ -11,25 +12,28 @@
       "auto_fetch": true
     }
   ],
-  "components": [
-    {
-      "id": "page",
-      "type": "basic",
-      "name": "Div",
-      "props": { "className": "max-w-3xl mx-auto px-4 py-12 space-y-4" },
-      "children": [
-        { "id": "h", "type": "basic", "name": "H1", "text": "{{job.data.title}}" },
-        { "id": "t", "type": "basic", "name": "P", "text": "유형 {{job.data.type}} · 예산 {{job.data.budget}} · {{job.data.status}}" },
-        { "id": "desc", "type": "basic", "name": "P", "text": "{{job.data.description}}" },
-        { "id": "bids_h", "type": "basic", "name": "H2", "text": "입찰" },
-        {
-          "id": "bid",
-          "type": "basic",
-          "name": "P",
-          "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid" },
-          "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days}}일 · {{$bid.status}}"
-        }
-      ]
-    }
-  ]
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "max-w-3xl mx-auto px-4 py-10 space-y-4" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "{{job.data.title}}" },
+          { "id": "t", "type": "basic", "name": "P", "props": { "className": "text-gray-600 dark:text-gray-300" }, "text": "유형 {{job.data.type}} · 예산 {{job.data.budget}} · {{job.data.status}}" },
+          { "id": "desc", "type": "basic", "name": "P", "props": { "className": "text-gray-800 dark:text-gray-200 whitespace-pre-wrap" }, "text": "{{job.data.description}}" },
+          { "id": "bids_h", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "입찰" },
+          {
+            "id": "bid",
+            "type": "basic",
+            "name": "P",
+            "props": { "className": "text-gray-800 dark:text-gray-200" },
+            "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid" },
+            "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days}}일 · {{$bid.status}}"
+          }
+        ]
+      }
+    ]
+  }
 }

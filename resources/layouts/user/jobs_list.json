@@ -1,6 +1,7 @@
 {
   "version": "1.0.0",
   "layout_name": "jobs_list",
+  "extends": "_user_base",
   "meta": { "title": "의뢰/입찰" },
   "data_sources": [
     {
@@ -11,31 +12,33 @@
       "auto_fetch": true
     }
   ],
-  "components": [
-    {
-      "id": "page",
-      "type": "basic",
-      "name": "Div",
-      "props": { "className": "max-w-4xl mx-auto px-4 py-12 space-y-6" },
-      "children": [
-        { "id": "h", "type": "basic", "name": "H1", "text": "의뢰/입찰" },
-        { "id": "d", "type": "basic", "name": "P", "text": "회원이 의뢰서를 올리고, 회원이나 등록 업체가 견적을 냄니다." },
-        {
-          "id": "write",
-          "type": "basic",
-          "name": "A",
-          "props": { "href": "/maker-bid/new" },
-          "text": "의뢰서 작성"
-        },
-        {
-          "id": "item",
-          "type": "basic",
-          "name": "P",
-          "props": { "className": "py-4 border-b border-gray-200 dark:border-white/10" },
-          "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-          "text": "{{$item.title}} · {{$item.type}} · {{$item.status}} · {{$item.budget}}원"
-        }
-      ]
-    }
-  ]
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "max-w-4xl mx-auto px-4 py-10 space-y-6" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰/입찰" },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-gray-600 dark:text-gray-300" }, "text": "회원이 의뢰서를 올리고, 회원이나 등록 업체가 견적을 냄니다." },
+          {
+            "id": "write",
+            "type": "basic",
+            "name": "A",
+            "props": { "href": "/maker-bid/new", "className": "inline-block px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+            "text": "의뢰서 작성"
+          },
+          {
+            "id": "item",
+            "type": "basic",
+            "name": "A",
+            "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
+            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "text": "{{$item.title}} · {{$item.type}} · {{$item.status}} · {{$item.budget}}원"
+          }
+        ]
+      }
+    ]
+  }
 }

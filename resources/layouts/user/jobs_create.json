@@ -1,40 +1,42 @@
 {
   "version": "1.0.0",
   "layout_name": "jobs_create",
+  "extends": "_user_base",
   "meta": { "title": "의뢰서 작성" },
   "state": {
     "form": { "title": "", "type": "print_3d", "budget": "", "description": "" }
   },
-  "components": [
-    {
-      "id": "page",
-      "type": "basic",
-      "name": "Div",
-      "props": { "className": "max-w-xl mx-auto px-4 py-12 space-y-4", "dataKey": "form", "trackChanges": true },
-      "children": [
-        { "id": "h", "type": "basic", "name": "H1", "text": "의뢰서 작성" },
-        { "id": "p", "type": "basic", "name": "P", "text": "G7 회원이 의뢰하고, 다른 회원이나 등록 업체가 견적을 냄니다." },
-        { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "제목" } },
-        { "id": "type", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "print_3d / design / manufacture" } },
-        { "id": "budget", "type": "basic", "name": "Input", "props": { "name": "budget", "placeholder": "예산(원)" } },
-        { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "placeholder": "상세 설명" } },
-        {
-          "id": "submit",
-          "type": "basic",
-          "name": "Button",
-          "text": "의뢰 등록",
-          "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
-          "actions": [
-            {
-              "type": "click",
-              "handler": "apiCall",
-              "auth_required": true,
-              "target": "/api/modules/custom-maker_bid/jobs",
-              "params": { "method": "POST", "body": "{{_local.form}}" }
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "max-w-xl mx-auto px-4 py-10 space-y-4", "dataKey": "form", "trackChanges": true },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰서 작성" },
+          { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "제목" } },
+          { "id": "type", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "print_3d / design / manufacture" } },
+          { "id": "budget", "type": "basic", "name": "Input", "props": { "name": "budget", "placeholder": "예산(원)" } },
+          { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "placeholder": "상세 설명" } },
+          {
+            "id": "submit",
+            "type": "basic",
+            "name": "Button",
+            "text": "의뢰 등록",
+            "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+            "actions": [
+              {
+                "type": "click",
+                "handler": "apiCall",
+                "auth_required": true,
+                "target": "/api/modules/custom-maker_bid/jobs",
+                "params": { "method": "POST", "body": "{{_local.form}}" }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
