@@ -40,64 +40,26 @@ class UserMenuListener implements HookListenerInterface
             if (! is_array($layout)) {
                 return $layout;
             }
+            if (! isset($layout['scripts']) || ! is_array($layout['scripts'])) {
+                $layout['scripts'] = [];
+            }
+            $exists = false;
+            foreach ($layout['scripts'] as $script) {
+                if (is_array($script) && (($script['id'] ?? '') === 'maker_bid_nav_js')) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (! $exists) {
+                $layout['scripts'][] = [
+                    'id' => 'maker_bid_nav_js',
+                    'src' => '/api/modules/custom-maker_bid/assets/nav.js',
+                ];
+            }
 
-            return $this->injectHeaderItem($layout);
+            return $layout;
         } catch (\Throwable) {
             return $layout;
         }
-    }
-
-    private function injectHeaderItem(array $node): array
-    {
-        $id = (string) ($node['id'] ?? '');
-        $name = (string) ($node['name'] ?? '');
-
-        if ($id === 'desktop_header' || $name === 'Header') {
-            if (! isset($node['props']) || ! is_array($node['props'])) {
-                $node['props'] = [];
-            }
-            $boards = $node['props']['boards'] ?? '{{boards.data ?? []}}';
-            if (is_string($boards) && ! str_contains($boards, 'maker-bid')) {
-                $node['props']['boards'] = '{{[...(boards.data ?? []), {name:{ko:"의뢰/입찰",en:"Jobs"},slug:"maker-bid",url:"/maker-bid"}]}}';
-            }
-            if (is_array($boards)) {
-                $exists = false;
-                foreach ($boards as $row) {
-                    if (is_array($row) && (($row['slug'] ?? '') === 'maker-bid' || ($row['url'] ?? '') === '/maker-bid')) {
-                        $exists = true;
-                        break;
-                    }
-                }
-                if (! $exists) {
-                    $boards[] = [
-                        'name' => ['ko' => '의뢰/입찰', 'en' => 'Jobs'],
-                        'slug' => 'maker-bid',
-                        'url' => '/maker-bid',
-                    ];
-                    $node['props']['boards'] = $boards;
-                }
-            }
-        }
-
-        foreach (['children', 'slots', 'content'] as $key) {
-            if (! isset($node[$key]) || ! is_array($node[$key])) {
-                continue;
-            }
-            if (array_is_list($node[$key])) {
-                foreach ($node[$key] as $i => $child) {
-                    if (is_array($child)) {
-                        $node[$key][$i] = $this->injectHeaderItem($child);
-                    }
-                }
-            } else {
-                foreach ($node[$key] as $i => $child) {
-                    if (is_array($child)) {
-                        $node[$key][$i] = $this->injectHeaderItem($child);
-                    }
-                }
-            }
-        }
-
-        return $node;
     }
 }
