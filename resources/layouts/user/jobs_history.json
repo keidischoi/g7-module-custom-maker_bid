@@ -20,7 +20,7 @@
             "name": "Div",
             "props": { "className": "flex items-center justify-between gap-4 flex-wrap" },
             "children": [
-              { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰/입찰" },
+              { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "이력" },
               {
                 "id": "tabs",
                 "type": "basic",
@@ -35,13 +35,14 @@
               }
             ]
           },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "진행·내정·완료·보류 이력입니다." },
           {
             "id": "item",
             "type": "basic",
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
             "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-            "text": "{{$item.title}} · {{$item.status}} · {{$item.budget}}원"
+            "text": "{{$item.title}}  |  {{$item.status}}  |  {{$item.budget}}원  |  {{$item.updated_at}}"
           }
         ]
       }

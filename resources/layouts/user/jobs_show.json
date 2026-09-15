@@ -3,14 +3,9 @@
   "layout_name": "jobs_show",
   "extends": "_user_base",
   "meta": { "title": "의뢰 상세" },
+  "state": { "bid": { "amount": "", "days": "", "message": "" } },
   "data_sources": [
-    {
-      "id": "job",
-      "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/jobs/{{route.id}}",
-      "method": "GET",
-      "auto_fetch": true
-    }
+    { "id": "job", "type": "api", "endpoint": "/api/modules/custom-maker_bid/jobs/{{route.id}}", "method": "GET", "auto_fetch": true }
   ],
   "slots": {
     "content": [
@@ -18,19 +13,47 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "max-w-3xl mx-auto px-4 py-10 space-y-4" },
+        "props": { "className": "max-w-3xl mx-auto px-4 py-10 space-y-6" },
         "children": [
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "{{job.data.title}}" },
-          { "id": "t", "type": "basic", "name": "P", "props": { "className": "text-gray-600 dark:text-gray-300" }, "text": "유형 {{job.data.type}} · 예산 {{job.data.budget}} · {{job.data.status}}" },
-          { "id": "desc", "type": "basic", "name": "P", "props": { "className": "text-gray-800 dark:text-gray-200 whitespace-pre-wrap" }, "text": "{{job.data.description}}" },
-          { "id": "bids_h", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "입찰" },
+          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "유형 {{job.data.type}} · 예산 {{job.data.budget}}원 · 상태 {{job.data.status}}" },
+          { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap text-gray-800 dark:text-gray-200" }, "text": "{{job.data.description}}" },
+          { "id": "bids_h", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "들어온 견적" },
           {
-            "id": "bid",
+            "id": "bidrow",
             "type": "basic",
             "name": "P",
-            "props": { "className": "text-gray-800 dark:text-gray-200" },
+            "props": { "className": "text-gray-800 dark:text-gray-200 py-2 border-b border-gray-200 dark:border-white/10" },
             "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid" },
-            "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days}}일 · {{$bid.status}}"
+            "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days}}일 · {{$bid.status}} · {{$bid.message}}"
+          },
+          {
+            "id": "bidform",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "space-y-3", "dataKey": "bid", "trackChanges": true },
+            "children": [
+              { "id": "bh", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "견적 넣기" },
+              { "id": "amount", "type": "basic", "name": "Input", "props": { "name": "amount", "placeholder": "견적 금액(원)" } },
+              { "id": "days", "type": "basic", "name": "Input", "props": { "name": "days", "placeholder": "제작 일수" } },
+              { "id": "msg", "type": "basic", "name": "Input", "props": { "name": "message", "placeholder": "메시지" } },
+              {
+                "id": "submit",
+                "type": "basic",
+                "name": "Button",
+                "text": "견적 제출",
+                "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/jobs/{{route.id}}/bids",
+                    "params": { "method": "POST", "body": "{{_local.bid}}" }
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
