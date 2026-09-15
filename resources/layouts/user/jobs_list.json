@@ -2,15 +2,9 @@
   "version": "1.0.0",
   "layout_name": "jobs_list",
   "extends": "_user_base",
-  "meta": { "title": "의뢰" },
+  "meta": { "title": "의뢰목록" },
   "data_sources": [
-    {
-      "id": "jobs",
-      "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/jobs",
-      "method": "GET",
-      "auto_fetch": true
-    }
+    { "id": "jobs", "type": "api", "endpoint": "/api/modules/custom-maker_bid/jobs", "method": "GET", "auto_fetch": true }
   ],
   "slots": {
     "content": [
@@ -24,39 +18,22 @@
             "id": "head",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "flex items-center justify-between gap-4" },
+            "props": { "className": "flex items-center justify-between gap-4 flex-wrap" },
             "children": [
               { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰/입찰" },
               {
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "flex items-center gap-1 ml-auto" },
+                "props": { "className": "flex items-center gap-1 ml-auto flex-wrap" },
                 "children": [
-                  {
-                    "id": "tab_req",
-                    "type": "basic",
-                    "name": "A",
-                    "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" },
-                    "text": "의뢰"
-                  },
-                  {
-                    "id": "tab_bid",
-                    "type": "basic",
-                    "name": "A",
-                    "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800" },
-                    "text": "입찰"
-                  }
+                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bid/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
+                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰목록" },
+                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
+                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bid/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" }
                 ]
               }
             ]
-          },
-          {
-            "id": "write",
-            "type": "basic",
-            "name": "A",
-            "props": { "href": "/maker-bid/new", "className": "inline-block px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
-            "text": "의뢰서 작성"
           },
           {
             "id": "item",
