@@ -1,0 +1,128 @@
+{
+  "version": "1.0.0",
+  "layout_name": "activity_index",
+  "extends": "_admin_base",
+  "meta": { "title": "회원 활동" },
+  "permissions": ["custom-maker_bid.jobs.read"],
+  "errorHandling": {
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+  },
+  "state": {
+    "filter": { "user_id": "" }
+  },
+  "data_sources": [
+    {
+      "id": "jobs",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true,
+      "params": { "user_id": "{{_local.filter.user_id}}" },
+      "fallback": { "data": [] }
+    },
+    {
+      "id": "bids",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/bids",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true,
+      "params": { "user_id": "{{_local.filter.user_id}}" },
+      "fallback": { "data": [] }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "admin-page-content space-y-6" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회원 활동" },
+          {
+            "id": "nav",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "flex items-center gap-3 flex-wrap text-sm" },
+            "children": [
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+            ]
+          },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "회원 ID로 해당 회원의 의뢰와 입찰을 봅니다. 비우면 최근 목록입니다." },
+          {
+            "id": "filters",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "flex items-end gap-2 flex-wrap", "dataKey": "filter", "trackChanges": true },
+            "children": [
+              { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID" } },
+              {
+                "id": "fgo",
+                "type": "basic",
+                "name": "Button",
+                "text": "조회",
+                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "sequence",
+                    "params": {
+                      "actions": [
+                        { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } },
+                        { "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          { "id": "jh", "type": "basic", "name": "H2", "text": "의뢰" },
+          {
+            "id": "jempty",
+            "type": "basic",
+            "name": "P",
+            "if": "{{!(jobs.data && jobs.data.length)}}",
+            "props": { "className": "text-secondary text-sm py-4" },
+            "text": "의뢰가 없습니다."
+          },
+          {
+            "id": "jrow",
+            "type": "basic",
+            "name": "A",
+            "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}" },
+            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "text": "#{{$item.id}} {{$item.title}} · {{$item.status}} · 회원 {{$item.user_id}}"
+          },
+          { "id": "bh", "type": "basic", "name": "H2", "text": "입찰" },
+          {
+            "id": "bempty",
+            "type": "basic",
+            "name": "P",
+            "if": "{{!(bids.data && bids.data.length)}}",
+            "props": { "className": "text-secondary text-sm py-4" },
+            "text": "입찰이 없습니다."
+          },
+          {
+            "id": "brow",
+            "type": "basic",
+            "name": "P",
+            "props": { "className": "py-2 border-b border-gray-200 dark:border-white/10" },
+            "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
+            "text": "#{{$item.id}} 의뢰 {{$item.job_id}} · {{$item.amount}}원 · {{$item.status}} · 회원 {{$item.user_id}}"
+          }
+        ]
+      }
+    ]
+  }
+}

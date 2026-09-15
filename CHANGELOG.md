@@ -4,6 +4,28 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.4.0] - 2026-09-15
+
+### Added
+
+- 회원 UI: 의뢰 목록·작성·입찰현황·이력·상세·업체 등록. 빈 목록 안내(데모 시드 없음).
+- 상세에서 견적 제출, 열린 의뢰의 **본인 입찰 금액 수정**, 의뢰 작성자 **낙찰** 버튼.
+- 회원 업체 신청 `/maker-bid/company` (`GET/POST /companies`, 거절 시 재신청).
+- 변경 API 버튼에 `auth_required`. 실패 시 toast (`{{error.message}}`).
+- 관리자 메뉴 하위: 의뢰 목록 / 입찰 관리 / 회사 목록 / 회원 활동.
+- 관리자 화면: 의뢰 보류·취소·삭제, 입찰 목록·필터·삭제, 업체 승인·거절·삭제.
+- 레이아웃용 회원 API: `GET /jobs/mine`, `GET /bids/mine`, `GET /jobs/{id}/viewer`.
+- 관리자 `POST /admin/jobs/{id}/cancel`, 의뢰 목록 `user_id` 필터.
+
+### Changed
+
+- 버전 **0.4.0**. 이력 탭은 로그인한 회원의 의뢰만 표시합니다.
+- 헤더 nav.js 캐시 버스트 `?v=0.4.0`.
+
+### Notes
+
+- 0.3.0에서 마이그레이션은 이미 적용되어 있습니다. 레이아웃 반영은 `module:update` 후 **캐시 삭제와 하드 리프레시**가 필요합니다.
+
 ## [0.3.0] - 2026-09-15
 
 ### Added

@@ -36,7 +36,15 @@ expectTrue('admin company reject route', str_contains($api, "Route::post('compan
 expectTrue('admin company approve route', str_contains($api, "Route::post('companies/{id}/approve'"));
 expectTrue('admin company delete route', str_contains($api, "Route::delete('companies/{id}'"));
 expectTrue('admin bids index route', str_contains($api, "Route::get('bids', [BidAdminController::class, 'index'])"));
-expectTrue('module version is 0.3.0', str_contains($moduleJson, '"version": "0.3.0"'));
+expectTrue('module version is 0.4.0', str_contains($moduleJson, '"version": "0.4.0"'));
+expectTrue('jobs mine route exists', str_contains($api, "Route::get('jobs/mine', [JobController::class, 'mine'])"));
+expectTrue('job viewer route exists', str_contains($api, "Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])"));
+expectTrue('bids mine route exists', str_contains($api, "Route::get('bids/mine', [BidController::class, 'mine'])"));
+expectTrue('admin job cancel route exists', str_contains($api, "Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])"));
+expectTrue('admin menus include 의뢰 목록', str_contains($modulePhp, '의뢰 목록'));
+expectTrue('admin menus include 입찰 관리', str_contains($modulePhp, '입찰 관리'));
+expectTrue('admin menus include 회사 목록', str_contains($modulePhp, '회사 목록'));
+expectTrue('admin menus include 회원 활동', str_contains($modulePhp, '회원 활동'));
 expectTrue('jobs permissions declared', str_contains($modulePhp, "permissionCategory('jobs'"));
 expectTrue('bids permissions declared', str_contains($modulePhp, "permissionCategory('bids'"));
 expectTrue('companies permissions declared', str_contains($modulePhp, "permissionCategory('companies'"));
@@ -46,6 +54,9 @@ expectTrue('additive company_id on bids', str_contains($migration, "'company_id'
 expectTrue('additive company user unique', str_contains($migration, 'maker_companies_user_id_unique') || str_contains($migration, "unique('user_id')"));
 
 $mutators = [
+    "Route::get('jobs/mine'",
+    "Route::get('jobs/{id}/viewer'",
+    "Route::get('bids/mine'",
     "Route::post('jobs'",
     "Route::post('jobs/{id}/bids'",
     "Route::patch('jobs/{id}/bids/{bidId}'",

@@ -34,6 +34,11 @@ class JobAdminController extends Controller
         return response()->json(['data' => $this->jobs->hold($id)]);
     }
 
+    public function cancel(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->jobs->cancel($id)]);
+    }
+
     public function destroy(int $id): JsonResponse
     {
         $this->jobs->destroy($id);

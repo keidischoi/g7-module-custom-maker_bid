@@ -3,6 +3,7 @@
 namespace Modules\Custom\MakerBid\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBid\Http\Requests\StoreBidRequest;
@@ -17,6 +18,11 @@ class BidController extends Controller
     public function __construct(
         private readonly BidService $bids,
     ) {}
+
+    public function mine(Request $request): JsonResponse
+    {
+        return response()->json(['data' => $this->bids->listMine((int) $request->user()->id)]);
+    }
 
     public function store(StoreBidRequest $request, int $id): JsonResponse
     {

@@ -6,6 +6,7 @@ declare(strict_types=1);
 $files = [
     __DIR__.'/domain_rules.php',
     __DIR__.'/api_contracts.php',
+    __DIR__.'/layouts.php',
 ];
 
 $failed = 0;

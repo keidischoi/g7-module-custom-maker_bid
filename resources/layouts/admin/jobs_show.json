@@ -1,0 +1,148 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_show",
+  "extends": "_admin_base",
+  "meta": { "title": "의뢰 상세" },
+  "permissions": ["custom-maker_bid.jobs.read"],
+  "errorHandling": {
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+  },
+  "data_sources": [
+    {
+      "id": "job",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "admin-page-content space-y-6" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "{{job.data.title}}" },
+          {
+            "id": "nav",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "flex items-center gap-3 flex-wrap text-sm" },
+            "children": [
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+            ]
+          },
+          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "#{{job.data.id}} {{job.data.type}} · {{job.data.status}} · 회원 {{job.data.user_id}} · 예산 {{job.data.budget ?? '미정'}} · 마감 {{job.data.closes_at ?? '없음'}}" },
+          { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap" }, "text": "{{job.data.description ?? ''}}" },
+          {
+            "id": "acts",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "flex items-center gap-2 flex-wrap" },
+            "children": [
+              {
+                "id": "hold",
+                "type": "basic",
+                "name": "Button",
+                "text": "보류",
+                "props": { "className": "px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}/hold",
+                    "params": { "method": "POST" },
+                    "confirm": "이 의뢰를 보류할까요?",
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "보류했습니다." } },
+                      { "handler": "refetchDataSource", "params": { "dataSourceId": "job" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "cancel",
+                "type": "basic",
+                "name": "Button",
+                "text": "취소",
+                "props": { "className": "px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}/cancel",
+                    "params": { "method": "POST" },
+                    "confirm": "이 의뢰를 취소할까요?",
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "취소했습니다." } },
+                      { "handler": "refetchDataSource", "params": { "dataSourceId": "job" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "del",
+                "type": "basic",
+                "name": "Button",
+                "text": "삭제",
+                "props": { "className": "px-3 py-1.5 text-sm rounded-lg text-red-600" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}",
+                    "params": { "method": "DELETE" },
+                    "confirm": "의뢰와 입찰을 삭제할까요?",
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
+                      { "handler": "navigate", "params": { "path": "/admin/maker-bid" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          { "id": "bh", "type": "basic", "name": "H2", "text": "입찰" },
+          {
+            "id": "bids_empty",
+            "type": "basic",
+            "name": "P",
+            "if": "{{!(job.data.bids && job.data.bids.length)}}",
+            "props": { "className": "text-secondary text-sm py-4" },
+            "text": "입찰이 없습니다."
+          },
+          {
+            "id": "bidrow",
+            "type": "basic",
+            "name": "P",
+            "props": { "className": "py-2 border-b border-gray-200 dark:border-white/10" },
+            "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid" },
+            "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days ?? '-'}}일 · {{$bid.status}} · 회원 {{$bid.user_id}} · {{$bid.message ?? ''}}"
+          }
+        ]
+      }
+    ]
+  }
+}

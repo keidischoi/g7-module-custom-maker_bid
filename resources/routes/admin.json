@@ -5,7 +5,31 @@
       "path": "*/admin/maker-bid",
       "layout": "jobs_index",
       "auth_required": true,
-      "meta": { "title": "제작 의뢰" }
+      "meta": { "title": "의뢰 목록" }
+    },
+    {
+      "path": "*/admin/maker-bid/jobs/:id",
+      "layout": "jobs_show",
+      "auth_required": true,
+      "meta": { "title": "의뢰 상세" }
+    },
+    {
+      "path": "*/admin/maker-bid/bids",
+      "layout": "bids_index",
+      "auth_required": true,
+      "meta": { "title": "입찰 관리" }
+    },
+    {
+      "path": "*/admin/maker-bid/companies",
+      "layout": "companies_index",
+      "auth_required": true,
+      "meta": { "title": "회사 목록" }
+    },
+    {
+      "path": "*/admin/maker-bid/activity",
+      "layout": "activity_index",
+      "auth_required": true,
+      "meta": { "title": "회원 활동" }
     }
   ]
 }

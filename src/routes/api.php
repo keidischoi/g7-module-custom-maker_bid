@@ -33,7 +33,12 @@ Route::get('jobs/{id}', [JobController::class, 'show'])
     ->name('jobs.show');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
+    Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])
+        ->whereNumber('id')
+        ->name('jobs.viewer');
     Route::post('jobs', [JobController::class, 'store'])->name('jobs.store');
+    Route::get('bids/mine', [BidController::class, 'mine'])->name('bids.mine');
     Route::post('jobs/{id}/bids', [BidController::class, 'store'])
         ->whereNumber('id')
         ->name('jobs.bids.store');
@@ -65,6 +70,10 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.jobs.update')
         ->name('admin.jobs.hold');
+    Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->name('admin.jobs.cancel');
     Route::delete('jobs/{id}', [JobAdminController::class, 'destroy'])
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.jobs.delete')
