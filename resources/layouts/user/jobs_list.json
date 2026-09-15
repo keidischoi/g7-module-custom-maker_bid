@@ -23,10 +23,10 @@
         {
           "id": "item",
           "type": "basic",
-          "name": "A",
-          "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b" },
+          "name": "P",
+          "props": { "className": "py-4 border-b border-gray-200 dark:border-white/10" },
           "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-          "text": "{{$item.title}} · {{$item.type}} · {{$item.status}}"
+          "text": "{{$item.title}} · {{$item.type}} · {{$item.status}} · {{$item.budget}}원"
         }
       ]
     }

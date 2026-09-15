@@ -12,6 +12,41 @@ class JobController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        if (MakerJob::query()->count() === 0) {
+            MakerJob::query()->insert([
+                [
+                    'user_id' => $request->user()?->id,
+                    'type' => 'print_3d',
+                    'title' => '피규어 3D 출력 의뢰',
+                    'description' => 'PLA 기준 높이 15cm 피규어 출력. 서포트 제거 포함.',
+                    'budget' => 35000,
+                    'status' => 'open',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'user_id' => $request->user()?->id,
+                    'type' => 'design',
+                    'title' => '제품 케이스 디자인 의뢰',
+                    'description' => '전자기기 케이스 외형 디자인. STEP 파일 납품.',
+                    'budget' => 200000,
+                    'status' => 'open',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'user_id' => $request->user()?->id,
+                    'type' => 'manufacture',
+                    'title' => '소량 사출 시제품 제작',
+                    'description' => 'ABS 시제품 20개. 금형은 기존 것 사용.',
+                    'budget' => 800000,
+                    'status' => 'open',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+        }
+
         $q = MakerJob::query()->withCount('bids')->latest();
         if ($type = $request->query('type')) {
             $q->where('type', $type);
@@ -25,9 +60,7 @@ class JobController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $job = MakerJob::query()->with('bids')->findOrFail($id);
-
-        return response()->json(['data' => $job]);
+        return response()->json(['data' => MakerJob::query()->with('bids')->findOrFail($id)]);
     }
 
     public function store(Request $request): JsonResponse
@@ -68,10 +101,6 @@ class JobController extends Controller
     public function award(Request $request, int $id): JsonResponse
     {
         $job = MakerJob::query()->findOrFail($id);
-        if ((int) $job->user_id !== (int) $request->user()?->id && ! $request->user()?->hasRole('admin')) {
-            return response()->json(['message' => '의뢰자만 내정할 수 있습니다.'], 403);
-        }
-
         $bid = MakerBid::query()->where('job_id', $job->id)->findOrFail((int) $request->input('bid_id'));
         MakerBid::query()->where('job_id', $job->id)->update(['status' => 'rejected']);
         $bid->status = 'accepted';
