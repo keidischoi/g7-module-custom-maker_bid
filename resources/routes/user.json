@@ -18,6 +18,12 @@
       "layout": "jobs_show",
       "auth_required": false,
       "meta": { "title": "의뢰 상세" }
+    },
+    {
+      "path": "*/board/maker-bid",
+      "layout": "jobs_list",
+      "auth_required": false,
+      "meta": { "title": "의뢰/입찰" }
     }
   ]
 }
