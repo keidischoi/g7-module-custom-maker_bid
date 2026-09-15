@@ -5,38 +5,38 @@ namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Models\MakerJob;
+use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateJobRequest;
+use Modules\Custom\MakerBid\Services\JobService;
 
 class JobAdminController extends Controller
 {
-    public function index(): JsonResponse
+    public function __construct(
+        private readonly JobService $jobs,
+    ) {}
+
+    public function index(Request $request): JsonResponse
     {
-        return response()->json([
-            'data' => MakerJob::query()->withCount('bids')->latest()->limit(200)->get(),
-        ]);
+        return response()->json(['data' => $this->jobs->listAdmin($request)]);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $job = MakerJob::query()->findOrFail($id);
-        $job->fill($request->only(['title', 'description', 'budget', 'type', 'status']));
-        $job->save();
+        return response()->json(['data' => $this->jobs->findAdmin($id)]);
+    }
 
-        return response()->json(['data' => $job]);
+    public function update(UpdateJobRequest $request, int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->jobs->updateAdmin($id, $request->validated())]);
     }
 
     public function hold(int $id): JsonResponse
     {
-        $job = MakerJob::query()->findOrFail($id);
-        $job->status = 'hold';
-        $job->save();
-
-        return response()->json(['data' => $job]);
+        return response()->json(['data' => $this->jobs->hold($id)]);
     }
 
     public function destroy(int $id): JsonResponse
     {
-        MakerJob::query()->findOrFail($id)->delete();
+        $this->jobs->destroy($id);
 
         return response()->json(['ok' => true]);
     }
