@@ -3,6 +3,7 @@
 namespace Modules\Custom\MakerBid;
 
 use App\Extension\AbstractModule;
+use Modules\Custom\MakerBid\Listeners\UserMenuListener;
 
 class Module extends AbstractModule
 {
@@ -75,6 +76,8 @@ class Module extends AbstractModule
 
     public function getHookListeners(): array
     {
-        return [];
+        return [
+            UserMenuListener::class,
+        ];
     }
 }
