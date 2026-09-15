@@ -5,19 +5,25 @@
       "path": "*/maker-bid",
       "layout": "jobs_list",
       "auth_required": false,
-      "meta": { "title": "의뢰" }
-    },
-    {
-      "path": "*/maker-bid/bids",
-      "layout": "jobs_bids",
-      "auth_required": false,
-      "meta": { "title": "입찰" }
+      "meta": { "title": "의뢰목록" }
     },
     {
       "path": "*/maker-bid/new",
       "layout": "jobs_create",
       "auth_required": true,
       "meta": { "title": "의뢰서 작성" }
+    },
+    {
+      "path": "*/maker-bid/bids",
+      "layout": "jobs_bids",
+      "auth_required": false,
+      "meta": { "title": "입찰현황" }
+    },
+    {
+      "path": "*/maker-bid/history",
+      "layout": "jobs_history",
+      "auth_required": false,
+      "meta": { "title": "이력" }
     },
     {
       "path": "*/maker-bid/:id",
