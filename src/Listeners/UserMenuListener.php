@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.2.1';
+    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.2.2';
 
     public static function getSubscribedHooks(): array
     {
@@ -33,10 +33,10 @@ class UserMenuListener implements HookListenerInterface
             }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $found = false;
-            foreach ($scripts as $script) {
+            foreach ($scripts as $i => $script) {
                 if (is_array($script) && (($script['id'] ?? '') === 'cmb_maker_nav' || str_contains((string) ($script['src'] ?? ''), 'custom-maker_bid/assets/nav.js'))) {
+                    $scripts[$i]['src'] = self::SCRIPT_SRC;
                     $found = true;
-                    break;
                 }
             }
             if (! $found) {
@@ -54,8 +54,8 @@ class UserMenuListener implements HookListenerInterface
                     ],
                     'onError' => ['handler' => 'suppress'],
                 ];
-                $layout['scripts'] = $scripts;
             }
+            $layout['scripts'] = $scripts;
         } catch (\Throwable) {
         }
 
