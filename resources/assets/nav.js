@@ -1,24 +1,16 @@
 (function () {
   function add() {
-    if (document.getElementById('maker-bid-nav')) return;
-    var a = document.createElement('a');
-    a.id = 'maker-bid-nav';
-    a.href = '/maker-bid';
-    a.textContent = '의뢰/입찰';
-    a.style.marginLeft = '12px';
-    a.style.whiteSpace = 'nowrap';
-    var header =
-      document.querySelector('.chd-desktop-header') ||
-      document.querySelector('#desktop_header') ||
-      document.querySelector('header nav') ||
-      document.querySelector('header');
-    if (header) header.appendChild(a);
+    var a = document.getElementById('maker-bid-nav');
+    if (!a) {
+      a = document.createElement('a');
+      a.id = 'maker-bid-nav';
+      a.href = '/maker-bid';
+      a.textContent = '의뢰/입찰';
+      document.body.appendChild(a);
+    }
+    a.style.cssText = 'position:fixed;top:14px;right:16px;z-index:99999;padding:8px 12px;border-radius:8px;background:#111;color:#fff;text-decoration:none;font-size:14px;';
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', add);
-  } else {
-    add();
-  }
-  setTimeout(add, 400);
-  setTimeout(add, 1200);
+  add();
+  document.addEventListener('DOMContentLoaded', add);
+  setInterval(add, 1500);
 })();
