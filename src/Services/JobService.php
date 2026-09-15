@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Modules\Custom\MakerBid\Models\MakerBid;
 use Modules\Custom\MakerBid\Models\MakerJob;
+use Modules\Custom\MakerBid\Support\AwardRules;
+use Modules\Custom\MakerBid\Support\BidRules;
 use Modules\Custom\MakerBid\Support\DomainException;
 use Modules\Custom\MakerBid\Support\JobRules;
 
@@ -25,6 +27,54 @@ class JobService
         }
 
         return $q->limit(100)->get();
+    }
+
+    /**
+     * @return Collection<int, MakerJob>
+     */
+    public function listMine(int $userId): Collection
+    {
+        return MakerJob::query()
+            ->withCount('bids')
+            ->where('user_id', $userId)
+            ->latest()
+            ->limit(100)
+            ->get();
+    }
+
+    /**
+     * Viewer flags for member UI (owner award, own-bid edit). Integer user ids stay internal.
+     *
+     * @return array{
+     *     authenticated: bool,
+     *     is_owner: bool,
+     *     is_open: bool,
+     *     can_bid: bool,
+     *     can_award: bool,
+     *     can_update_bid: bool,
+     *     my_bid: ?MakerBid
+     * }
+     */
+    public function viewerContext(int $userId, MakerJob $job): array
+    {
+        $open = $job->isOpen();
+        $isOwner = BidRules::isOwnJob($userId, $job->user_id);
+        $myBid = MakerBid::query()
+            ->where('job_id', $job->id)
+            ->where('user_id', $userId)
+            ->first();
+        $canUpdate = $myBid !== null
+            && BidRules::canUpdateOwn($userId, (int) $myBid->user_id, $open, (string) $myBid->status);
+
+        return [
+            'authenticated' => $userId > 0,
+            'is_owner' => $isOwner,
+            'is_open' => $open,
+            'can_bid' => $userId > 0 && ! $isOwner && $open,
+            'can_award' => AwardRules::canAward($userId, $job->user_id) && $open,
+            'can_update_bid' => $canUpdate,
+            'my_bid' => $myBid,
+        ];
     }
 
     public function findPublic(int $id): MakerJob
@@ -60,6 +110,9 @@ class JobService
         if ($status = $request->query('status')) {
             $q->where('status', $status);
         }
+        if ($userId = $request->query('user_id')) {
+            $q->where('user_id', (int) $userId);
+        }
 
         return $q->limit(200)->get();
     }
@@ -85,6 +138,15 @@ class JobService
     {
         $job = MakerJob::query()->findOrFail($id);
         $job->status = 'hold';
+        $job->save();
+
+        return $job;
+    }
+
+    public function cancel(int $id): MakerJob
+    {
+        $job = MakerJob::query()->findOrFail($id);
+        $job->status = 'cancelled';
         $job->save();
 
         return $job;

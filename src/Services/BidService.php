@@ -85,6 +85,19 @@ class BidService
     /**
      * @return Collection<int, MakerBid>
      */
+    public function listMine(int $userId): Collection
+    {
+        return MakerBid::query()
+            ->with('job')
+            ->where('user_id', $userId)
+            ->latest()
+            ->limit(100)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, MakerBid>
+     */
     public function listAdmin(Request $request): Collection
     {
         $q = MakerBid::query()->with(['job', 'company'])->latest();

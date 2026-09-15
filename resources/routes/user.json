@@ -26,6 +26,12 @@
       "meta": { "title": "이력" }
     },
     {
+      "path": "*/maker-bid/company",
+      "layout": "company_apply",
+      "auth_required": true,
+      "meta": { "title": "업체 등록" }
+    },
+    {
       "path": "*/maker-bid/:id",
       "layout": "jobs_show",
       "auth_required": false,

@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.3.0';
+    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.4.0';
 
     public static function getSubscribedHooks(): array
     {

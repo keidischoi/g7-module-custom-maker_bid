@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "layout_name": "jobs_index",
+  "layout_name": "companies_index",
   "extends": "_admin_base",
-  "meta": { "title": "의뢰 목록" },
-  "permissions": ["custom-maker_bid.jobs.read"],
+  "meta": { "title": "회사 목록" },
+  "permissions": ["custom-maker_bid.companies.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -11,19 +11,19 @@
     "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
   },
   "state": {
-    "filter": { "type": "", "status": "" }
+    "filter": { "status": "" },
+    "reject": { "rejected_reason": "" }
   },
   "data_sources": [
     {
-      "id": "jobs",
+      "id": "companies",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
+      "endpoint": "/api/modules/custom-maker_bid/admin/companies",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
       "refetchOnMount": true,
       "params": {
-        "type": "{{_local.filter.type}}",
         "status": "{{_local.filter.status}}"
       },
       "fallback": { "data": [] }
@@ -37,7 +37,7 @@
         "name": "Div",
         "props": { "className": "admin-page-content space-y-6" },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "의뢰 목록" },
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회사 목록" },
           {
             "id": "nav",
             "type": "basic",
@@ -50,14 +50,13 @@
               { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "보류·취소·삭제. 유형 print_3d / design / manufacture, 상태 open / awarded / done / cancelled / hold" },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "회원 업체 신청을 승인·거절·삭제합니다. 상태 pending / approved / rejected." },
           {
             "id": "filters",
             "type": "basic",
             "name": "Div",
             "props": { "className": "flex items-end gap-2 flex-wrap", "dataKey": "filter", "trackChanges": true },
             "children": [
-              { "id": "ftype", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "유형" } },
               { "id": "fstatus", "type": "basic", "name": "Input", "props": { "name": "status", "placeholder": "상태" } },
               {
                 "id": "fgo",
@@ -66,50 +65,60 @@
                 "text": "필터",
                 "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
                 "actions": [
-                  { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                  { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
                 ]
               }
+            ]
+          },
+          {
+            "id": "reject_box",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "max-w-xl space-y-2", "dataKey": "reject", "trackChanges": true },
+            "children": [
+              { "id": "rl", "type": "basic", "name": "P", "props": { "className": "text-sm text-secondary" }, "text": "거절 사유 (거절 버튼에 함께 전송)" },
+              { "id": "rreason", "type": "basic", "name": "Input", "props": { "name": "rejected_reason", "placeholder": "거절 사유" } }
             ]
           },
           {
             "id": "empty",
             "type": "basic",
             "name": "P",
-            "if": "{{!(jobs.data && jobs.data.length)}}",
+            "if": "{{!(companies.data && companies.data.length)}}",
             "props": { "className": "text-secondary text-sm py-8" },
-            "text": "의뢰가 없습니다."
+            "text": "등록된 업체가 없습니다."
           },
           {
-            "id": "jrow",
+            "id": "crow",
             "type": "basic",
             "name": "Div",
             "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
-            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
             "children": [
-              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}" }, "text": "#{{$item.id}} {{$item.title}} [{{$item.type}}] {{$item.status}} 회원 {{$item.user_id}} 입찰 {{$item.bids_count ?? 0}}" },
+              { "id": "ctxt", "type": "basic", "name": "P", "text": "#{{$co.id}} {{$co.name}} · 회원 {{$co.user_id}} · {{$co.status}} · {{$co.type ?? ''}} · {{$co.rejected_reason ?? ''}}" },
               {
-                "id": "jacts",
+                "id": "cacts",
                 "type": "basic",
                 "name": "Div",
                 "props": { "className": "flex items-center gap-2 flex-wrap" },
                 "children": [
                   {
-                    "id": "hold",
+                    "id": "approve",
                     "type": "basic",
                     "name": "Button",
-                    "text": "보류",
+                    "text": "승인",
                     "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
                     "actions": [
                       {
                         "type": "click",
                         "handler": "apiCall",
                         "auth_required": true,
-                        "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}/hold",
+                        "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}/approve",
                         "params": { "method": "POST" },
-                        "confirm": "이 의뢰를 보류할까요?",
+                        "confirm": "이 업체를 승인할까요?",
                         "onSuccess": [
-                          { "handler": "toast", "params": { "type": "success", "message": "보류했습니다." } },
-                          { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          { "handler": "toast", "params": { "type": "success", "message": "승인했습니다." } },
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
                         ],
                         "onError": [
                           { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
@@ -118,22 +127,22 @@
                     ]
                   },
                   {
-                    "id": "cancel",
+                    "id": "reject",
                     "type": "basic",
                     "name": "Button",
-                    "text": "취소",
+                    "text": "거절",
                     "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
                     "actions": [
                       {
                         "type": "click",
                         "handler": "apiCall",
                         "auth_required": true,
-                        "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}/cancel",
-                        "params": { "method": "POST" },
-                        "confirm": "이 의뢰를 취소할까요?",
+                        "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}/reject",
+                        "params": { "method": "POST", "body": "{{_local.reject}}" },
+                        "confirm": "이 업체를 거절할까요?",
                         "onSuccess": [
-                          { "handler": "toast", "params": { "type": "success", "message": "취소했습니다." } },
-                          { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          { "handler": "toast", "params": { "type": "success", "message": "거절했습니다." } },
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
                         ],
                         "onError": [
                           { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
@@ -152,12 +161,12 @@
                         "type": "click",
                         "handler": "apiCall",
                         "auth_required": true,
-                        "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}",
+                        "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}",
                         "params": { "method": "DELETE" },
-                        "confirm": "의뢰와 입찰을 삭제할까요?",
+                        "confirm": "이 업체를 삭제할까요?",
                         "onSuccess": [
                           { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                          { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
                         ],
                         "onError": [
                           { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }

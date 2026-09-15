@@ -31,6 +31,18 @@ class JobController extends Controller
         return response()->json(['data' => $this->jobs->findPublic($id)]);
     }
 
+    public function mine(Request $request): JsonResponse
+    {
+        return response()->json(['data' => $this->jobs->listMine((int) $request->user()->id)]);
+    }
+
+    public function viewer(Request $request, int $id): JsonResponse
+    {
+        $job = $this->jobs->findPublic($id);
+
+        return response()->json(['data' => $this->jobs->viewerContext((int) $request->user()->id, $job)]);
+    }
+
     public function store(StoreJobRequest $request): JsonResponse
     {
         $job = $this->jobs->create((int) $request->user()->id, $request->validated());
