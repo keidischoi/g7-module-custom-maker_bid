@@ -2,15 +2,21 @@
   "version": "1.0.0",
   "layout_name": "jobs_index",
   "extends": "_admin_base",
-  "meta": { "title": "제작 의뢰" },
-  "state": {
-    "form": { "title": "", "type": "print_3d", "budget": "" }
-  },
+  "meta": { "title": "의뢰/입찰 관리" },
   "data_sources": [
     {
       "id": "jobs",
       "type": "api",
       "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true
+    },
+    {
+      "id": "companies",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/companies",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -23,57 +29,27 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content space-y-6" },
+        "props": { "className": "admin-page-content space-y-8" },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "제작 의뢰" },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "3D 출력 · 디자인 · 상품 제작 의뢰와 입찰" },
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "의뢰/입찰 관리" },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "회원 의뢰서 삭제·보류·수정, 입찰 업체 승인" },
+          { "id": "jh", "type": "basic", "name": "H2", "text": "의뢰 목록" },
           {
-            "id": "form",
+            "id": "jrow",
             "type": "basic",
-            "name": "Div",
-            "props": { "className": "space-y-3", "dataKey": "form", "trackChanges": true },
-            "children": [
-              { "id": "title_in", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "의뢰 제목" } },
-              { "id": "type_in", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "print_3d / design / manufacture" } },
-              { "id": "budget_in", "type": "basic", "name": "Input", "props": { "name": "budget", "placeholder": "예산(원)" } },
-              {
-                "id": "save",
-                "type": "basic",
-                "name": "Button",
-                "text": "의뢰 등록",
-                "props": { "className": "px-3 py-1.5 text-sm bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg" },
-                "actions": [
-                  {
-                    "type": "click",
-                    "handler": "apiCall",
-                    "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/jobs",
-                    "params": {
-                      "method": "POST",
-                      "body": "{{_local.form}}"
-                    },
-                    "onSuccess": [
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
-                    ]
-                  }
-                ]
-              }
-            ]
+            "name": "P",
+            "props": { "className": "py-2 border-b border-gray-200 dark:border-white/10" },
+            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "text": "#{{$item.id}} {{$item.title}} [{{$item.type}}] {{$item.status}} 입찰 {{$item.bids_count}}"
           },
+          { "id": "ch", "type": "basic", "name": "H2", "text": "입찰 업체" },
           {
-            "id": "list",
+            "id": "crow",
             "type": "basic",
-            "name": "Div",
-            "children": [
-              {
-                "id": "row",
-                "type": "basic",
-                "name": "P",
-                "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10" },
-                "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-                "text": "{{$item.title}}  [{{$item.type}}]  {{$item.status}}  입찰 {{$item.bids_count}}  예산 {{$item.budget}}"
-              }
-            ]
+            "name": "P",
+            "props": { "className": "py-2 border-b border-gray-200 dark:border-white/10" },
+            "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
+            "text": "#{{$co.id}} {{$co.name}} user {{$co.user_id}} {{$co.status}}"
           }
         ]
       }

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "layout_name": "jobs_list",
-  "meta": { "title": "제작 의뢰" },
+  "meta": { "title": "의뢰/입찰" },
   "data_sources": [
     {
       "id": "jobs",
@@ -18,8 +18,15 @@
       "name": "Div",
       "props": { "className": "max-w-4xl mx-auto px-4 py-12 space-y-6" },
       "children": [
-        { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-3xl font-semibold" }, "text": "제작 의뢰" },
-        { "id": "d", "type": "basic", "name": "P", "text": "3D 출력, 디자인, 상품 제작을 의뢰하고 제작자가 입찰합니다." },
+        { "id": "h", "type": "basic", "name": "H1", "text": "의뢰/입찰" },
+        { "id": "d", "type": "basic", "name": "P", "text": "회원이 의뢰서를 올리고, 회원이나 등록 업체가 견적을 냄니다." },
+        {
+          "id": "write",
+          "type": "basic",
+          "name": "A",
+          "props": { "href": "/maker-bid/new" },
+          "text": "의뢰서 작성"
+        },
         {
           "id": "item",
           "type": "basic",
