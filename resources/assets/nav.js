@@ -7,30 +7,25 @@
   var ACTIVE =
     'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 inline-flex items-center gap-1.5';
 
-  function go(path) {
-    var G7 = window.G7Core || {};
-    if (typeof G7.dispatch === 'function') {
-      try { G7.dispatch('navigate', { target: path }); return; } catch (e) {}
+  function go() {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: 'navigate', params: { path: PATH } });
+      return;
     }
-    if (typeof G7.navigate === 'function') {
-      try { G7.navigate(path); return; } catch (e) {}
-    }
-    if (window.history && window.history.pushState) {
-      window.history.pushState({}, '', path);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+    window.location.href = PATH;
   }
 
   function makeBtn() {
     var btn = document.createElement('button');
     btn.id = BTN_ID;
     btn.type = 'button';
-    btn.className = location.pathname.indexOf('/maker-bid') === 0 ? ACTIVE : CLS;
+    btn.setAttribute('data-testid', 'nav-maker-bid');
+    btn.className = (location.pathname || '').indexOf('/maker-bid') === 0 ? ACTIVE : CLS;
     btn.textContent = LABEL;
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      go(PATH);
+      go();
     });
     return btn;
   }

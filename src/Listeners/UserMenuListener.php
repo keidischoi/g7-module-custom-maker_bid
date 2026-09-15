@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.2.2';
+    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.2.3';
 
     public static function getSubscribedHooks(): array
     {
@@ -17,9 +17,7 @@ class UserMenuListener implements HookListenerInterface
         ];
     }
 
-    public function handle(...$args): void
-    {
-    }
+    public function handle(...$args): void {}
 
     public function patch(mixed $layout = null): mixed
     {
@@ -47,11 +45,6 @@ class UserMenuListener implements HookListenerInterface
                     'optional' => true,
                     'required' => false,
                     'failOnError' => false,
-                    'errorHandling' => [
-                        '404' => ['handler' => 'suppress'],
-                        '500' => ['handler' => 'suppress'],
-                        'default' => ['handler' => 'suppress'],
-                    ],
                     'onError' => ['handler' => 'suppress'],
                 ];
             }
