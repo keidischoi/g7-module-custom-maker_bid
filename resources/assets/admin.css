@@ -1,0 +1,420 @@
+/* Admin list/detail chrome for custom-maker_bids (_admin_base + .cmb-admin).
+   G7 Div often stacks with align-items:flex-start, so children shrink to content
+   unless width/align-self is forced. G7 Input/Select are wrappers (w-full or
+   content-sized triggers), not reliably native input/select. */
+
+.cmb-admin {
+  --cmb-admin-fg: rgb(17 24 39);
+  --cmb-admin-muted: rgb(107 114 128);
+  --cmb-admin-border: rgb(209 213 219);
+  --cmb-admin-row-border: rgb(156 163 175);
+  --cmb-admin-card: rgb(255 255 255);
+  --cmb-admin-row: rgb(255 255 255);
+  --cmb-admin-check: rgb(17 24 39);
+  --cmb-admin-control: rgb(255 255 255);
+  box-sizing: border-box;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+  color: var(--cmb-admin-fg);
+}
+
+html.dark .cmb-admin,
+.dark .cmb-admin {
+  --cmb-admin-fg: rgb(243 244 246);
+  --cmb-admin-muted: rgb(156 163 175);
+  /* gray-500 chrome / gray-400 rows — readable on navy, not slate-on-slate. */
+  --cmb-admin-border: rgb(107 114 128);
+  --cmb-admin-row-border: rgb(156 163 175);
+  --cmb-admin-card: rgb(30 41 59);
+  --cmb-admin-row: rgb(15 23 42);
+  --cmb-admin-check: rgb(243 244 246);
+  --cmb-admin-control: rgb(15 23 42);
+}
+
+.cmb-admin *,
+.cmb-admin *::before,
+.cmb-admin *::after {
+  box-sizing: border-box;
+}
+
+.cmb-admin > * {
+  align-self: stretch !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.cmb-admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--cmb-admin-border);
+  background: var(--cmb-admin-card);
+}
+
+.cmb-admin-nav a {
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.5rem;
+  color: var(--cmb-admin-fg);
+  text-decoration: none;
+}
+
+.cmb-admin-nav a:hover {
+  background: rgb(243 244 246);
+}
+
+html.dark .cmb-admin-nav a:hover,
+.dark .cmb-admin-nav a:hover {
+  background: rgb(51 65 85);
+}
+
+.cmb-admin-lead {
+  color: var(--cmb-admin-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  max-width: 46rem !important;
+  width: auto !important;
+  align-self: flex-start !important;
+}
+
+.cmb-admin-card {
+  border: 1px solid var(--cmb-admin-border);
+  border-radius: 0.75rem;
+  background: var(--cmb-admin-card);
+  padding: 1rem 1.1rem;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+html.dark .cmb-admin-card,
+.dark .cmb-admin-card,
+html.dark .cmb-admin-filter,
+.dark .cmb-admin-filter,
+html.dark .cmb-admin-nav,
+.dark .cmb-admin-nav {
+  border-color: rgb(107 114 128);
+}
+
+.cmb-admin-card-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin: 0 0 0.35rem;
+}
+
+.cmb-admin-muted {
+  color: var(--cmb-admin-muted);
+  font-size: 0.8125rem;
+}
+
+.cmb-admin-filter {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  width: 100% !important;
+}
+
+.cmb-admin-filter-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.cmb-admin-filter-type {
+  flex: 0 1 14rem;
+  width: 14rem;
+  max-width: 16rem;
+}
+
+.cmb-admin-filter-status {
+  flex: 0 0 12rem;
+  width: 12rem;
+  max-width: 14rem;
+}
+
+.cmb-admin-filter-id {
+  flex: 0 0 8.5rem;
+  width: 8.5rem;
+  max-width: 10rem;
+}
+
+.cmb-admin-filter-control {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.cmb-admin-filter-field input,
+.cmb-admin-filter-field select,
+.cmb-admin-filter-field button,
+.cmb-admin-filter-field [role="combobox"],
+.cmb-admin-filter-field [data-slot="trigger"],
+.cmb-admin-filter-field > *:not(p):not(label):not(.cmb-admin-label) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.cmb-admin-filter-field button,
+.cmb-admin-filter-field [role="combobox"],
+.cmb-admin-filter-field [data-slot="trigger"] {
+  display: inline-flex !important;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 2.25rem;
+}
+
+.cmb-admin-filter-go {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  min-height: 2.25rem;
+  align-self: flex-end;
+  white-space: nowrap;
+}
+
+.cmb-admin input:not([type="checkbox"]):not([type="hidden"]):not([type="file"]):not([type="button"]):not([type="submit"]),
+.cmb-admin select {
+  max-width: 16rem;
+  width: 100%;
+}
+
+.cmb-admin-filter-field input:not([type="checkbox"]):not([type="hidden"]),
+.cmb-admin-filter-field select {
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.cmb-admin textarea {
+  max-width: 36rem;
+  width: 100%;
+}
+
+.cmb-admin-w-xs { max-width: 7rem !important; width: 100%; }
+.cmb-admin-w-sm { max-width: 11rem !important; width: 100%; }
+.cmb-admin-w-md { max-width: 16rem !important; width: 100%; }
+.cmb-admin-w-lg { max-width: 28rem !important; width: 100%; }
+.cmb-admin-w-xl { max-width: 36rem !important; width: 100%; }
+.cmb-admin-w-full { max-width: 100% !important; width: 100%; }
+
+.cmb-admin-filter-field .cmb-admin-w-xs,
+.cmb-admin-filter-field .cmb-admin-w-sm,
+.cmb-admin-filter-field .cmb-admin-w-md {
+  max-width: 100% !important;
+}
+
+.cmb-admin-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.65rem 0.85rem;
+  align-items: end;
+}
+
+.cmb-admin-fields-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 16rem));
+  gap: 0.65rem 0.85rem;
+}
+
+.cmb-admin-field-span {
+  grid-column: 1 / -1;
+}
+
+.cmb-admin-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--cmb-admin-muted);
+  margin-bottom: 0.2rem;
+}
+
+.cmb-admin-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.cmb-admin-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--cmb-admin-check) !important;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--cmb-admin-border);
+  background: rgb(249 250 251);
+}
+
+html.dark .cmb-admin-check-label,
+.dark .cmb-admin-check-label {
+  background: rgb(31 41 55);
+  border-color: rgb(75 85 99);
+  color: rgb(249 250 251) !important;
+}
+
+.cmb-admin-check-text {
+  color: var(--cmb-admin-check) !important;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+html.dark .cmb-admin-check-text,
+.dark .cmb-admin-check-text {
+  color: rgb(249 250 251) !important;
+}
+
+.cmb-admin-check-label input[type="checkbox"],
+.cmb-admin input[type="checkbox"] {
+  accent-color: rgb(37 99 235);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.cmb-admin-list {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.75rem;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.cmb-admin-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.9rem 1.05rem;
+  border: 1px solid var(--cmb-admin-row-border);
+  border-radius: 0.75rem;
+  background: var(--cmb-admin-row);
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+}
+
+html.dark .cmb-admin-row,
+.dark .cmb-admin-row {
+  border-color: rgb(156 163 175);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.cmb-admin-row-main {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.cmb-admin-row-title {
+  font-weight: 600;
+  color: var(--cmb-admin-fg);
+  text-decoration: none;
+}
+
+.cmb-admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.cmb-admin-row-actions a,
+.cmb-admin-row-actions button {
+  white-space: nowrap;
+}
+
+.cmb-admin-split {
+  display: grid;
+  grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+  gap: 1.1rem;
+  align-items: start;
+  width: 100% !important;
+}
+
+@media (max-width: 900px) {
+  .cmb-admin-split {
+    grid-template-columns: 1fr;
+  }
+
+  .cmb-admin-filter-type,
+  .cmb-admin-filter-status {
+    flex: 1 1 12rem;
+    width: auto;
+    max-width: 16rem;
+  }
+}
+
+.cmb-admin-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.cmb-admin-empty {
+  color: var(--cmb-admin-muted);
+  font-size: 0.875rem;
+  padding: 1.5rem 0.25rem;
+}
+
+.cmb-admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cmb-admin-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem 0.75rem;
+}
+
+.cmb-admin-meta {
+  color: var(--cmb-admin-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.cmb-admin-section-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  width: 100%;
+}
+
+.cmb-admin-notice-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--cmb-admin-border);
+}
+
+.cmb-admin-notice-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+@media (max-width: 800px) {
+  .cmb-admin-section-grid {
+    grid-template-columns: 1fr;
+  }
+}

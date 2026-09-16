@@ -171,9 +171,10 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.9.0', str_contains($nav, 'nav.js?v=0.9.0'));
-expectTrue('form.js cache bust 0.9.0', str_contains($nav, 'form.js?v=0.9.0'));
-expectTrue('form.css cache bust 0.9.0', str_contains($nav, 'form.css?v=0.9.0'));
+expectTrue('nav cache bust 0.9.2', str_contains($nav, 'nav.js?v=0.9.2'));
+expectTrue('form.js cache bust 0.9.2', str_contains($nav, 'form.js?v=0.9.2'));
+expectTrue('form.css cache bust 0.9.2', str_contains($nav, 'form.css?v=0.9.2'));
+expectTrue('admin.css cache bust 0.9.2', str_contains($nav, 'admin.css?v=0.9.2'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -213,7 +214,7 @@ expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-ru
 expectTrue('form.css styles company submit top-right', str_contains($css, '.cmb-company-submit-top') && str_contains($css, 'white-space: nowrap'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.0'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.2'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
@@ -244,9 +245,11 @@ expectTrue('upload responds HTTP 200 wrapped payload', str_contains($uploadCtrl,
 
 $asset = (string) file_get_contents($root.'/src/Http/Controllers/AssetController.php');
 expectTrue('asset controller serves form.css', str_contains($asset, 'formCss') && str_contains($asset, 'form.css'));
+expectTrue('asset controller serves admin.css', str_contains($asset, 'adminCss') && str_contains($asset, 'admin.css'));
 
 $api = (string) file_get_contents($root.'/src/routes/api.php');
 expectTrue('form.css route', str_contains($api, "assets/form.css"));
+expectTrue('admin.css route', str_contains($api, "assets/admin.css"));
 
 $adminTypes = (string) file_get_contents($root.'/resources/layouts/admin/types_index.json');
 expectTrue('admin types create', str_contains($adminTypes, '/admin/job-types'));
@@ -276,11 +279,26 @@ $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json
 expectTrue('edit notice placeholder', str_contains($edit, 'data-cmb-notice') && str_contains($edit, '"edit"'));
 expectTrue('optional sanctum list still present', str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
 
-expectTrue('admin jobs list uses cmb-admin polish', str_contains($adminJobs, 'cmb-admin') && str_contains($adminJobs, 'cmb-admin-row-actions') && str_contains($adminJobs, 'cmb-admin-w-'));
+expectTrue('admin jobs list uses cmb-admin polish', str_contains($adminJobs, 'cmb-admin') && str_contains($adminJobs, 'cmb-admin-row-actions') && str_contains($adminJobs, 'cmb-admin-row w-full'));
+expectTrue('admin jobs filter has purpose-fit fields', str_contains($adminJobs, 'cmb-admin-filter-type') && str_contains($adminJobs, 'cmb-admin-filter-status') && str_contains($adminJobs, 'cmb-admin-filter-go'));
+expectTrue('admin jobs list is full width', str_contains($adminJobs, 'cmb-admin-list w-full') && str_contains($adminJobs, 'cmb-admin space-y-5 w-full'));
 expectTrue('admin types wrap checkbox labels', str_contains($adminTypes, 'cmb-admin-check-label') && str_contains($adminTypes, 'cmb-admin-check-text') && str_contains($adminTypes, '"text": "주소 필수"') && ! str_contains($adminTypes, '"label": "주소 필수"'));
+expectTrue('admin types list is full width', str_contains($adminTypes, 'cmb-admin-list w-full') && str_contains($adminTypes, 'cmb-admin-row w-full'));
 expectTrue('admin companies use split card layout', str_contains($adminCos, 'cmb-admin-split') && str_contains($adminCos, 'cmb-admin-card') && str_contains($adminCos, 'cmb-admin-row-actions'));
+expectTrue('admin companies list is full width', str_contains($adminCos, 'cmb-admin-list w-full') && str_contains($adminCos, 'cmb-admin-row w-full') && str_contains($adminCos, 'cmb-admin-filter-status'));
 expectTrue('admin jobs show sized inputs and visible ext labels', str_contains($adminJobsShow, 'cmb-admin-w-xs') && str_contains($adminJobsShow, 'cmb-admin-check-text') && str_contains($adminJobsShow, '"text": "STL"'));
 expectTrue('admin form.css has field widths and check contrast', str_contains($css, '.cmb-admin-w-xs') && str_contains($css, '.cmb-admin-row-actions') && str_contains($css, '.cmb-admin-check-text'));
+expectTrue('admin form.css does not cap page width', str_contains($css, 'max-width: none') && ! str_contains($css, 'max-width: 72rem'));
+$adminCss = (string) file_get_contents($root.'/resources/assets/admin.css');
+expectTrue('admin.css stretches list rows', str_contains($adminCss, '.cmb-admin-row') && str_contains($adminCss, 'width: 100% !important') && str_contains($adminCss, 'max-width: none !important'));
+expectTrue('admin.css sizes filter type and status', str_contains($adminCss, '.cmb-admin-filter-type') && str_contains($adminCss, '.cmb-admin-filter-status') && str_contains($adminCss, '.cmb-admin-filter-go'));
+expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
+expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.2'));
+$adminBidsLayout = (string) file_get_contents($root.'/resources/layouts/admin/bids_index.json');
+expectTrue('admin bids list is full width', str_contains($adminBidsLayout, 'cmb-admin-list w-full') && str_contains($adminBidsLayout, 'cmb-admin-row w-full') && str_contains($adminBidsLayout, 'cmb-admin-filter-id'));
+$adminActivity = (string) file_get_contents($root.'/resources/layouts/admin/activity_index.json');
+expectTrue('admin activity lists are full width', str_contains($adminActivity, 'cmb-admin-list w-full') && str_contains($adminActivity, 'cmb-admin-row w-full') && str_contains($adminActivity, 'cmb-admin-filter-id'));
 
 $oldIdHits = [];
 $scan = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
@@ -289,7 +307,7 @@ foreach ($scan as $file) {
         continue;
     }
     $rel = substr($file->getPathname(), strlen($root) + 1);
-    if (str_starts_with($rel, '.git/') || str_starts_with($rel, 'tests/') || $rel === 'CHANGELOG.md' || $rel === 'README.md') {
+    if (str_starts_with($rel, '.git/') || str_starts_with($rel, 'tests/') || $rel === 'CHANGELOG.md' || $rel === 'README.md' || $rel === 'module.php') {
         continue;
     }
     $ext = strtolower((string) pathinfo($rel, PATHINFO_EXTENSION));
@@ -301,7 +319,8 @@ foreach ($scan as $file) {
         $oldIdHits[] = $rel;
     }
 }
-expectTrue('no leftover custom-maker_bid identifier or MakerBid namespace outside changelog/readme/tests', $oldIdHits === []);
+expectTrue('no leftover custom-maker_bid identifier or MakerBid namespace outside changelog/readme/tests/module.php', $oldIdHits === []);
+expectTrue('module.php purges orphan custom-maker_bid menus on install', str_contains((string) file_get_contents($root.'/module.php'), "'custom-maker_bid'") && str_contains((string) file_get_contents($root.'/module.php'), 'custom-maker_bids'));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

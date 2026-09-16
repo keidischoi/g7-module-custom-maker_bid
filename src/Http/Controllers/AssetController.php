@@ -22,6 +22,11 @@ class AssetController extends Controller
         return $this->asset('form.css', 'text/css; charset=UTF-8');
     }
 
+    public function adminCss(): Response
+    {
+        return $this->asset('admin.css', 'text/css; charset=UTF-8');
+    }
+
     private function asset(string $name, string $contentType): Response
     {
         $path = dirname(__DIR__, 3).'/resources/assets/'.$name;

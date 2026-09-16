@@ -50,7 +50,7 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5" },
+        "props": { "className": "admin-page-content cmb-admin space-y-5 w-full" },
         "children": [
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회사 목록" },
           {
@@ -72,12 +72,13 @@
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-card cmb-admin-filter", "dataKey": "filter", "trackChanges": true },
+            "props": { "className": "cmb-admin-card cmb-admin-filter w-full", "dataKey": "filter", "trackChanges": true },
             "children": [
               {
                 "id": "fstatus_wrap",
                 "type": "basic",
                 "name": "Div",
+                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status" },
                 "children": [
                   { "id": "fstatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
                   {
@@ -87,7 +88,7 @@
                     "props": {
                       "name": "status",
                       "value": "{{_local.filter.status}}",
-                      "className": "cmb-admin-w-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                      "className": "cmb-admin-filter-control rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
                       "options": [
                         { "value": "", "label": "전체" },
                         { "value": "pending", "label": "보류" },
@@ -106,7 +107,7 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "필터",
-                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
                 "actions": [
                   { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
                 ]
@@ -117,7 +118,7 @@
             "id": "body",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-split" },
+            "props": { "className": "cmb-admin-split w-full" },
             "children": [
               {
                 "id": "side",
@@ -262,13 +263,13 @@
                     "id": "clist",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-list" },
+                    "props": { "className": "cmb-admin-list w-full" },
                     "children": [
                       {
                         "id": "crow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row" },
+                        "props": { "className": "cmb-admin-row w-full" },
                         "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
                         "children": [
                           {

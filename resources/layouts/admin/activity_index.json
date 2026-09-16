@@ -43,7 +43,7 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5" },
+        "props": { "className": "admin-page-content cmb-admin space-y-5 w-full" },
         "children": [
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회원 활동" },
           {
@@ -65,15 +65,16 @@
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-card cmb-admin-filter", "dataKey": "filter", "trackChanges": true },
+            "props": { "className": "cmb-admin-card cmb-admin-filter w-full", "dataKey": "filter", "trackChanges": true },
             "children": [
               {
                 "id": "fuser_wrap",
                 "type": "basic",
                 "name": "Div",
+                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-id" },
                 "children": [
                   { "id": "fuser_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "회원 ID" },
-                  { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID", "className": "cmb-admin-w-xs" } }
+                  { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID", "className": "cmb-admin-filter-control" } }
                 ]
               },
               {
@@ -81,7 +82,7 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "조회",
-                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
                 "actions": [
                   {
                     "type": "click",
@@ -101,7 +102,7 @@
             "id": "split",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-split" },
+            "props": { "className": "cmb-admin-split w-full" },
             "children": [
               {
                 "id": "jobs_col",
@@ -115,13 +116,13 @@
                     "id": "jlist",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-list" },
+                    "props": { "className": "cmb-admin-list w-full" },
                     "children": [
                       {
                         "id": "jrow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row" },
+                        "props": { "className": "cmb-admin-row w-full" },
                         "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
                         "children": [
                           {
@@ -161,13 +162,13 @@
                     "id": "blist",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-list" },
+                    "props": { "className": "cmb-admin-list w-full" },
                     "children": [
                       {
                         "id": "brow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row" },
+                        "props": { "className": "cmb-admin-row w-full" },
                         "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
                         "children": [
                           {
