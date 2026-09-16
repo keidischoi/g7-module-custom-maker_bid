@@ -165,7 +165,7 @@
                     "props": {
                       "name": "nav_insert",
                       "value": "{{_local.form.nav_insert}}",
-                      "className": "cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                      "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
                       "options": [
                         { "value": "append_row", "label": "샵/홈 줄 맨 뒤" },
                         { "value": "prepend_row", "label": "샵/홈 줄 맨 앞" },
@@ -224,7 +224,7 @@
                     "props": {
                       "name": "default_job_status",
                       "value": "{{_local.form.default_job_status}}",
-                      "className": "cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                      "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
                       "options": [
                         { "value": "quote_request", "label": "견적요청" },
                         { "value": "request", "label": "의뢰" },
@@ -254,7 +254,7 @@
                     "props": {
                       "name": "bid_allow",
                       "value": "{{_local.form.bid_allow}}",
-                      "className": "cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                      "className": "cmb-admin-select cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
                       "options": [
                         { "value": "all", "label": "모두" },
                         { "value": "admin", "label": "관리자" },

@@ -4,6 +4,20 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.4] - 2026-09-16
+
+### Fixed
+
+- 관리자 **Select** 드롭다운이 선택된 라벨 너비로 줄어 옵션이 줄바꿈되던 문제를 수정합니다. 「보류 (비공개)」, 「모든 등록된 업체 & 등록된 개인회원」 등이 한 줄로 보이도록 트리거와 열린 listbox(포털 포함)를 라벨보다 조금 넓게 맞춥니다.
+- 대상: 설정·의뢰/입찰/업체 목록 필터·의뢰·입찰·업체 상세의 모든 관리자 Select. 목록 필터 필드 너비(유형 ~14rem, 상태 ~12rem, ID ~8.5rem)는 0.9.2와 같습니다.
+- `resources/assets/admin.css` (form.css 폴백). 레이아웃에 `cmb-admin-select` 클래스를 붙입니다.
+
+### Changed
+
+- 버전 **0.9.4**. nav/form.js·form.css·admin.css 캐시 `?v=0.9.4`.
+- identifier·권한·API prefix `custom-maker_bids`, namespace `Modules\Custom\MakerBids` 는 0.9.2와 동일합니다.
+- 0.9.3은 관리자 목록 한 줄 카드 PR이 열려 있어 이 패치가 건너뜁니다.
+
 ## [0.9.2] - 2026-09-16
 
 ### Fixed

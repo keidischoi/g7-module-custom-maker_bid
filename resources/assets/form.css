@@ -366,6 +366,22 @@ html.dark .cmb-admin-nav a:hover,
 .cmb-admin-w-xl { max-width: 36rem !important; width: 100%; }
 .cmb-admin-w-full { max-width: 100% !important; width: 100%; }
 
+/* Fallback: keep G7 Select triggers/menus from wrapping if admin.css is late. */
+.cmb-admin-select { display: inline-flex; align-items: stretch; width: 100%; overflow: visible; }
+.cmb-admin-select.cmb-admin-w-sm { min-width: 12rem; max-width: 14rem !important; }
+.cmb-admin-select.cmb-admin-w-md { min-width: 14rem; max-width: 18rem !important; }
+.cmb-admin-select.cmb-admin-w-lg { min-width: 24rem; max-width: 32rem !important; }
+.cmb-admin-filter-field .cmb-admin-select,
+.cmb-admin-select.cmb-admin-filter-control { min-width: 0 !important; max-width: 100% !important; }
+.cmb-admin [role="combobox"],
+.cmb-admin [data-slot="select-trigger"],
+.cmb-admin-select button { width: 100%; white-space: nowrap; min-width: 12rem; }
+.cmb-admin-filter-field [role="combobox"],
+.cmb-admin-filter-field [data-slot="select-trigger"] { min-width: 0 !important; }
+.cmb-admin [role="listbox"],
+.cmb-admin [role="option"] { white-space: nowrap; }
+.cmb-admin [role="listbox"] { width: max-content; min-width: var(--radix-select-trigger-width, 12rem); }
+
 .cmb-admin-fields {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));

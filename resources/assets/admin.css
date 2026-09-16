@@ -203,6 +203,105 @@ html.dark .cmb-admin-nav,
 .cmb-admin-w-xl { max-width: 36rem !important; width: 100%; }
 .cmb-admin-w-full { max-width: 100% !important; width: 100%; }
 
+/* G7 Select is a wrapper + combobox trigger; the open listbox is often
+   portaled (role=listbox / data-radix / data-slot). Width utilities on the
+   wrapper do not size the trigger, so the menu shrink-wraps to the selected
+   label and longer Korean options wrap (e.g. 보류 (비공개)). */
+.cmb-admin-select {
+  display: inline-flex !important;
+  align-items: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.cmb-admin-select.cmb-admin-w-sm {
+  min-width: 12rem;
+  max-width: 14rem !important;
+}
+
+.cmb-admin-select.cmb-admin-w-md {
+  min-width: 14rem;
+  max-width: 18rem !important;
+}
+
+.cmb-admin-select.cmb-admin-w-lg {
+  min-width: 24rem;
+  max-width: 32rem !important;
+}
+
+.cmb-admin-filter-field .cmb-admin-select,
+.cmb-admin-select.cmb-admin-filter-control {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.cmb-admin [role="combobox"],
+.cmb-admin [data-slot="select-trigger"],
+.cmb-admin [data-slot="trigger"],
+.cmb-admin-select button,
+.cmb-admin-select > select,
+.cmb-admin select.cmb-admin-select {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 12rem;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.cmb-admin-select.cmb-admin-w-sm,
+.cmb-admin-select.cmb-admin-w-sm [role="combobox"],
+.cmb-admin-select.cmb-admin-w-sm [data-slot="select-trigger"],
+.cmb-admin-select.cmb-admin-w-sm [data-slot="trigger"],
+.cmb-admin-select.cmb-admin-w-sm button {
+  min-width: 12rem;
+}
+
+.cmb-admin-select.cmb-admin-w-md,
+.cmb-admin-select.cmb-admin-w-md [role="combobox"],
+.cmb-admin-select.cmb-admin-w-md [data-slot="select-trigger"],
+.cmb-admin-select.cmb-admin-w-md [data-slot="trigger"],
+.cmb-admin-select.cmb-admin-w-md button {
+  min-width: 14rem;
+}
+
+.cmb-admin-select.cmb-admin-w-lg,
+.cmb-admin-select.cmb-admin-w-lg [role="combobox"],
+.cmb-admin-select.cmb-admin-w-lg [data-slot="select-trigger"],
+.cmb-admin-select.cmb-admin-w-lg [data-slot="trigger"],
+.cmb-admin-select.cmb-admin-w-lg button {
+  min-width: 24rem;
+}
+
+.cmb-admin-filter-field [role="combobox"],
+.cmb-admin-filter-field [data-slot="select-trigger"],
+.cmb-admin-filter-field [data-slot="trigger"],
+.cmb-admin-filter-field .cmb-admin-select button,
+.cmb-admin-filter-field .cmb-admin-select {
+  min-width: 0 !important;
+}
+
+.cmb-admin [role="listbox"],
+.cmb-admin [data-slot="select-content"],
+.cmb-admin [data-radix-select-content],
+.cmb-admin [role="option"],
+.cmb-admin [data-slot="select-item"] {
+  white-space: nowrap !important;
+}
+
+.cmb-admin [role="listbox"],
+.cmb-admin [data-slot="select-content"],
+.cmb-admin [data-radix-select-content] {
+  width: max-content !important;
+  min-width: var(--radix-select-trigger-width, 12rem);
+  max-width: min(90vw, 36rem);
+  padding-inline: 0.25rem;
+}
+
 .cmb-admin-filter-field .cmb-admin-w-xs,
 .cmb-admin-filter-field .cmb-admin-w-sm,
 .cmb-admin-filter-field .cmb-admin-w-md {
@@ -417,4 +516,36 @@ html.dark .cmb-admin-row,
   .cmb-admin-section-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Portaled G7/Radix menus leave .cmb-admin. Style the open listbox only while
+   a module admin Select is expanded so site-wide selects stay untouched. */
+body:has(.cmb-admin-select [data-state="open"]) [role="listbox"],
+body:has(.cmb-admin-select[data-state="open"]) [role="listbox"],
+body:has(.cmb-admin [role="combobox"][data-state="open"]) [role="listbox"],
+body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [role="listbox"],
+body:has(.cmb-admin-select [data-state="open"]) [data-slot="select-content"],
+body:has(.cmb-admin-select[data-state="open"]) [data-slot="select-content"],
+body:has(.cmb-admin [role="combobox"][data-state="open"]) [data-slot="select-content"],
+body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [data-slot="select-content"],
+body:has(.cmb-admin-select [data-state="open"]) [data-radix-select-content],
+body:has(.cmb-admin-select[data-state="open"]) [data-radix-select-content],
+body:has(.cmb-admin [role="combobox"][data-state="open"]) [data-radix-select-content],
+body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [data-radix-select-content] {
+  width: max-content !important;
+  min-width: var(--radix-select-trigger-width, 12rem) !important;
+  max-width: min(90vw, 36rem) !important;
+  box-sizing: border-box;
+  padding-inline: 0.35rem;
+}
+
+body:has(.cmb-admin-select [data-state="open"]) [role="option"],
+body:has(.cmb-admin-select[data-state="open"]) [role="option"],
+body:has(.cmb-admin [role="combobox"][data-state="open"]) [role="option"],
+body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [role="option"],
+body:has(.cmb-admin-select [data-state="open"]) [data-slot="select-item"],
+body:has(.cmb-admin-select[data-state="open"]) [data-slot="select-item"],
+body:has(.cmb-admin [role="combobox"][data-state="open"]) [data-slot="select-item"],
+body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [data-slot="select-item"] {
+  white-space: nowrap !important;
 }
