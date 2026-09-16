@@ -1,205 +1,93 @@
 (function () {
-  /* G7 options-mode Select is a custom dropdown, not a native <select>.
-     className often lands on a wrapper/display:contents node, and the open
-     menu is portaled outside .cmb-admin. 0.9.4 CSS (.cmb-admin-select,
-     body has() + radix trigger width) did not match live G7, so size
-     the real trigger/listbox with classes we control + inline styles. */
-  var HOST_SEL = '.cmb-admin-select-host';
-  var TRIGGER_SEL =
-    'button, [role="combobox"], [aria-haspopup="listbox"], [aria-haspopup="true"], [data-slot="select-trigger"], [data-slot="trigger"], select';
-  var LIST_SEL =
-    '[role="listbox"], [data-slot="select-content"], [data-radix-select-content], [data-headlessui-state="open"], [id^="headlessui-listbox-options"]';
+  function adminRoot() { return document.querySelector('.cmb-admin'); }
 
-  function adminRoot() {
-    return document.querySelector('.cmb-admin');
+  function parseSizes(raw) {
+    if (!raw) return [{ name: '', w: '', d: '', h: '' }];
+    if (Array.isArray(raw)) {
+      return raw.map(function (r) {
+        return {
+          name: r && r.name != null ? String(r.name) : '',
+          w: r && r.w != null ? r.w : '',
+          d: r && r.d != null ? r.d : '',
+          h: r && r.h != null ? r.h : ''
+        };
+      });
+    }
+    try { return parseSizes(JSON.parse(String(raw))); } catch (e) { return [{ name: '', w: '', d: '', h: '' }]; }
   }
 
-  function isOptionNode(el) {
-    if (!el || !el.closest) {
-      return false;
-    }
-    return !!el.closest('[role="listbox"], [data-slot="select-content"], [data-radix-select-content]');
-  }
-
-  function triggerOf(host) {
-    var list = host.querySelectorAll(TRIGGER_SEL);
-    var i;
-    var el;
-    for (i = 0; i < list.length; i++) {
-      el = list[i];
-      if (isOptionNode(el)) {
-        continue;
-      }
-      return el;
-    }
-    if (host.matches && host.matches(TRIGGER_SEL)) {
-      return host;
-    }
-    return null;
-  }
-
-  function styleTrigger(el, host) {
-    if (!el || (el.tagName || '').toUpperCase() === 'INPUT') {
-      return;
-    }
-    el.classList.add('cmb-admin-select-trigger');
-    el.style.setProperty('box-sizing', 'border-box', 'important');
-    el.style.setProperty('white-space', 'nowrap', 'important');
-    el.style.setProperty('width', '100%', 'important');
-    el.style.setProperty('max-width', '100%', 'important');
-    el.style.setProperty('display', 'flex', 'important');
-    el.style.setProperty('align-items', 'center', 'important');
-    el.style.setProperty('justify-content', 'space-between', 'important');
-    if (host && !host.classList.contains('cmb-admin-filter-field')) {
-      el.style.setProperty('padding-left', '0.75rem', 'important');
-      el.style.setProperty('padding-right', '2.25rem', 'important');
-      el.style.setProperty('min-height', '2.25rem', 'important');
-    }
-  }
-
-  function styleHosts() {
-    document.querySelectorAll(HOST_SEL).forEach(function (host) {
-      var t = triggerOf(host);
-      if (t) {
-        styleTrigger(t, host);
-      }
+  function rowsJson(root) {
+    var rows = [];
+    root.querySelectorAll('[data-cmb-admin-size-row]').forEach(function (row) {
+      rows.push({
+        name: row.querySelector('[data-k="name"]').value,
+        w: row.querySelector('[data-k="w"]').value === '' ? null : Number(row.querySelector('[data-k="w"]').value),
+        d: row.querySelector('[data-k="d"]').value === '' ? null : Number(row.querySelector('[data-k="d"]').value),
+        h: row.querySelector('[data-k="h"]').value === '' ? null : Number(row.querySelector('[data-k="h"]').value)
+      });
     });
-    document.querySelectorAll('.cmb-admin .cmb-admin-select').forEach(function (el) {
-      var host = el.closest(HOST_SEL) || el.parentElement || el;
-      if (el.matches && el.matches(TRIGGER_SEL) && !isOptionNode(el)) {
-        styleTrigger(el, host);
-        return;
-      }
-      var t = triggerOf(el);
-      if (t) {
-        styleTrigger(t, host);
-      }
+    return JSON.stringify(rows);
+  }
+
+  function makeRow(item) {
+    var row = document.createElement('div');
+    row.setAttribute('data-cmb-admin-size-row', '1');
+    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;';
+    row.innerHTML = '<input data-k="name" type="text" placeholder="이름" class="rounded-lg border px-2 py-1.5 text-sm" />'
+      + '<input data-k="w" type="number" placeholder="W" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
+      + '<span>×</span>'
+      + '<input data-k="d" type="number" placeholder="D" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
+      + '<span>×</span>'
+      + '<input data-k="h" type="number" placeholder="H" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
+      + '<button type="button" data-cmb-admin-size-del class="px-2 py-1 text-sm rounded-lg border">삭제</button>';
+    row.querySelector('[data-k="name"]').value = item.name || '';
+    row.querySelector('[data-k="w"]').value = item.w == null ? '' : item.w;
+    row.querySelector('[data-k="d"]').value = item.d == null ? '' : item.d;
+    row.querySelector('[data-k="h"]').value = item.h == null ? '' : item.h;
+    return row;
+  }
+
+  function enhanceSizes() {
+    var ta = document.querySelector('textarea[name="sizes_json"]');
+    if (!ta || ta.getAttribute('data-cmb-size-ui')) return;
+    ta.setAttribute('data-cmb-size-ui', '1');
+    ta.style.display = 'none';
+    var box = document.createElement('div');
+    box.id = 'cmb-admin-sizes';
+    parseSizes(ta.value || ta.getAttribute('placeholder')).forEach(function (it) { box.appendChild(makeRow(it)); });
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.textContent = '추가';
+    add.className = 'px-3 py-1 text-sm rounded-lg border';
+    add.addEventListener('click', function (e) {
+      e.preventDefault();
+      box.insertBefore(makeRow({ name: '', w: '', d: '', h: '' }), add);
     });
-  }
-
-  function openTrigger() {
-    var root = adminRoot();
-    if (!root) {
-      return null;
-    }
-    return (
-      root.querySelector('[aria-expanded="true"]') ||
-      root.querySelector('[data-state="open"]') ||
-      root.querySelector('button[aria-expanded="true"]')
-    );
-  }
-
-  function optionNodes(box) {
-    return box.querySelectorAll(
-      '[role="option"], [data-slot="select-item"], [data-value], li'
-    );
-  }
-
-  function styleListbox(box) {
-    var trigger = openTrigger();
-    if (!trigger || !trigger.closest || !trigger.closest('.cmb-admin')) {
-      return;
-    }
-    box.classList.add('cmb-admin-listbox');
-    var min = Math.max(trigger.getBoundingClientRect().width || 0, 14 * 16);
-    var opts = optionNodes(box);
-    var i;
-    var opt;
-    var w;
-    for (i = 0; i < opts.length; i++) {
-      opt = opts[i];
-      opt.style.setProperty('white-space', 'nowrap', 'important');
-      opt.style.setProperty('word-break', 'keep-all', 'important');
-      opt.style.setProperty('overflow-wrap', 'normal', 'important');
-      opt.style.setProperty('width', 'auto', 'important');
-      opt.style.setProperty('min-width', '100%', 'important');
-      w = (opt.scrollWidth || opt.getBoundingClientRect().width || 0) + 48;
-      if (w > min) {
-        min = w;
-      }
-    }
-    var px = Math.ceil(min) + 'px';
-    box.style.setProperty('white-space', 'nowrap', 'important');
-    box.style.setProperty('word-break', 'keep-all', 'important');
-    box.style.setProperty('width', 'max-content', 'important');
-    box.style.setProperty('min-width', px, 'important');
-    box.style.setProperty('max-width', 'min(90vw, 40rem)', 'important');
-    box.style.setProperty('box-sizing', 'border-box', 'important');
-
-    var wrap = box.parentElement;
-    var hops = 0;
-    while (wrap && wrap !== document.body && hops < 6) {
-      hops += 1;
-      if (
-        wrap.hasAttribute('data-radix-popper-content-wrapper') ||
-        wrap.hasAttribute('data-floating-ui-portal') ||
-        wrap.hasAttribute('data-radix-portal') ||
-        (wrap.style && (wrap.style.position === 'absolute' || wrap.style.position === 'fixed'))
-      ) {
-        wrap.classList.add('cmb-admin-listbox');
-        wrap.style.setProperty('min-width', px, 'important');
-        wrap.style.setProperty('width', 'max-content', 'important');
-      }
-      wrap = wrap.parentElement;
-    }
-  }
-
-  function scanListboxes() {
-    if (!openTrigger()) {
-      return;
-    }
-    document.querySelectorAll(LIST_SEL).forEach(styleListbox);
-  }
-
-  function onEvent() {
-    styleHosts();
-    window.setTimeout(scanListboxes, 0);
-    window.setTimeout(scanListboxes, 40);
-    window.setTimeout(scanListboxes, 160);
-  }
-
-  function injectPortalCss() {
-    if (document.getElementById('cmb-admin-select-portal-css')) {
-      return;
-    }
-    var s = document.createElement('style');
-    s.id = 'cmb-admin-select-portal-css';
-    s.textContent =
-      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],html.cmb-admin-ui [data-radix-popper-content-wrapper]{width:max-content!important;min-width:14rem!important;max-width:min(90vw,40rem)!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;box-sizing:border-box!important;}' +
-      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;}';
-    (document.head || document.documentElement).appendChild(s);
+    box.appendChild(add);
+    ta.parentNode.insertBefore(box, ta);
+    var sync = function () {
+      ta.value = rowsJson(box);
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      ta.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    box.addEventListener('input', sync);
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-cmb-admin-size-del]');
+      if (!btn) return;
+      e.preventDefault();
+      if (box.querySelectorAll('[data-cmb-admin-size-row]').length <= 1) return;
+      btn.closest('[data-cmb-admin-size-row]').remove();
+      sync();
+    });
+    sync();
   }
 
   function start() {
-    if (!adminRoot()) {
-      return;
-    }
-    document.documentElement.classList.add('cmb-admin-ui');
-    injectPortalCss();
-    styleHosts();
-    scanListboxes();
-    window.setTimeout(scanListboxes, 0);
-    window.setTimeout(scanListboxes, 50);
-    if (window.MutationObserver) {
-      var obs = new MutationObserver(function () {
-        styleHosts();
-        scanListboxes();
-      });
-      obs.observe(document.documentElement, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['aria-expanded', 'data-state', 'class']
-      });
-    }
-    document.addEventListener('click', onEvent, true);
-    document.addEventListener('pointerdown', onEvent, true);
-    document.addEventListener('keydown', onEvent, true);
+    if (!adminRoot()) return;
+    enhanceSizes();
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
-  } else {
-    start();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+  setTimeout(enhanceSizes, 400);
+  setTimeout(enhanceSizes, 1200);
 })();
