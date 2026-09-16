@@ -22,6 +22,7 @@ class StoreJobRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['form']);
+        $this->coerceSlugFields(['type', 'status', 'audience']);
         $this->nullBlankFields([
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
@@ -37,17 +38,11 @@ class StoreJobRequest extends FormRequest
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return JobRules::createRules();
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return JobRules::messages();
