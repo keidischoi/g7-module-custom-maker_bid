@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.10';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.10';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.10';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.10';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.10';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.10';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.11';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.11';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.11';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.11';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.11';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.11';
 
     public static function getSubscribedHooks(): array
     {
@@ -29,9 +29,7 @@ class UserMenuListener implements HookListenerInterface
     public function patch(mixed $layout = null): mixed
     {
         try {
-            if (! is_array($layout)) {
-                return $layout;
-            }
+            if (! is_array($layout)) return $layout;
             $name = (string) ($layout['layout_name'] ?? '');
             if (($layout['extends'] ?? '') === '_admin_base') {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
@@ -40,19 +38,12 @@ class UserMenuListener implements HookListenerInterface
                 $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
                 $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
-
                 return $layout;
             }
-            if (str_starts_with($name, 'admin') || str_contains($name, 'admin')) {
-                return $layout;
-            }
+            if (str_starts_with($name, 'admin') || str_contains($name, 'admin')) return $layout;
             $menu = $this->menuSettings();
-            if (! ($menu['extension_user_base'] ?? true)) {
-                $layout = $this->removeComponent($layout, 'maker_bids_user_nav');
-            }
-            if (! ($menu['extension_home'] ?? true)) {
-                $layout = $this->removeComponent($layout, 'maker_bids_home_nav');
-            }
+            if (! ($menu['extension_user_base'] ?? true)) $layout = $this->removeComponent($layout, 'maker_bids_user_nav');
+            if (! ($menu['extension_home'] ?? true)) $layout = $this->removeComponent($layout, 'maker_bids_home_nav');
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
@@ -62,9 +53,7 @@ class UserMenuListener implements HookListenerInterface
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
             }
             $layout['scripts'] = $scripts;
-        } catch (\Throwable) {
-        }
-
+        } catch (\Throwable) {}
         return $layout;
     }
 
@@ -75,8 +64,7 @@ class UserMenuListener implements HookListenerInterface
                 $all = app(MakerBidSettingsService::class)->getAllSettings();
                 return is_array($all['menu'] ?? null) ? $all['menu'] : SettingsRules::defaults()['menu'];
             }
-        } catch (\Throwable) {
-        }
+        } catch (\Throwable) {}
         return SettingsRules::defaults()['menu'];
     }
 
@@ -124,15 +112,7 @@ class UserMenuListener implements HookListenerInterface
             }
         }
         if (! $found) {
-            $scripts[] = [
-                'id' => $id,
-                'src' => $src,
-                'async' => true,
-                'optional' => true,
-                'required' => false,
-                'failOnError' => false,
-                'onError' => ['handler' => 'suppress'],
-            ];
+            $scripts[] = ['id' => $id, 'src' => $src, 'async' => true, 'optional' => true, 'required' => false, 'failOnError' => false, 'onError' => ['handler' => 'suppress']];
         }
         return $scripts;
     }
@@ -140,8 +120,7 @@ class UserMenuListener implements HookListenerInterface
     private function upsertStyle(array $styles, string $id, string $href): array
     {
         $found = false;
-        $path = (string) (parse_url($href, PHP_URL_PATH) ?: $href);
-        $needle = str_contains($path, 'admin.css') ? 'custom-maker_bids/assets/admin.css' : 'custom-maker_bids/assets/form.css';
+        $needle = str_contains($href, 'admin.css') ? 'custom-maker_bids/assets/admin.css' : 'custom-maker_bids/assets/form.css';
         foreach ($styles as $i => $style) {
             $existing = (string) ($style['href'] ?? $style['src'] ?? '');
             if (is_array($style) && (($style['id'] ?? '') === $id || str_contains($existing, $needle))) {
@@ -150,9 +129,7 @@ class UserMenuListener implements HookListenerInterface
                 $found = true;
             }
         }
-        if (! $found) {
-            $styles[] = ['id' => $id, 'href' => $href, 'src' => $href, 'rel' => 'stylesheet'];
-        }
+        if (! $found) $styles[] = ['id' => $id, 'href' => $href, 'src' => $href, 'rel' => 'stylesheet'];
         return $styles;
     }
 }
