@@ -1,5 +1,5 @@
 {
-  "name": "custom/maker-bids",
+  "name": "custom/maker-bid",
   "description": "Maker commission bidding for Gnuboard 7",
   "type": "g7-module",
   "license": "MIT",
