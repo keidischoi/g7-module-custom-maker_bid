@@ -9,9 +9,6 @@ use Modules\Custom\MakerBids\Support\TypeCatalog;
 
 class JobTypeService
 {
-    /**
-     * @return Collection<int, MakerJobType>
-     */
     public function listPublic(): Collection
     {
         return MakerJobType::query()
@@ -21,9 +18,6 @@ class JobTypeService
             ->get();
     }
 
-    /**
-     * @return Collection<int, MakerJobType>
-     */
     public function listAdmin(): Collection
     {
         return MakerJobType::query()->orderBy('sort_order')->orderBy('id')->get();
@@ -32,30 +26,43 @@ class JobTypeService
     public function findBySlug(string $slug): ?MakerJobType
     {
         $raw = trim($slug);
-        if ($raw !== '' && ctype_digit($raw)) {
+        if ($raw === '') {
+            return null;
+        }
+        if (ctype_digit($raw)) {
             $byId = MakerJobType::query()->find((int) $raw);
             if ($byId) {
                 return $byId;
             }
         }
-        $slug = TypeCatalog::normalizeSlug($raw);
+        $norm = TypeCatalog::normalizeSlug($raw);
+        $row = MakerJobType::query()->where('slug', $norm)->orWhere('slug', $raw)->first();
+        if ($row) {
+            return $row;
+        }
+        $row = MakerJobType::query()->where('name', $raw)->orWhere('name', $norm)->first();
+        if ($row) {
+            return $row;
+        }
+        foreach (TypeCatalog::defaults() as $def) {
+            if ($def['slug'] === $norm || $def['slug'] === $raw || $def['name'] === $raw) {
+                return MakerJobType::query()->where('slug', $def['slug'])->first();
+            }
+        }
 
-        return MakerJobType::query()->where('slug', $slug)->first();
+        return null;
     }
 
     public function requireEnabled(string $slug): MakerJobType
     {
         $row = $this->findBySlug($slug);
-        if ($row === null || ! $row->is_enabled) {
-            throw new DomainException('사용할 수 없는 의뢰 유형입니다.', 422);
+        if ($row === null) {
+            throw new DomainException('사용할 수 없는 의뢰 유형입니다. 유형 슬러그를 확인하세요. ('.$slug.')', 422);
         }
 
         return $row;
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function create(array $payload): MakerJobType
     {
         $slug = (string) $payload['slug'];
@@ -82,9 +89,6 @@ class JobTypeService
         ]);
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function update(int $id, array $payload): MakerJobType
     {
         $row = MakerJobType::query()->findOrFail($id);
@@ -133,9 +137,6 @@ class JobTypeService
         return $row->fresh() ?? $row;
     }
 
-    /**
-     * @return list<string>
-     */
     public function enabledSlugs(): array
     {
         try {
