@@ -21,38 +21,39 @@ trait BlankToNull
     }
 
     /**
-     * G7 select often posts {value,label} instead of a slug string.
-     *
      * @param  list<string>  $keys
      */
-    protected function coerceSlugFields(array $keys = ['type', 'kind', 'status', 'audience']): void
+    protected function coerceSlugFields(array $keys = ['type', 'kind', 'status', 'audience', 'title']): void
     {
         $merge = [];
         foreach ($keys as $key) {
             if (! $this->exists($key)) {
                 continue;
             }
-            $merge[$key] = $this->slugString($this->input($key));
+            $merge[$key] = $this->slugString($this->input($key), $key);
         }
         if ($merge !== []) {
             $this->merge($merge);
         }
     }
 
-    protected function slugString(mixed $value): string
+    protected function slugString(mixed $value, string $prefer = 'value'): string
     {
         if (is_array($value)) {
-            foreach (['value', 'slug', 'type', 'id'] as $k) {
+            foreach ([$prefer, 'title', 'value', 'slug', 'type', 'name', 'id'] as $k) {
                 if (isset($value[$k]) && ! is_array($value[$k]) && (string) $value[$k] !== '') {
                     return trim((string) $value[$k]);
                 }
             }
+            if (array_is_list($value) && isset($value[0]) && is_string($value[0])) {
+                return trim((string) $value[0]);
+            }
             $first = reset($value);
 
-            return is_array($first) ? $this->slugString($first) : trim((string) $first);
+            return is_array($first) ? $this->slugString($first, $prefer) : trim((string) $first);
         }
         if (is_object($value)) {
-            return $this->slugString((array) $value);
+            return $this->slugString((array) $value, $prefer);
         }
         if (is_bool($value)) {
             return $value ? '1' : '';
