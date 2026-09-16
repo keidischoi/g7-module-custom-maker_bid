@@ -5,7 +5,7 @@ namespace Modules\Custom\MakerBids\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\BiddingRules;
 
 class MakerJob extends Model
 {
@@ -68,8 +68,8 @@ class MakerJob extends Model
 
     public function isOpen(): bool
     {
-        return JobRules::isBiddingOpen(
-            $this->bidding_status ?? JobRules::BIDDING_OPEN,
+        return BiddingRules::isOpen(
+            $this->bidding_status ?? BiddingRules::OPEN,
             (string) $this->status,
             $this->closes_at,
         );
