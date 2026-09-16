@@ -8,11 +8,11 @@ use Modules\Custom\MakerBid\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.8.2';
+    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.8.5';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.8.2';
+    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.8.5';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.8.2';
+    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.8.5';
 
     public static function getSubscribedHooks(): array
     {
@@ -133,7 +133,7 @@ class UserMenuListener implements HookListenerInterface
     {
         $found = false;
         foreach ($scripts as $i => $script) {
-            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bids/assets/nav.js' : 'custom-maker_bids/assets/form.js'))) {
+            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bid/assets/nav.js' : 'custom-maker_bid/assets/form.js'))) {
                 $scripts[$i]['src'] = $src;
                 $found = true;
             }
@@ -161,7 +161,7 @@ class UserMenuListener implements HookListenerInterface
     {
         $found = false;
         foreach ($styles as $i => $style) {
-            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bids/assets/form.css'))) {
+            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bid/assets/form.css'))) {
                 $styles[$i]['href'] = $href;
                 $styles[$i]['src'] = $href;
                 $found = true;
@@ -179,3 +179,4 @@ class UserMenuListener implements HookListenerInterface
         return $styles;
     }
 }
+
