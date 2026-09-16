@@ -7,6 +7,16 @@
     'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 inline-flex items-center gap-1.5 cmb-nav-current';
   var TAB_IDLE = ['bg-gray-900', 'text-white', 'dark:bg-white', 'dark:text-gray-900', 'cmb-tab-current'];
   var TAB_IDLE_COLOR = ['text-gray-600', 'dark:text-gray-300', 'text-gray-500', 'dark:text-gray-400'];
+  var TABS = [
+    { href: '/maker-bids/new', label: '의뢰서 작성' },
+    { href: '/maker-bids', label: '의뢰목록' },
+    { href: '/maker-bids/bids', label: '입찰현황' },
+    { href: '/maker-bids/history', label: '이력' },
+    { href: '/maker-bids/company', label: '입찰자 등록' },
+    { href: '/maker-bids/companies', label: '입찰자 목록' }
+  ];
+  var TAB_OFF = 'px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300';
+  var TAB_ON = 'px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 cmb-tab-current';
 
   function go() {
     if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
@@ -27,40 +37,23 @@
 
   function currentTabHref() {
     var p = currentPath();
-    if (/\/maker-bids\/new$/.test(p)) {
-      return '/maker-bids/new';
-    }
-    if (/\/maker-bids\/bids$/.test(p)) {
-      return '/maker-bids/bids';
-    }
-    if (/\/maker-bids\/history$/.test(p)) {
-      return '/maker-bids/history';
-    }
-    if (/\/maker-bids\/company$/.test(p)) {
-      return '/maker-bids/company';
-    }
-    if (/\/maker-bids\/\d+(\/edit)?$/.test(p)) {
-      return '';
-    }
-    if (/\/maker-bids$/.test(p)) {
-      return '/maker-bids';
-    }
+    if (/\/maker-bids\/new$/.test(p)) return '/maker-bids/new';
+    if (/\/maker-bids\/bids$/.test(p)) return '/maker-bids/bids';
+    if (/\/maker-bids\/history$/.test(p)) return '/maker-bids/history';
+    if (/\/maker-bids\/companies$/.test(p)) return '/maker-bids/companies';
+    if (/\/maker-bids\/company$/.test(p)) return '/maker-bids/company';
+    if (/\/maker-bids\/\d+(\/edit)?$/.test(p)) return '';
+    if (/\/maker-bids$/.test(p)) return '/maker-bids';
     return '';
   }
 
   function linkPath(el) {
-    if (!el) {
-      return '';
-    }
+    if (!el) return '';
     try {
-      if (el.pathname) {
-        return String(el.pathname).replace(/\/+$/, '') || '/';
-      }
+      if (el.pathname) return String(el.pathname).replace(/\/+$/, '') || '/';
     } catch (e) {}
     var href = el.getAttribute && (el.getAttribute('href') || el.getAttribute('data-href'));
-    if (!href) {
-      return '';
-    }
+    if (!href) return '';
     try {
       return String(new URL(href, location.origin).pathname).replace(/\/+$/, '') || '/';
     } catch (e2) {
@@ -70,13 +63,9 @@
 
   function setTabCurrent(el, on) {
     var i;
-    for (i = 0; i < TAB_IDLE.length; i++) {
-      el.classList.toggle(TAB_IDLE[i], on);
-    }
+    for (i = 0; i < TAB_IDLE.length; i++) el.classList.toggle(TAB_IDLE[i], on);
     for (i = 0; i < TAB_IDLE_COLOR.length; i++) {
-      if (on) {
-        el.classList.remove(TAB_IDLE_COLOR[i]);
-      }
+      if (on) el.classList.remove(TAB_IDLE_COLOR[i]);
     }
     if (!on) {
       el.classList.add('text-gray-600');
@@ -84,17 +73,35 @@
     }
   }
 
+  function ensureSubNav() {
+    var rows = document.querySelectorAll('[data-cmb-subnav], .cmb-maker-subnav');
+    var current = currentTabHref();
+    var r, row, extras, i;
+    for (r = 0; r < rows.length; r++) {
+      row = rows[r];
+      extras = [];
+      Array.prototype.slice.call(row.children).forEach(function (ch) {
+        if (ch.getAttribute && ch.getAttribute('data-cmb-company-submit')) extras.push(ch);
+      });
+      row.innerHTML = '';
+      TABS.forEach(function (tab) {
+        var a = document.createElement('a');
+        a.href = tab.href;
+        a.textContent = tab.label;
+        a.className = current === tab.href ? TAB_ON : TAB_OFF;
+        row.appendChild(a);
+      });
+      for (i = 0; i < extras.length; i++) row.appendChild(extras[i]);
+    }
+  }
+
   function syncHeaderNav() {
     var btn = document.getElementById(BTN_ID);
-    if (!btn) {
-      return;
-    }
+    if (!btn) return;
     var on = onMakerBids();
     btn.className = on ? ACTIVE : CLS;
     if (!on && document.activeElement === btn) {
-      try {
-        btn.blur();
-      } catch (e) {}
+      try { btn.blur(); } catch (e) {}
     }
   }
 
@@ -102,14 +109,11 @@
     var on = onMakerBids();
     document.querySelectorAll('.cmb-ext-user-base, .cmb-ext-home, #maker_bids_user_nav, #maker_bids_home_nav').forEach(function (el) {
       el.classList.toggle('cmb-nav-current', on);
-      if (on) {
-        el.classList.add('bg-gray-900', 'text-white', 'dark:bg-white', 'dark:text-gray-900');
-      } else {
+      if (on) el.classList.add('bg-gray-900', 'text-white', 'dark:bg-white', 'dark:text-gray-900');
+      else {
         el.classList.remove('bg-gray-900', 'text-white', 'dark:bg-white', 'dark:text-gray-900', 'cmb-nav-current');
         if (document.activeElement === el) {
-          try {
-            el.blur();
-          } catch (e) {}
+          try { el.blur(); } catch (e) {}
         }
       }
     });
@@ -118,57 +122,36 @@
   function syncSubNav() {
     var current = currentTabHref();
     var nodes = document.querySelectorAll('[data-cmb-subnav] a, [data-cmb-subnav] button, .cmb-maker-subnav a, .cmb-maker-subnav button');
-    var i;
-    var el;
-    var href;
-    var on;
+    var i, el, href, on;
     for (i = 0; i < nodes.length; i++) {
       el = nodes[i];
-      if (el.getAttribute && el.getAttribute('data-cmb-company-submit')) {
-        continue;
-      }
+      if (el.getAttribute && el.getAttribute('data-cmb-company-submit')) continue;
       href = linkPath(el);
       on = !!current && href === current;
       setTabCurrent(el, on);
       if (!on && document.activeElement === el) {
-        try {
-          el.blur();
-        } catch (e) {}
+        try { el.blur(); } catch (e) {}
       }
     }
   }
 
   function syncActive() {
     ensureNavCss();
+    ensureSubNav();
     syncHeaderNav();
     syncExtNav();
     syncSubNav();
   }
 
   function ensureNavCss() {
-    if (document.getElementById('cmb-nav-css')) {
-      return;
-    }
+    if (document.getElementById('cmb-nav-css')) return;
     var s = document.createElement('style');
     s.id = 'cmb-nav-css';
     s.textContent =
-      '#cmb-nav-jobs:focus,#cmb-nav-jobs:focus-visible,#cmb-nav-jobs:active{' +
-      'outline:none;}' +
-      '#cmb-nav-jobs:not(.cmb-nav-current):focus,#cmb-nav-jobs:not(.cmb-nav-current):focus-visible,#cmb-nav-jobs:not(.cmb-nav-current):active' +
-      '{background-color:transparent;color:inherit;}' +
-      'html.dark #cmb-nav-jobs:not(.cmb-nav-current):focus,html.dark #cmb-nav-jobs:not(.cmb-nav-current):active,' +
-      '.dark #cmb-nav-jobs:not(.cmb-nav-current):focus,.dark #cmb-nav-jobs:not(.cmb-nav-current):active{' +
-      'background-color:transparent;color:inherit;}' +
-      '[data-cmb-subnav] a:focus,[data-cmb-subnav] a:focus-visible,[data-cmb-subnav] a:active,' +
-      '.cmb-maker-subnav a:focus,.cmb-maker-subnav a:focus-visible,.cmb-maker-subnav a:active{outline:none;}' +
-      '[data-cmb-subnav] a:not(.cmb-tab-current):focus,[data-cmb-subnav] a:not(.cmb-tab-current):focus-visible,' +
-      '[data-cmb-subnav] a:not(.cmb-tab-current):active,' +
-      '.cmb-maker-subnav a:not(.cmb-tab-current):focus,.cmb-maker-subnav a:not(.cmb-tab-current):active{' +
-      'background-color:transparent !important;color:inherit !important;box-shadow:none !important;}' +
-      '.cmb-ext-user-base:not(.cmb-nav-current):focus,.cmb-ext-home:not(.cmb-nav-current):focus,' +
-      '#maker_bids_user_nav:not(.cmb-nav-current):focus,#maker_bids_home_nav:not(.cmb-nav-current):focus,' +
-      '.cmb-ext-user-base:not(.cmb-nav-current):active,.cmb-ext-home:not(.cmb-nav-current):active{' +
-      'background-color:transparent !important;color:inherit !important;}';
+      '#cmb-nav-jobs:focus,#cmb-nav-jobs:focus-visible,#cmb-nav-jobs:active{outline:none;}' +
+      '#cmb-nav-jobs:not(.cmb-nav-current):focus,#cmb-nav-jobs:not(.cmb-nav-current):active{background-color:transparent;color:inherit;}' +
+      '[data-cmb-subnav] a:focus,.cmb-maker-subnav a:focus{outline:none;}' +
+      '[data-cmb-subnav] a:not(.cmb-tab-current):focus,.cmb-maker-subnav a:not(.cmb-tab-current):active{background-color:transparent !important;color:inherit !important;}';
     document.head.appendChild(s);
   }
 
@@ -222,14 +205,10 @@
 
   function hideExt(menu) {
     if (menu && menu.extension_user_base === false) {
-      document.querySelectorAll('.cmb-ext-user-base, #maker_bids_user_nav').forEach(function (el) {
-        el.style.display = 'none';
-      });
+      document.querySelectorAll('.cmb-ext-user-base, #maker_bids_user_nav').forEach(function (el) { el.style.display = 'none'; });
     }
     if (menu && menu.extension_home === false) {
-      document.querySelectorAll('.cmb-ext-home, #maker_bids_home_nav').forEach(function (el) {
-        el.style.display = 'none';
-      });
+      document.querySelectorAll('.cmb-ext-home, #maker_bids_home_nav').forEach(function (el) { el.style.display = 'none'; });
     }
   }
 
@@ -238,6 +217,7 @@
     if (/\/maker-bids\/new\/?$/.test(p)) return 'create';
     if (/\/maker-bids\/bids\/?$/.test(p)) return 'bids';
     if (/\/maker-bids\/history\/?$/.test(p)) return 'history';
+    if (/\/maker-bids\/companies\/?$/.test(p)) return 'companies';
     if (/\/maker-bids\/company\/?$/.test(p)) return 'company';
     if (/\/maker-bids\/\d+\/edit\/?$/.test(p)) return 'edit';
     if (/\/maker-bids\/\d+\/?$/.test(p)) return 'show';
@@ -250,9 +230,8 @@
     var s = document.createElement('style');
     s.id = 'cmb-notice-css';
     s.textContent =
-      '.cmb-notice{border-radius:0.75rem;border:1px solid rgb(229 231 235);background:rgb(249 250 251);padding:0.75rem 1rem;font-size:0.875rem;line-height:1.5;color:rgb(55 65 81);}' +
-      'html.dark .cmb-notice,.dark .cmb-notice{border-color:rgb(55 65 81);background:rgb(31 41 55 / 0.7);color:rgb(229 231 235);}' +
-      '.cmb-notice a{text-decoration:underline;}';
+      '.cmb-notice{border-radius:0.75rem;border:1px solid rgb(229 231 235);background:rgb(249 250 251);padding:0.75rem 1rem;font-size:0.875rem;}' +
+      'html.dark .cmb-notice,.dark .cmb-notice{border-color:rgb(55 65 81);background:rgb(31 41 55 / 0.7);}';
     document.head.appendChild(s);
   }
 
@@ -260,12 +239,9 @@
     var page = noticePage();
     var nodes = document.querySelectorAll('[data-cmb-notice]');
     if (!nodes.length) return;
-    var n = notices && page ? notices[page] : null;
-    var enabled = n && (n.enabled === true || n.enabled === 1 || n.enabled === '1');
-    var body = n && n.body ? String(n.body) : '';
     nodes.forEach(function (el) {
       var key = el.getAttribute('data-cmb-notice') || page;
-      var item = notices && key ? notices[key] : n;
+      var item = notices && key ? notices[key] : null;
       var on = item && (item.enabled === true || item.enabled === 1 || item.enabled === '1');
       var html = item && item.body ? String(item.body) : '';
       if (!on || !html) {
@@ -312,36 +288,26 @@
   }
 
   function bindNavSync() {
-    if (document.documentElement.getAttribute('data-cmb-nav-sync')) {
-      return;
-    }
+    if (document.documentElement.getAttribute('data-cmb-nav-sync')) return;
     document.documentElement.setAttribute('data-cmb-nav-sync', '1');
     patchHistory();
     window.addEventListener('popstate', function () {
       setTimeout(syncActive, 0);
       setTimeout(syncActive, 80);
     });
-    document.addEventListener(
-      'click',
-      function () {
-        setTimeout(syncActive, 0);
-        setTimeout(syncActive, 200);
-        setTimeout(syncActive, 600);
-      },
-      true
-    );
+    document.addEventListener('click', function () {
+      setTimeout(syncActive, 0);
+      setTimeout(syncActive, 200);
+      setTimeout(syncActive, 600);
+    }, true);
   }
 
   function load() {
     bindNavSync();
     try {
       fetch('/api/modules/custom-maker_bids/settings', { credentials: 'same-origin' })
-        .then(function (r) {
-          return r.json();
-        })
-        .then(function (j) {
-          apply((j && j.data) || j || {});
-        })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { apply((j && j.data) || j || {}); })
         .catch(function () {
           apply({ menu: { nav_js_enabled: true, nav_insert: 'append_row', nav_label: '의뢰/입찰' } });
         });
