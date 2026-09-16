@@ -4,11 +4,19 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.7.2] - 2026-09-16
+
+### Changed
+
+- **입찰 허용 권한** 옵션을 7개로 교체: 모두 / 관리자 / 지정업체 / 모든 등록된 업체 / 등록된 개인회원 / 모든 등록된 업체 & 등록된 개인회원 / 일반회원. 예전 짧은 목록(모두/관리자/지정업체/업체/개인)은 Select에서 제거했습니다. 저장값은 `all` · `admin` · `designated` · `approved_company` · `approved_individual` · `approved_bidders` · `member`. 예전 `members`/`company`/`individual` 은 읽어올 때 매핑합니다.
+- **모두**: 이 제품은 게스트 입찰이 없어 로그인 회원 전체입니다. **일반회원**: 업체·개인 입찰자 등록(승인)이 없는 로그인 회원입니다.
+- 버전 **0.7.2**. nav/form.js·form.css 캐시 `?v=0.7.2`.
+
 ## [0.7.1] - 2026-09-16
 
 ### Added
 
-- 관리자 설정 **입찰 허용 권한**: 모두(로그인 회원) / 관리자 / 지정업체 / 업체 / 개인. `general.bid_allow`. 기본값은 모두(비회원 입찰 불가). 의뢰 공개 설정(전체/업체만/개인만)과 AND로 적용됩니다. 관리자 모드일 때만 관리자가 의뢰 공개 대상을 건너뜁니다. 관리자 입찰 API(`PATCH /admin/bids/{id}`)는 이 제한을 타지 않습니다.
+- 관리자 설정 **입찰 허용 권한** (0.7.2에서 7개로 정리). `general.bid_allow`. 의뢰 공개 설정과 AND. 관리자 모드일 때만 공개 대상을 건너뜁니다. 관리자 입찰 API는 이 제한을 타지 않습니다.
 - 업체 `is_designated`(지정업체) additive 컬럼. 관리자 회사 목록에서 토글. 입찰자 등록 화면은 읽기 전용(관리자만 지정). **지정업체** 모드에서는 승인+지정 플래그인 업체만 입찰할 수 있습니다. 비허용 시 한국어 403.
 
 ### Changed

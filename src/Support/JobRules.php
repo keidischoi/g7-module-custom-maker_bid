@@ -232,7 +232,7 @@ class JobRules
         bool $isMember,
         bool $hasApprovedCompany,
         mixed $companyKind = null,
-        mixed $allowMode = BidRules::ALLOW_MEMBERS,
+        mixed $allowMode = BidRules::ALLOW_ALL,
         bool $isAdmin = false,
         bool $isDesignated = false,
     ): bool {

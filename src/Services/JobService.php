@@ -355,7 +355,7 @@ class JobService
 
     public function bidAllowMode(): string
     {
-        return BidRules::normalizeAllow($this->setting('general.bid_allow', BidRules::ALLOW_MEMBERS));
+        return BidRules::normalizeAllow($this->setting('general.bid_allow', BidRules::ALLOW_ALL));
     }
 
     /**

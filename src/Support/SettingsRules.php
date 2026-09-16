@@ -55,7 +55,7 @@ class SettingsRules
             'general' => [
                 'default_job_status' => 'quote_request',
                 'guests_see_list' => true,
-                'bid_allow' => BidRules::ALLOW_MEMBERS,
+                'bid_allow' => BidRules::ALLOW_ALL,
             ],
         ];
     }
@@ -201,7 +201,7 @@ class SettingsRules
             'general' => [
                 'default_job_status' => $status,
                 'guests_see_list' => self::boolish($general['guests_see_list'] ?? true),
-                'bid_allow' => BidRules::normalizeAllow($general['bid_allow'] ?? BidRules::ALLOW_MEMBERS),
+                'bid_allow' => BidRules::normalizeAllow($general['bid_allow'] ?? BidRules::ALLOW_ALL),
             ],
         ];
     }

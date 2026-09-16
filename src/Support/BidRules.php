@@ -6,69 +6,104 @@ class BidRules
 {
     public const STATUSES = ['pending', 'accepted', 'rejected'];
 
-    /** Logged-in members (모두). Guests cannot bid. */
-    public const ALLOW_MEMBERS = 'members';
+    /** 모두 — logged-in users. Guests cannot bid in this product. */
+    public const ALLOW_ALL = 'all';
 
     public const ALLOW_ADMIN = 'admin';
 
     public const ALLOW_DESIGNATED = 'designated';
 
-    public const ALLOW_COMPANY = 'company';
+    public const ALLOW_APPROVED_COMPANY = 'approved_company';
 
-    public const ALLOW_INDIVIDUAL = 'individual';
+    public const ALLOW_APPROVED_INDIVIDUAL = 'approved_individual';
+
+    public const ALLOW_APPROVED_BIDDERS = 'approved_bidders';
+
+    public const ALLOW_MEMBER = 'member';
 
     public const ALLOW_MODES = [
-        self::ALLOW_MEMBERS,
+        self::ALLOW_ALL,
         self::ALLOW_ADMIN,
         self::ALLOW_DESIGNATED,
-        self::ALLOW_COMPANY,
-        self::ALLOW_INDIVIDUAL,
+        self::ALLOW_APPROVED_COMPANY,
+        self::ALLOW_APPROVED_INDIVIDUAL,
+        self::ALLOW_APPROVED_BIDDERS,
+        self::ALLOW_MEMBER,
     ];
 
     public const ALLOW_LABELS = [
-        self::ALLOW_MEMBERS => '모두',
+        self::ALLOW_ALL => '모두',
         self::ALLOW_ADMIN => '관리자',
         self::ALLOW_DESIGNATED => '지정업체',
-        self::ALLOW_COMPANY => '업체',
-        self::ALLOW_INDIVIDUAL => '개인',
+        self::ALLOW_APPROVED_COMPANY => '모든 등록된 업체',
+        self::ALLOW_APPROVED_INDIVIDUAL => '등록된 개인회원',
+        self::ALLOW_APPROVED_BIDDERS => '모든 등록된 업체 & 등록된 개인회원',
+        self::ALLOW_MEMBER => '일반회원',
     ];
 
     public static function normalizeAllow(mixed $raw): string
     {
         $value = strtolower(trim((string) $raw));
+        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+        $value = str_replace(['&amp;', '＋', '+'], '&', $value);
         if (in_array($value, ['admin', 'admins', '관리자'], true)) {
             return self::ALLOW_ADMIN;
         }
         if (in_array($value, ['designated', 'designated_company', '지정업체'], true)) {
             return self::ALLOW_DESIGNATED;
         }
-        if (in_array($value, ['company', '업체'], true)) {
-            return self::ALLOW_COMPANY;
+        if (in_array($value, [
+            'approved_bidders',
+            'registered_bidders',
+            'company_and_individual',
+            '모든 등록된 업체 & 등록된 개인회원',
+            '모든 등록된 업체&등록된 개인회원',
+        ], true)) {
+            return self::ALLOW_APPROVED_BIDDERS;
         }
-        if (in_array($value, ['individual', '개인', 'person'], true)) {
-            return self::ALLOW_INDIVIDUAL;
+        if (in_array($value, [
+            'approved_company',
+            'registered_company',
+            'company',
+            '모든 등록된 업체',
+            '업체',
+        ], true)) {
+            return self::ALLOW_APPROVED_COMPANY;
+        }
+        if (in_array($value, [
+            'approved_individual',
+            'registered_individual',
+            'individual',
+            'person',
+            '등록된 개인회원',
+            '개인',
+        ], true)) {
+            return self::ALLOW_APPROVED_INDIVIDUAL;
+        }
+        if (in_array($value, ['member', 'regular', 'regular_member', '일반회원'], true)) {
+            return self::ALLOW_MEMBER;
         }
 
-        return self::ALLOW_MEMBERS;
+        return self::ALLOW_ALL;
     }
 
     public static function allowLabel(mixed $mode): string
     {
         $mode = self::normalizeAllow($mode);
 
-        return self::ALLOW_LABELS[$mode] ?? self::ALLOW_LABELS[self::ALLOW_MEMBERS];
+        return self::ALLOW_LABELS[$mode] ?? self::ALLOW_LABELS[self::ALLOW_ALL];
     }
 
     /**
-     * Global bid-allow gate. Guests never bid.
+     * Global bid-allow gate. Guests never bid (product has no guest bidding).
      *
-     * Default 모두 = logged-in members (or an approved company row).
-     * Extra args are ignored when $mode is members, so existing 2-arg calls stay valid.
+     * 모두 = any logged-in user. 일반회원 = logged-in without an approved
+     * company/individual bidder registration.
      */
     public static function canBid(
         bool $isMember,
         bool $hasApprovedCompany,
-        mixed $mode = self::ALLOW_MEMBERS,
+        mixed $mode = self::ALLOW_ALL,
         bool $isAdmin = false,
         mixed $companyKind = null,
         bool $isDesignated = false,
@@ -76,14 +111,16 @@ class BidRules
         if (! $isMember && ! $hasApprovedCompany) {
             return false;
         }
+        $approvedCompany = $hasApprovedCompany && CompanyRules::normalizeKind($companyKind) === 'company';
+        $approvedIndividual = $hasApprovedCompany && CompanyRules::normalizeKind($companyKind) === 'individual';
 
         return match (self::normalizeAllow($mode)) {
             self::ALLOW_ADMIN => $isAdmin,
             self::ALLOW_DESIGNATED => $hasApprovedCompany && $isDesignated,
-            self::ALLOW_COMPANY => $hasApprovedCompany
-                && CompanyRules::normalizeKind($companyKind) === 'company',
-            self::ALLOW_INDIVIDUAL => $isMember
-                && ! ($hasApprovedCompany && CompanyRules::normalizeKind($companyKind) === 'company'),
+            self::ALLOW_APPROVED_COMPANY => $approvedCompany,
+            self::ALLOW_APPROVED_INDIVIDUAL => $approvedIndividual,
+            self::ALLOW_APPROVED_BIDDERS => $approvedCompany || $approvedIndividual,
+            self::ALLOW_MEMBER => $isMember && ! $hasApprovedCompany,
             default => $isMember || $hasApprovedCompany,
         };
     }
@@ -93,8 +130,10 @@ class BidRules
         return match (self::normalizeAllow($mode)) {
             self::ALLOW_ADMIN => '관리자만 입찰할 수 있습니다.',
             self::ALLOW_DESIGNATED => '지정업체로 지정·승인된 업체만 입찰할 수 있습니다.',
-            self::ALLOW_COMPANY => '승인된 업체만 입찰할 수 있습니다.',
-            self::ALLOW_INDIVIDUAL => '개인 입찰자만 입찰할 수 있습니다.',
+            self::ALLOW_APPROVED_COMPANY => '등록된 업체만 입찰할 수 있습니다.',
+            self::ALLOW_APPROVED_INDIVIDUAL => '등록된 개인회원만 입찰할 수 있습니다.',
+            self::ALLOW_APPROVED_BIDDERS => '등록된 업체 또는 등록된 개인회원만 입찰할 수 있습니다.',
+            self::ALLOW_MEMBER => '일반회원만 입찰할 수 있습니다.',
             default => '로그인 회원만 입찰할 수 있습니다.',
         };
     }

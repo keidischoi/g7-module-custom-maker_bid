@@ -31,7 +31,7 @@
     "general": {
       "default_job_status": "quote_request",
       "guests_see_list": true,
-      "bid_allow": "members"
+      "bid_allow": "all"
     }
   },
   "frontend_schema": {

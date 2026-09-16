@@ -13,7 +13,7 @@ expectTrue('default nav insert append_row', $defaults['menu']['nav_insert'] === 
 expectTrue('default nav js on', $defaults['menu']['nav_js_enabled'] === true);
 expectTrue('default guests see list', $defaults['general']['guests_see_list'] === true);
 expectTrue('default job status quote_request', $defaults['general']['default_job_status'] === 'quote_request');
-expectTrue('default bid allow members', $defaults['general']['bid_allow'] === 'members');
+expectTrue('default bid allow all', $defaults['general']['bid_allow'] === 'all');
 expectTrue('list notice off by default', $defaults['notices']['list_enabled'] === false);
 
 $pages = SettingsRules::pages();
@@ -37,7 +37,10 @@ expectTrue('fromInput strips script', ! str_contains($saved['notices']['list_bod
 expectTrue('fromInput default status hold', $saved['general']['default_job_status'] === 'hold');
 expectTrue('fromInput guests false string is false', $saved['general']['guests_see_list'] === false);
 expectTrue('fromInput Korean designated mode', $saved['general']['bid_allow'] === 'designated');
-expectTrue('bad bid_allow falls back to members', SettingsRules::fromInput(['bid_allow' => 'nope'])['general']['bid_allow'] === 'members');
+expectTrue('bad bid_allow falls back to all', SettingsRules::fromInput(['bid_allow' => 'nope'])['general']['bid_allow'] === 'all');
+expectTrue('legacy members maps to all', SettingsRules::fromInput(['bid_allow' => 'members'])['general']['bid_allow'] === 'all');
+expectTrue('union Korean maps', SettingsRules::fromInput(['bid_allow' => '모든 등록된 업체 & 등록된 개인회원'])['general']['bid_allow'] === 'approved_bidders');
+expectTrue('일반회원 maps', SettingsRules::fromInput(['bid_allow' => '일반회원'])['general']['bid_allow'] === 'member');
 expectTrue('bad insert falls back', SettingsRules::fromInput(['nav_insert' => 'nope'])['menu']['nav_insert'] === 'append_row');
 expectTrue('open status maps to quote_request', SettingsRules::fromInput(['default_job_status' => 'open'])['general']['default_job_status'] === 'quote_request');
 expectTrue('awarded not allowed as default', SettingsRules::fromInput(['default_job_status' => 'awarded'])['general']['default_job_status'] === 'quote_request');

@@ -125,8 +125,11 @@ expectTrue('admin mode skips job audience', JobRules::canBidAudience('company', 
 expectFalse('member blocked by admin mode even on all jobs', JobRules::canBidAudience('all', true, false, null, BidRules::ALLOW_ADMIN, false, false));
 expectTrue('designated company can bid all', JobRules::canBidAudience('all', true, true, 'company', BidRules::ALLOW_DESIGNATED, false, true));
 expectFalse('designated company cannot bid individual-only', JobRules::canBidAudience('individual', true, true, 'company', BidRules::ALLOW_DESIGNATED, false, true));
-expectTrue('company mode and company audience compose', JobRules::canBidAudience('company', true, true, 'company', BidRules::ALLOW_COMPANY, false, false));
-expectFalse('individual mode cannot bid company-only job', JobRules::canBidAudience('company', true, false, null, BidRules::ALLOW_INDIVIDUAL, false, false));
+expectTrue('company mode and company audience compose', JobRules::canBidAudience('company', true, true, 'company', BidRules::ALLOW_APPROVED_COMPANY, false, false));
+expectFalse('individual mode cannot bid company-only job', JobRules::canBidAudience('company', true, true, 'individual', BidRules::ALLOW_APPROVED_INDIVIDUAL, false, false));
+expectTrue('union mode can bid all jobs if company', JobRules::canBidAudience('all', true, true, 'company', BidRules::ALLOW_APPROVED_BIDDERS, false, false));
+expectFalse('일반회원 cannot bid when registered company', JobRules::canBidAudience('all', true, true, 'company', BidRules::ALLOW_MEMBER, false, false));
+expectTrue('일반회원 can bid all when not registered', JobRules::canBidAudience('all', true, false, null, BidRules::ALLOW_MEMBER, false, false));
 expectTrue('undefined type query ignored', JobRules::listTypeFilter('undefined') === null);
 expectTrue('empty type query ignored', JobRules::listTypeFilter('') === null);
 expect('print type query kept', JobRules::listTypeFilter('print_3d'), 'print_3d');
