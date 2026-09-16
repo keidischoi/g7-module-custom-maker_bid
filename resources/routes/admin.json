@@ -2,52 +2,53 @@
   "version": "1.0.0",
   "routes": [
     {
-      "path": "*/admin/maker-bids",
+      "path": "*/admin/maker-bid",
       "layout": "jobs_index",
       "auth_required": true,
       "meta": { "title": "의뢰 목록" }
     },
     {
-      "path": "*/admin/maker-bids/types",
+      "path": "*/admin/maker-bid/types",
       "layout": "types_index",
       "auth_required": true,
       "meta": { "title": "유형 관리" }
     },
     {
-      "path": "*/admin/maker-bids/jobs/:id",
+      "path": "*/admin/maker-bid/jobs/:id",
       "layout": "jobs_show",
       "auth_required": true,
       "meta": { "title": "의뢰 상세" }
     },
     {
-      "path": "*/admin/maker-bids/bids",
+      "path": "*/admin/maker-bid/bids",
       "layout": "bids_index",
       "auth_required": true,
       "meta": { "title": "입찰 관리" }
     },
     {
-      "path": "*/admin/maker-bids/bids/:id",
+      "path": "*/admin/maker-bid/bids/:id",
       "layout": "bids_show",
       "auth_required": true,
       "meta": { "title": "입찰 수정" }
     },
     {
-      "path": "*/admin/maker-bids/settings",
+      "path": "*/admin/maker-bid/settings",
       "layout": "settings_index",
       "auth_required": true,
       "meta": { "title": "설정" }
     },
     {
-      "path": "*/admin/maker-bids/companies",
+      "path": "*/admin/maker-bid/companies",
       "layout": "companies_index",
       "auth_required": true,
       "meta": { "title": "회사 목록" }
     },
     {
-      "path": "*/admin/maker-bids/activity",
+      "path": "*/admin/maker-bid/activity",
       "layout": "activity_index",
       "auth_required": true,
       "meta": { "title": "회원 활동" }
     }
   ]
 }
+
