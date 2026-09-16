@@ -18,6 +18,24 @@
     dispatch('setState', params);
   }
 
+  function cookie(name) {
+    var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  function xsrf() {
+    return cookie('XSRF-TOKEN') || cookie('xsrf-token') || cookie('g7_xsrf') || '';
+  }
+
+  function g7Get(p) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        return window.G7Core.state.get(p);
+      }
+    } catch (e) {}
+    return null;
+  }
+
   function unwrap(j) {
     var d = j;
     var i;
@@ -28,30 +46,20 @@
     return d && typeof d === 'object' ? d : {};
   }
 
+  function usable(d) {
+    return !!(d && (d.id || d.title || d.name || d.status || d.phone || d.email));
+  }
+
   function jobIdFromPath() {
     var m = path().match(/\/maker-bids\/(?:jobs\/)?(\d+)(?:\/edit)?$/);
     return m ? m[1] : '';
   }
 
-  function isUserEdit() {
-    return /\/maker-bids\/\d+\/edit$/.test(path());
-  }
-
-  function isUserShow() {
-    return /\/maker-bids\/\d+$/.test(path()) && path().indexOf('/admin/') < 0;
-  }
-
-  function isUserCompany() {
-    return /\/maker-bids\/company$/.test(path());
-  }
-
-  function isAdminJob() {
-    return /\/admin\/maker-bids\/jobs\/\d+$/.test(path());
-  }
-
-  function isAdminCompany() {
-    return /\/admin\/maker-bids\/companies$/.test(path());
-  }
+  function isUserEdit() { return /\/maker-bids\/\d+\/edit$/.test(path()); }
+  function isUserShow() { return /\/maker-bids\/\d+$/.test(path()) && path().indexOf('/admin/') < 0; }
+  function isUserCompany() { return /\/maker-bids\/company$/.test(path()); }
+  function isAdminJob() { return /\/admin\/maker-bids\/jobs\/\d+$/.test(path()); }
+  function isAdminCompany() { return /\/admin\/maker-bids\/companies$/.test(path()); }
 
   function fillNamed(name, value) {
     document.querySelectorAll('[name="' + name + '"]').forEach(function (el) {
@@ -103,14 +111,8 @@
     if (d.contact_hours) {
       var parts = String(d.contact_hours).split(/[-~]/);
       var map = {};
-      if (parts[0]) {
-        map['form.contact_hours_from'] = parts[0].trim();
-        fillNamed('contact_hours_from', parts[0].trim());
-      }
-      if (parts[1]) {
-        map['form.contact_hours_to'] = parts[1].trim();
-        fillNamed('contact_hours_to', parts[1].trim());
-      }
+      if (parts[0]) { map['form.contact_hours_from'] = parts[0].trim(); fillNamed('contact_hours_from', parts[0].trim()); }
+      if (parts[1]) { map['form.contact_hours_to'] = parts[1].trim(); fillNamed('contact_hours_to', parts[1].trim()); }
       setLocal(map);
     }
   }
@@ -129,33 +131,70 @@
     ], ['is_recommended','is_designated']);
   }
 
+  function requestHeaders() {
+    var h = {
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    var token = xsrf();
+    if (token) {
+      h['X-XSRF-TOKEN'] = token;
+      h['X-CSRF-TOKEN'] = token;
+    }
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta && meta.content) h['X-CSRF-TOKEN'] = meta.content;
+    return h;
+  }
+
   function fetchJson(url, cb) {
-    fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (j) {
-        var d = unwrap(j);
-        if (!d || (typeof d === 'object' && !d.id && !d.title && !d.name && !d.status)) return;
-        cb(d);
-        setTimeout(function () { cb(d); }, 250);
-        setTimeout(function () { cb(d); }, 900);
-      })
+    var done = function (j) {
+      var d = unwrap(j);
+      if (!usable(d)) return false;
+      cb(d);
+      setTimeout(function () { cb(d); }, 250);
+      setTimeout(function () { cb(d); }, 900);
+      return true;
+    };
+    if (window.axios && typeof window.axios.get === 'function') {
+      window.axios.get(url).then(function (res) { done(res && res.data); }).catch(function () {});
+      return;
+    }
+    fetch(url, { credentials: 'same-origin', headers: requestHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { done(j); })
       .catch(function () {});
+  }
+
+  function fromState(ids) {
+    var i;
+    var d;
+    for (i = 0; i < ids.length; i++) {
+      d = unwrap(g7Get(ids[i]));
+      if (usable(d)) return d;
+    }
+    return null;
   }
 
   function prefillUserEdit() {
     if (!isUserEdit()) return;
+    var d = fromState(['job.data', 'job']);
+    if (usable(d)) applyJob(d);
     var id = jobIdFromPath();
     if (id) fetchJson('/api/modules/custom-maker_bids/jobs/' + id, applyJob);
   }
 
   function prefillAdminJob() {
     if (!isAdminJob()) return;
+    var d = fromState(['job.data', 'job']);
+    if (usable(d)) applyJob(d);
     var id = jobIdFromPath();
     if (id) fetchJson('/api/modules/custom-maker_bids/admin/jobs/' + id, applyJob);
   }
 
   function prefillUserCompany() {
     if (!isUserCompany()) return;
+    var d = fromState(['me.data', 'me']);
+    if (usable(d)) applyUserCompany(d);
     fetchJson('/api/modules/custom-maker_bids/companies/me', applyUserCompany);
   }
 
@@ -193,9 +232,10 @@
 
   function loadViewer() {
     if (!isUserShow()) return;
+    var d = fromState(['viewer.data', 'viewer']);
+    if (usable(d)) ensureBidCta(d);
     var id = jobIdFromPath();
-    if (!id) return;
-    fetchJson('/api/modules/custom-maker_bids/jobs/' + id + '/viewer', ensureBidCta);
+    if (id) fetchJson('/api/modules/custom-maker_bids/jobs/' + id + '/viewer', ensureBidCta);
   }
 
   function run() {
