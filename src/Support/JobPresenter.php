@@ -7,10 +7,6 @@ use Modules\Custom\MakerBids\Models\MakerJobFile;
 
 class JobPresenter
 {
-    /**
-     * @param  iterable<int, MakerJobFile>|list<array<string, mixed>>  $files
-     * @return array<string, mixed>
-     */
     public static function present(
         MakerJob $job,
         bool $canViewPersonal,
@@ -20,6 +16,7 @@ class JobPresenter
     ): array {
         $type = $job->relationLoaded('jobType') ? $job->jobType : null;
         $typeRow = $type ? $type->toOptionArray() : null;
+        $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
 
         $images = [];
         $archives = [];
@@ -51,6 +48,9 @@ class JobPresenter
             'budget_label' => JobRules::budgetLabel($job->budget_min, $job->budget_max, $job->budget),
             'status' => (string) $job->status,
             'status_label' => JobRules::statusLabel((string) $job->status),
+            'bidding_status' => $bidding,
+            'bidding_status_label' => $bidding === BiddingRules::CLOSED ? '입찰종료' : '입찰중',
+            'bidding_closed_at' => optional($job->bidding_closed_at)?->format('Y-m-d H:i:s'),
             'audience' => JobRules::normalizeAudience($job->audience ?? 'all'),
             'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
             'awarded_bid_id' => $job->awarded_bid_id !== null ? (int) $job->awarded_bid_id : null,
@@ -75,12 +75,7 @@ class JobPresenter
                 'size_d' => $job->size_d,
                 'size_h' => $job->size_h,
             ])),
-            'size_label' => JobRules::sizesLabel(
-                $job->sizes,
-                $job->size_w,
-                $job->size_d,
-                $job->size_h,
-            ),
+            'size_label' => JobRules::sizesLabel($job->sizes, $job->size_w, $job->size_d, $job->size_h),
             'provided_extensions' => is_array($job->provided_extensions) ? $job->provided_extensions : [],
             'ext_stl' => in_array('STL', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
             'ext_3mf' => in_array('3MF', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
@@ -126,13 +121,6 @@ class JobPresenter
         return $payload;
     }
 
-    /**
-     * Dual-shaped body so layout onSuccess can read `response.data.id` whether
-     * G7Core.api leaves `{data: job}` intact or unwraps one layer.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
     public static function envelope(array $payload): array
     {
         return array_merge($payload, [
