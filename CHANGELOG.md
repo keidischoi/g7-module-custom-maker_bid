@@ -4,6 +4,28 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.5.0] - 2026-09-16
+
+### Added
+
+- 의뢰 작성 `/maker-bid/new` 을 가운데 정렬 **주문서 카드**로 재구성. 제목·유형·예산 범위·마감·급행비·선점비·상태·크기·제공 확장자·수정 횟수/비용·설명·이미지·압축 파일·개인정보 블록.
+- 유형 카탈로그 테이블 `maker_job_types` 및 시드 6종 (3D 모델링, 3D 출력 대행, 풀 패키지, 캐릭터·피규어, 디자인 목업, 워킹 프로토타입). 관리자 CRUD·정렬·활성/숨김 (`/admin/maker-bid/types`).
+- 개인정보(주문자명/연락처/가능시간/이메일/주소)는 회원 프로필 기본값, 폼에서 수정. 주소는 다음 우편번호. 디자인 전용 유형은 주소 생략.
+- 공개 목록/상세에서 개인정보는 **제작 의뢰 확정(낙찰)** 전까지 마스킹. 작성자·관리자·낙찰 상대만 열람. 압축 첨부도 동일.
+- G7 FileUploader: 이미지는 jpg/png 등, 파일은 zip/tar/gz 등만. `apiEndpoints.upload` + `uploadTriggerEvent`. File을 setState에 넣지 않음.
+- 회원 `PATCH /jobs/{id}`, 작성 기본값 `GET /jobs/form-defaults`, 업로드 `POST /uploads`, 유형 `GET /job-types`.
+- 상태 보류/의뢰/견적요청. 보류는 공개 목록·상세에서 숨김. 수정 화면 `/maker-bid/:id/edit`.
+
+### Changed
+
+- 하드코드 `print_3d` / `design` / `manufacture` 를 DB 유형으로 교체. 기존 `design`→`design_mockup`, `manufacture`→`full_package`, `open`→`quote_request`.
+- 버전 **0.5.0**. nav/form.js 캐시 `?v=0.5.0`.
+
+### Notes
+
+- **마이그레이션 필요**: `php artisan module:update custom-maker_bid` (또는 migrate) 후 **캐시 삭제와 하드 리프레시**.
+- 새 테이블: `maker_job_types`, `maker_job_files`. `maker_jobs`에 예산 범위·급행·크기·개인정보 컬럼 추가.
+
 ## [0.4.0] - 2026-09-15
 
 ### Added

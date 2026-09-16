@@ -8,6 +8,12 @@
       "meta": { "title": "의뢰 목록" }
     },
     {
+      "path": "*/admin/maker-bid/types",
+      "layout": "types_index",
+      "auth_required": true,
+      "meta": { "title": "유형 관리" }
+    },
+    {
       "path": "*/admin/maker-bid/jobs/:id",
       "layout": "jobs_show",
       "auth_required": true,

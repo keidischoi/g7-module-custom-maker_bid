@@ -5,19 +5,87 @@
   "meta": { "title": "의뢰서 작성" },
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
   },
   "state": {
     "form": {
       "title": "",
-      "type": "print_3d",
-      "budget": "",
+      "type": "",
+      "requires_address": "1",
+      "budget_min": "",
+      "budget_max": "",
+      "closes_at": "",
+      "rush_fee_enabled": false,
+      "rush_deadline": "",
+      "schedule_premium_enabled": false,
+      "status": "quote_request",
+      "size_w": "",
+      "size_d": "",
+      "size_h": "",
+      "ext_stl": false,
+      "ext_3mf": false,
+      "ext_obj": false,
+      "ext_step": false,
+      "ext_stp": false,
+      "ext_gcode": false,
+      "ext_fbx": false,
+      "revision_enabled": false,
+      "revision_count": "",
+      "revision_cost": "",
       "description": "",
-      "closes_at": ""
+      "contact_name": "",
+      "contact_phone": "",
+      "contact_hours_from": "09:00",
+      "contact_hours_to": "18:00",
+      "contact_email": "",
+      "zipcode": "",
+      "address": "",
+      "address_detail": "",
+      "upload_token": "",
+      "image_count": 0,
+      "archive_count": 0
     }
   },
+  "data_sources": [
+    {
+      "id": "types",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/job-types",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "fallback": { "data": [] }
+    },
+    {
+      "id": "defaults",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/jobs/form-defaults",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true,
+      "fallback": { "data": { "types": [], "upload_token": "", "contact_name": "", "contact_phone": "", "contact_email": "", "zipcode": "", "address": "", "address_detail": "", "contact_hours_from": "09:00", "contact_hours_to": "18:00" } },
+      "onSuccess": [
+        {
+          "handler": "setState",
+          "params": {
+            "target": "local",
+            "form.upload_token": "{{response.data.upload_token || _local.form.upload_token}}",
+            "form.contact_name": "{{_local.form.contact_name || response.data.contact_name || ''}}",
+            "form.contact_phone": "{{_local.form.contact_phone || response.data.contact_phone || ''}}",
+            "form.contact_email": "{{_local.form.contact_email || response.data.contact_email || ''}}",
+            "form.zipcode": "{{_local.form.zipcode || response.data.zipcode || ''}}",
+            "form.address": "{{_local.form.address || response.data.address || ''}}",
+            "form.address_detail": "{{_local.form.address_detail || response.data.address_detail || ''}}",
+            "form.contact_hours_from": "{{_local.form.contact_hours_from || response.data.contact_hours_from || '09:00'}}",
+            "form.contact_hours_to": "{{_local.form.contact_hours_to || response.data.contact_hours_to || '18:00'}}"
+          }
+        }
+      ]
+    }
+  ],
   "slots": {
     "content": [
       {
@@ -48,43 +116,334 @@
               }
             ]
           },
-          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "3D 출력, 디자인, 상품 제작을 의뢰합니다. 제목과 유형은 필수입니다." },
           {
-            "id": "form",
+            "id": "card",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "max-w-xl space-y-3", "dataKey": "form", "trackChanges": true },
+            "props": {
+              "className": "max-w-2xl mx-auto rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-900 shadow-xl px-6 sm:px-10 py-10 space-y-8",
+              "dataKey": "form",
+              "trackChanges": true
+            },
             "children": [
-              { "id": "title_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "제목" },
-              { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "의뢰 제목 (예: PLA 피규어 15cm 출력)" } },
-              { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "유형 (print_3d / design / manufacture)" },
-              { "id": "type", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "print_3d" } },
-              { "id": "budget_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "예산(원, 선택)" },
-              { "id": "budget", "type": "basic", "name": "Input", "props": { "name": "budget", "placeholder": "35000" } },
-              { "id": "closes_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "마감 시각 (선택, 예: 2026-10-01 23:59:59)" },
-              { "id": "closes", "type": "basic", "name": "Input", "props": { "name": "closes_at", "placeholder": "2026-10-01 23:59:59" } },
-              { "id": "desc_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "설명" },
-              { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "placeholder": "수량, 재질, 납기, 첨부 파일 설명" } },
+              {
+                "id": "card_head",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "text-center space-y-2 pb-2 border-b border-gray-100 dark:border-white/10" },
+                "children": [
+                  { "id": "card_title", "type": "basic", "name": "H2", "props": { "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white" }, "text": "제작 주문서" },
+                  { "id": "card_sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "의뢰·견적 요청서를 작성합니다. 보류로 저장하면 공개 목록에 나오지 않습니다." }
+                ]
+              },
+              {
+                "id": "sec_basic",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "space-y-4" },
+                "children": [
+                  { "id": "sec_basic_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "01. 의뢰 정보" },
+                  { "id": "title_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제목" },
+                  { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "예: PLA 피규어 15cm 출력", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "유형" },
+                  { "id": "type", "type": "basic", "name": "Select", "props": { "name": "type", "placeholder": "유형을 선택하세요", "options": "{{defaults.data.types || types.data || []}}", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  { "id": "budget_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "예산 (원)" },
+                  {
+                    "id": "budget_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center gap-2" },
+                    "children": [
+                      { "id": "budget_min", "type": "basic", "name": "Input", "props": { "name": "budget_min", "type": "number", "min": "0", "placeholder": "10000", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "budget_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
+                      { "id": "budget_max", "type": "basic", "name": "Input", "props": { "name": "budget_max", "type": "number", "min": "0", "placeholder": "100000", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "budget_won", "type": "basic", "name": "Span", "props": { "className": "text-sm text-gray-500 dark:text-gray-400 shrink-0" }, "text": "원" }
+                    ]
+                  },
+                  { "id": "closes_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "마감 시각" },
+                  { "id": "closes", "type": "basic", "name": "Input", "props": { "name": "closes_at", "type": "datetime-local", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  {
+                    "id": "rush_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-white/10 px-4 py-3" },
+                    "children": [
+                      { "id": "rush_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "급행비 / 조기 마감 비용" },
+                      { "id": "rush_fee_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "rush_fee_enabled", "label": "적용 가능" } }
+                    ]
+                  },
+                  {
+                    "id": "rush_date_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{_local.form.rush_fee_enabled}}",
+                    "props": { "className": "space-y-2" },
+                    "children": [
+                      { "id": "rush_date_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "급행비 조건 날짜" },
+                      { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "type": "date", "disabled": "{{!_local.form.rush_fee_enabled}}", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } }
+                    ]
+                  },
+                  {
+                    "id": "premium_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-white/10 px-4 py-3" },
+                    "children": [
+                      { "id": "premium_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "스케줄 선점비 / 프리미엄" },
+                      { "id": "schedule_premium_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "schedule_premium_enabled", "label": "적용 가능" } }
+                    ]
+                  },
+                  { "id": "status_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "상태" },
+                  {
+                    "id": "status",
+                    "type": "basic",
+                    "name": "Select",
+                    "props": {
+                      "name": "status",
+                      "options": [
+                        { "value": "hold", "label": "보류" },
+                        { "value": "request", "label": "의뢰" },
+                        { "value": "quote_request", "label": "견적요청" }
+                      ],
+                      "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "sec_spec",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "space-y-4" },
+                "children": [
+                  { "id": "sec_spec_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "02. 제작 사양" },
+                  { "id": "size_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "최종 크기 (W × D × H, mm)" },
+                  {
+                    "id": "size_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center gap-2" },
+                    "children": [
+                      { "id": "size_w", "type": "basic", "name": "Input", "props": { "name": "size_w", "type": "number", "min": "0", "placeholder": "300", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "size_x1", "type": "basic", "name": "Span", "props": { "className": "text-gray-400" }, "text": "×" },
+                      { "id": "size_d", "type": "basic", "name": "Input", "props": { "name": "size_d", "type": "number", "min": "0", "placeholder": "200", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "size_x2", "type": "basic", "name": "Span", "props": { "className": "text-gray-400" }, "text": "×" },
+                      { "id": "size_h", "type": "basic", "name": "Input", "props": { "name": "size_h", "type": "number", "min": "0", "placeholder": "50", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } }
+                    ]
+                  },
+                  { "id": "ext_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제공 확장자" },
+                  {
+                    "id": "ext_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex flex-wrap gap-x-4 gap-y-2" },
+                    "children": [
+                      { "id": "ext_stl", "type": "basic", "name": "Checkbox", "props": { "name": "ext_stl", "label": "STL" } },
+                      { "id": "ext_3mf", "type": "basic", "name": "Checkbox", "props": { "name": "ext_3mf", "label": "3MF" } },
+                      { "id": "ext_obj", "type": "basic", "name": "Checkbox", "props": { "name": "ext_obj", "label": "OBJ" } },
+                      { "id": "ext_step", "type": "basic", "name": "Checkbox", "props": { "name": "ext_step", "label": "STEP" } },
+                      { "id": "ext_stp", "type": "basic", "name": "Checkbox", "props": { "name": "ext_stp", "label": "STP" } },
+                      { "id": "ext_gcode", "type": "basic", "name": "Checkbox", "props": { "name": "ext_gcode", "label": "GCODE" } },
+                      { "id": "ext_fbx", "type": "basic", "name": "Checkbox", "props": { "name": "ext_fbx", "label": "FBX" } }
+                    ]
+                  },
+                  {
+                    "id": "rev_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-white/10 px-4 py-3" },
+                    "children": [
+                      { "id": "rev_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "수정 횟수 및 비용" },
+                      { "id": "revision_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "revision_enabled", "label": "적용 유무" } }
+                    ]
+                  },
+                  {
+                    "id": "rev_fields",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{_local.form.revision_enabled}}",
+                    "props": { "className": "grid grid-cols-2 gap-3" },
+                    "children": [
+                      { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "type": "number", "min": "0", "placeholder": "수정 횟수", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "type": "number", "min": "0", "placeholder": "회당 비용(원)", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } }
+                    ]
+                  },
+                  { "id": "desc_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "설명" },
+                  { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "placeholder": "수량, 재질, 색상, 후가공, 참고 사항", "className": "w-full min-h-[120px] rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  { "id": "img_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이미지" },
+                  {
+                    "id": "cmb_images_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "images",
+                      "maxFiles": 10,
+                      "maxSize": 10,
+                      "accept": ".jpg,.jpeg,.png,.gif,.webp",
+                      "autoUpload": false,
+                      "className": "mt-1",
+                      "uploadTriggerEvent": "upload:maker_bid_images",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bid/uploads",
+                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "images",
+                        "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
+                        "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
+                      }
+                    },
+                    "actions": [
+                      {
+                        "event": "onFilesChange",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.image_count": "{{($args[0] && $args[0].length) || 0}}"
+                        }
+                      },
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": { "type": "error", "message": "{{$args[0]}}" }
+                      }
+                    ]
+                  },
+                  { "id": "file_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "파일 (압축 파일만)" },
+                  {
+                    "id": "cmb_archives_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "archives",
+                      "maxFiles": 5,
+                      "maxSize": 50,
+                      "accept": ".zip,.tar,.gz,.tgz,.7z,.rar,.bz2,.xz",
+                      "autoUpload": false,
+                      "className": "mt-1",
+                      "uploadTriggerEvent": "upload:maker_bid_archives",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bid/uploads",
+                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "archives",
+                        "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
+                        "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
+                      }
+                    },
+                    "actions": [
+                      {
+                        "event": "onFilesChange",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.archive_count": "{{($args[0] && $args[0].length) || 0}}"
+                        }
+                      },
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": { "type": "error", "message": "{{$args[0]}}" }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "sec_privacy",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "space-y-4" },
+                "children": [
+                  { "id": "sec_privacy_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "03. 개인정보" },
+                  { "id": "sec_privacy_note", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회원 프로필 값을 기본으로 채웁니다. 제작 의뢰가 확정되기 전까지 상대에게는 가려집니다." },
+                  { "id": "cname_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주문자명 또는 업체명" },
+                  { "id": "contact_name", "type": "basic", "name": "Input", "props": { "name": "contact_name", "placeholder": "이름 / 업체명", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  { "id": "cphone_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락처" },
+                  { "id": "contact_phone", "type": "basic", "name": "Input", "props": { "name": "contact_phone", "placeholder": "010-0000-0000", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  { "id": "chours_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락 가능시간" },
+                  {
+                    "id": "chours_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center gap-2" },
+                    "children": [
+                      { "id": "contact_hours_from", "type": "basic", "name": "Input", "props": { "name": "contact_hours_from", "type": "time", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "chours_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
+                      { "id": "contact_hours_to", "type": "basic", "name": "Input", "props": { "name": "contact_hours_to", "type": "time", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } }
+                    ]
+                  },
+                  { "id": "cemail_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이메일" },
+                  { "id": "contact_email", "type": "basic", "name": "Input", "props": { "name": "contact_email", "type": "email", "placeholder": "name@example.com", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                  {
+                    "id": "addr_block",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{_local.form.requires_address !== '0'}}",
+                    "props": { "className": "space-y-3" },
+                    "children": [
+                      { "id": "addr_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주소" },
+                      {
+                        "id": "zip_row",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": { "className": "flex items-center gap-2" },
+                        "children": [
+                          { "id": "zipcode", "type": "basic", "name": "Input", "props": { "name": "zipcode", "placeholder": "우편번호", "className": "flex-1 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                          {
+                            "id": "postcode_btn",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "주소 검색",
+                            "props": {
+                              "type": "button",
+                              "data-cmb-postcode": "1",
+                              "className": "shrink-0 px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+                            }
+                          }
+                        ]
+                      },
+                      { "id": "address", "type": "basic", "name": "Input", "props": { "name": "address", "placeholder": "기본 주소", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } },
+                      { "id": "address_detail", "type": "basic", "name": "Input", "props": { "name": "address_detail", "placeholder": "상세 주소", "className": "w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-zinc-950 px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100" } }
+                    ]
+                  }
+                ]
+              },
               {
                 "id": "submit",
                 "type": "basic",
                 "name": "Button",
-                "text": "의뢰서 등록",
-                "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "text": "주문서 등록",
+                "props": { "type": "button", "className": "w-full px-4 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium" },
                 "actions": [
                   {
                     "type": "click",
-                    "handler": "apiCall",
-                    "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/jobs",
-                    "params": { "method": "POST", "body": "{{_local.form}}" },
-                    "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "의뢰가 등록되었습니다." } },
-                      { "handler": "navigate", "params": { "path": "/maker-bid/{{response.data.id}}" } }
-                    ],
-                    "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
-                    ]
+                    "handler": "sequence",
+                    "params": {
+                      "actions": [
+                        { "handler": "emitEvent", "params": { "event": "upload:maker_bid_images" } },
+                        { "handler": "emitEvent", "params": { "event": "upload:maker_bid_archives" } },
+                        {
+                          "handler": "apiCall",
+                          "auth_required": true,
+                          "target": "/api/modules/custom-maker_bid/jobs",
+                          "params": {
+                            "method": "POST",
+                            "body": "{{_local.form}}"
+                          },
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "의뢰가 등록되었습니다." } },
+                            { "handler": "navigate", "params": { "path": "/maker-bid/{{response.data.id}}" } }
+                          ],
+                          "onError": [
+                            { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+                          ]
+                        }
+                      ]
+                    }
                   }
                 ]
               }

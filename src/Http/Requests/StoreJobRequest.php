@@ -3,12 +3,16 @@
 namespace Modules\Custom\MakerBid\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Custom\MakerBid\Http\Concerns\FlattensValidationErrors;
 use Modules\Custom\MakerBid\Support\BlankToNull;
+use Modules\Custom\MakerBid\Support\BooleanishFields;
 use Modules\Custom\MakerBid\Support\JobRules;
 
 class StoreJobRequest extends FormRequest
 {
     use BlankToNull;
+    use BooleanishFields;
+    use FlattensValidationErrors;
 
     public function authorize(): bool
     {
@@ -17,7 +21,15 @@ class StoreJobRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->nullBlankFields(['description', 'budget', 'closes_at']);
+        $this->nullBlankFields([
+            'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
+            'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
+            'zipcode', 'address', 'address_detail', 'upload_token',
+        ]);
+        $this->coerceBooleanFields([
+            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled',
+            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx',
+        ]);
     }
 
     /**
@@ -26,5 +38,13 @@ class StoreJobRequest extends FormRequest
     public function rules(): array
     {
         return JobRules::createRules();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return JobRules::messages();
     }
 }

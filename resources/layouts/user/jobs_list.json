@@ -11,6 +11,15 @@
   },
   "data_sources": [
     {
+      "id": "types",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/job-types",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "fallback": { "data": [] }
+    },
+    {
       "id": "jobs",
       "type": "api",
       "endpoint": "/api/modules/custom-maker_bid/jobs",
@@ -51,7 +60,7 @@
               }
             ]
           },
-          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "등록된 의뢰서입니다. 항목을 누르면 견적·내정을 확인합니다. 데모 데이터는 넣지 않습니다." },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "등록된 의뢰서입니다. 보류 상태 의뢰는 공개 목록에 나오지 않습니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -59,9 +68,14 @@
             "props": { "className": "flex items-center gap-2 flex-wrap text-sm" },
             "children": [
               { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-2 py-1 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300" }, "text": "전체" },
-              { "id": "f1", "type": "basic", "name": "A", "props": { "href": "/maker-bid?type=print_3d", "className": "px-2 py-1 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300" }, "text": "3D 출력" },
-              { "id": "f2", "type": "basic", "name": "A", "props": { "href": "/maker-bid?type=design", "className": "px-2 py-1 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300" }, "text": "디자인" },
-              { "id": "f3", "type": "basic", "name": "A", "props": { "href": "/maker-bid?type=manufacture", "className": "px-2 py-1 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300" }, "text": "상품 제작" }
+              {
+                "id": "ftype",
+                "type": "basic",
+                "name": "A",
+                "props": { "href": "/maker-bid?type={{$type.slug}}", "className": "px-2 py-1 rounded-lg border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300" },
+                "iteration": { "source": "{{types.data}}", "item_var": "$type" },
+                "text": "{{$type.name}}"
+              }
             ]
           },
           {
@@ -78,7 +92,7 @@
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
             "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-            "text": "{{$item.title}}  |  {{$item.type}}  |  {{$item.status}}  |  예산 {{$item.budget ?? '미정'}}  |  견적 {{$item.bids_count ?? 0}}"
+            "text": "{{$item.title}}  |  {{$item.type_name || $item.type}}  |  {{$item.status_label || $item.status}}  |  예산 {{$item.budget_label || '미정'}}  |  견적 {{$item.bids_count ?? 0}}"
           }
         ]
       }

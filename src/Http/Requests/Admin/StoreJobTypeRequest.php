@@ -6,9 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Modules\Custom\MakerBid\Http\Concerns\FlattensValidationErrors;
 use Modules\Custom\MakerBid\Support\BlankToNull;
 use Modules\Custom\MakerBid\Support\BooleanishFields;
-use Modules\Custom\MakerBid\Support\JobRules;
+use Modules\Custom\MakerBid\Support\TypeRules;
 
-class UpdateJobRequest extends FormRequest
+class StoreJobTypeRequest extends FormRequest
 {
     use BlankToNull;
     use BooleanishFields;
@@ -21,15 +21,8 @@ class UpdateJobRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->nullBlankFields([
-            'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
-            'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
-            'zipcode', 'address', 'address_detail',
-        ]);
-        $this->coerceBooleanFields([
-            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled',
-            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx',
-        ]);
+        $this->nullBlankFields(['description']);
+        $this->coerceBooleanFields(['requires_address', 'is_design_only', 'is_enabled']);
     }
 
     /**
@@ -37,7 +30,7 @@ class UpdateJobRequest extends FormRequest
      */
     public function rules(): array
     {
-        return JobRules::adminUpdateRules();
+        return TypeRules::storeRules();
     }
 
     /**
@@ -45,6 +38,6 @@ class UpdateJobRequest extends FormRequest
      */
     public function messages(): array
     {
-        return JobRules::messages();
+        return TypeRules::messages();
     }
 }

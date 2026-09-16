@@ -69,7 +69,7 @@
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
             "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-            "text": "{{$item.title}}  |  {{$item.status}}  |  {{$item.budget ?? '미정'}}  |  {{$item.updated_at}}"
+            "text": "{{$item.title}}  |  {{$item.status_label || $item.status}}  |  {{$item.budget_label || '미정'}}  |  {{$item.updated_at}}"
           }
         ]
       }

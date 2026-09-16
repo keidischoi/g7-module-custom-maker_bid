@@ -1,0 +1,293 @@
+{
+  "version": "1.0.0",
+  "layout_name": "types_index",
+  "extends": "_admin_base",
+  "meta": { "title": "유형 관리" },
+  "permissions": ["custom-maker_bid.jobs.read"],
+  "errorHandling": {
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+  },
+  "state": {
+    "create": {
+      "slug": "",
+      "name": "",
+      "description": "",
+      "requires_address": true,
+      "is_design_only": false,
+      "is_enabled": true,
+      "sort_order": ""
+    },
+    "edit": {
+      "id": "",
+      "slug": "",
+      "name": "",
+      "description": "",
+      "requires_address": true,
+      "is_design_only": false,
+      "is_enabled": true,
+      "sort_order": ""
+    }
+  },
+  "data_sources": [
+    {
+      "id": "types",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/admin/job-types",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true,
+      "fallback": { "data": [] }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "admin-page-content space-y-6" },
+        "children": [
+          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "유형 관리" },
+          {
+            "id": "nav",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "flex items-center gap-3 flex-wrap text-sm" },
+            "children": [
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n5", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+            ]
+          },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "의뢰 유형을 추가·수정·정렬·활성화합니다. 설치 시 기본 6종이 시드됩니다. 디자인 전용 유형은 주소가 필수가 아닙니다." },
+          {
+            "id": "create_box",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "max-w-xl space-y-2 p-4 rounded-xl border border-gray-200 dark:border-white/10", "dataKey": "create", "trackChanges": true },
+            "children": [
+              { "id": "ch", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "유형 추가" },
+              { "id": "cslug", "type": "basic", "name": "Input", "props": { "name": "slug", "placeholder": "슬러그 (예: laser_cut)" } },
+              { "id": "cname", "type": "basic", "name": "Input", "props": { "name": "name", "placeholder": "표시 이름" } },
+              { "id": "cdesc", "type": "basic", "name": "Input", "props": { "name": "description", "placeholder": "설명" } },
+              { "id": "csort", "type": "basic", "name": "Input", "props": { "name": "sort_order", "placeholder": "정렬 (비우면 맨 뒤)" } },
+              { "id": "caddr", "type": "basic", "name": "Checkbox", "props": { "name": "requires_address", "label": "주소 필수" } },
+              { "id": "cdesign", "type": "basic", "name": "Checkbox", "props": { "name": "is_design_only", "label": "디자인 전용 (주소 생략)" } },
+              { "id": "cen", "type": "basic", "name": "Checkbox", "props": { "name": "is_enabled", "label": "사용" } },
+              {
+                "id": "cgo",
+                "type": "basic",
+                "name": "Button",
+                "text": "유형 등록",
+                "props": { "type": "button", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/job-types",
+                    "params": { "method": "POST", "body": "{{_local.create}}" },
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "유형을 등록했습니다." } },
+                      { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "empty",
+            "type": "basic",
+            "name": "P",
+            "if": "{{!(types.data && types.data.length)}}",
+            "props": { "className": "text-secondary text-sm py-8" },
+            "text": "유형이 없습니다. 모듈을 업데이트하면 기본 유형이 시드됩니다."
+          },
+          {
+            "id": "trow",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
+            "iteration": { "source": "{{types.data}}", "item_var": "$item" },
+            "children": [
+              { "id": "tmeta", "type": "basic", "name": "P", "text": "{{$item.name}}  [{{$item.slug}}]  {{$item.is_enabled ? '사용' : '숨김'}}  {{$item.is_design_only ? '디자인' : '주소필수'}}  정렬 {{$item.sort_order}}" },
+              {
+                "id": "tacts",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "flex items-center gap-2 flex-wrap" },
+                "children": [
+                  {
+                    "id": "up",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "위로",
+                    "props": { "type": "button", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}/move",
+                        "params": { "method": "POST", "body": { "direction": "up" } },
+                        "onSuccess": [
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                        ],
+                        "onError": [
+                          { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "down",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "아래로",
+                    "props": { "type": "button", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}/move",
+                        "params": { "method": "POST", "body": { "direction": "down" } },
+                        "onSuccess": [
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                        ],
+                        "onError": [
+                          { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "toggle",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "{{$item.is_enabled ? '숨기기' : '사용'}}",
+                    "props": { "type": "button", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}",
+                        "params": { "method": "PATCH", "body": { "is_enabled": "{{!$item.is_enabled}}" } },
+                        "onSuccess": [
+                          { "handler": "toast", "params": { "type": "success", "message": "유형 상태를 바꿨습니다." } },
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                        ],
+                        "onError": [
+                          { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "load",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "수정칸에 넣기",
+                    "props": { "type": "button", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "edit.id": "{{$item.id}}",
+                          "edit.slug": "{{$item.slug}}",
+                          "edit.name": "{{$item.name}}",
+                          "edit.description": "{{$item.description || ''}}",
+                          "edit.requires_address": "{{$item.requires_address}}",
+                          "edit.is_design_only": "{{$item.is_design_only}}",
+                          "edit.is_enabled": "{{$item.is_enabled}}",
+                          "edit.sort_order": "{{$item.sort_order}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "del",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "삭제",
+                    "props": { "type": "button", "className": "px-3 py-1 text-sm rounded-lg text-red-600" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}",
+                        "params": { "method": "DELETE" },
+                        "confirm": "이 유형을 삭제할까요?",
+                        "onSuccess": [
+                          { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
+                          { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                        ],
+                        "onError": [
+                          { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "edit_box",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{_local.edit.id}}",
+            "props": { "className": "max-w-xl space-y-2 p-4 rounded-xl border border-gray-200 dark:border-white/10", "dataKey": "edit", "trackChanges": true },
+            "children": [
+              { "id": "eh", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "유형 수정 #{{_local.edit.id}}" },
+              { "id": "eslug", "type": "basic", "name": "Input", "props": { "name": "slug", "placeholder": "슬러그" } },
+              { "id": "ename", "type": "basic", "name": "Input", "props": { "name": "name", "placeholder": "표시 이름" } },
+              { "id": "edesc", "type": "basic", "name": "Input", "props": { "name": "description", "placeholder": "설명" } },
+              { "id": "esort", "type": "basic", "name": "Input", "props": { "name": "sort_order", "placeholder": "정렬" } },
+              { "id": "eaddr", "type": "basic", "name": "Checkbox", "props": { "name": "requires_address", "label": "주소 필수" } },
+              { "id": "edesign", "type": "basic", "name": "Checkbox", "props": { "name": "is_design_only", "label": "디자인 전용" } },
+              { "id": "een", "type": "basic", "name": "Checkbox", "props": { "name": "is_enabled", "label": "사용" } },
+              {
+                "id": "ego",
+                "type": "basic",
+                "name": "Button",
+                "text": "저장",
+                "props": { "type": "button", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/job-types/{{_local.edit.id}}",
+                    "params": { "method": "PATCH", "body": "{{_local.edit}}" },
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "유형을 수정했습니다." } },
+                      { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

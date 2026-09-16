@@ -18,6 +18,15 @@
   },
   "data_sources": [
     {
+      "id": "types",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bid/job-types",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "fallback": { "data": [] }
+    },
+    {
       "id": "me",
       "type": "api",
       "endpoint": "/api/modules/custom-maker_bid/companies/me",
@@ -95,8 +104,8 @@
             "children": [
               { "id": "name_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "업체 이름" },
               { "id": "name", "type": "basic", "name": "Input", "props": { "name": "name", "placeholder": "업체 이름" } },
-              { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "주력 유형 (print_3d / design / manufacture, 선택)" },
-              { "id": "type", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "print_3d" } },
+              { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "주력 유형 (선택)" },
+              { "id": "type", "type": "basic", "name": "Select", "props": { "name": "type", "placeholder": "유형 선택", "options": "{{types.data || []}}" } },
               { "id": "note_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-700 dark:text-gray-300" }, "text": "소개" },
               { "id": "note", "type": "basic", "name": "Textarea", "props": { "name": "note", "placeholder": "장비, 경력, 연락 메모" } },
               {

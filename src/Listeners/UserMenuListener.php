@@ -6,7 +6,9 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const SCRIPT_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.4.0';
+    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.5.0';
+
+    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.5.0';
 
     public static function getSubscribedHooks(): array
     {
@@ -30,28 +32,42 @@ class UserMenuListener implements HookListenerInterface
                 return $layout;
             }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
-            $found = false;
-            foreach ($scripts as $i => $script) {
-                if (is_array($script) && (($script['id'] ?? '') === 'cmb_maker_nav' || str_contains((string) ($script['src'] ?? ''), 'custom-maker_bid/assets/nav.js'))) {
-                    $scripts[$i]['src'] = self::SCRIPT_SRC;
-                    $found = true;
-                }
-            }
-            if (! $found) {
-                $scripts[] = [
-                    'id' => 'cmb_maker_nav',
-                    'src' => self::SCRIPT_SRC,
-                    'async' => true,
-                    'optional' => true,
-                    'required' => false,
-                    'failOnError' => false,
-                    'onError' => ['handler' => 'suppress'],
-                ];
+            $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
+            if (in_array($name, ['jobs_create', 'jobs_edit'], true)) {
+                $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
             }
             $layout['scripts'] = $scripts;
         } catch (\Throwable) {
         }
 
         return $layout;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $scripts
+     * @return list<array<string, mixed>>
+     */
+    private function upsertScript(array $scripts, string $id, string $src): array
+    {
+        $found = false;
+        foreach ($scripts as $i => $script) {
+            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bid/assets/nav.js' : 'custom-maker_bid/assets/form.js'))) {
+                $scripts[$i]['src'] = $src;
+                $found = true;
+            }
+        }
+        if (! $found) {
+            $scripts[] = [
+                'id' => $id,
+                'src' => $src,
+                'async' => true,
+                'optional' => true,
+                'required' => false,
+                'failOnError' => false,
+                'onError' => ['handler' => 'suppress'],
+            ];
+        }
+
+        return $scripts;
     }
 }
