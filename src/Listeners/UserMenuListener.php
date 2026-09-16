@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.7';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.7';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.7';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.7';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.7';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.7';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.8';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.8';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.8';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.8';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.8';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.8';
 
     public static function getSubscribedHooks(): array
     {
@@ -38,7 +38,8 @@ class UserMenuListener implements HookListenerInterface
                 $styles = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_admin_css', self::ADMIN_CSS);
                 $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
-                $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
+                $scripts = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
+                $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
 
                 return $layout;
             }
