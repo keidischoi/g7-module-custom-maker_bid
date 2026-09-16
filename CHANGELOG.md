@@ -22,7 +22,7 @@
 
 ### Notes
 
-- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다.
+- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다. `rush_deadline` 컬럼이 없는 설치에는 additive 마이그레이션이 적용됩니다.
 
 ## [0.5.1] - 2026-09-16
 
