@@ -3,6 +3,8 @@
 namespace Modules\Custom\MakerBids;
 
 use App\Extension\AbstractModule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Modules\Custom\MakerBids\Listeners\UserMenuListener;
 
 class Module extends AbstractModule
@@ -61,6 +63,58 @@ class Module extends AbstractModule
                 ],
             ],
         ];
+    }
+
+
+    public function install(): bool
+    {
+        $this->purgeOrphanAdminMenus();
+
+        return parent::install();
+    }
+
+    public function uninstall(): bool
+    {
+        $this->purgeOrphanAdminMenus();
+
+        return parent::uninstall();
+    }
+
+    /**
+     * Remove leftover admin menu rows from prior custom-maker_bid / broken installs
+     * so g7_menus.slug unique does not fail on reinstall.
+     */
+    private function purgeOrphanAdminMenus(): void
+    {
+        try {
+            if (! Schema::hasTable('menus')) {
+                return;
+            }
+            $slugs = [
+                'custom-maker_bids',
+                'custom-maker_bid',
+                'custom-maker_bids-jobs',
+                'custom-maker_bids-types',
+                'custom-maker_bids-bids',
+                'custom-maker_bids-companies',
+                'custom-maker_bids-activity',
+                'custom-maker_bids-settings',
+                'custom-maker_bid-jobs',
+                'custom-maker_bid-types',
+                'custom-maker_bid-bids',
+                'custom-maker_bid-companies',
+                'custom-maker_bid-activity',
+                'custom-maker_bid-settings',
+            ];
+            DB::table('menus')
+                ->where(function ($q) use ($slugs) {
+                    $q->whereIn('slug', $slugs)
+                        ->orWhereIn('extension_identifier', ['custom-maker_bids', 'custom-maker_bid']);
+                })
+                ->delete();
+        } catch (\Throwable) {
+            // Install must continue even if cleanup fails on odd schemas.
+        }
     }
 
     public function getHookListeners(): array
