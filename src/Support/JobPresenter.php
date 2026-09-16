@@ -9,19 +9,19 @@ class JobPresenter
 {
     public static function statusLabel(MakerJob $job): string
     {
-        $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
         $status = (string) $job->status;
-        if ($bidding === BiddingRules::CLOSED) {
-            return '입찰종료';
-        }
         if (in_array($status, ['quote_request', 'open'], true)) {
             return '입찰중';
         }
-        if ($status === 'awarded') {
-            return '낙찰 · 입찰중';
-        }
 
         return JobRules::statusLabel($status);
+    }
+
+    public static function biddingLabel(MakerJob $job): string
+    {
+        $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
+
+        return $bidding === BiddingRules::CLOSED ? '종료' : '입찰중';
     }
 
     public static function present(
@@ -35,6 +35,7 @@ class JobPresenter
         $typeRow = $type ? $type->toOptionArray() : null;
         $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
         $statusLabel = self::statusLabel($job);
+        $biddingLabel = self::biddingLabel($job);
 
         $images = [];
         $archives = [];
@@ -67,7 +68,7 @@ class JobPresenter
             'status' => (string) $job->status,
             'status_label' => $statusLabel,
             'bidding_status' => $bidding,
-            'bidding_status_label' => $statusLabel,
+            'bidding_status_label' => $biddingLabel,
             'bidding_closed_at' => optional($job->bidding_closed_at)?->format('Y-m-d H:i:s'),
             'audience' => JobRules::normalizeAudience($job->audience ?? 'all'),
             'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
