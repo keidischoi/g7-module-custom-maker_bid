@@ -9,7 +9,17 @@ class AssetController extends Controller
 {
     public function nav(): Response
     {
-        $path = dirname(__DIR__, 3).'/resources/assets/nav.js';
+        return $this->js('nav.js');
+    }
+
+    public function form(): Response
+    {
+        return $this->js('form.js');
+    }
+
+    private function js(string $name): Response
+    {
+        $path = dirname(__DIR__, 3).'/resources/assets/'.$name;
         $js = is_file($path) ? (string) file_get_contents($path) : '';
 
         return response($js, 200, [

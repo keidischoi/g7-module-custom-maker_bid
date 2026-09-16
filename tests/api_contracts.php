@@ -36,8 +36,13 @@ expectTrue('admin company reject route', str_contains($api, "Route::post('compan
 expectTrue('admin company approve route', str_contains($api, "Route::post('companies/{id}/approve'"));
 expectTrue('admin company delete route', str_contains($api, "Route::delete('companies/{id}'"));
 expectTrue('admin bids index route', str_contains($api, "Route::get('bids', [BidAdminController::class, 'index'])"));
-expectTrue('module version is 0.4.0', str_contains($moduleJson, '"version": "0.4.0"'));
-expectTrue('jobs mine route exists', str_contains($api, "Route::get('jobs/mine', [JobController::class, 'mine'])"));
+expectTrue('module version is 0.5.0', str_contains($moduleJson, '"version": "0.5.0"'));
+expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
+expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
+expectTrue('owner job update route', str_contains($api, "Route::patch('jobs/{id}', [JobController::class, 'update'])"));
+expectTrue('upload staging route', str_contains($api, "Route::post('uploads'"));
+expectTrue('admin job-types route', str_contains($api, "Route::get('job-types', [JobTypeAdminController::class, 'index'])"));
+expectTrue('admin job-types move route', str_contains($api, "Route::post('job-types/{id}/move'"));
 expectTrue('job viewer route exists', str_contains($api, "Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])"));
 expectTrue('bids mine route exists', str_contains($api, "Route::get('bids/mine', [BidController::class, 'mine'])"));
 expectTrue('admin job cancel route exists', str_contains($api, "Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])"));
@@ -48,7 +53,8 @@ expectTrue('admin menus include 회원 활동', str_contains($modulePhp, '회원
 expectTrue('jobs permissions declared', str_contains($modulePhp, "permissionCategory('jobs'"));
 expectTrue('bids permissions declared', str_contains($modulePhp, "permissionCategory('bids'"));
 expectTrue('companies permissions declared', str_contains($modulePhp, "permissionCategory('companies'"));
-expectTrue('dynamic tables registered', str_contains($modulePhp, "'maker_jobs'") && str_contains($modulePhp, "'maker_bids'") && str_contains($modulePhp, "'maker_companies'"));
+expectTrue('dynamic tables registered', str_contains($modulePhp, "'maker_jobs'") && str_contains($modulePhp, "'maker_bids'") && str_contains($modulePhp, "'maker_companies'") && str_contains($modulePhp, "'maker_job_types'") && str_contains($modulePhp, "'maker_job_files'"));
+expectTrue('admin menus include 유형 관리', str_contains($modulePhp, '유형 관리'));
 expectTrue('additive unique bid constraint', str_contains($migration, 'maker_bids_job_user_unique'));
 expectTrue('additive company_id on bids', str_contains($migration, "'company_id'"));
 expectTrue('additive company user unique', str_contains($migration, 'maker_companies_user_id_unique') || str_contains($migration, "unique('user_id')"));
@@ -57,6 +63,9 @@ $mutators = [
     "Route::get('jobs/mine'",
     "Route::get('jobs/{id}/viewer'",
     "Route::get('bids/mine'",
+    "Route::get('jobs/form-defaults'",
+    "Route::patch('jobs/{id}'",
+    "Route::post('uploads'",
     "Route::post('jobs'",
     "Route::post('jobs/{id}/bids'",
     "Route::patch('jobs/{id}/bids/{bidId}'",

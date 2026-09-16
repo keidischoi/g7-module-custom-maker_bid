@@ -33,7 +33,7 @@ class CompanyRules
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'type' => ['nullable', 'string', 'in:'.implode(',', JobRules::TYPES)],
+            'type' => ['nullable', 'string', 'max:64'],
             'note' => ['nullable', 'string', 'max:2000'],
         ];
     }
@@ -46,7 +46,7 @@ class CompanyRules
         return [
             'user_id' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:120'],
-            'type' => ['nullable', 'string', 'in:'.implode(',', JobRules::TYPES)],
+            'type' => ['nullable', 'string', 'max:64'],
             'status' => ['nullable', 'string', 'in:'.implode(',', self::STATUSES)],
             'note' => ['nullable', 'string', 'max:2000'],
         ];

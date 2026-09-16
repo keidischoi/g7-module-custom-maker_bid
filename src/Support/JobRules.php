@@ -6,24 +6,86 @@ use DateTimeInterface;
 
 class JobRules
 {
-    public const TYPES = ['print_3d', 'design', 'manufacture'];
+    /** @deprecated 0.5.0 catalog slugs replace these. Kept as default-slug alias. */
+    public const TYPES = ['modeling_3d', 'print_3d', 'full_package', 'character_figure', 'design_mockup', 'working_prototype'];
 
-    public const STATUSES = ['open', 'awarded', 'done', 'cancelled', 'hold'];
+    public const STATUSES = ['hold', 'request', 'quote_request', 'open', 'awarded', 'done', 'cancelled'];
+
+    public const LISTING_STATUSES = ['hold', 'request', 'quote_request'];
+
+    public const PUBLIC_STATUSES = ['request', 'quote_request', 'open', 'awarded', 'done', 'cancelled'];
+
+    public const BIDDABLE_STATUSES = ['request', 'quote_request', 'open'];
+
+    public const HIDDEN_PUBLIC_STATUSES = ['hold'];
 
     public const TITLE_MAX = 200;
 
     /**
+     * @param  list<string>|null  $allowedTypeSlugs
      * @return array<string, list<string>>
      */
-    public static function createRules(): array
+    public static function createRules(?array $allowedTypeSlugs = null): array
     {
+        $typeRule = ['required', 'string', 'max:64'];
+        if ($allowedTypeSlugs !== null && $allowedTypeSlugs !== []) {
+            $typeRule[] = 'in:'.implode(',', $allowedTypeSlugs);
+        }
+
         return [
-            'type' => ['required', 'string', 'in:'.implode(',', self::TYPES)],
+            'type' => $typeRule,
             'title' => ['required', 'string', 'max:'.self::TITLE_MAX],
             'description' => ['nullable', 'string'],
             'budget' => ['nullable', 'integer', 'min:0'],
+            'budget_min' => ['nullable', 'integer', 'min:0'],
+            'budget_max' => ['nullable', 'integer', 'min:0'],
             'closes_at' => ['nullable', 'date'],
+            'status' => ['nullable', 'string', 'in:'.implode(',', self::LISTING_STATUSES)],
+            'rush_fee_enabled' => ['nullable', 'boolean'],
+            'rush_deadline' => ['nullable', 'date', 'required_if:rush_fee_enabled,1', 'required_if:rush_fee_enabled,true'],
+            'schedule_premium_enabled' => ['nullable', 'boolean'],
+            'size_w' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'size_d' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'size_h' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'provided_extensions' => ['nullable', 'array'],
+            'provided_extensions.*' => ['string', 'in:'.implode(',', UploadRules::PROVIDED_EXTENSIONS)],
+            'revision_enabled' => ['nullable', 'boolean'],
+            'revision_count' => ['nullable', 'integer', 'min:0', 'max:99', 'required_if:revision_enabled,1', 'required_if:revision_enabled,true'],
+            'revision_cost' => ['nullable', 'integer', 'min:0', 'required_if:revision_enabled,1', 'required_if:revision_enabled,true'],
+            'contact_name' => ['required', 'string', 'max:120'],
+            'contact_phone' => ['required', 'string', 'max:40'],
+            'contact_hours' => ['nullable', 'string', 'max:40'],
+            'contact_hours_from' => ['nullable', 'string', 'max:8'],
+            'contact_hours_to' => ['nullable', 'string', 'max:8'],
+            'contact_email' => ['required', 'email', 'max:120'],
+            'zipcode' => ['nullable', 'string', 'max:12'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'address_detail' => ['nullable', 'string', 'max:255'],
+            'upload_token' => ['nullable', 'string', 'max:64'],
+            'ext_stl' => ['nullable', 'boolean'],
+            'ext_3mf' => ['nullable', 'boolean'],
+            'ext_obj' => ['nullable', 'boolean'],
+            'ext_step' => ['nullable', 'boolean'],
+            'ext_stp' => ['nullable', 'boolean'],
+            'ext_gcode' => ['nullable', 'boolean'],
+            'ext_fbx' => ['nullable', 'boolean'],
         ];
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public static function memberUpdateRules(): array
+    {
+        $rules = self::createRules();
+        $rules['title'] = ['sometimes', 'string', 'max:'.self::TITLE_MAX];
+        $rules['type'] = ['sometimes', 'string', 'max:64'];
+        $rules['contact_name'] = ['sometimes', 'string', 'max:120'];
+        $rules['contact_phone'] = ['sometimes', 'string', 'max:40'];
+        $rules['contact_email'] = ['sometimes', 'email', 'max:120'];
+        $rules['status'] = ['sometimes', 'string', 'in:'.implode(',', self::LISTING_STATUSES)];
+
+        return $rules;
     }
 
     /**
@@ -31,19 +93,34 @@ class JobRules
      */
     public static function adminUpdateRules(): array
     {
+        $rules = self::memberUpdateRules();
+        $rules['status'] = ['sometimes', 'string', 'in:'.implode(',', self::STATUSES)];
+
+        return $rules;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function messages(): array
+    {
         return [
-            'type' => ['sometimes', 'string', 'in:'.implode(',', self::TYPES)],
-            'title' => ['sometimes', 'string', 'max:'.self::TITLE_MAX],
-            'description' => ['nullable', 'string'],
-            'budget' => ['nullable', 'integer', 'min:0'],
-            'status' => ['sometimes', 'string', 'in:'.implode(',', self::STATUSES)],
-            'closes_at' => ['nullable', 'date'],
+            'title.required' => '제목을 입력해 주세요.',
+            'type.required' => '유형을 선택해 주세요.',
+            'contact_name.required' => '주문자명 또는 업체명을 입력해 주세요.',
+            'contact_phone.required' => '연락처를 입력해 주세요.',
+            'contact_email.required' => '이메일을 입력해 주세요.',
+            'contact_email.email' => '이메일 형식이 올바르지 않습니다.',
+            'rush_deadline.required_if' => '급행비를 적용하면 급행비 조건 날짜를 선택해 주세요.',
+            'revision_count.required_if' => '수정 횟수를 입력해 주세요.',
+            'revision_cost.required_if' => '수정 비용을 입력해 주세요.',
+            'budget_max.gte' => '예산 최댓값은 최솟값보다 크거나 같아야 합니다.',
         ];
     }
 
     public static function isAllowedType(string $type): bool
     {
-        return in_array($type, self::TYPES, true);
+        return TypeCatalog::isKnownSlug($type) || TypeCatalog::isValidSlugFormat($type);
     }
 
     public static function isAllowedStatus(string $status): bool
@@ -51,9 +128,24 @@ class JobRules
         return in_array($status, self::STATUSES, true);
     }
 
+    public static function isListingStatus(string $status): bool
+    {
+        return in_array($status, self::LISTING_STATUSES, true);
+    }
+
+    public static function isHiddenFromPublic(string $status): bool
+    {
+        return in_array($status, self::HIDDEN_PUBLIC_STATUSES, true);
+    }
+
+    public static function isBiddableStatus(string $status): bool
+    {
+        return in_array($status, self::BIDDABLE_STATUSES, true);
+    }
+
     public static function isOpen(string $status, mixed $closesAt = null, ?DateTimeInterface $now = null): bool
     {
-        if ($status !== 'open') {
+        if (! self::isBiddableStatus($status)) {
             return false;
         }
 
@@ -69,6 +161,87 @@ class JobRules
         $nowTs = $now?->getTimestamp() ?? time();
 
         return $ts > $nowTs;
+    }
+
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'hold' => '보류',
+            'request' => '의뢰',
+            'quote_request', 'open' => '견적요청',
+            'awarded' => '낙찰',
+            'done' => '완료',
+            'cancelled' => '취소',
+            default => $status,
+        };
+    }
+
+    public static function sizeLabel(mixed $w, mixed $d, mixed $h): ?string
+    {
+        if ($w === null && $d === null && $h === null) {
+            return null;
+        }
+
+        return trim((string) ($w ?? '-')).' x '.trim((string) ($d ?? '-')).' x '.trim((string) ($h ?? '-')).' mm';
+    }
+
+    public static function budgetLabel(mixed $min, mixed $max, mixed $legacy = null): ?string
+    {
+        $min = $min !== null && $min !== '' ? (int) $min : null;
+        $max = $max !== null && $max !== '' ? (int) $max : ($legacy !== null && $legacy !== '' ? (int) $legacy : null);
+        if ($min === null && $max === null) {
+            return null;
+        }
+        if ($min !== null && $max !== null) {
+            return number_format($min).'~'.number_format($max).'원';
+        }
+
+        return number_format((int) ($max ?? $min)).'원';
+    }
+
+    public static function contactHours(mixed $from, mixed $to, mixed $combined = null): ?string
+    {
+        if (is_string($combined) && trim($combined) !== '') {
+            return trim($combined);
+        }
+        $from = is_string($from) ? trim($from) : '';
+        $to = is_string($to) ? trim($to) : '';
+        if ($from === '' && $to === '') {
+            return null;
+        }
+        if ($from === '') {
+            $from = '00:00';
+        }
+        if ($to === '') {
+            $to = '00:00';
+        }
+
+        return $from.' ~ '.$to;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<string>
+     */
+    public static function collectProvidedExtensions(array $payload): array
+    {
+        $fromArray = UploadRules::normalizeProvidedExtensions($payload['provided_extensions'] ?? null);
+        $map = [
+            'ext_stl' => 'STL',
+            'ext_3mf' => '3MF',
+            'ext_obj' => 'OBJ',
+            'ext_step' => 'STEP',
+            'ext_stp' => 'STP',
+            'ext_gcode' => 'GCODE',
+            'ext_fbx' => 'FBX',
+        ];
+        foreach ($map as $key => $ext) {
+            if (! empty($payload[$key]) && ! in_array($ext, $fromArray, true)) {
+                $fromArray[] = $ext;
+            }
+        }
+
+        return $fromArray;
     }
 
     private static function timestamp(mixed $closesAt): ?int

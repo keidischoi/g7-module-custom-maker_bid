@@ -32,6 +32,12 @@
       "meta": { "title": "업체 등록" }
     },
     {
+      "path": "*/maker-bid/:id/edit",
+      "layout": "jobs_edit",
+      "auth_required": true,
+      "meta": { "title": "의뢰서 수정" }
+    },
+    {
       "path": "*/maker-bid/:id",
       "layout": "jobs_show",
       "auth_required": false,

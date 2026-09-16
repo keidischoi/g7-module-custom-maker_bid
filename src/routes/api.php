@@ -4,10 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\BidAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobAdminController;
+use Modules\Custom\MakerBid\Http\Controllers\Admin\JobTypeAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\AssetController;
 use Modules\Custom\MakerBid\Http\Controllers\BidController;
 use Modules\Custom\MakerBid\Http\Controllers\CompanyController;
 use Modules\Custom\MakerBid\Http\Controllers\JobController;
+use Modules\Custom\MakerBid\Http\Controllers\JobFileController;
+use Modules\Custom\MakerBid\Http\Controllers\JobTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +26,16 @@ use Modules\Custom\MakerBid\Http\Controllers\JobController;
 Route::get('assets/nav.js', [AssetController::class, 'nav'])
     ->middleware(['throttle:600,1'])
     ->name('assets.nav');
+Route::get('assets/form.js', [AssetController::class, 'form'])
+    ->middleware(['throttle:600,1'])
+    ->name('assets.form');
+
+Route::get('job-types', [JobTypeController::class, 'index'])
+    ->middleware(['throttle:600,1'])
+    ->name('job-types.index');
+Route::get('files/{hash}', [JobFileController::class, 'download'])
+    ->middleware(['throttle:600,1'])
+    ->name('files.download');
 
 Route::get('jobs', [JobController::class, 'index'])
     ->middleware(['throttle:600,1'])
@@ -34,10 +47,19 @@ Route::get('jobs/{id}', [JobController::class, 'show'])
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
+    Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
     Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])
         ->whereNumber('id')
         ->name('jobs.viewer');
     Route::post('jobs', [JobController::class, 'store'])->name('jobs.store');
+    Route::patch('jobs/{id}', [JobController::class, 'update'])
+        ->whereNumber('id')
+        ->name('jobs.update');
+    Route::post('uploads', [JobFileController::class, 'store'])->name('uploads.store');
+    Route::post('jobs/{id}/files', [JobFileController::class, 'store'])
+        ->whereNumber('id')
+        ->name('jobs.files.store');
+    Route::delete('uploads/{hash}', [JobFileController::class, 'destroy'])->name('uploads.destroy');
     Route::get('bids/mine', [BidController::class, 'mine'])->name('bids.mine');
     Route::post('jobs/{id}/bids', [BidController::class, 'store'])
         ->whereNumber('id')
@@ -78,6 +100,25 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.jobs.delete')
         ->name('admin.jobs.destroy');
+
+    Route::get('job-types', [JobTypeAdminController::class, 'index'])
+        ->middleware('permission:admin,custom-maker_bid.jobs.read')
+        ->name('admin.job-types.index');
+    Route::post('job-types', [JobTypeAdminController::class, 'store'])
+        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->name('admin.job-types.store');
+    Route::patch('job-types/{id}', [JobTypeAdminController::class, 'update'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->name('admin.job-types.update');
+    Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->name('admin.job-types.move');
+    Route::delete('job-types/{id}', [JobTypeAdminController::class, 'destroy'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->name('admin.job-types.destroy');
 
     Route::get('bids', [BidAdminController::class, 'index'])
         ->middleware('permission:admin,custom-maker_bid.bids.read')

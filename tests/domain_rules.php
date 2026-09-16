@@ -18,9 +18,9 @@ expectFalse('closed when closes_at is past', JobRules::isOpen('open', '2026-09-0
 expectTrue('open when closes_at is future', JobRules::isOpen('open', '2026-09-16 00:00:00', $now));
 expectFalse('open exactly at close is closed', JobRules::isOpen('open', '2026-09-15 12:00:00', $now));
 expectTrue('print_3d type allowed', JobRules::isAllowedType('print_3d'));
-expectTrue('design type allowed', JobRules::isAllowedType('design'));
-expectTrue('manufacture type allowed', JobRules::isAllowedType('manufacture'));
-expectFalse('unknown type rejected', JobRules::isAllowedType('other'));
+expectTrue('design_mockup type allowed', JobRules::isAllowedType('design_mockup'));
+expectTrue('full_package type allowed', JobRules::isAllowedType('full_package'));
+expectFalse('uppercase type rejected', JobRules::isAllowedType('NOPE'));
 expectTrue('title max is 200', JobRules::TITLE_MAX === 200);
 
 $create = JobRules::createRules();

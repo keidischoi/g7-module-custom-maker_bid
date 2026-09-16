@@ -138,7 +138,7 @@ class BidService
         if ($job && (int) $job->awarded_bid_id === (int) $bid->id) {
             $job->awarded_bid_id = null;
             if ($job->status === 'awarded') {
-                $job->status = 'open';
+                $job->status = 'quote_request';
             }
             $job->save();
         }
