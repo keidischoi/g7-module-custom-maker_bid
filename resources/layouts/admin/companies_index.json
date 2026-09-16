@@ -3,7 +3,7 @@
   "layout_name": "companies_index",
   "extends": "_admin_base",
   "meta": { "title": "회사 목록" },
-  "permissions": ["custom-maker_bids.companies.read"],
+  "permissions": ["custom-maker_bid.companies.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -33,7 +33,7 @@
     {
       "id": "companies",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/admin/companies",
+      "endpoint": "/api/modules/custom-maker_bid/admin/companies",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -59,12 +59,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "입찰자 신청을 보류·승인·거절하고, 추천/지정업체/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다. 지정업체는 설정에서 입찰 허용이 「지정업체」일 때 입찰할 수 있습니다." },
@@ -213,7 +213,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}",
+                            "target": "/api/modules/custom-maker_bid/admin/companies/{{_local.edit.id}}",
                             "params": { "method": "PATCH", "body": "{{_local.edit}}" },
                             "onSuccess": [
                               { "handler": "toast", "params": { "type": "success", "message": "저장했습니다." } },
@@ -327,7 +327,7 @@
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
-                                    "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/approve",
+                                    "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}/approve",
                                     "params": { "method": "POST" },
                                     "confirm": "이 업체를 승인할까요?",
                                     "onSuccess": [
@@ -351,7 +351,7 @@
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
-                                    "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/hold",
+                                    "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}/hold",
                                     "params": { "method": "POST", "body": "{{_local.hold}}" },
                                     "confirm": "이 업체를 보류할까요?",
                                     "onSuccess": [
@@ -375,7 +375,7 @@
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
-                                    "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/reject",
+                                    "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}/reject",
                                     "params": { "method": "POST", "body": "{{_local.reject}}" },
                                     "confirm": "이 업체를 거절할까요?",
                                     "onSuccess": [
@@ -399,7 +399,7 @@
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
-                                    "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}",
+                                    "target": "/api/modules/custom-maker_bid/admin/companies/{{$co.id}}",
                                     "params": { "method": "DELETE" },
                                     "confirm": "이 업체를 삭제할까요?",
                                     "onSuccess": [
@@ -427,3 +427,4 @@
     ]
   }
 }
+
