@@ -64,7 +64,8 @@
               { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
               { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
               { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n5", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+              { "id": "n5", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "의뢰 유형을 추가·수정·정렬·활성화합니다. 설치 시 기본 6종이 시드됩니다. 디자인 전용 유형은 주소가 필수가 아닙니다." },

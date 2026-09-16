@@ -65,6 +65,7 @@
               }
             ]
           },
+          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "bids" } },
           { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "열린 의뢰에 견적을 넣고, 열려 있는 동안 내 금액을 수정할 수 있습니다. 입찰자면 입찰자 등록에서 승인 상태를 확인하세요." },
           { "id": "mh", "type": "basic", "name": "H2", "props": { "className": "text-lg font-medium text-gray-900 dark:text-white" }, "text": "내 입찰" },
           {

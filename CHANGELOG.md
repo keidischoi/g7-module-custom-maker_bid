@@ -4,6 +4,25 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.7.0] - 2026-09-16
+
+### Added
+
+- 관리자 의뢰 상세에서 **필드 수정·저장**. 제목·유형·상태(보류/의뢰/견적요청/open/낙찰/완료/취소)·공개 설정·예산·마감·급행/선점/수정·크기·확장자·설명·연락처·담당자·소유권한 요청. 기존 `PATCH /admin/jobs/{id}` (`custom-maker_bid.jobs.update`). 보류·취소·삭제는 유지합니다.
+- 관리자 입찰 목록에서 상세/수정, `/admin/maker-bid/bids/:id` 수정 화면. 금액·기간·메시지·상태. `PATCH /admin/bids/{id}` (`custom-maker_bid.bids.update`).
+- 관리자 **설정** `/admin/maker-bid/settings`: 회원 메뉴 삽입 위치·라벨·레이아웃 확장 on/off, 페이지별 안내문, 등록 기본 상태, 비회원 목록 공개. 권한 `custom-maker_bid.settings.read` / `.update`.
+- 설정 저장 테이블 `maker_module_settings` (additive). G7 `config/settings/defaults.json` 도 함께 둡니다. 공개 `GET /settings`, 관리자 `GET/PUT/PATCH /admin/settings`.
+- 회원 화면 상단 안내문 자리(`data-cmb-notice`). 설정에서 켜고 본문을 넣으면 nav.js가 HTML을 채웁니다.
+
+### Changed
+
+- 버전 **0.7.0**. nav/form.js·form.css 캐시 `?v=0.7.0`.
+- 0.6.1 소유자 목록/상세(`optional.sanctum`, `auth_mode: "optional"`)는 그대로입니다.
+
+### Notes
+
+- `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**. 권한 동기화 필요(settings). 안내문·메뉴 위치는 설정 저장 후 회원 화면을 새로고침하세요.
+
 ## [0.6.1] - 2026-09-16
 
 ### Fixed

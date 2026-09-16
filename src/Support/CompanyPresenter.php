@@ -4,6 +4,7 @@ namespace Modules\Custom\MakerBid\Support;
 
 use Modules\Custom\MakerBid\Models\MakerBid;
 use Modules\Custom\MakerBid\Models\MakerCompany;
+use Modules\Custom\MakerBid\Support\BidRules;
 
 class CompanyPresenter
 {
@@ -76,6 +77,7 @@ class CompanyPresenter
             'days' => $bid->days,
             'message' => $bid->message,
             'status' => (string) $bid->status,
+            'status_label' => BidRules::statusLabel((string) $bid->status),
             'company_name' => $company?->name,
             'is_recommended' => CompanyRules::listingRecommended($company),
             'company_priority' => CompanyRules::listingPriority($company),

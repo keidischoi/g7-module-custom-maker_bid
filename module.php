@@ -34,6 +34,10 @@ class Module extends AbstractModule
                     ['update', '승인/거절', 'Approve / reject'],
                     ['delete', '삭제', 'Delete'],
                 ], ['admin']),
+                $this->permissionCategory('settings', '설정', 'Settings', '모듈 설정', 'Module settings', [
+                    ['read', '조회', 'Read'],
+                    ['update', '수정', 'Update'],
+                ]),
             ],
         ];
     }
@@ -53,6 +57,7 @@ class Module extends AbstractModule
                     $this->adminMenuChild('입찰 관리', 'Bids', 'bids', '/admin/maker-bid/bids', 'fa-gavel', 3, 'custom-maker_bid.bids.read'),
                     $this->adminMenuChild('회사 목록', 'Companies', 'companies', '/admin/maker-bid/companies', 'fa-building', 4, 'custom-maker_bid.companies.read'),
                     $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bid/activity', 'fa-user', 5, 'custom-maker_bid.jobs.read'),
+                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bid/settings', 'fa-cog', 6, 'custom-maker_bid.settings.read'),
                 ],
             ],
         ];
@@ -71,6 +76,7 @@ class Module extends AbstractModule
             'maker_companies',
             'maker_job_types',
             'maker_job_files',
+            'maker_module_settings',
         ];
     }
 

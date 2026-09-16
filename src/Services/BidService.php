@@ -8,6 +8,7 @@ use Modules\Custom\MakerBid\Models\MakerBid;
 use Modules\Custom\MakerBid\Models\MakerCompany;
 use Modules\Custom\MakerBid\Models\MakerJob;
 use Modules\Custom\MakerBid\Support\BidRules;
+use Modules\Custom\MakerBid\Support\CompanyPresenter;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 use Modules\Custom\MakerBid\Support\DomainException;
 use Modules\Custom\MakerBid\Support\JobRules;
@@ -97,9 +98,9 @@ class BidService
     }
 
     /**
-     * @return Collection<int, MakerBid>
+     * @return list<array<string, mixed>>
      */
-    public function listAdmin(Request $request): Collection
+    public function listAdmin(Request $request): array
     {
         $q = MakerBid::query()->with(['job', 'company'])->latest();
         if ($jobId = $request->query('job_id')) {
@@ -112,24 +113,53 @@ class BidService
             $q->where('status', $status);
         }
 
-        return $q->limit(200)->get();
+        return $q->limit(200)->get()->map(fn (MakerBid $bid) => $this->presentAdmin($bid))->all();
     }
 
-    public function findAdmin(int $id): MakerBid
+    /**
+     * @return array<string, mixed>
+     */
+    public function findAdmin(int $id): array
     {
-        return MakerBid::query()->with(['job', 'company'])->findOrFail($id);
+        return $this->presentAdmin(
+            MakerBid::query()->with(['job', 'company'])->findOrFail($id)
+        );
     }
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
      */
-    public function updateAdmin(int $id, array $payload): MakerBid
+    public function updateAdmin(int $id, array $payload): array
     {
         $bid = MakerBid::query()->findOrFail($id);
-        $bid->fill($payload);
+        $allowed = [];
+        foreach (['amount', 'days', 'message', 'status'] as $key) {
+            if (array_key_exists($key, $payload)) {
+                $allowed[$key] = $payload[$key];
+            }
+        }
+        $bid->fill($allowed);
         $bid->save();
 
-        return $bid->fresh() ?? $bid;
+        return $this->findAdmin($id);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function presentAdmin(MakerBid $bid): array
+    {
+        $row = CompanyPresenter::presentBid($bid);
+        $job = $bid->relationLoaded('job') ? $bid->job : null;
+        $row['job'] = $job ? [
+            'id' => (int) $job->id,
+            'title' => (string) $job->title,
+            'status' => (string) $job->status,
+            'status_label' => JobRules::statusLabel((string) $job->status),
+        ] : null;
+
+        return $row;
     }
 
     public function destroyAdmin(int $id): void

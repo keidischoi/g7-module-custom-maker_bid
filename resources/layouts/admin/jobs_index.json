@@ -48,10 +48,11 @@
               { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
               { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
               { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "보류·취소·삭제. 유형은 유형 관리에서 관리합니다. 상태 보류 / 의뢰 / 견적요청 / 낙찰 / 완료 / 취소. 보류는 공개 목록에 나오지 않습니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "목록에서 상세를 열어 필드를 수정할 수 있습니다. 보류·취소·삭제. 유형은 유형 관리. 상태 보류 / 의뢰 / 견적요청 / 낙찰 / 완료 / 취소. 보류는 공개 목록에 나오지 않습니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -59,7 +60,28 @@
             "props": { "className": "flex items-end gap-2 flex-wrap", "dataKey": "filter", "trackChanges": true },
             "children": [
               { "id": "ftype", "type": "basic", "name": "Input", "props": { "name": "type", "placeholder": "유형" } },
-              { "id": "fstatus", "type": "basic", "name": "Input", "props": { "name": "status", "placeholder": "상태" } },
+              {
+                "id": "fstatus",
+                "type": "basic",
+                "name": "Select",
+                "props": {
+                  "name": "status",
+                  "value": "{{_local.filter.status}}",
+                  "className": "rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                  "options": [
+                    { "value": "", "label": "전체 상태" },
+                    { "value": "hold", "label": "보류" },
+                    { "value": "request", "label": "의뢰" },
+                    { "value": "quote_request", "label": "견적요청" },
+                    { "value": "awarded", "label": "낙찰" },
+                    { "value": "done", "label": "완료" },
+                    { "value": "cancelled", "label": "취소" }
+                  ]
+                },
+                "actions": [
+                  { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "filter.status": "{{$event.target.value}}" } }
+                ]
+              },
               {
                 "id": "fgo",
                 "type": "basic",
@@ -87,7 +109,7 @@
             "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
             "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
             "children": [
-              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}" }, "text": "#{{$item.id}} {{$item.title}} [{{$item.type_name || $item.type}}] {{$item.status_label || $item.status}} 회원 {{$item.user_id}} 입찰 {{$item.bids_count ?? 0}}" },
+              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}" }, "text": "#{{$item.id}} {{$item.title}} [{{$item.type_name || $item.type}}] {{$item.status_label || $item.status}} 회원 {{$item.user_id}} 입찰 {{$item.bids_count ?? 0}} · 상세/수정" },
               {
                 "id": "jacts",
                 "type": "basic",

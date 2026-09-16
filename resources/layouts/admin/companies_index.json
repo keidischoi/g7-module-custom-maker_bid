@@ -62,7 +62,8 @@
               { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
               { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
               { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "입찰자 신청을 보류·승인·거절하고, 추천/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다." },

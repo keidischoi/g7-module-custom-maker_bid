@@ -48,6 +48,8 @@ expectTrue('admin job detail route', in_array('*/admin/maker-bid/jobs/:id', $adm
 expectTrue('admin bids route', in_array('*/admin/maker-bid/bids', $adminPaths, true));
 expectTrue('admin companies route', in_array('*/admin/maker-bid/companies', $adminPaths, true));
 expectTrue('admin activity route', in_array('*/admin/maker-bid/activity', $adminPaths, true));
+expectTrue('admin settings route', in_array('*/admin/maker-bid/settings', $adminPaths, true));
+expectTrue('admin bid detail route', in_array('*/admin/maker-bid/bids/:id', $adminPaths, true));
 
 $show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json');
 expectTrue('detail has award action', str_contains($show, '/jobs/{{route.id}}/award'));
@@ -116,6 +118,7 @@ expectTrue('list keeps 의뢰목록 tab', str_contains($list, '의뢰목록'));
 expectTrue('list uses catalog types filter', str_contains($list, 'job-types'));
 expectTrue('list notes 보류 hidden', str_contains($list, '보류'));
 expectTrue('list jobs fetch uses optional auth_mode', str_contains($list, '"auth_mode": "optional"') && preg_match('/"id": "jobs"[\s\S]*?"auth_mode": "optional"/', $list) === 1);
+expectTrue('list notice placeholder', str_contains($list, 'data-cmb-notice') && str_contains($list, '"list"'));
 expectTrue('list rows read data.data fallback', str_contains($list, 'jobs?.data?.data ?? jobs?.data'));
 expectTrue('list omits empty type query', str_contains($list, 'query.type ||'));
 expectTrue('history rows read data.data fallback', str_contains((string) file_get_contents($root.'/resources/layouts/user/jobs_history.json'), 'jobs?.data?.data ?? jobs?.data'));
@@ -134,9 +137,22 @@ expectTrue('admin jobs hold', str_contains($adminJobs, '/hold'));
 expectTrue('admin jobs cancel', str_contains($adminJobs, '/cancel'));
 expectTrue('admin jobs delete', str_contains($adminJobs, '"method": "DELETE"'));
 
+$adminJobsShow = (string) file_get_contents($root.'/resources/layouts/admin/jobs_show.json');
+expectTrue('admin job detail patches job', str_contains($adminJobsShow, '"method": "PATCH"') && str_contains($adminJobsShow, '/admin/jobs/{{route.id}}'));
+expectTrue('admin job detail has title field', str_contains($adminJobsShow, '"name": "title"'));
+expectTrue('admin job detail has status select', str_contains($adminJobsShow, '"value": "hold"') && str_contains($adminJobsShow, '"value": "awarded"') && str_contains($adminJobsShow, '"value": "done"'));
+expectTrue('admin job detail has audience', str_contains($adminJobsShow, '"value": "company"') && str_contains($adminJobsShow, 'ownership_requested'));
+expectTrue('admin job detail keeps hold/cancel', str_contains($adminJobsShow, '/hold') && str_contains($adminJobsShow, '/cancel'));
+
 $adminBids = (string) file_get_contents($root.'/resources/layouts/admin/bids_index.json');
 expectTrue('admin bids filter job_id', str_contains($adminBids, 'job_id'));
 expectTrue('admin bids delete', str_contains($adminBids, '/admin/bids/{{$item.id}}'));
+expectTrue('admin bids edit link', str_contains($adminBids, '/admin/maker-bid/bids/{{$item.id}}'));
+expectTrue('admin bids index patch', str_contains($adminBids, '"method": "PATCH"'));
+
+$adminBidShow = (string) file_get_contents($root.'/resources/layouts/admin/bids_show.json');
+expectTrue('admin bid show patches bid', str_contains($adminBidShow, '/admin/bids/{{route.id}}') && str_contains($adminBidShow, '"method": "PATCH"'));
+expectTrue('admin bid show amount days message status', str_contains($adminBidShow, '"name": "amount"') && str_contains($adminBidShow, '"name": "days"') && str_contains($adminBidShow, '"name": "message"') && str_contains($adminBidShow, '"value": "pending"'));
 
 $adminCos = (string) file_get_contents($root.'/resources/layouts/admin/companies_index.json');
 expectTrue('admin company approve', str_contains($adminCos, '/approve'));
@@ -147,9 +163,10 @@ expectTrue('admin company recommended/priority', str_contains($adminCos, 'is_rec
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.6.0', str_contains($nav, 'nav.js?v=0.6.0'));
-expectTrue('form.js cache bust 0.6.0', str_contains($nav, 'form.js?v=0.6.0'));
-expectTrue('form.css cache bust 0.6.0', str_contains($nav, 'form.css?v=0.6.0'));
+expectTrue('nav cache bust 0.7.0', str_contains($nav, 'nav.js?v=0.7.0'));
+expectTrue('form.js cache bust 0.7.0', str_contains($nav, 'form.js?v=0.7.0'));
+expectTrue('form.css cache bust 0.7.0', str_contains($nav, 'form.css?v=0.7.0'));
+expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bid_user_nav') && str_contains($nav, 'extension_user_base'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
@@ -186,7 +203,7 @@ expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box')
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.6.0'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.7.0'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
@@ -205,6 +222,8 @@ expectTrue('sizes and manager ensure migration', is_file($root.'/database/migrat
 expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrations/2026_09_16_000009_ensure_includes_modeling.php'));
 expectTrue('company profile admin fields migration', is_file($root.'/database/migrations/2026_09_16_000010_ensure_company_profile_admin_fields.php'));
 expectTrue('job audience and ownership migration', is_file($root.'/database/migrations/2026_09_16_000011_ensure_job_audience_and_copyright.php'));
+expectTrue('module settings migration', is_file($root.'/database/migrations/2026_09_16_000012_create_maker_module_settings_table.php'));
+expectTrue('settings defaults json', is_file($root.'/config/settings/defaults.json'));
 
 $fileModel = (string) file_get_contents($root.'/src/Models/MakerJobFile.php');
 expectTrue('uploader payload wraps attachment data', str_contains($fileModel, 'function toUploaderPayload') && str_contains($fileModel, "'success' => true") && str_contains($fileModel, "'data' => \$att"));
@@ -223,6 +242,26 @@ expectTrue('admin types create', str_contains($adminTypes, '/admin/job-types'));
 expectTrue('admin types move', str_contains($adminTypes, '/move'));
 expectTrue('admin types delete', str_contains($adminTypes, '"method": "DELETE"'));
 expectTrue('admin types includes_modeling checkbox', str_contains($adminTypes, 'includes_modeling') && str_contains($adminTypes, '모델링 포함 (제공 확장자)'));
+
+$adminSettings = (string) file_get_contents($root.'/resources/layouts/admin/settings_index.json');
+expectTrue('admin settings put', str_contains($adminSettings, '/admin/settings') && str_contains($adminSettings, '"method": "PUT"'));
+expectTrue('admin settings menu fields', str_contains($adminSettings, 'nav_js_enabled') && str_contains($adminSettings, 'nav_insert') && str_contains($adminSettings, 'extension_user_base'));
+expectTrue('admin settings notices', str_contains($adminSettings, 'list_body') && str_contains($adminSettings, 'create_body') && str_contains($adminSettings, '의뢰목록 안내문'));
+expectTrue('admin settings general', str_contains($adminSettings, 'default_job_status') && str_contains($adminSettings, 'guests_see_list'));
+expectTrue('admin settings permission', str_contains($adminSettings, 'custom-maker_bid.settings.read'));
+
+$navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
+expectTrue('nav.js fetches public settings', str_contains($navJs, '/api/modules/custom-maker_bid/settings'));
+expectTrue('nav.js applies notice html', str_contains($navJs, 'data-cmb-notice') && str_contains($navJs, 'innerHTML'));
+expectTrue('nav.js insert positions', str_contains($navJs, 'after_shop') && str_contains($navJs, 'after_home') && str_contains($navJs, 'prepend_row'));
+
+$create = (string) file_get_contents($root.'/resources/layouts/user/jobs_create.json');
+expectTrue('create notice placeholder', str_contains($create, 'data-cmb-notice') && str_contains($create, '"create"'));
+$show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json');
+expectTrue('show notice placeholder', str_contains($show, 'data-cmb-notice') && str_contains($show, '"show"'));
+$edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
+expectTrue('edit notice placeholder', str_contains($edit, 'data-cmb-notice') && str_contains($edit, '"edit"'));
+expectTrue('optional sanctum list still present', str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

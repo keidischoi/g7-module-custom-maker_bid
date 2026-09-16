@@ -26,6 +26,18 @@
       "meta": { "title": "입찰 관리" }
     },
     {
+      "path": "*/admin/maker-bid/bids/:id",
+      "layout": "bids_show",
+      "auth_required": true,
+      "meta": { "title": "입찰 수정" }
+    },
+    {
+      "path": "*/admin/maker-bid/settings",
+      "layout": "settings_index",
+      "auth_required": true,
+      "meta": { "title": "설정" }
+    },
+    {
       "path": "*/admin/maker-bid/companies",
       "layout": "companies_index",
       "auth_required": true,

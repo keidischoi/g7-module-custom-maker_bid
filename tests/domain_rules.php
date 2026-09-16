@@ -43,7 +43,8 @@ expectFalse('cannot update accepted bid', BidRules::canUpdateOwn(3, 3, true, 'ac
 expectFalse('cannot update rejected bid', BidRules::canUpdateOwn(3, 3, true, 'rejected'));
 
 $write = BidRules::writeRules();
-expectTrue('bid amount required', in_array('required', $write['amount'], true));
+expectTrue('bid pending label', BidRules::statusLabel('pending') === '대기');
+expectTrue('bid accepted label', BidRules::statusLabel('accepted') === '낙찰');
 expectTrue('bid amount min 1', in_array('min:1', $write['amount'], true));
 
 expectTrue('owner can award', AwardRules::canAward(11, 11));

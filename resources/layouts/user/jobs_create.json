@@ -124,6 +124,7 @@
               }
             ]
           },
+          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "create" } },
           {
             "id": "card",
             "type": "basic",

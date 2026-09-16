@@ -54,6 +54,7 @@
               }
             ]
           },
+          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "history" } },
           { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "내가 등록한 의뢰의 진행·내정·완료·보류·취소 이력입니다." },
           {
             "id": "empty",

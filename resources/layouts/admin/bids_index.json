@@ -11,7 +11,8 @@
     "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
   },
   "state": {
-    "filter": { "job_id": "", "user_id": "", "status": "" }
+    "filter": { "job_id": "", "user_id": "", "status": "" },
+    "edit": { "id": "", "amount": "", "days": "", "message": "", "status": "pending" }
   },
   "data_sources": [
     {
@@ -49,10 +50,11 @@
               { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
               { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
               { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "job_id, user_id, 상태(pending / accepted / rejected)로 필터합니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "job_id, user_id, 상태(pending 대기 / accepted 낙찰 / rejected 거절)로 필터합니다. 상세에서 금액·기간·메시지·상태를 수정합니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -61,7 +63,25 @@
             "children": [
               { "id": "fjob", "type": "basic", "name": "Input", "props": { "name": "job_id", "placeholder": "의뢰 ID" } },
               { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID" } },
-              { "id": "fstatus", "type": "basic", "name": "Input", "props": { "name": "status", "placeholder": "상태" } },
+              {
+                "id": "fstatus",
+                "type": "basic",
+                "name": "Select",
+                "props": {
+                  "name": "status",
+                  "value": "{{_local.filter.status}}",
+                  "className": "rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                  "options": [
+                    { "value": "", "label": "전체 상태" },
+                    { "value": "pending", "label": "대기" },
+                    { "value": "accepted", "label": "낙찰" },
+                    { "value": "rejected", "label": "거절" }
+                  ]
+                },
+                "actions": [
+                  { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "filter.status": "{{$event.target.value}}" } }
+                ]
+              },
               {
                 "id": "fgo",
                 "type": "basic",
@@ -89,7 +109,35 @@
             "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
             "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
             "children": [
-              { "id": "btxt", "type": "basic", "name": "P", "text": "#{{$item.id}} 의뢰 {{$item.job_id}} {{$item.job.title ?? ''}} · {{$item.amount}}원 · {{$item.status}} · 회원 {{$item.user_id}} · 업체 {{$item.company_id ?? '-'}}" },
+              { "id": "btxt", "type": "basic", "name": "P", "text": "#{{$item.id}} 의뢰 {{$item.job_id}} {{$item.job.title ?? ''}} · {{$item.amount}}원 · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 업체 {{$item.company_id ?? '-'}}" },
+              {
+                "id": "bacts",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "flex items-center gap-2 flex-wrap" },
+                "children": [
+              { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids/{{$item.id}}" }, "text": "상세/수정" },
+              {
+                "id": "bload",
+                "type": "basic",
+                "name": "Button",
+                "text": "불러오기",
+                "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "edit.id": "{{$item.id}}",
+                      "edit.amount": "{{$item.amount}}",
+                      "edit.days": "{{$item.days || ''}}",
+                      "edit.message": "{{$item.message || ''}}",
+                      "edit.status": "{{$item.status}}"
+                    }
+                  }
+                ]
+              },
               {
                 "id": "bdel",
                 "type": "basic",
@@ -106,6 +154,46 @@
                     "confirm": "이 입찰을 삭제할까요?",
                     "onSuccess": [
                       { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
+                      { "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
+                    ],
+                    "onError": [
+                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+          ]
+          },
+          {
+            "id": "edit_box",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{_local.edit.id}}",
+            "props": { "className": "max-w-xl space-y-2 p-4 rounded-xl border border-gray-200 dark:border-white/10", "dataKey": "edit", "trackChanges": true },
+            "children": [
+              { "id": "eh", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "입찰 수정 #{{_local.edit.id}}" },
+              { "id": "eamount", "type": "basic", "name": "Input", "props": { "name": "amount", "type": "number", "min": "1", "placeholder": "금액" } },
+              { "id": "edays", "type": "basic", "name": "Input", "props": { "name": "days", "type": "number", "min": "1", "placeholder": "일" } },
+              { "id": "emsg", "type": "basic", "name": "Textarea", "props": { "name": "message", "placeholder": "메시지" } },
+              { "id": "estatus_l", "type": "basic", "name": "P", "props": { "className": "text-sm text-secondary" }, "text": "상태 pending / accepted / rejected" },
+              { "id": "estatus", "type": "basic", "name": "Input", "props": { "name": "status", "placeholder": "pending" } },
+              {
+                "id": "esave",
+                "type": "basic",
+                "name": "Button",
+                "text": "입찰 저장",
+                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bid/admin/bids/{{_local.edit.id}}",
+                    "params": { "method": "PATCH", "body": "{{_local.edit}}" },
+                    "onSuccess": [
+                      { "handler": "toast", "params": { "type": "success", "message": "입찰을 저장했습니다." } },
                       { "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
                     ],
                     "onError": [

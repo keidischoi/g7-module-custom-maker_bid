@@ -231,3 +231,20 @@ html.dark .cmb-qa-fill,
   background: rgb(146 64 14 / 0.95);
   color: rgb(255 237 213);
 }
+
+.cmb-notice {
+  border-radius: 0.75rem;
+  border: 1px solid var(--cmb-border, rgb(229 231 235));
+  background: var(--cmb-muted, rgb(249 250 251));
+  color: var(--cmb-muted-fg, rgb(55 65 81));
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+html.dark .cmb-notice,
+.dark .cmb-notice {
+  border-color: rgb(55 65 81);
+  background: rgb(31 41 55 / 0.7);
+  color: rgb(229 231 235);
+}

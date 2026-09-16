@@ -5,12 +5,14 @@ use Modules\Custom\MakerBid\Http\Controllers\Admin\BidAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobTypeAdminController;
+use Modules\Custom\MakerBid\Http\Controllers\Admin\SettingsAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\AssetController;
 use Modules\Custom\MakerBid\Http\Controllers\BidController;
 use Modules\Custom\MakerBid\Http\Controllers\CompanyController;
 use Modules\Custom\MakerBid\Http\Controllers\JobController;
 use Modules\Custom\MakerBid\Http\Controllers\JobFileController;
 use Modules\Custom\MakerBid\Http\Controllers\JobTypeController;
+use Modules\Custom\MakerBid\Http\Controllers\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +53,9 @@ Route::get('jobs/{id}', [JobController::class, 'show'])
 Route::get('companies', [CompanyController::class, 'index'])
     ->middleware(['throttle:600,1'])
     ->name('companies.index');
+Route::get('settings', [SettingsController::class, 'show'])
+    ->middleware(['throttle:600,1'])
+    ->name('settings.show');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
@@ -174,4 +179,14 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.companies.delete')
         ->name('admin.companies.destroy');
+
+    Route::get('settings', [SettingsAdminController::class, 'show'])
+        ->middleware('permission:admin,custom-maker_bid.settings.read')
+        ->name('admin.settings.show');
+    Route::put('settings', [SettingsAdminController::class, 'update'])
+        ->middleware('permission:admin,custom-maker_bid.settings.update')
+        ->name('admin.settings.update');
+    Route::patch('settings', [SettingsAdminController::class, 'update'])
+        ->middleware('permission:admin,custom-maker_bid.settings.update')
+        ->name('admin.settings.patch');
 });

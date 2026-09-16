@@ -3,14 +3,16 @@
 namespace Modules\Custom\MakerBid\Listeners;
 
 use App\Contracts\Extension\HookListenerInterface;
+use Modules\Custom\MakerBid\Services\MakerBidSettingsService;
+use Modules\Custom\MakerBid\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.6.0';
+    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.7.0';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.6.0';
+    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.7.0';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.6.0';
+    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.7.0';
 
     public static function getSubscribedHooks(): array
     {
@@ -33,6 +35,13 @@ class UserMenuListener implements HookListenerInterface
             if (str_starts_with($name, 'admin') || str_contains($name, 'admin')) {
                 return $layout;
             }
+            $menu = $this->menuSettings();
+            if (! ($menu['extension_user_base'] ?? true)) {
+                $layout = $this->removeComponent($layout, 'maker_bid_user_nav');
+            }
+            if (! ($menu['extension_home'] ?? true)) {
+                $layout = $this->removeComponent($layout, 'maker_bid_home_nav');
+            }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply'], true)) {
@@ -45,6 +54,69 @@ class UserMenuListener implements HookListenerInterface
         }
 
         return $layout;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function menuSettings(): array
+    {
+        try {
+            if (function_exists('app')) {
+                $all = app(MakerBidSettingsService::class)->getAllSettings();
+
+                return is_array($all['menu'] ?? null) ? $all['menu'] : SettingsRules::defaults()['menu'];
+            }
+        } catch (\Throwable) {
+        }
+
+        return SettingsRules::defaults()['menu'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $node
+     * @return array<string, mixed>
+     */
+    private function removeComponent(array $node, string $id): array
+    {
+        foreach (['children', 'injections', 'components'] as $key) {
+            if (! isset($node[$key]) || ! is_array($node[$key])) {
+                continue;
+            }
+            $kept = [];
+            foreach ($node[$key] as $child) {
+                if (! is_array($child)) {
+                    $kept[] = $child;
+                    continue;
+                }
+                if (($child['id'] ?? '') === $id) {
+                    continue;
+                }
+                $kept[] = $this->removeComponent($child, $id);
+            }
+            $node[$key] = array_values($kept);
+        }
+        if (isset($node['slots']) && is_array($node['slots'])) {
+            foreach ($node['slots'] as $slot => $items) {
+                if (! is_array($items)) {
+                    continue;
+                }
+                $kept = [];
+                foreach ($items as $child) {
+                    if (! is_array($child)) {
+                        $kept[] = $child;
+                        continue;
+                    }
+                    if (($child['id'] ?? '') === $id) {
+                        continue;
+                    }
+                    $kept[] = $this->removeComponent($child, $id);
+                }
+                $node['slots'][$slot] = array_values($kept);
+            }
+        }
+
+        return $node;
     }
 
     /**

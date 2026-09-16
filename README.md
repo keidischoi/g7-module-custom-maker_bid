@@ -1,17 +1,17 @@
 # custom-maker_bid
 
-Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형 관리.
+Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.6.0**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청이 포함됩니다.
+버전 **0.7.0**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문)이 포함됩니다.
 
-- 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/bids` `/admin/maker-bid/companies` `/admin/maker-bid/activity`
+- 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/jobs/{id}` `/admin/maker-bid/bids` `/admin/maker-bid/bids/{id}` `/admin/maker-bid/companies` `/admin/maker-bid/activity` `/admin/maker-bid/settings`
 - 회원: `/maker-bid` `/maker-bid/new` `/maker-bid/bids` `/maker-bid/history` `/maker-bid/company` `/maker-bid/{id}` `/maker-bid/{id}/edit`
 
-홈 메뉴는 G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
+홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.6.0)
+## 설치 / 업그레이드 (0.7.0)
 
-0.5.3에서 올라올 때 additive 마이그레이션이 있습니다(입찰자 프로필 관리 필드, 의뢰 `audience` / `ownership_requested`). FileUploader 응답 형식·제목 바인딩·임의입력 유형 Select·공개 설정·DWG·소유권한 요청·입찰자 등록이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
+0.6.1에서 올라올 때 additive 마이그레이션 `maker_module_settings` 가 있습니다. 관리자 의뢰/입찰 수정 UI와 설정(안내문·메뉴 위치)이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
@@ -22,19 +22,37 @@ php artisan module:update custom-maker_bid
 php artisan cache:clear
 ```
 
-테이블: `maker_jobs`, `maker_bids`, `maker_companies`, `maker_job_types`, `maker_job_files` (uninstall 시 dynamic tables로 정리).
+테이블: `maker_jobs`, `maker_bids`, `maker_companies`, `maker_job_types`, `maker_job_files`, `maker_module_settings` (uninstall 시 dynamic tables로 정리).
 
 ## 권한
 
 | identifier | 용도 |
 |---|---|
-| `custom-maker_bid.jobs.read` / `.update` / `.delete` | 관리자 의뢰·유형 (목록·보류·취소·삭제, 유형 CRUD) |
-| `custom-maker_bid.bids.read` / `.update` / `.delete` | 관리자 입찰 |
+| `custom-maker_bid.jobs.read` / `.update` / `.delete` | 관리자 의뢰·유형 (목록·수정·보류·취소·삭제, 유형 CRUD) |
+| `custom-maker_bid.bids.read` / `.update` / `.delete` | 관리자 입찰 (목록·수정·삭제) |
 | `custom-maker_bid.companies.read` / `.create` / `.update` / `.delete` | 관리자 업체 승인·거절·삭제 |
+| `custom-maker_bid.settings.read` / `.update` | 관리자 모듈 설정 (메뉴·안내문) |
 
 관리자 API는 `auth:sanctum` + 위 permission 미들웨어를 사용합니다. 모듈 업데이트 후 권한 동기화가 필요합니다.
 
-관리자 메뉴 하위: **의뢰 목록** / **유형 관리** / **입찰 관리** / **회사 목록** / **회원 활동**.
+관리자 메뉴 하위: **의뢰 목록** / **유형 관리** / **입찰 관리** / **회사 목록** / **회원 활동** / **설정**.
+
+## 설정 (안내문 / 메뉴)
+
+`/admin/maker-bid/settings` 에서 저장합니다.
+
+**회원 메뉴**
+- 헤더 버튼(nav.js): 샵/홈 줄의 맨 뒤·맨 앞, 샵 뒤, 홈 뒤.
+- 레이아웃 확장: `_user_base` / `home` 의 `header` append (`resources/extensions/*.json`). 테마 헤더 id가 `header`가 아니면 그 JSON의 `target_id`를 바꿔야 합니다.
+- JS 삽입과 확장을 동시에 켜면 링크가 두 번 보일 수 있습니다. 보통은 JS만 켜 둡니다.
+
+**안내문**
+- 의뢰목록·작성·입찰현황·이력·입찰자 등록·상세·수정마다 표시 여부 + 본문.
+- 회원 화면 상단 `data-cmb-notice` 자리에 렌더됩니다. HTML(문단·링크) 가능, script/iframe은 저장 시 제거됩니다.
+
+**모듈 동작**
+- 의뢰 등록 기본 상태 (견적요청 / 의뢰 / 보류).
+- 비회원 의뢰목록 공개. 꺼도 로그인 작성자의 본인 의뢰는 0.6.1과 같이 목록·상세에 나옵니다.
 
 ## 공개 / 회원 API
 
@@ -58,6 +76,7 @@ Prefix: `/api/modules/custom-maker_bid`
 | PATCH | `/jobs/{id}/bids/{bidId}` | sanctum | 본인 입찰 수정 |
 | POST | `/jobs/{id}/award` | sanctum | 낙찰. 이후 상대에게 개인정보 공개 |
 | GET | `/companies` | 없음 | 공개 입찰자 목록 (추천·우선순위 순) |
+| GET | `/settings` | 없음 | 공개 모듈 설정 (메뉴·안내문) |
 | GET | `/companies/form-defaults` | sanctum | 입찰자 등록 기본값 |
 | POST | `/companies` | sanctum | 입찰자 등록 |
 | GET | `/companies/me` | sanctum | 내 입찰자 신청 |
@@ -135,6 +154,8 @@ Prefix: `/api/modules/custom-maker_bid`
 | POST | `/admin/companies/{id}/hold` | companies.update |
 | POST | `/admin/companies/{id}/reject` | companies.update |
 | DELETE | `/admin/companies/{id}` | companies.delete |
+| GET | `/admin/settings` | settings.read |
+| PUT/PATCH | `/admin/settings` | settings.update |
 
 ## 테스트
 
@@ -151,4 +172,4 @@ php tests/run.php
 | identifier | `custom-maker_bid` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.6.0` |
+| version | `0.7.0` |

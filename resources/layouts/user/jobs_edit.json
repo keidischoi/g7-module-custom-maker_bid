@@ -283,6 +283,15 @@
             ]
           },
           {
+            "id": "cmb_notice",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "edit"
+            }
+          },
+          {
             "id": "card",
             "type": "basic",
             "name": "Div",

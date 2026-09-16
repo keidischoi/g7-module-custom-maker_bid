@@ -101,6 +101,7 @@
               }
             ]
           },
+          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "company" } },
           { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "업체 또는 개인으로 등록할 수 있습니다. 관리자 승인 후 입찰에 업체 정보가 붙습니다. 거절된 경우에만 다시 신청할 수 있습니다." },
           {
             "id": "pending",

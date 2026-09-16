@@ -55,6 +55,7 @@ class JobPresenter
             'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
             'awarded_bid_id' => $job->awarded_bid_id !== null ? (int) $job->awarded_bid_id : null,
             'closes_at' => optional($job->closes_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('closes_at'),
+            'closes_at_local' => JobRules::datetimeLocal($job->closes_at) ?? JobRules::datetimeLocal($job->getRawOriginal('closes_at')),
             'rush_fee_enabled' => (bool) $job->rush_fee_enabled,
             'rush_deadline' => JobRules::datetimeLocal($job->rush_deadline) ?? JobRules::datetimeLocal($job->getRawOriginal('rush_deadline')),
             'rush_deadline_label' => JobRules::datetimeLabel($job->rush_deadline) ?? JobRules::datetimeLabel($job->getRawOriginal('rush_deadline')),
