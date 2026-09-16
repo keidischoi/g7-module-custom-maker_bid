@@ -287,13 +287,16 @@ html.dark .cmb-admin-check-text,
   max-width: none !important;
 }
 
+/* G7 Div defaults to column + items-start, which stacks title over buttons.
+   Force a full-width rounded card with content LEFT / actions RIGHT. */
 .cmb-admin-row {
   display: flex !important;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1rem;
-  padding: 0.9rem 1.05rem;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.75rem 1.15rem;
+  padding: 1rem 1.15rem;
   border: 1px solid var(--cmb-admin-row-border);
   border-radius: 0.75rem;
   background: var(--cmb-admin-row);
@@ -308,30 +311,81 @@ html.dark .cmb-admin-row,
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
-.cmb-admin-row-main {
-  flex: 1 1 14rem;
-  min-width: 0;
+.cmb-admin-row > * {
+  width: auto !important;
+  max-width: none !important;
+  align-self: center !important;
+}
+
+.cmb-admin-row-main,
+.cmb-admin-row > *:first-child {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center;
+  gap: 0.15rem;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  max-width: none !important;
 }
 
 .cmb-admin-row-title {
   font-weight: 600;
   color: var(--cmb-admin-fg);
   text-decoration: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.cmb-admin-row-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
+.cmb-admin-row-main .cmb-admin-muted {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cmb-admin-row-actions,
+.cmb-admin-row > *:last-child {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
   gap: 0.4rem;
   margin-left: auto;
-  flex: 0 0 auto;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  white-space: nowrap;
 }
 
 .cmb-admin-row-actions a,
 .cmb-admin-row-actions button {
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .cmb-admin-row {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+  }
+
+  .cmb-admin-row-actions,
+  .cmb-admin-row > *:last-child {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    margin-left: 0;
+    justify-content: flex-start !important;
+    white-space: normal;
+  }
+
+  .cmb-admin-row-title,
+  .cmb-admin-row-main .cmb-admin-muted {
+    white-space: normal;
+  }
 }
 
 .cmb-admin-split {

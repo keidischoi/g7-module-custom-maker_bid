@@ -8,13 +8,13 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.2';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.3';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.2';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.3';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.2';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.3';
 
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.2';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.3';
 
     public static function getSubscribedHooks(): array
     {

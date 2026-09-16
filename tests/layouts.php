@@ -171,10 +171,10 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.9.2', str_contains($nav, 'nav.js?v=0.9.2'));
-expectTrue('form.js cache bust 0.9.2', str_contains($nav, 'form.js?v=0.9.2'));
-expectTrue('form.css cache bust 0.9.2', str_contains($nav, 'form.css?v=0.9.2'));
-expectTrue('admin.css cache bust 0.9.2', str_contains($nav, 'admin.css?v=0.9.2'));
+expectTrue('nav cache bust 0.9.3', str_contains($nav, 'nav.js?v=0.9.3'));
+expectTrue('form.js cache bust 0.9.3', str_contains($nav, 'form.js?v=0.9.3'));
+expectTrue('form.css cache bust 0.9.3', str_contains($nav, 'form.css?v=0.9.3'));
+expectTrue('admin.css cache bust 0.9.3', str_contains($nav, 'admin.css?v=0.9.3'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -214,7 +214,7 @@ expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-ru
 expectTrue('form.css styles company submit top-right', str_contains($css, '.cmb-company-submit-top') && str_contains($css, 'white-space: nowrap'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.2'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.3'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
@@ -294,11 +294,19 @@ expectTrue('admin.css stretches list rows', str_contains($adminCss, '.cmb-admin-
 expectTrue('admin.css sizes filter type and status', str_contains($adminCss, '.cmb-admin-filter-type') && str_contains($adminCss, '.cmb-admin-filter-status') && str_contains($adminCss, '.cmb-admin-filter-go'));
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
 expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.2'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.3'));
 $adminBidsLayout = (string) file_get_contents($root.'/resources/layouts/admin/bids_index.json');
 expectTrue('admin bids list is full width', str_contains($adminBidsLayout, 'cmb-admin-list w-full') && str_contains($adminBidsLayout, 'cmb-admin-row w-full') && str_contains($adminBidsLayout, 'cmb-admin-filter-id'));
 $adminActivity = (string) file_get_contents($root.'/resources/layouts/admin/activity_index.json');
 expectTrue('admin activity lists are full width', str_contains($adminActivity, 'cmb-admin-list w-full') && str_contains($adminActivity, 'cmb-admin-row w-full') && str_contains($adminActivity, 'cmb-admin-filter-id'));
+expectTrue('admin.css rows are nowrap horizontal cards', str_contains($adminCss, 'flex-direction: row !important') && str_contains($adminCss, 'flex-wrap: nowrap !important') && str_contains($adminCss, 'border-radius: 0.75rem'));
+expectTrue('admin.css allows wrap only on narrow screens', str_contains($adminCss, '@media (max-width: 640px)') && str_contains($adminCss, 'flex-wrap: wrap !important'));
+expectTrue('form.css row fallback is nowrap', str_contains($css, 'flex-wrap: nowrap') && str_contains($css, '.cmb-admin-row-actions'));
+expectTrue('admin jobs row is single-line card', str_contains($adminJobs, 'flex-nowrap') && str_contains($adminJobs, 'cmb-admin-row-actions shrink-0'));
+expectTrue('admin bids row is single-line card', str_contains($adminBidsLayout, 'flex-nowrap') && str_contains($adminBidsLayout, 'cmb-admin-row-actions shrink-0'));
+expectTrue('admin companies row is single-line card', str_contains($adminCos, 'flex-nowrap') && str_contains($adminCos, 'cmb-admin-row-actions shrink-0'));
+expectTrue('admin types row is single-line card', str_contains($adminTypes, 'flex-nowrap') && str_contains($adminTypes, 'cmb-admin-row-actions shrink-0'));
+expectTrue('admin activity rows are single-line cards', str_contains($adminActivity, 'flex-nowrap') && str_contains($adminActivity, 'cmb-admin-row-actions shrink-0'));
 
 $oldIdHits = [];
 $scan = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));

@@ -122,14 +122,14 @@
                         "id": "jrow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row w-full" },
+                        "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
                         "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
                         "children": [
                           {
                             "id": "jmain",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-main" },
+                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
                             "children": [
                               { "id": "jtitle", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
                               { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.status}} · 회원 {{$item.user_id}}" }
@@ -139,7 +139,7 @@
                             "id": "jacts",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-actions" },
+                            "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
                             "children": [
                               { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
                             ]
@@ -168,14 +168,14 @@
                         "id": "brow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row w-full" },
+                        "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
                         "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
                         "children": [
                           {
                             "id": "bmain",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-main" },
+                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
                             "children": [
                               { "id": "btxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status}}" },
                               { "id": "bmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "의뢰 {{$item.job_id}} · 회원 {{$item.user_id}}" }
@@ -185,7 +185,7 @@
                             "id": "bacts",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-actions" },
+                            "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
                             "children": [
                               { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
                             ]

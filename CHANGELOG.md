@@ -4,6 +4,19 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.3] - 2026-09-16
+
+### Fixed
+
+- 관리자 목록 행이 제목·메타 아래에 액션 버튼이 붙는 **두 줄 스택**이 되지 않게 합니다. G7 Div 기본 `flex-direction: column` 을 덮어 **한 줄 카드**: 왼쪽 제목+메타, 오른쪽 액션, `flex-nowrap`. 아주 좁은 화면(640px)에서만 감쌉니다.
+- 각 행은 입찰자 상태 박스처럼 **둥근 카드**(테두리·radius·padding)이고 콘텐츠 영역 전체 너비입니다. 다크 테마 테두리 대비(0.9.2 gray-400/500)는 유지합니다.
+- 대상: `jobs_index` · `bids_index` · `companies_index` · `types_index` · `activity_index` (의뢰 상세 입찰 행도 동일). 필터 용도별 너비는 그대로입니다.
+
+### Changed
+
+- 버전 **0.9.3**. nav/form.js·form.css·admin.css 캐시 `?v=0.9.3`.
+- identifier·권한·API prefix `custom-maker_bids`, namespace `Modules\Custom\MakerBids` 는 변경하지 않습니다.
+
 ## [0.9.2] - 2026-09-16
 
 ### Fixed
