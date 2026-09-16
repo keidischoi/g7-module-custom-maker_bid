@@ -65,32 +65,25 @@
     var items = parseSizes(ta.value || ta.getAttribute('placeholder'));
     var root = document.createElement('div');
     root.className = 'cmb-sizes space-y-2';
-    root.setAttribute('data-cmb-sizes', '1');
     var list = document.createElement('div');
     list.className = 'cmb-sizes-list space-y-2';
-    list.setAttribute('data-cmb-sizes-list', '1');
     items.forEach(function (it) { list.appendChild(makeRow(it, items.length > 1)); });
     var add = document.createElement('button');
     add.type = 'button';
     add.textContent = '추가';
-    add.setAttribute('data-cmb-size-add', '1');
     add.className = 'px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600';
     root.appendChild(list);
     root.appendChild(add);
     ta.parentNode.insertBefore(root, ta);
-
     function sync() {
-      var rows = collect(list);
-      ta.value = JSON.stringify(rows);
+      ta.value = JSON.stringify(collect(list));
       ta.dispatchEvent(new Event('input', { bubbles: true }));
-      ta.dispatchEvent(new Event('change', { bubbles: true }));
       list.querySelectorAll('[data-cmb-size-remove]').forEach(function (btn) {
-        btn.style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+        btn.style.visibility = collect(list).length > 1 ? 'visible' : 'hidden';
       });
     }
     add.addEventListener('click', function (e) {
       e.preventDefault();
-      if (list.querySelectorAll('[data-cmb-size-row]').length >= 20) return;
       list.appendChild(makeRow({ name: '', w: '', d: '', h: '' }, true));
       sync();
     });
@@ -106,12 +99,38 @@
     sync();
   }
 
+  function fixAudienceGhost() {
+    var hosts = document.querySelectorAll('#aud_wrap, .cmb-admin-select-host-sm');
+    hosts.forEach(function (host) {
+      host.style.minWidth = '8.5rem';
+      host.style.width = '8.5rem';
+      host.style.maxWidth = '8.5rem';
+      var triggers = host.querySelectorAll('button, [role="combobox"], [data-slot="select-trigger"]');
+      triggers.forEach(function (el, i) {
+        if (i === 0) {
+          el.style.width = '8.5rem';
+          el.style.minWidth = '8.5rem';
+          return;
+        }
+        el.style.display = 'none';
+      });
+      host.querySelectorAll('select').forEach(function (el) {
+        el.style.position = 'absolute';
+        el.style.opacity = '0';
+        el.style.pointerEvents = 'none';
+        el.style.width = '1px';
+        el.style.height = '1px';
+      });
+    });
+  }
+
   function start() {
     if (!document.querySelector('.cmb-admin')) return;
     enhanceSizes();
+    fixAudienceGhost();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
-  setTimeout(enhanceSizes, 400);
-  setTimeout(enhanceSizes, 1200);
+  setTimeout(start, 400);
+  setTimeout(fixAudienceGhost, 1200);
 })();
