@@ -569,7 +569,7 @@ html.dark .cmb-admin-row,
 /* Portaled menus leave .cmb-admin. admin.css is only on this module's
    admin layouts, so these rules may target [role=listbox] on the page.
    html.cmb-admin-ui is set by admin.js; .cmb-admin-listbox is marked on
-   the real open node. Do not use body:has or --radix-select-trigger-width. */
+   the real open node. Avoid :has() on body and the radix trigger-width custom property. */
 .cmb-admin [role="listbox"],
 .cmb-admin-select-host [role="listbox"],
 .cmb-admin [data-slot="select-content"],

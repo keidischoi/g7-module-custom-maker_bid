@@ -232,15 +232,38 @@ html.dark .cmb-qa-fill,
   color: rgb(255 237 213);
 }
 
+.cmb-company-title-row,
+.cmb-company-title-row.flex-col,
+.cmb-company-title-row[class*="flex-col"] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem;
+  width: 100%;
+}
+
+.cmb-company-title-row > * {
+  width: auto !important;
+  align-self: center !important;
+}
+
 .cmb-company-submit-top {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
+  margin-left: auto !important;
+  flex: 0 0 auto !important;
   background-color: rgb(17 24 39);
   color: rgb(255 255 255);
   font-weight: 600;
   white-space: nowrap;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+}
+
+.cmb-company-submit-top.is-locked {
+  display: none !important;
 }
 
 html.dark .cmb-company-submit-top,

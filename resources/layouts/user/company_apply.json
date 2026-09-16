@@ -89,15 +89,14 @@
                 "id": "title_row",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "flex items-center justify-between gap-4" },
+                "props": { "className": "cmb-company-title-row flex flex-row flex-nowrap items-center justify-between gap-4 w-full" },
                 "children": [
-                  { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "입찰자 등록" },
+                  { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white min-w-0" }, "text": "입찰자 등록" },
                   {
                     "id": "submit",
                     "type": "basic",
                     "name": "Button",
-                    "if": "{{!me.data?.status || me.data.status === 'rejected'}}",
-                    "text": "입찰자 등록",
+                    "text": "등록",
                     "props": { "type": "button", "data-cmb-company-submit": "1", "className": "cmb-order-submit cmb-company-submit-top shrink-0 ml-auto px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold" },
                     "actions": [
                       {

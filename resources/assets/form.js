@@ -244,6 +244,35 @@
     }
   }
 
+  function companyMeStatus() {
+    var me = g7Get('me.data') || g7Get('me');
+    if (me && me.data && typeof me.data === 'object' && (me.data.status || me.data.id)) {
+      me = me.data;
+    }
+    if (!me || typeof me !== 'object') {
+      return '';
+    }
+    return String(me.status || '');
+  }
+
+  function syncCompanySubmit() {
+    var btn = document.querySelector('[data-cmb-company-submit]');
+    if (!btn) {
+      return;
+    }
+    var st = companyMeStatus();
+    var lock = st === 'approved';
+    btn.classList.toggle('is-locked', lock);
+    if (lock) {
+      btn.setAttribute('hidden', 'hidden');
+      btn.setAttribute('aria-hidden', 'true');
+    } else {
+      btn.removeAttribute('hidden');
+      btn.removeAttribute('aria-hidden');
+      btn.style.setProperty('display', 'inline-flex', 'important');
+    }
+  }
+
   function pushTypeList(out, seen, list) {
     list = extractTypesList(list);
     var i;
@@ -1708,6 +1737,7 @@
     bindQaFill();
     bindFieldSync();
     bindHarvest();
+    syncCompanySubmit();
     bindCompanyJobTypes();
     bindLogoLimit();
   }

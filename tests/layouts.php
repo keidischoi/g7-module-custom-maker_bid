@@ -124,6 +124,7 @@ expectTrue('list omits empty type query', str_contains($list, 'query.type ||'));
 expectTrue('history rows read data.data fallback', str_contains((string) file_get_contents($root.'/resources/layouts/user/jobs_history.json'), 'jobs?.data?.data ?? jobs?.data'));
 
 $company = (string) file_get_contents($root.'/resources/layouts/user/company_apply.json');
+$css = (string) file_get_contents($root.'/resources/assets/form.css');
 expectTrue('company apply posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bids/companies"'));
 expectTrue('company apply auth_required', str_contains($company, '"auth_required": true'));
 expectTrue('company apply title is 입찰자 등록', str_contains($company, '입찰자 등록'));
@@ -132,12 +133,13 @@ expectTrue('company apply profile fill helper', str_contains($company, 'data-cmb
 expectTrue('company apply job types host', str_contains($company, 'data-cmb-job-types'));
 expectTrue('company apply daum postcode', str_contains($company, 'data-cmb-postcode'));
 expectTrue('company apply designated is read-only copy', str_contains($company, '지정업체') && ! str_contains($company, '"name": "is_designated"'));
-expectTrue('company apply submit is 입찰자 등록 top-right', str_contains($company, 'cmb-company-submit-top') && str_contains($company, '"text": "입찰자 등록"') && str_contains($company, 'data-cmb-company-submit'));
+expectTrue('company apply submit is 등록 top-right', str_contains($company, 'cmb-company-submit-top') && str_contains($company, '"text": "등록"') && str_contains($company, 'data-cmb-company-submit'));
 expectTrue('company apply submit sits in title row not form card', preg_match('/"id": "title_row"[\s\S]*"id": "submit"[\s\S]*"id": "tabs"[\s\S]*"id": "card"/', $company) === 1);
 expectTrue('company apply has no bottom submit duplicate', ! str_contains($company, '"id": "submit_bottom"'));
 expectTrue('company apply submit posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bids/companies"') && str_contains($company, '"method": "POST"'));
 expectTrue('company apply submit requires auth', preg_match('/"id": "submit"[\s\S]*"auth_required": true/', $company) === 1);
-expectTrue('company apply submit hidden unless new or rejected', str_contains($company, '!me.data?.status || me.data.status === \'rejected\''));
+expectTrue('company apply title row forces horizontal layout', str_contains($company, 'cmb-company-title-row') && str_contains($css, '.cmb-company-title-row') && str_contains($css, 'flex-direction: row !important'));
+expectTrue('company apply 등록 button is not gated by G7 if', preg_match('/"id": "submit"[\s\S]{0,400}"if":/', $company) !== 1);
 
 $adminJobs = (string) file_get_contents($root.'/resources/layouts/admin/jobs_index.json');
 expectTrue('admin jobs hold', str_contains($adminJobs, '/hold'));
@@ -216,6 +218,9 @@ expectTrue('form.css styles company submit top-right', str_contains($css, '.cmb-
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
 expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.5'));
+expectTrue('form.js company submit hides only when approved', str_contains($formJs, 'function syncCompanySubmit') && str_contains($formJs, "st === 'approved'") && str_contains($formJs, "querySelector('[data-cmb-company-submit]')"));
+expectTrue('form.js company submit stays visible for pending', str_contains($formJs, 'syncCompanySubmit') && ! str_contains($formJs, "st === 'pending'"));
+expectTrue('form.css locks approved company submit', str_contains($css, '.cmb-company-submit-top.is-locked') && str_contains($css, '.cmb-company-title-row'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
