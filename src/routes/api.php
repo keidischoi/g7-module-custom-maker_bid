@@ -5,6 +5,7 @@ use Modules\Custom\MakerBids\Http\Controllers\Admin\BidAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\JobAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\JobTypeAdminController;
+use Modules\Custom\MakerBids\Http\Controllers\Admin\MarketplaceAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\SettingsAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\AssetController;
 use Modules\Custom\MakerBids\Http\Controllers\BidController;
@@ -12,6 +13,7 @@ use Modules\Custom\MakerBids\Http\Controllers\CompanyController;
 use Modules\Custom\MakerBids\Http\Controllers\JobController;
 use Modules\Custom\MakerBids\Http\Controllers\JobFileController;
 use Modules\Custom\MakerBids\Http\Controllers\JobTypeController;
+use Modules\Custom\MakerBids\Http\Controllers\MarketplaceController;
 use Modules\Custom\MakerBids\Http\Controllers\SettingsController;
 
 Route::get('assets/nav.js', [AssetController::class, 'nav'])->middleware(['throttle:600,1'])->name('assets.nav');
@@ -27,6 +29,7 @@ Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanct
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
+Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
@@ -44,6 +47,17 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('companies/form-defaults', [CompanyController::class, 'formDefaults'])->name('companies.form-defaults');
     Route::post('companies', [CompanyController::class, 'store'])->name('companies.apply');
     Route::get('companies/me', [CompanyController::class, 'me'])->name('companies.me');
+    Route::get('notices', [MarketplaceController::class, 'notices'])->name('notices.index');
+    Route::post('notices/{id}/read', [MarketplaceController::class, 'readNotice'])->whereNumber('id')->name('notices.read');
+    Route::get('jobs/{id}/compare', [MarketplaceController::class, 'compare'])->whereNumber('id')->name('jobs.compare');
+    Route::post('jobs/{id}/bids/{bidId}/reject', [MarketplaceController::class, 'rejectBid'])->whereNumber('id')->whereNumber('bidId')->name('jobs.bids.reject');
+    Route::post('jobs/{id}/complete', [MarketplaceController::class, 'complete'])->whereNumber('id')->name('jobs.complete');
+    Route::post('jobs/{id}/work', [MarketplaceController::class, 'work'])->whereNumber('id')->name('jobs.work');
+    Route::get('jobs/{id}/messages', [MarketplaceController::class, 'messages'])->whereNumber('id')->name('jobs.messages');
+    Route::post('jobs/{id}/messages', [MarketplaceController::class, 'postMessage'])->whereNumber('id')->name('jobs.messages.store');
+    Route::post('jobs/{id}/claim', [MarketplaceController::class, 'claim'])->whereNumber('id')->name('jobs.claim');
+    Route::post('jobs/{id}/report', [MarketplaceController::class, 'report'])->whereNumber('id')->name('jobs.report');
+    Route::get('jobs/{id}/export', [MarketplaceController::class, 'export'])->whereNumber('id')->name('jobs.export');
 });
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(function () {
@@ -74,4 +88,6 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::get('settings', [SettingsAdminController::class, 'show'])->middleware('permission:admin,custom-maker_bids.settings.read')->name('admin.settings.show');
     Route::put('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.update');
     Route::patch('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.patch');
+    Route::get('ops', [MarketplaceAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.ops');
+    Route::post('claims/{id}', [MarketplaceAdminController::class, 'resolveClaim'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.claims.resolve');
 });
