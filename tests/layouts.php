@@ -64,6 +64,10 @@ expectTrue('create posts jobs', str_contains($create, '"target": "/api/modules/c
 expectTrue('create has auth_required', str_contains($create, '"auth_required": true'));
 expectTrue('create toasts errors', str_contains($create, 'error.message'));
 expectTrue('create is order card', str_contains($create, '제작 주문서'));
+expectTrue('create card uses theme surface', str_contains($create, 'cmb-order-card') && str_contains($create, 'dark:bg-gray-800'));
+expectTrue('create fields use theme tokens', str_contains($create, 'cmb-order-field') && str_contains($create, 'dark:bg-gray-900'));
+expectTrue('create does not use zinc paper card', ! str_contains($create, 'zinc-900') && ! str_contains($create, 'zinc-950'));
+expectTrue('create FileUploader themed', str_contains($create, 'cmb-order-uploader'));
 expectTrue('create FileUploader images', str_contains($create, 'cmb_images_uploader'));
 expectTrue('create FileUploader archives', str_contains($create, 'cmb_archives_uploader'));
 expectTrue('create uploadTriggerEvent images', str_contains($create, 'upload:maker_bid_images'));
@@ -102,12 +106,28 @@ expectTrue('admin company reject', str_contains($adminCos, '/reject'));
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.5.0', str_contains($nav, 'nav.js?v=0.5.0'));
-expectTrue('form.js cache bust 0.5.0', str_contains($nav, 'form.js?v=0.5.0'));
+expectTrue('nav cache bust 0.5.1', str_contains($nav, 'nav.js?v=0.5.1'));
+expectTrue('form.js cache bust 0.5.1', str_contains($nav, 'form.js?v=0.5.1'));
+expectTrue('form.css cache bust 0.5.1', str_contains($nav, 'form.css?v=0.5.1'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
 expectTrue('edit FileUploader present', str_contains($edit, 'FileUploader'));
+expectTrue('edit card uses theme surface', str_contains($edit, 'cmb-order-card') && str_contains($edit, 'dark:bg-gray-800'));
+expectTrue('edit does not use zinc paper card', ! str_contains($edit, 'zinc-900') && ! str_contains($edit, 'zinc-950'));
+
+$css = (string) file_get_contents($root.'/resources/assets/form.css');
+expectTrue('form.css themes dark card', str_contains($css, 'color-scheme: dark') && str_contains($css, '--cmb-card'));
+expectTrue('form.css styles fields and uploader', str_contains($css, '.cmb-order-field') && str_contains($css, '.cmb-order-uploader'));
+
+$formJs = (string) file_get_contents($root.'/resources/assets/form.js');
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.1'));
+
+$asset = (string) file_get_contents($root.'/src/Http/Controllers/AssetController.php');
+expectTrue('asset controller serves form.css', str_contains($asset, 'formCss') && str_contains($asset, 'form.css'));
+
+$api = (string) file_get_contents($root.'/src/routes/api.php');
+expectTrue('form.css route', str_contains($api, "assets/form.css"));
 
 $adminTypes = (string) file_get_contents($root.'/resources/layouts/admin/types_index.json');
 expectTrue('admin types create', str_contains($adminTypes, '/admin/job-types'));

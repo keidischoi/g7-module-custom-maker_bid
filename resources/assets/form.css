@@ -1,0 +1,119 @@
+/* Theme-aware 주문서 card. Uses shop CSS variables when present
+   (--color-card / --card / --background …) and G7 dark gray fallbacks
+   so the form matches navy shop chrome instead of a paper-white sheet. */
+
+.cmb-order-card {
+  --cmb-card: var(--color-card, var(--card, rgb(255 255 255)));
+  --cmb-card-fg: var(--color-card-foreground, var(--card-foreground, rgb(17 24 39)));
+  --cmb-field: var(--color-input, var(--input, var(--color-background, rgb(255 255 255))));
+  --cmb-field-fg: var(--color-foreground, var(--foreground, rgb(17 24 39)));
+  --cmb-muted: var(--color-muted, var(--muted, rgb(249 250 251)));
+  --cmb-muted-fg: var(--color-muted-foreground, var(--muted-foreground, rgb(107 114 128)));
+  --cmb-border: var(--color-border, var(--border, rgb(229 231 235)));
+  --cmb-ring: var(--color-ring, var(--ring, rgb(59 130 246)));
+  background-color: var(--cmb-card);
+  color: var(--cmb-card-fg);
+  border-color: var(--cmb-border);
+  color-scheme: light;
+}
+
+html.dark .cmb-order-card,
+.dark .cmb-order-card {
+  --cmb-card: var(--color-card, var(--card, rgb(31 41 55)));
+  --cmb-card-fg: var(--color-card-foreground, var(--card-foreground, rgb(243 244 246)));
+  --cmb-field: var(--color-input, var(--input, var(--color-background, rgb(17 24 39))));
+  --cmb-field-fg: var(--color-foreground, var(--foreground, rgb(243 244 246)));
+  --cmb-muted: var(--color-muted, var(--muted, rgb(17 24 39)));
+  --cmb-muted-fg: var(--color-muted-foreground, var(--muted-foreground, rgb(156 163 175)));
+  --cmb-border: var(--color-border, var(--border, rgb(55 65 81)));
+  --cmb-ring: var(--color-ring, var(--ring, rgb(147 197 253)));
+  background-color: var(--cmb-card);
+  color: var(--cmb-card-fg);
+  border-color: var(--cmb-border);
+  color-scheme: dark;
+}
+
+.cmb-order-card .cmb-order-field,
+.cmb-order-card input:not([type="checkbox"]):not([type="hidden"]):not([type="file"]):not([type="button"]):not([type="submit"]),
+.cmb-order-card textarea,
+.cmb-order-card select {
+  background-color: var(--cmb-field) !important;
+  color: var(--cmb-field-fg) !important;
+  border-color: var(--cmb-border) !important;
+  caret-color: var(--cmb-field-fg);
+}
+
+.cmb-order-card .cmb-order-field::placeholder,
+.cmb-order-card input::placeholder,
+.cmb-order-card textarea::placeholder {
+  color: var(--cmb-muted-fg) !important;
+  opacity: 1;
+}
+
+.cmb-order-card input[type="datetime-local"],
+.cmb-order-card input[type="date"],
+.cmb-order-card input[type="time"] {
+  color-scheme: inherit;
+}
+
+.cmb-order-card .cmb-order-field:focus,
+.cmb-order-card input:focus,
+.cmb-order-card textarea:focus,
+.cmb-order-card select:focus {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--cmb-ring);
+  border-color: var(--cmb-ring) !important;
+}
+
+.cmb-order-card .cmb-order-option {
+  background-color: color-mix(in srgb, var(--cmb-muted) 55%, transparent);
+  border-color: var(--cmb-border);
+}
+
+.cmb-order-card .cmb-order-check,
+.cmb-order-card input[type="checkbox"] {
+  accent-color: var(--cmb-ring);
+  color: var(--cmb-card-fg);
+}
+
+.cmb-order-card label,
+.cmb-order-card .cmb-order-check + span,
+.cmb-order-card .cmb-order-check + label {
+  color: var(--cmb-card-fg);
+}
+
+.cmb-order-card .cmb-order-uploader,
+.cmb-order-card .cmb-order-uploader [class*="border-dashed"],
+.cmb-order-card [class*="border-dashed"] {
+  background-color: color-mix(in srgb, var(--cmb-muted) 40%, transparent);
+  border-color: var(--cmb-border) !important;
+  color: var(--cmb-muted-fg);
+}
+
+html.dark .cmb-order-card [class*="border-dashed"],
+.dark .cmb-order-card [class*="border-dashed"] {
+  background-color: rgb(17 24 39 / 0.45);
+  border-color: rgb(75 85 99) !important;
+}
+
+.cmb-order-card .cmb-order-uploader p,
+.cmb-order-card [class*="border-dashed"] p {
+  color: var(--cmb-muted-fg) !important;
+}
+
+.cmb-order-card .cmb-order-postcode {
+  background-color: transparent;
+  color: var(--cmb-card-fg);
+  border-color: var(--cmb-border);
+}
+
+html.dark .cmb-order-card .cmb-order-submit,
+.dark .cmb-order-card .cmb-order-submit {
+  background-color: rgb(255 255 255);
+  color: rgb(17 24 39);
+}
+
+.cmb-order-card .cmb-order-submit {
+  background-color: rgb(17 24 39);
+  color: rgb(255 255 255);
+}
