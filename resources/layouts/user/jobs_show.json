@@ -17,7 +17,8 @@
       "endpoint": "/api/modules/custom-maker_bid/jobs/{{route.id}}",
       "method": "GET",
       "auto_fetch": true,
-      "refetchOnMount": true
+      "refetchOnMount": true,
+      "auth_mode": "optional"
     },
     {
       "id": "viewer",

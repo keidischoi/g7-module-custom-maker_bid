@@ -28,29 +28,34 @@ class JobService
     public function listPublic(Request $request): array
     {
         $q = MakerJob::query()->with(['jobType'])->withCount('bids')->latest();
-        $q->whereNotIn('status', JobRules::HIDDEN_PUBLIC_STATUSES);
+        $ctx = $this->viewerFromRequest($request);
 
-        if ($type = $request->query('type')) {
-            $q->where('type', TypeCatalog::normalizeSlug((string) $type));
+        if ($type = JobRules::listTypeFilter($request->query('type'))) {
+            $q->where('type', $type);
         }
-        if ($status = $request->query('status')) {
-            if (JobRules::isHiddenFromPublic((string) $status)) {
+        $statusFilter = JobRules::listStatusFilter($request->query('status'));
+        if ($statusFilter !== null) {
+            if ($statusFilter === []) {
                 return [];
             }
-            $q->where('status', $status);
+            $q->whereIn('status', $statusFilter);
         }
 
-        $ctx = $this->viewerFromRequest($request);
         if (! $ctx['isAdmin']) {
             $allowed = JobRules::visibleAudiencesFor(
                 $ctx['isMember'],
                 $ctx['hasApprovedCompany'],
                 $ctx['companyKind'],
             );
-            $q->where(function ($qq) use ($allowed, $ctx) {
-                $qq->whereIn('audience', $allowed)->orWhereNull('audience');
+            $q->where(function ($outer) use ($allowed, $ctx) {
+                $outer->where(function ($pub) use ($allowed) {
+                    $pub->whereNotIn('status', JobRules::HIDDEN_PUBLIC_STATUSES)
+                        ->where(function ($aud) use ($allowed) {
+                            $aud->whereIn('audience', $allowed)->orWhereNull('audience');
+                        });
+                });
                 if ($ctx['userId'] > 0) {
-                    $qq->orWhere('user_id', $ctx['userId']);
+                    $outer->orWhere('user_id', $ctx['userId']);
                 }
             });
         }
@@ -124,10 +129,13 @@ class JobService
      */
     public function findPublic(int $id, Request $request): array
     {
-        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->find($id);
+        if ($job === null) {
+            $this->denyPublic();
+        }
         $ctx = $this->viewerFromRequest($request);
         if (JobRules::isHiddenFromPublic((string) $job->status) && ! $this->canSeeHold($job, $ctx)) {
-            throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
+            $this->denyPublic();
         }
         $isOwner = $ctx['userId'] > 0 && (int) $job->user_id === $ctx['userId'];
         if (! JobRules::canViewAudience(
@@ -138,7 +146,7 @@ class JobService
             $ctx['hasApprovedCompany'],
             $ctx['companyKind'],
         ) && ! $this->hasBidOnJob($job, $ctx['userId'])) {
-            throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
+            $this->denyPublic();
         }
 
         return $this->present($job, $ctx, true, true);
@@ -520,6 +528,14 @@ class JobService
     private function ownerContext(int $userId): array
     {
         return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null];
+    }
+
+    /**
+     * Same 404 copy for missing, hold, and out-of-audience so existence is not leaked.
+     */
+    private function denyPublic(): never
+    {
+        throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
     }
 
     /**

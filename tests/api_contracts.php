@@ -15,7 +15,9 @@ expectFalse(
     'job index no longer auto-seeds demo rows',
     str_contains($jobController, 'MakerJob::query()->insert') || str_contains($jobController, '피규어 3D 출력 의뢰'),
 );
-expectTrue('public job list remains unauthenticated', str_contains($api, "Route::get('jobs', [JobController::class, 'index'])"));
+expectTrue('public job list remains guest-accessible', str_contains($api, "Route::get('jobs', [JobController::class, 'index'])"));
+expectTrue('public job list uses optional.sanctum', str_contains($api, "Route::get('jobs', [JobController::class, 'index'])") && preg_match("/Route::get\\('jobs'.*?optional\\.sanctum/s", $api) === 1);
+expectTrue('public job show uses optional.sanctum', str_contains($api, "Route::get('jobs/{id}', [JobController::class, 'show'])") && preg_match("/Route::get\\('jobs\\/\\{id\\}'.*?optional\\.sanctum/s", $api) === 1);
 expectTrue('mutating user APIs use auth:sanctum', str_contains($api, "middleware(['auth:sanctum', 'throttle:60,1'])"));
 expectTrue('bid create route exists', str_contains($api, "Route::post('jobs/{id}/bids', [BidController::class, 'store'])"));
 expectTrue('own-bid update route exists', str_contains($api, "Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])"));
@@ -40,7 +42,7 @@ expectTrue('admin company reject route', str_contains($api, "Route::post('compan
 expectTrue('admin company approve route', str_contains($api, "Route::post('companies/{id}/approve'"));
 expectTrue('admin company delete route', str_contains($api, "Route::delete('companies/{id}'"));
 expectTrue('admin bids index route', str_contains($api, "Route::get('bids', [BidAdminController::class, 'index'])"));
-expectTrue('module version is 0.6.0', str_contains($moduleJson, '"version": "0.6.0"'));
+expectTrue('module version is 0.6.1', str_contains($moduleJson, '"version": "0.6.1"'));
 expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
 expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
 expectTrue('owner job update route', str_contains($api, "Route::patch('jobs/{id}', [JobController::class, 'update'])"));
@@ -48,6 +50,12 @@ expectTrue('upload staging route', str_contains($api, "Route::post('uploads'"));
 expectTrue('admin job-types route', str_contains($api, "Route::get('job-types', [JobTypeAdminController::class, 'index'])"));
 expectTrue('admin job-types move route', str_contains($api, "Route::post('job-types/{id}/move'"));
 expectTrue('job viewer route exists', str_contains($api, "Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])"));
+expectTrue('job store envelopes id for layout navigate', str_contains($jobController, 'JobPresenter::envelope($job)'));
+$jobService = (string) file_get_contents($root.'/src/Services/JobService.php');
+expectTrue('findPublic maps missing id to domain 404', str_contains($jobService, 'function denyPublic') && str_contains($jobService, '->find($id)'));
+expectTrue('findPublic keeps same 404 copy for hidden jobs', str_contains($jobService, '의뢰를 찾을 수 없습니다.'));
+expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])"));
+expectTrue('listPublic uses listStatusFilter', str_contains($jobService, 'listStatusFilter'));
 expectTrue('bids mine route exists', str_contains($api, "Route::get('bids/mine', [BidController::class, 'mine'])"));
 expectTrue('admin job cancel route exists', str_contains($api, "Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])"));
 expectTrue('admin menus include 의뢰 목록', str_contains($modulePhp, '의뢰 목록'));

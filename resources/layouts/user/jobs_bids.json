@@ -17,6 +17,7 @@
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
+      "auth_mode": "optional",
       "params": { "status": "open" },
       "fallback": { "data": [] }
     },
@@ -70,7 +71,7 @@
             "id": "mine_empty",
             "type": "basic",
             "name": "P",
-            "if": "{{!(mine.data && mine.data.length)}}",
+            "if": "{{!(mine?.data?.data ?? mine?.data ?? []).length}}",
             "props": { "className": "text-sm text-gray-500 dark:text-gray-400 py-4" },
             "text": "내 입찰이 없습니다. 로그인 후 열린 의뢰에 견적을 넣으면 여기에 표시됩니다."
           },
@@ -79,7 +80,7 @@
             "type": "basic",
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.job_id}}", "className": "block py-3 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
-            "iteration": { "source": "{{mine.data}}", "item_var": "$item" },
+            "iteration": { "source": "{{mine?.data?.data ?? mine?.data ?? []}}", "item_var": "$item" },
             "text": "{{$item.job.title ?? $item.job_id}}  |  {{$item.amount}}원  |  {{$item.status}}  |  수정·확인"
           },
           { "id": "oh", "type": "basic", "name": "H2", "props": { "className": "text-lg font-medium text-gray-900 dark:text-white pt-4" }, "text": "입찰 가능한 의뢰" },
@@ -87,7 +88,7 @@
             "id": "open_empty",
             "type": "basic",
             "name": "P",
-            "if": "{{!(jobs.data && jobs.data.length)}}",
+            "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
             "props": { "className": "text-sm text-gray-500 dark:text-gray-400 py-4" },
             "text": "현재 입찰 중인 의뢰가 없습니다."
           },
@@ -96,7 +97,7 @@
             "type": "basic",
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
-            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "iteration": { "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}", "item_var": "$item" },
             "text": "{{$item.title}}  |  견적 {{$item.bids_count ?? 0}}건  |  예산 {{$item.budget ?? '미정'}}  |  견적 넣기"
           }
         ]

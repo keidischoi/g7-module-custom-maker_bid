@@ -41,11 +41,11 @@ Route::get('files/{hash}', [JobFileController::class, 'download'])
     ->name('files.download');
 
 Route::get('jobs', [JobController::class, 'index'])
-    ->middleware(['throttle:600,1'])
+    ->middleware(['optional.sanctum', 'throttle:600,1'])
     ->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])
     ->whereNumber('id')
-    ->middleware(['throttle:600,1'])
+    ->middleware(['optional.sanctum', 'throttle:600,1'])
     ->name('jobs.show');
 
 Route::get('companies', [CompanyController::class, 'index'])

@@ -54,6 +54,7 @@ expectTrue('detail has award action', str_contains($show, '/jobs/{{route.id}}/aw
 expectTrue('detail has bid create', str_contains($show, '/jobs/{{route.id}}/bids'));
 expectTrue('detail has bid patch', str_contains($show, '/bids/{{viewer.data.my_bid.id}}'));
 expectTrue('detail mutate uses auth_required', str_contains($show, '"auth_required": true'));
+expectTrue('detail job fetch uses optional auth_mode', str_contains($show, '"auth_mode": "optional"') && preg_match('/"id": "job"[\s\S]*?"auth_mode": "optional"[\s\S]*?"id": "viewer"/', $show) === 1);
 expectTrue('detail toasts errors', str_contains($show, '"handler": "toast"') && str_contains($show, '{{error.message}}'));
 expectTrue('detail empty bids copy', str_contains($show, '아직 들어온 견적이 없습니다.'));
 expectTrue('detail privacy blocked copy', str_contains($show, '제작 의뢰가 확정'));
@@ -62,6 +63,7 @@ expectTrue('detail manager info when privacy visible', str_contains($show, '담�
 
 $create = (string) file_get_contents($root.'/resources/layouts/user/jobs_create.json');
 expectTrue('create posts jobs', str_contains($create, '"target": "/api/modules/custom-maker_bid/jobs"'));
+expectTrue('create navigate uses job id fallback', str_contains($create, '/maker-bid/{{response.data.id || response.id}}'));
 expectTrue('create has auth_required', str_contains($create, '"auth_required": true'));
 expectTrue('create toasts errors', str_contains($create, 'error.message'));
 expectTrue('create is order card', str_contains($create, '제작 주문서'));
@@ -103,6 +105,9 @@ expectTrue('create tab is 입찰자 등록', str_contains($create, '입찰자 �
 expectTrue('create 소유권한 요청 near extensions', str_contains($create, '소유권한 요청') && str_contains($create, 'ownership_requested') && ! str_contains($create, '저작권 있음'));
 expectTrue('create 공개 설정 전체/업체만/개인만', str_contains($create, '공개 설정') && str_contains($create, '"value": "all"') && str_contains($create, '업체만') && str_contains($create, '개인만'));
 expectTrue('create status options 보류', str_contains($create, '보류'));
+$qrOpt = strpos($create, '"value": "quote_request"');
+$holdOpt = strpos($create, '"value": "hold"');
+expectTrue('create status lists 견적요청 before 보류', $qrOpt !== false && $holdOpt !== false && $qrOpt < $holdOpt);
 expectTrue('create privacy block', str_contains($create, '주문자명 또는 업체명'));
 
 $list = (string) file_get_contents($root.'/resources/layouts/user/jobs_list.json');
@@ -110,6 +115,10 @@ expectTrue('list empty state', str_contains($list, '등록된 의뢰가 없습�
 expectTrue('list keeps 의뢰목록 tab', str_contains($list, '의뢰목록'));
 expectTrue('list uses catalog types filter', str_contains($list, 'job-types'));
 expectTrue('list notes 보류 hidden', str_contains($list, '보류'));
+expectTrue('list jobs fetch uses optional auth_mode', str_contains($list, '"auth_mode": "optional"') && preg_match('/"id": "jobs"[\s\S]*?"auth_mode": "optional"/', $list) === 1);
+expectTrue('list rows read data.data fallback', str_contains($list, 'jobs?.data?.data ?? jobs?.data'));
+expectTrue('list omits empty type query', str_contains($list, 'query.type ||'));
+expectTrue('history rows read data.data fallback', str_contains((string) file_get_contents($root.'/resources/layouts/user/jobs_history.json'), 'jobs?.data?.data ?? jobs?.data'));
 
 $company = (string) file_get_contents($root.'/resources/layouts/user/company_apply.json');
 expectTrue('company apply posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bid/companies"'));
@@ -144,6 +153,7 @@ expectTrue('form.css cache bust 0.6.0', str_contains($nav, 'form.css?v=0.6.0'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
+expectTrue('edit navigate uses job id fallback', str_contains($edit, '/maker-bid/{{response.data.id || response.id || route.id}}'));
 expectTrue('edit FileUploader present', str_contains($edit, 'FileUploader'));
 expectTrue('edit card uses theme surface', str_contains($edit, 'cmb-order-card') && str_contains($edit, 'dark:bg-gray-800'));
 expectTrue('edit does not use zinc paper card', ! str_contains($edit, 'zinc-900') && ! str_contains($edit, 'zinc-950'));
