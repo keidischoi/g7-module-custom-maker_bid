@@ -6,9 +6,11 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.5.0';
+    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.5.1';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.5.0';
+    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.5.1';
+
+    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.5.1';
 
     public static function getSubscribedHooks(): array
     {
@@ -35,6 +37,8 @@ class UserMenuListener implements HookListenerInterface
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             if (in_array($name, ['jobs_create', 'jobs_edit'], true)) {
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
+                $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
+                $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
             }
             $layout['scripts'] = $scripts;
         } catch (\Throwable) {
@@ -69,5 +73,31 @@ class UserMenuListener implements HookListenerInterface
         }
 
         return $scripts;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $styles
+     * @return list<array<string, mixed>>
+     */
+    private function upsertStyle(array $styles, string $id, string $href): array
+    {
+        $found = false;
+        foreach ($styles as $i => $style) {
+            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bid/assets/form.css'))) {
+                $styles[$i]['href'] = $href;
+                $styles[$i]['src'] = $href;
+                $found = true;
+            }
+        }
+        if (! $found) {
+            $styles[] = [
+                'id' => $id,
+                'href' => $href,
+                'src' => $href,
+                'rel' => 'stylesheet',
+            ];
+        }
+
+        return $styles;
     }
 }

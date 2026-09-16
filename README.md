@@ -2,16 +2,16 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형 관리.
 
-버전 **0.5.0**. 의뢰 작성은 가운데 정렬 주문서 카드입니다. 유형은 DB 카탈로그(시드 6종)입니다.
+버전 **0.5.1**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다.
 
 - 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/bids` `/admin/maker-bid/companies` `/admin/maker-bid/activity`
 - 회원: `/maker-bid` `/maker-bid/new` `/maker-bid/bids` `/maker-bid/history` `/maker-bid/company` `/maker-bid/{id}` `/maker-bid/{id}/edit`
 
 홈 메뉴는 G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.5.0)
+## 설치 / 업그레이드 (0.5.1)
 
-0.4.0에서 올라올 때 **마이그레이션이 필요합니다.** 유형 시드·새 컬럼·파일 테이블이 추가됩니다. 레이아웃 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
+0.5.0에서 올라올 때 **마이그레이션은 없습니다.** 주문서 카드가 다크 테마에 맞춰집니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
@@ -136,4 +136,4 @@ php tests/run.php
 | identifier | `custom-maker_bid` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.5.0` |
+| version | `0.5.1` |

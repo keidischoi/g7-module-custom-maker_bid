@@ -4,6 +4,17 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.5.1] - 2026-09-16
+
+### Changed
+
+- `/maker-bid/new` · `/maker-bid/:id/edit` 주문서 카드를 테마에 맞게 다크 서페이스로 적용. 입력·셀렉트·체크박스·섹션 헤더·안내 문구·FileUploader 영역을 CSS 변수(`--color-card` 등)와 G7 다크 토큰(`dark:bg-gray-800/900`)으로 맞춥니다. 하얗게 떠 있던 `bg-white` / `dark:bg-zinc-*` 용지를 제거했습니다. 필드와 동작은 0.5.0과 동일합니다.
+- 버전 **0.5.1**. nav/form.js·form.css 캐시 `?v=0.5.1`.
+
+### Notes
+
+- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다.
+
 ## [0.5.0] - 2026-09-16
 
 ### Added

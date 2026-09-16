@@ -9,21 +9,26 @@ class AssetController extends Controller
 {
     public function nav(): Response
     {
-        return $this->js('nav.js');
+        return $this->asset('nav.js', 'application/javascript; charset=UTF-8');
     }
 
     public function form(): Response
     {
-        return $this->js('form.js');
+        return $this->asset('form.js', 'application/javascript; charset=UTF-8');
     }
 
-    private function js(string $name): Response
+    public function formCss(): Response
+    {
+        return $this->asset('form.css', 'text/css; charset=UTF-8');
+    }
+
+    private function asset(string $name, string $contentType): Response
     {
         $path = dirname(__DIR__, 3).'/resources/assets/'.$name;
-        $js = is_file($path) ? (string) file_get_contents($path) : '';
+        $body = is_file($path) ? (string) file_get_contents($path) : '';
 
-        return response($js, 200, [
-            'Content-Type' => 'application/javascript; charset=UTF-8',
+        return response($body, 200, [
+            'Content-Type' => $contentType,
             'Cache-Control' => 'no-cache',
         ]);
     }

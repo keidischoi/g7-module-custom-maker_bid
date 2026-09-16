@@ -29,6 +29,9 @@ Route::get('assets/nav.js', [AssetController::class, 'nav'])
 Route::get('assets/form.js', [AssetController::class, 'form'])
     ->middleware(['throttle:600,1'])
     ->name('assets.form');
+Route::get('assets/form.css', [AssetController::class, 'formCss'])
+    ->middleware(['throttle:600,1'])
+    ->name('assets.form.css');
 
 Route::get('job-types', [JobTypeController::class, 'index'])
     ->middleware(['throttle:600,1'])

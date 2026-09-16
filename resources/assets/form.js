@@ -1,6 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bid/job-types';
+  var FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.5.1';
   var typesCache = null;
   var daumLoading = false;
 
@@ -116,7 +117,19 @@
       });
   }
 
+  function ensureThemeCss() {
+    if (document.getElementById('cmb-order-form-css')) {
+      return;
+    }
+    var link = document.createElement('link');
+    link.id = 'cmb-order-form-css';
+    link.rel = 'stylesheet';
+    link.href = FORM_CSS;
+    document.head.appendChild(link);
+  }
+
   function bind() {
+    ensureThemeCss();
     var btn = document.querySelector('[data-cmb-postcode]');
     if (btn && !btn.getAttribute('data-cmb-bound')) {
       btn.setAttribute('data-cmb-bound', '1');

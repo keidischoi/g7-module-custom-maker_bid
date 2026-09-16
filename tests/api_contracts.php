@@ -36,7 +36,7 @@ expectTrue('admin company reject route', str_contains($api, "Route::post('compan
 expectTrue('admin company approve route', str_contains($api, "Route::post('companies/{id}/approve'"));
 expectTrue('admin company delete route', str_contains($api, "Route::delete('companies/{id}'"));
 expectTrue('admin bids index route', str_contains($api, "Route::get('bids', [BidAdminController::class, 'index'])"));
-expectTrue('module version is 0.5.0', str_contains($moduleJson, '"version": "0.5.0"'));
+expectTrue('module version is 0.5.1', str_contains($moduleJson, '"version": "0.5.1"'));
 expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
 expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
 expectTrue('owner job update route', str_contains($api, "Route::patch('jobs/{id}', [JobController::class, 'update'])"));
