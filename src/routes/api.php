@@ -57,7 +57,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::get('job-types', [JobTypeAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.job-types.index');
     Route::post('job-types', [JobTypeAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.store');
     Route::patch('job-types/{id}', [JobTypeAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.update');
-    Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move')->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.move');
+    Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.move');
     Route::delete('job-types/{id}', [JobTypeAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.destroy');
     Route::get('bids', [BidAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.index');
     Route::get('bids/{id}', [BidAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.show');
