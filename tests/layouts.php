@@ -292,6 +292,8 @@ expectTrue('admin form.css does not cap page width', str_contains($css, 'max-wid
 $adminCss = (string) file_get_contents($root.'/resources/assets/admin.css');
 expectTrue('admin.css stretches list rows', str_contains($adminCss, '.cmb-admin-row') && str_contains($adminCss, 'width: 100% !important') && str_contains($adminCss, 'max-width: none !important'));
 expectTrue('admin.css sizes filter type and status', str_contains($adminCss, '.cmb-admin-filter-type') && str_contains($adminCss, '.cmb-admin-filter-status') && str_contains($adminCss, '.cmb-admin-filter-go'));
+expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
+expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
 expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.2'));
 $adminBidsLayout = (string) file_get_contents($root.'/resources/layouts/admin/bids_index.json');
 expectTrue('admin bids list is full width', str_contains($adminBidsLayout, 'cmb-admin-list w-full') && str_contains($adminBidsLayout, 'cmb-admin-row w-full') && str_contains($adminBidsLayout, 'cmb-admin-filter-id'));

@@ -9,6 +9,7 @@
 ### Fixed
 
 - 관리자 **목록** 화면이 왼쪽 한쪽에만 붙고 필터 너비가 깨지던 문제를 수정합니다. 목록 행은 콘텐츠 영역 **전체 너비**(`w-full`, 페이지 max-width 제거). 필터는 용도별 너비(유형 ~14rem, 상태 ~12rem, ID ~8.5rem, 버튼 auto). G7 Input/Select 래퍼가 `w-full` 이거나 트리거가 내용 너비인 경우를 래퍼 클래스로 맞춥니다.
+- 다크 관리자 테마에서 목록 행·필터 카드 테두리가 배경에 묻히지 않도록 대비를 올립니다 (다크 gray-500/400, 라이트 gray-300/400). 행 사이 간격도 조금 띄웁니다.
 - 대상: `jobs_index` · `bids_index` · `companies_index` · `types_index` · `activity_index`. 탭·제목은 유지합니다.
 - `resources/assets/admin.css` 를 `_admin_base` 에 주입합니다 (`UserMenuListener`). form.css 관리자 폴백도 페이지 max-width 72rem을 제거합니다.
 

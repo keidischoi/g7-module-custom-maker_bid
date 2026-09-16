@@ -6,7 +6,8 @@
 .cmb-admin {
   --cmb-admin-fg: rgb(17 24 39);
   --cmb-admin-muted: rgb(107 114 128);
-  --cmb-admin-border: rgb(229 231 235);
+  --cmb-admin-border: rgb(209 213 219);
+  --cmb-admin-row-border: rgb(156 163 175);
   --cmb-admin-card: rgb(255 255 255);
   --cmb-admin-row: rgb(255 255 255);
   --cmb-admin-check: rgb(17 24 39);
@@ -24,9 +25,11 @@ html.dark .cmb-admin,
 .dark .cmb-admin {
   --cmb-admin-fg: rgb(243 244 246);
   --cmb-admin-muted: rgb(156 163 175);
-  --cmb-admin-border: rgb(71 85 105);
-  --cmb-admin-card: rgb(30 41 59 / 0.55);
-  --cmb-admin-row: rgb(30 41 59 / 0.72);
+  /* gray-500 chrome / gray-400 rows — readable on navy, not slate-on-slate. */
+  --cmb-admin-border: rgb(107 114 128);
+  --cmb-admin-row-border: rgb(156 163 175);
+  --cmb-admin-card: rgb(30 41 59);
+  --cmb-admin-row: rgb(15 23 42);
   --cmb-admin-check: rgb(243 244 246);
   --cmb-admin-control: rgb(15 23 42);
 }
@@ -86,6 +89,15 @@ html.dark .cmb-admin-nav a:hover,
   padding: 1rem 1.1rem;
   width: 100% !important;
   max-width: none !important;
+}
+
+html.dark .cmb-admin-card,
+.dark .cmb-admin-card,
+html.dark .cmb-admin-filter,
+.dark .cmb-admin-filter,
+html.dark .cmb-admin-nav,
+.dark .cmb-admin-nav {
+  border-color: rgb(107 114 128);
 }
 
 .cmb-admin-card-title {
@@ -270,7 +282,7 @@ html.dark .cmb-admin-check-text,
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
-  gap: 0.65rem;
+  gap: 0.75rem;
   width: 100% !important;
   max-width: none !important;
 }
@@ -282,12 +294,18 @@ html.dark .cmb-admin-check-text,
   justify-content: space-between;
   gap: 0.75rem 1rem;
   padding: 0.9rem 1.05rem;
-  border: 1px solid var(--cmb-admin-border);
+  border: 1px solid var(--cmb-admin-row-border);
   border-radius: 0.75rem;
   background: var(--cmb-admin-row);
   width: 100% !important;
   max-width: none !important;
   align-self: stretch !important;
+}
+
+html.dark .cmb-admin-row,
+.dark .cmb-admin-row {
+  border-color: rgb(156 163 175);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
 .cmb-admin-row-main {
