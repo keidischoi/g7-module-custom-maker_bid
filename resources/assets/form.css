@@ -233,8 +233,14 @@ html.dark .cmb-qa-fill,
 }
 
 .cmb-company-submit-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: rgb(17 24 39);
   color: rgb(255 255 255);
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
 }
 
 html.dark .cmb-company-submit-top,

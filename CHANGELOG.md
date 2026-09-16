@@ -4,6 +4,13 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.8.2] - 2026-09-16
+
+### Changed
+
+- 입찰자 등록 **「입찰자 등록」** 제출 버튼을 페이지 **오른쪽 위**(제목 줄, 탭과 섞이지 않음)로 둡니다. 양식 하단 버튼은 제거합니다. `POST /api/modules/custom-maker_bids/companies`, `auth_required`. 처음 신청·거절 회원에게만 보이며, 보류/승인은 상태만 표시합니다.
+- 버전 **0.8.2**. nav/form.js·form.css 캐시 `?v=0.8.2`.
+
 ## [0.8.1] - 2026-09-16
 
 ### Fixed

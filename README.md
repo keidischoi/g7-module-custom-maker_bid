@@ -2,14 +2,14 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.8.1**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
+버전 **0.8.2**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
 
 - 관리자: `/admin/maker-bids` `/admin/maker-bids/types` `/admin/maker-bids/jobs/{id}` `/admin/maker-bids/bids` `/admin/maker-bids/bids/{id}` `/admin/maker-bids/companies` `/admin/maker-bids/activity` `/admin/maker-bids/settings`
 - 회원: `/maker-bids` `/maker-bids/new` `/maker-bids/bids` `/maker-bids/history` `/maker-bids/company` `/maker-bids/{id}` `/maker-bids/{id}/edit`
 
 홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bids` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.8.1)
+## 설치 / 업그레이드 (0.8.2)
 
 **Breaking:** identifier가 `custom-maker_bids` 로 바뀌었습니다. 예전 `custom-maker_bid` 모듈은 제거하고 이 모듈을 **재설치**하세요. 권한·API·프론트 경로(`/maker-bids`)가 달라집니다. DB 테이블(`maker_*`) 이름은 그대로입니다.
 
@@ -173,4 +173,4 @@ php tests/run.php
 | identifier | `custom-maker_bids` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.8.1` |
+| version | `0.8.2` |

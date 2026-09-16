@@ -47,7 +47,7 @@ expectTrue('admin settings update permission', str_contains($api, 'permission:ad
 expectTrue('admin settings put route', str_contains($api, "Route::put('settings'"));
 expectTrue('admin bid patch route', str_contains($api, "Route::patch('bids/{id}', [BidAdminController::class, 'update'])"));
 expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}', [JobAdminController::class, 'update'])"));
-expectTrue('module version is 0.8.1', str_contains($moduleJson, '"version": "0.8.1"'));
+expectTrue('module version is 0.8.2', str_contains($moduleJson, '"version": "0.8.2"'));
 expectTrue('module identifier is custom-maker_bids', str_contains($moduleJson, '"identifier": "custom-maker_bids"'));
 expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
 expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
