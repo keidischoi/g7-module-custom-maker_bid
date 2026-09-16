@@ -78,7 +78,7 @@
                 "id": "fstatus_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status" },
+                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host" },
                 "children": [
                   { "id": "fstatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
                   {
@@ -136,6 +136,12 @@
                       { "id": "ehelp", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "목록에서 불러오기 후 저장합니다. 비어 있으면 업체를 선택하세요." },
                       { "id": "estatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "승인 여부" },
                       {
+                        "id": "estatus_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": { "className": "cmb-admin-select-host cmb-admin-select-host-sm" },
+                        "children": [
+                      {
                         "id": "estatus",
                         "type": "basic",
                         "name": "Select",
@@ -151,6 +157,8 @@
                         },
                         "actions": [
                           { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "edit.status": "{{$event.target.value}}" } }
+                        ]
+                      }
                         ]
                       },
                       { "id": "ememo_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "관리자 메모" },
@@ -269,14 +277,14 @@
                         "id": "crow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row w-full" },
+                        "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
                         "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
                         "children": [
                           {
                             "id": "cmain",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-main" },
+                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                             "children": [
                               { "id": "ctxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}" },
                               { "id": "cmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}}{{$co.is_designated ? ' · 지정업체' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}" },
@@ -287,7 +295,7 @@
                             "id": "cacts",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-actions" },
+                            "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
                             "children": [
                               {
                                 "id": "load",

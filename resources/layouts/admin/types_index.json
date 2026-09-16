@@ -197,14 +197,14 @@
                 "id": "trow",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-row w-full" },
+                "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
                 "iteration": { "source": "{{types.data}}", "item_var": "$item" },
                 "children": [
                   {
                     "id": "tmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main" },
+                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                     "children": [
                       { "id": "tname", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "{{$item.name}}  [{{$item.slug}}]" },
                       { "id": "tmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.is_enabled ? '사용' : '숨김'}} · {{$item.is_design_only ? '디자인' : '주소필수'}} · {{$item.includes_modeling ? '모델링' : '출력만'}} · 정렬 {{$item.sort_order}}" }
@@ -214,7 +214,7 @@
                     "id": "tacts",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-actions" },
+                    "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
                     "children": [
                       {
                         "id": "up",

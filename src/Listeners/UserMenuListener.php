@@ -8,13 +8,15 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.4';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.5';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.4';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.5';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.4';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.5';
 
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.4';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.5';
+
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.5';
 
     public static function getSubscribedHooks(): array
     {
@@ -38,6 +40,8 @@ class UserMenuListener implements HookListenerInterface
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $styles = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_admin_css', self::ADMIN_CSS);
+                $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
+                $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
 
                 return $layout;
             }
@@ -135,8 +139,14 @@ class UserMenuListener implements HookListenerInterface
     private function upsertScript(array $scripts, string $id, string $src): array
     {
         $found = false;
+        $needles = [
+            'cmb_maker_nav' => 'custom-maker_bids/assets/nav.js',
+            'cmb_maker_form' => 'custom-maker_bids/assets/form.js',
+            'cmb_maker_admin_js' => 'custom-maker_bids/assets/admin.js',
+        ];
+        $needle = $needles[$id] ?? $id;
         foreach ($scripts as $i => $script) {
-            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bids/assets/nav.js' : 'custom-maker_bids/assets/form.js'))) {
+            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $needle))) {
                 $scripts[$i]['src'] = $src;
                 $found = true;
             }

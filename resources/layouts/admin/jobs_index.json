@@ -73,7 +73,7 @@
                 "id": "fstatus_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status" },
+                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host" },
                 "children": [
                   { "id": "fstatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
                   {
@@ -123,14 +123,14 @@
                 "id": "jrow",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-row w-full" },
+                "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
                 "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
                 "children": [
                   {
                     "id": "jmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main" },
+                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                     "children": [
                       { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
                       { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}" }
@@ -140,7 +140,7 @@
                     "id": "jacts",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-actions" },
+                    "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
                     "children": [
                       { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
                       {
