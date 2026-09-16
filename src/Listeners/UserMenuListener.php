@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.9';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.9';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.9';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.9';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.9';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.9';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.10';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.10';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.10';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.10';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.10';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.10';
 
     public static function getSubscribedHooks(): array
     {
@@ -73,54 +73,37 @@ class UserMenuListener implements HookListenerInterface
         try {
             if (function_exists('app')) {
                 $all = app(MakerBidSettingsService::class)->getAllSettings();
-
                 return is_array($all['menu'] ?? null) ? $all['menu'] : SettingsRules::defaults()['menu'];
             }
         } catch (\Throwable) {
         }
-
         return SettingsRules::defaults()['menu'];
     }
 
     private function removeComponent(array $node, string $id): array
     {
         foreach (['children', 'injections', 'components'] as $key) {
-            if (! isset($node[$key]) || ! is_array($node[$key])) {
-                continue;
-            }
+            if (! isset($node[$key]) || ! is_array($node[$key])) continue;
             $kept = [];
             foreach ($node[$key] as $child) {
-                if (! is_array($child)) {
-                    $kept[] = $child;
-                    continue;
-                }
-                if (($child['id'] ?? '') === $id) {
-                    continue;
-                }
+                if (! is_array($child)) { $kept[] = $child; continue; }
+                if (($child['id'] ?? '') === $id) continue;
                 $kept[] = $this->removeComponent($child, $id);
             }
             $node[$key] = array_values($kept);
         }
         if (isset($node['slots']) && is_array($node['slots'])) {
             foreach ($node['slots'] as $slot => $items) {
-                if (! is_array($items)) {
-                    continue;
-                }
+                if (! is_array($items)) continue;
                 $kept = [];
                 foreach ($items as $child) {
-                    if (! is_array($child)) {
-                        $kept[] = $child;
-                        continue;
-                    }
-                    if (($child['id'] ?? '') === $id) {
-                        continue;
-                    }
+                    if (! is_array($child)) { $kept[] = $child; continue; }
+                    if (($child['id'] ?? '') === $id) continue;
                     $kept[] = $this->removeComponent($child, $id);
                 }
                 $node['slots'][$slot] = array_values($kept);
             }
         }
-
         return $node;
     }
 
@@ -151,7 +134,6 @@ class UserMenuListener implements HookListenerInterface
                 'onError' => ['handler' => 'suppress'],
             ];
         }
-
         return $scripts;
     }
 
@@ -159,9 +141,7 @@ class UserMenuListener implements HookListenerInterface
     {
         $found = false;
         $path = (string) (parse_url($href, PHP_URL_PATH) ?: $href);
-        $needle = str_contains($path, 'admin.css')
-            ? 'custom-maker_bids/assets/admin.css'
-            : 'custom-maker_bids/assets/form.css';
+        $needle = str_contains($path, 'admin.css') ? 'custom-maker_bids/assets/admin.css' : 'custom-maker_bids/assets/form.css';
         foreach ($styles as $i => $style) {
             $existing = (string) ($style['href'] ?? $style['src'] ?? '');
             if (is_array($style) && (($style['id'] ?? '') === $id || str_contains($existing, $needle))) {
@@ -171,14 +151,8 @@ class UserMenuListener implements HookListenerInterface
             }
         }
         if (! $found) {
-            $styles[] = [
-                'id' => $id,
-                'href' => $href,
-                'src' => $href,
-                'rel' => 'stylesheet',
-            ];
+            $styles[] = ['id' => $id, 'href' => $href, 'src' => $href, 'rel' => 'stylesheet'];
         }
-
         return $styles;
     }
 }
