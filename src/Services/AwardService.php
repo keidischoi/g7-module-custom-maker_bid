@@ -7,6 +7,7 @@ use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\AwardRules;
 use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\JobRules;
 
 class AwardService
 {
@@ -24,7 +25,9 @@ class AwardService
                 throw new DomainException('의뢰 작성자만 낙찰할 수 있습니다.', 403);
             }
 
-            $this->jobs->assertOpen($job);
+            if (! JobRules::isBiddingOpen($job->bidding_status ?? 'open', (string) $job->status, $job->closes_at)) {
+                throw new DomainException('입찰이 종료되어 낙찰할 수 없습니다.', 422);
+            }
 
             $bid = MakerBid::query()
                 ->where('job_id', $job->id)
@@ -33,14 +36,31 @@ class AwardService
 
             MakerBid::query()
                 ->where('job_id', $job->id)
+                ->where('status', 'accepted')
                 ->where('id', '!=', $bid->id)
-                ->update(['status' => 'rejected']);
+                ->update(['status' => 'pending']);
 
             $bid->status = 'accepted';
             $bid->save();
 
             $job->status = 'awarded';
             $job->awarded_bid_id = $bid->id;
+            $job->save();
+
+            return $job->fresh('bids') ?? $job;
+        });
+    }
+
+    public function closeBidding(int $actorId, int $jobId, bool $isAdmin = false): MakerJob
+    {
+        return DB::transaction(function () use ($actorId, $jobId, $isAdmin) {
+            /** @var MakerJob $job */
+            $job = MakerJob::query()->lockForUpdate()->findOrFail($jobId);
+            if (! $isAdmin && (int) $job->user_id !== $actorId) {
+                throw new DomainException('의뢰 작성자만 입찰을 종료할 수 있습니다.', 403);
+            }
+            $job->bidding_status = JobRules::BIDDING_CLOSED;
+            $job->bidding_closed_at = now();
             $job->save();
 
             return $job->fresh('bids') ?? $job;
