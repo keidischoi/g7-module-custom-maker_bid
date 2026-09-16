@@ -1,50 +1,54 @@
 (function () {
-  function adminRoot() { return document.querySelector('.cmb-admin'); }
+  var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm';
 
   function parseSizes(raw) {
-    if (!raw) return [{ name: '', w: '', d: '', h: '' }];
-    if (Array.isArray(raw)) {
+    if (Array.isArray(raw) && raw.length) {
       return raw.map(function (r) {
         return {
           name: r && r.name != null ? String(r.name) : '',
-          w: r && r.w != null ? r.w : '',
-          d: r && r.d != null ? r.d : '',
-          h: r && r.h != null ? r.h : ''
+          w: r && r.w != null ? String(r.w) : '',
+          d: r && r.d != null ? String(r.d) : '',
+          h: r && r.h != null ? String(r.h) : ''
         };
       });
     }
-    try { return parseSizes(JSON.parse(String(raw))); } catch (e) { return [{ name: '', w: '', d: '', h: '' }]; }
+    if (typeof raw === 'string' && raw.trim()) {
+      try { return parseSizes(JSON.parse(raw)); } catch (e) {}
+    }
+    return [{ name: '', w: '', d: '', h: '' }];
   }
 
-  function rowsJson(root) {
+  function makeRow(item, canRemove) {
+    var wrap = document.createElement('div');
+    wrap.setAttribute('data-cmb-size-row', '1');
+    wrap.className = 'cmb-size-row flex flex-wrap items-center gap-2';
+    wrap.innerHTML =
+      '<input data-cmb-size-name type="text" maxlength="80" placeholder="이름" class="' + CLS + ' cmb-size-name">' +
+      '<input data-cmb-size-w type="number" min="0" placeholder="W" class="' + CLS + ' cmb-size-dim">' +
+      '<span class="text-gray-400">×</span>' +
+      '<input data-cmb-size-d type="number" min="0" placeholder="D" class="' + CLS + ' cmb-size-dim">' +
+      '<span class="text-gray-400">×</span>' +
+      '<input data-cmb-size-h type="number" min="0" placeholder="H" class="' + CLS + ' cmb-size-dim">' +
+      '<button type="button" data-cmb-size-remove class="cmb-size-remove shrink-0 px-2.5 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600">삭제</button>';
+    wrap.querySelector('[data-cmb-size-name]').value = item.name || '';
+    wrap.querySelector('[data-cmb-size-w]').value = item.w || '';
+    wrap.querySelector('[data-cmb-size-d]').value = item.d || '';
+    wrap.querySelector('[data-cmb-size-h]').value = item.h || '';
+    if (!canRemove) wrap.querySelector('[data-cmb-size-remove]').style.visibility = 'hidden';
+    return wrap;
+  }
+
+  function collect(list) {
     var rows = [];
-    root.querySelectorAll('[data-cmb-admin-size-row]').forEach(function (row) {
+    list.querySelectorAll('[data-cmb-size-row]').forEach(function (row) {
       rows.push({
-        name: row.querySelector('[data-k="name"]').value,
-        w: row.querySelector('[data-k="w"]').value === '' ? null : Number(row.querySelector('[data-k="w"]').value),
-        d: row.querySelector('[data-k="d"]').value === '' ? null : Number(row.querySelector('[data-k="d"]').value),
-        h: row.querySelector('[data-k="h"]').value === '' ? null : Number(row.querySelector('[data-k="h"]').value)
+        name: row.querySelector('[data-cmb-size-name]').value,
+        w: row.querySelector('[data-cmb-size-w]').value === '' ? null : Number(row.querySelector('[data-cmb-size-w]').value),
+        d: row.querySelector('[data-cmb-size-d]').value === '' ? null : Number(row.querySelector('[data-cmb-size-d]').value),
+        h: row.querySelector('[data-cmb-size-h]').value === '' ? null : Number(row.querySelector('[data-cmb-size-h]').value)
       });
     });
-    return JSON.stringify(rows);
-  }
-
-  function makeRow(item) {
-    var row = document.createElement('div');
-    row.setAttribute('data-cmb-admin-size-row', '1');
-    row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;';
-    row.innerHTML = '<input data-k="name" type="text" placeholder="이름" class="rounded-lg border px-2 py-1.5 text-sm" />'
-      + '<input data-k="w" type="number" placeholder="W" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
-      + '<span>×</span>'
-      + '<input data-k="d" type="number" placeholder="D" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
-      + '<span>×</span>'
-      + '<input data-k="h" type="number" placeholder="H" class="rounded-lg border px-2 py-1.5 text-sm" style="width:4.5rem" />'
-      + '<button type="button" data-cmb-admin-size-del class="px-2 py-1 text-sm rounded-lg border">삭제</button>';
-    row.querySelector('[data-k="name"]').value = item.name || '';
-    row.querySelector('[data-k="w"]').value = item.w == null ? '' : item.w;
-    row.querySelector('[data-k="d"]').value = item.d == null ? '' : item.d;
-    row.querySelector('[data-k="h"]').value = item.h == null ? '' : item.h;
-    return row;
+    return rows;
   }
 
   function enhanceSizes() {
@@ -52,38 +56,58 @@
     if (!ta || ta.getAttribute('data-cmb-size-ui')) return;
     ta.setAttribute('data-cmb-size-ui', '1');
     ta.style.display = 'none';
-    var box = document.createElement('div');
-    box.id = 'cmb-admin-sizes';
-    parseSizes(ta.value || ta.getAttribute('placeholder')).forEach(function (it) { box.appendChild(makeRow(it)); });
+    ['size_w', 'size_d', 'size_h'].forEach(function (n) {
+      document.querySelectorAll('[name="' + n + '"]').forEach(function (el) {
+        var host = el.closest('div') || el;
+        host.style.display = 'none';
+      });
+    });
+    var items = parseSizes(ta.value || ta.getAttribute('placeholder'));
+    var root = document.createElement('div');
+    root.className = 'cmb-sizes space-y-2';
+    root.setAttribute('data-cmb-sizes', '1');
+    var list = document.createElement('div');
+    list.className = 'cmb-sizes-list space-y-2';
+    list.setAttribute('data-cmb-sizes-list', '1');
+    items.forEach(function (it) { list.appendChild(makeRow(it, items.length > 1)); });
     var add = document.createElement('button');
     add.type = 'button';
     add.textContent = '추가';
-    add.className = 'px-3 py-1 text-sm rounded-lg border';
-    add.addEventListener('click', function (e) {
-      e.preventDefault();
-      box.insertBefore(makeRow({ name: '', w: '', d: '', h: '' }), add);
-    });
-    box.appendChild(add);
-    ta.parentNode.insertBefore(box, ta);
-    var sync = function () {
-      ta.value = rowsJson(box);
+    add.setAttribute('data-cmb-size-add', '1');
+    add.className = 'px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600';
+    root.appendChild(list);
+    root.appendChild(add);
+    ta.parentNode.insertBefore(root, ta);
+
+    function sync() {
+      var rows = collect(list);
+      ta.value = JSON.stringify(rows);
       ta.dispatchEvent(new Event('input', { bubbles: true }));
       ta.dispatchEvent(new Event('change', { bubbles: true }));
-    };
-    box.addEventListener('input', sync);
-    box.addEventListener('click', function (e) {
-      var btn = e.target.closest && e.target.closest('[data-cmb-admin-size-del]');
-      if (!btn) return;
+      list.querySelectorAll('[data-cmb-size-remove]').forEach(function (btn) {
+        btn.style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+      });
+    }
+    add.addEventListener('click', function (e) {
       e.preventDefault();
-      if (box.querySelectorAll('[data-cmb-admin-size-row]').length <= 1) return;
-      btn.closest('[data-cmb-admin-size-row]').remove();
+      if (list.querySelectorAll('[data-cmb-size-row]').length >= 20) return;
+      list.appendChild(makeRow({ name: '', w: '', d: '', h: '' }, true));
       sync();
     });
+    list.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-cmb-size-remove]');
+      if (!btn) return;
+      e.preventDefault();
+      if (list.querySelectorAll('[data-cmb-size-row]').length <= 1) return;
+      btn.closest('[data-cmb-size-row]').remove();
+      sync();
+    });
+    list.addEventListener('input', sync);
     sync();
   }
 
   function start() {
-    if (!adminRoot()) return;
+    if (!document.querySelector('.cmb-admin')) return;
     enhanceSizes();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
