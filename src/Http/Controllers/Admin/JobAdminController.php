@@ -29,6 +29,11 @@ class JobAdminController extends Controller
         return response()->json(['data' => $this->jobs->updateAdmin($id, $request->validated())]);
     }
 
+    public function approve(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->jobs->approve($id)]);
+    }
+
     public function hold(int $id): JsonResponse
     {
         return response()->json(['data' => $this->jobs->hold($id)]);
