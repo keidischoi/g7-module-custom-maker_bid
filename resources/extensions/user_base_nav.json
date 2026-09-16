@@ -7,10 +7,10 @@
       "position": "append",
       "components": [
         {
-          "id": "maker_bids_user_nav",
+          "id": "maker_bid_user_nav",
           "type": "basic",
           "name": "A",
-          "props": { "href": "/maker-bids", "className": "px-3 py-2 cmb-ext-nav cmb-ext-user-base" },
+          "props": { "href": "/maker-bid", "className": "px-3 py-2 cmb-ext-nav cmb-ext-user-base" },
           "text": "의뢰/입찰"
         }
       ]

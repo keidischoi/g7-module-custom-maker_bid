@@ -3,7 +3,7 @@
   "layout_name": "activity_index",
   "extends": "_admin_base",
   "meta": { "title": "회원 활동" },
-  "permissions": ["custom-maker_bids.jobs.read"],
+  "permissions": ["custom-maker_bid.jobs.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -17,7 +17,7 @@
     {
       "id": "jobs",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/admin/jobs",
+      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -28,7 +28,7 @@
     {
       "id": "bids",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/admin/bids",
+      "endpoint": "/api/modules/custom-maker_bid/admin/bids",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -52,12 +52,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "회원 ID로 해당 회원의 의뢰와 입찰을 봅니다. 비우면 최근 목록입니다." },
@@ -140,7 +140,7 @@
                             "name": "Div",
                             "props": { "className": "cmb-admin-row-actions" },
                             "children": [
-                              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
+                              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
                             ]
                           }
                         ]
@@ -186,7 +186,7 @@
                             "name": "Div",
                             "props": { "className": "cmb-admin-row-actions" },
                             "children": [
-                              { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
+                              { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
                             ]
                           }
                         ]

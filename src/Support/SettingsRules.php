@@ -4,7 +4,7 @@ namespace Modules\Custom\MakerBid\Support;
 
 class SettingsRules
 {
-    public const MODULE_ID = 'custom-maker_bids';
+    public const MODULE_ID = 'custom-maker_bid';
 
     public const CATEGORIES = ['menu', 'notices', 'general'];
 

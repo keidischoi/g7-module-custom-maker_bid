@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.8.3] - 2026-09-16
+
+### Changed
+
+- **모듈 identifier 되돌림 (breaking)**: `custom-maker_bids` → `custom-maker_bid`. 0.8.0 이름 변경이 G7 설치에서 「모듈 custom-maker_bids을(를) 찾을 수 없습니다」로 실패했습니다. 권한 `custom-maker_bid.*`, API `/api/modules/custom-maker_bid`, 에셋·저장 경로 prefix, 프론트 경로(`/maker-bid`, `/admin/maker-bid`), composer `custom/maker-bid` 를 0.7.x와 같게 복구합니다. **`custom-maker_bids` 설치를 제거하고 `custom-maker_bid` 로 재설치하세요.** 예전 identifier와의 호환은 없습니다.
+- 관리자 설치는 **수동 설치 → GitHub**에 저장소 전체 URL `https://github.com/keidischoi/g7-module-custom-maker_bid` 을 넣습니다. G7은 GitHub에서 identifier만 입력해서 모듈을 찾지 않습니다. 예전 저장소 이름 `g7-module-custom-maker_bids` 는 이 저장소로 리다이렉트됩니다.
+- 0.7–0.8 기능(관리자 의뢰/입찰 수정, 설정, 입찰 허용 7모드, `is_designated`, 관리자 UI, 입찰자 등록 오른쪽 위 버튼, `optional.sanctum` 목록/상세)은 유지합니다.
+- 버전 **0.8.3**. nav/form.js·form.css 캐시 `?v=0.8.3`.
+- DB 테이블 이름(`maker_*`)은 그대로입니다. PHP namespace `Modules\Custom\MakerBid` 도 기존 autoload를 유지합니다.
+
 ## [0.8.2] - 2026-09-16
 
 ### Changed

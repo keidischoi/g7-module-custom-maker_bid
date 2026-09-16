@@ -1,24 +1,30 @@
-# custom-maker_bids
+# custom-maker_bid
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.8.2**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
+버전 **0.8.3**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
 
-- 관리자: `/admin/maker-bids` `/admin/maker-bids/types` `/admin/maker-bids/jobs/{id}` `/admin/maker-bids/bids` `/admin/maker-bids/bids/{id}` `/admin/maker-bids/companies` `/admin/maker-bids/activity` `/admin/maker-bids/settings`
-- 회원: `/maker-bids` `/maker-bids/new` `/maker-bids/bids` `/maker-bids/history` `/maker-bids/company` `/maker-bids/{id}` `/maker-bids/{id}/edit`
+- 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/jobs/{id}` `/admin/maker-bid/bids` `/admin/maker-bid/bids/{id}` `/admin/maker-bid/companies` `/admin/maker-bid/activity` `/admin/maker-bid/settings`
+- 회원: `/maker-bid` `/maker-bid/new` `/maker-bid/bids` `/maker-bid/history` `/maker-bid/company` `/maker-bid/{id}` `/maker-bid/{id}/edit`
 
-홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bids` 를 매뉴얼로 넣으면 됩니다.
+홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.8.2)
+## 설치 / 업그레이드 (0.8.3)
 
-**Breaking:** identifier가 `custom-maker_bids` 로 바뀌었습니다. 예전 `custom-maker_bid` 모듈은 제거하고 이 모듈을 **재설치**하세요. 권한·API·프론트 경로(`/maker-bids`)가 달라집니다. DB 테이블(`maker_*`) 이름은 그대로입니다.
+**Breaking revert:** 0.8.0에서 바꾼 identifier `custom-maker_bids` 를 다시 **`custom-maker_bid`** 로 되돌립니다. G7 「모듈 custom-maker_bids을(를) 찾을 수 없습니다」가 난 경우, `custom-maker_bids` 설치를 **제거**하고 이 모듈을 `custom-maker_bid` 로 **재설치**하세요. 권한·API prefix·에셋 URL·저장 경로 prefix·프론트 경로(`/maker-bid`, `/admin/maker-bid`)가 0.7.x와 같습니다. DB 테이블(`maker_*`) 이름과 0.7–0.8 기능은 그대로입니다.
+
+**관리자 설치:** 모듈 관리 → **수동 설치** → **GitHub**. 저장소 **전체 URL**을 넣으세요. G7은 GitHub에서 identifier만 입력해서 모듈을 찾지 않습니다.
+
+GitHub 설치 URL (G7 관례 `g7-module-{identifier}`). 예전 이름 `g7-module-custom-maker_bids` 로 들어가도 이 저장소로 리다이렉트됩니다:
+
+`https://github.com/keidischoi/g7-module-custom-maker_bid`
 
 레이아웃·CSS 반영은 모듈 설치 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
-php artisan module:install custom-maker_bids
-php artisan module:activate custom-maker_bids
+php artisan module:install custom-maker_bid
+php artisan module:activate custom-maker_bid
 php artisan cache:clear
 ```
 
@@ -28,10 +34,10 @@ php artisan cache:clear
 
 | identifier | 용도 |
 |---|---|
-| `custom-maker_bids.jobs.read` / `.update` / `.delete` | 관리자 의뢰·유형 (목록·수정·보류·취소·삭제, 유형 CRUD) |
-| `custom-maker_bids.bids.read` / `.update` / `.delete` | 관리자 입찰 (목록·수정·삭제) |
-| `custom-maker_bids.companies.read` / `.create` / `.update` / `.delete` | 관리자 업체 승인·거절·삭제 |
-| `custom-maker_bids.settings.read` / `.update` | 관리자 모듈 설정 (메뉴·안내문) |
+| `custom-maker_bid.jobs.read` / `.update` / `.delete` | 관리자 의뢰·유형 (목록·수정·보류·취소·삭제, 유형 CRUD) |
+| `custom-maker_bid.bids.read` / `.update` / `.delete` | 관리자 입찰 (목록·수정·삭제) |
+| `custom-maker_bid.companies.read` / `.create` / `.update` / `.delete` | 관리자 업체 승인·거절·삭제 |
+| `custom-maker_bid.settings.read` / `.update` | 관리자 모듈 설정 (메뉴·안내문) |
 
 관리자 API는 `auth:sanctum` + 위 permission 미들웨어를 사용합니다. 모듈 업데이트 후 권한 동기화가 필요합니다.
 
@@ -39,7 +45,7 @@ php artisan cache:clear
 
 ## 설정 (안내문 / 메뉴)
 
-`/admin/maker-bids/settings` 에서 저장합니다.
+`/admin/maker-bid/settings` 에서 저장합니다.
 
 **회원 메뉴**
 - 헤더 버튼(nav.js): 샵/홈 줄의 맨 뒤·맨 앞, 샵 뒤, 홈 뒤.
@@ -57,7 +63,7 @@ php artisan cache:clear
 
 ## 공개 / 회원 API
 
-Prefix: `/api/modules/custom-maker_bids`
+Prefix: `/api/modules/custom-maker_bid`
 
 | Method | Path | Auth | 설명 |
 |---|---|---|---|
@@ -170,7 +176,7 @@ php tests/run.php
 
 | 항목 | 값 |
 |------|-----|
-| identifier | `custom-maker_bids` |
+| identifier | `custom-maker_bid` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.8.2` |
+| version | `0.8.3` |

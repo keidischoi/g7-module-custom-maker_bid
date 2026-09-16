@@ -43,7 +43,7 @@ class MakerJobFile extends Model
      */
     public function toAttachmentArray(): array
     {
-        $url = '/api/modules/custom-maker_bids/files/'.$this->hash;
+        $url = '/api/modules/custom-maker_bid/files/'.$this->hash;
         $isImage = $this->isImage();
         $size = (int) $this->size;
 
