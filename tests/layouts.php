@@ -289,7 +289,7 @@ foreach ($scan as $file) {
         continue;
     }
     $rel = substr($file->getPathname(), strlen($root) + 1);
-    if (str_starts_with($rel, '.git/') || $rel === 'CHANGELOG.md' || $rel === 'README.md' || $rel === 'tests/layouts.php') {
+    if (str_starts_with($rel, '.git/') || str_starts_with($rel, 'tests/') || $rel === 'CHANGELOG.md' || $rel === 'README.md') {
         continue;
     }
     $ext = strtolower((string) pathinfo($rel, PATHINFO_EXTENSION));

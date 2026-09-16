@@ -11,7 +11,16 @@ Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의�
 
 ## 설치 / 업그레이드 (0.8.3)
 
-**Breaking revert:** 0.8.0에서 바꾼 identifier `custom-maker_bids` 를 다시 **`custom-maker_bid`** 로 되돌립니다. G7 「모듈 custom-maker_bids을(를) 찾을 수 없습니다」가 난 경우, `custom-maker_bids` 설치를 **제거**하고 이 모듈을 `custom-maker_bid` 로 **재설치**하세요. 권한·API prefix·에셋 URL·저장 경로 prefix·프론트 경로(`/maker-bid`, `/admin/maker-bid`)가 0.7.x와 같습니다. DB 테이블(`maker_*`) 이름과 0.7–0.8 기능은 그대로입니다.
+**Breaking revert:** 0.8.0에서 바꾼 identifier `custom-maker_bids` 를 다시 **`custom-maker_bid`** 로 되돌립니다.
+
+원인은 문자열 경로만이 아닙니다. G7은 `ExtensionManager::moduleIdentifierToNamespace` 로 identifier → PHP namespace를 만듭니다.
+
+| identifier | G7 namespace | 실제 코드 |
+|---|---|---|
+| `custom-maker_bid` | `Modules\Custom\MakerBid\` | `module.php` / composer psr-4 와 일치 |
+| `custom-maker_bids` | `Modules\Custom\MakerBids\` | 클래스 없음 → 설치 복사 후 `getModule()` 실패 |
+
+그래서 `모듈 설치에 실패했습니다: 모듈 "custom-maker_bids"을(를) 찾을 수 없습니다.` 가 납니다. **namespace를 MakerBids로 바꾸지 않습니다.** `custom-maker_bids` 설치를 **제거**하고 `custom-maker_bid` 로 **재설치**하세요. 권한·API prefix·에셋 URL·저장 경로 prefix·프론트 경로(`/maker-bid`, `/admin/maker-bid`)가 0.7.x와 같습니다. DB 테이블(`maker_*`) 이름과 0.7–0.8 기능은 그대로입니다.
 
 **관리자 설치:** 모듈 관리 → **수동 설치** → **GitHub**. 저장소 **전체 URL**을 넣으세요. G7은 GitHub에서 identifier만 입력해서 모듈을 찾지 않습니다.
 
@@ -178,5 +187,6 @@ php tests/run.php
 |------|-----|
 | identifier | `custom-maker_bid` |
 | vendor | `custom` |
-| namespace | `Modules\\Custom\\MakerBid` |
+| namespace | `Modules\\Custom\\MakerBid` (G7 maps identifier → this path; do not use `custom-maker_bids` / `MakerBids`) |
+| github_url | `https://github.com/keidischoi/g7-module-custom-maker_bid` |
 | version | `0.8.3` |

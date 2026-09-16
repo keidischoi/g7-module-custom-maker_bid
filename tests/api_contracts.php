@@ -47,8 +47,38 @@ expectTrue('admin settings update permission', str_contains($api, 'permission:ad
 expectTrue('admin settings put route', str_contains($api, "Route::put('settings'"));
 expectTrue('admin bid patch route', str_contains($api, "Route::patch('bids/{id}', [BidAdminController::class, 'update'])"));
 expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}', [JobAdminController::class, 'update'])"));
-expectTrue('module version is 0.8.3', str_contains($moduleJson, '"version": "0.8.3"'));
-expectTrue('module identifier is custom-maker_bid', str_contains($moduleJson, '"identifier": "custom-maker_bid"'));
+$moduleMeta = json_decode($moduleJson, true);
+expectTrue('module.json parses', is_array($moduleMeta));
+expectTrue('module version is 0.8.3', ($moduleMeta['version'] ?? null) === '0.8.3');
+expectTrue('module identifier is exactly custom-maker_bid', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bid');
+expectTrue('module identifier is not custom-maker_bids', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bids');
+expectTrue(
+    'github_url is g7-module-custom-maker_bid',
+    ($moduleMeta['github_url'] ?? null) === 'https://github.com/keidischoi/g7-module-custom-maker_bid',
+);
+$composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
+expectTrue('composer name is custom/maker-bid', ($composer['name'] ?? null) === 'custom/maker-bid');
+expectTrue(
+    'psr-4 is Modules\\Custom\\MakerBid\\ not MakerBids',
+    isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBid\\'])
+    && ! isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\']),
+);
+expectTrue('module.php namespace is MakerBid', str_contains($modulePhp, "namespace Modules\\Custom\\MakerBid;"));
+expectTrue('module.php has no MakerBids namespace', ! str_contains($modulePhp, 'MakerBids'));
+/**
+ * G7 ExtensionManager::moduleIdentifierToNamespace: vendor-name_part → Modules\Vendor\NamePart\
+ * custom-maker_bid → MakerBid (classes exist). custom-maker_bids → MakerBids (would 404).
+ */
+$g7Ns = static function (string $identifier): string {
+    $parts = explode('-', $identifier, 2);
+    $vendor = ucfirst($parts[0] ?? 'custom');
+    $name = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $parts[1] ?? $parts[0])));
+
+    return 'Modules\\'.$vendor.'\\'.$name.'\\';
+};
+expectTrue('G7 maps custom-maker_bid to MakerBid', $g7Ns('custom-maker_bid') === 'Modules\\Custom\\MakerBid\\');
+expectTrue('G7 would map custom-maker_bids to missing MakerBids', $g7Ns('custom-maker_bids') === 'Modules\\Custom\\MakerBids\\');
+expectTrue('live identifier maps to existing MakerBid namespace', $g7Ns((string) $moduleMeta['identifier']) === 'Modules\\Custom\\MakerBid\\');
 expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
 expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
 expectTrue('owner job update route', str_contains($api, "Route::patch('jobs/{id}', [JobController::class, 'update'])"));
