@@ -2,43 +2,43 @@
   "version": "1.0.0",
   "routes": [
     {
-      "path": "*/maker-bids",
+      "path": "*/maker-bid",
       "layout": "jobs_list",
       "auth_required": false,
       "meta": { "title": "의뢰목록" }
     },
     {
-      "path": "*/maker-bids/new",
+      "path": "*/maker-bid/new",
       "layout": "jobs_create",
       "auth_required": true,
       "meta": { "title": "의뢰서 작성" }
     },
     {
-      "path": "*/maker-bids/bids",
+      "path": "*/maker-bid/bids",
       "layout": "jobs_bids",
       "auth_required": false,
       "meta": { "title": "입찰현황" }
     },
     {
-      "path": "*/maker-bids/history",
+      "path": "*/maker-bid/history",
       "layout": "jobs_history",
       "auth_required": false,
       "meta": { "title": "이력" }
     },
     {
-      "path": "*/maker-bids/company",
+      "path": "*/maker-bid/company",
       "layout": "company_apply",
       "auth_required": true,
       "meta": { "title": "입찰자 등록" }
     },
     {
-      "path": "*/maker-bids/:id/edit",
+      "path": "*/maker-bid/:id/edit",
       "layout": "jobs_edit",
       "auth_required": true,
       "meta": { "title": "의뢰서 수정" }
     },
     {
-      "path": "*/maker-bids/:id",
+      "path": "*/maker-bid/:id",
       "layout": "jobs_show",
       "auth_required": false,
       "meta": { "title": "의뢰 상세" }
@@ -51,3 +51,4 @@
     }
   ]
 }
+
