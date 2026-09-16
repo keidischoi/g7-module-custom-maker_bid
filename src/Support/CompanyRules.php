@@ -32,6 +32,27 @@ class CompanyRules
         return $status === 'approved';
     }
 
+    /**
+     * Admin-marked 지정업체. Applicants cannot set this.
+     */
+    public static function isDesignated(mixed $row): bool
+    {
+        if ($row === null) {
+            return false;
+        }
+        if (is_bool($row) || is_int($row) || is_float($row) || is_string($row)) {
+            return self::isTruthy($row);
+        }
+        if (is_array($row)) {
+            return self::isTruthy($row['is_designated'] ?? false);
+        }
+        if (is_object($row)) {
+            return self::isTruthy($row->is_designated ?? false);
+        }
+
+        return false;
+    }
+
     public static function canApply(?string $existingStatus): bool
     {
         return $existingStatus === null || $existingStatus === 'rejected';
@@ -421,6 +442,7 @@ class CompanyRules
             'claim_history' => ['nullable'],
             'report_count' => ['nullable', 'integer', 'min:0'],
             'is_recommended' => ['nullable', 'boolean'],
+            'is_designated' => ['nullable', 'boolean'],
             'priority' => ['nullable', 'integer', 'min:'.self::PRIORITY_MIN, 'max:'.self::PRIORITY_MAX],
         ];
     }

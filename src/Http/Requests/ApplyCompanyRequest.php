@@ -29,6 +29,8 @@ class ApplyCompanyRequest extends FormRequest
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);
         }
         $this->merge(['job_types' => CompanyRules::collectJobTypes($this->all())]);
+        $this->offsetUnset('is_designated');
+        $this->offsetUnset('designated');
     }
 
     /**

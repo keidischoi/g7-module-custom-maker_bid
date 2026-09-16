@@ -111,7 +111,7 @@
             "props": { "className": "rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-4 space-y-1 text-sm text-gray-800 dark:text-gray-200" },
             "children": [
               { "id": "pending_h", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "{{me.data.name}} — 보류(승인 대기) 중입니다." },
-              { "id": "pending_kind", "type": "basic", "name": "P", "text": "등록유형 {{me.data.kind_label || me.data.kind}}" },
+              { "id": "pending_kind", "type": "basic", "name": "P", "text": "등록유형 {{me.data.kind_label || me.data.kind}}{{me.data.is_designated ? ' · 지정업체' : ''}}" },
               { "id": "pending_hold", "type": "basic", "name": "P", "if": "{{me.data.hold_reason}}", "text": "보류 이유: {{me.data.hold_reason}}" }
             ]
           },
@@ -123,7 +123,8 @@
             "props": { "className": "rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-4 space-y-1 text-sm text-gray-800 dark:text-gray-200" },
             "children": [
               { "id": "approved_h", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "{{me.data.name}} — 승인된 입찰자입니다. 열린 의뢰에 입찰할 수 있습니다." },
-              { "id": "approved_kind", "type": "basic", "name": "P", "text": "{{me.data.kind_label || me.data.kind}}{{me.data.is_recommended ? ' · 추천' : ''}}" }
+              { "id": "approved_kind", "type": "basic", "name": "P", "text": "{{me.data.kind_label || me.data.kind}}{{me.data.is_recommended ? ' · 추천' : ''}}{{me.data.is_designated ? ' · 지정업체' : ''}}" },
+              { "id": "approved_des", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "지정업체는 관리자가 지정합니다. 신청자가 바꿀 수 없습니다." }
             ]
           },
           {
@@ -153,7 +154,7 @@
                 "props": { "className": "text-center space-y-2 pb-2 border-b border-gray-200 dark:border-gray-700" },
                 "children": [
                   { "id": "card_title", "type": "basic", "name": "H2", "props": { "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white" }, "text": "입찰자 등록" },
-                  { "id": "card_sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "업체 또는 개인 정보를 입력합니다. 관리자가 보류/승인합니다." }
+                  { "id": "card_sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "업체 또는 개인 정보를 입력합니다. 관리자가 보류/승인합니다. 지정업체 여부는 관리자만 지정합니다." }
                 ]
               },
               {

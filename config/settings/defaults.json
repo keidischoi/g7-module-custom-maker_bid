@@ -30,7 +30,8 @@
     },
     "general": {
       "default_job_status": "quote_request",
-      "guests_see_list": true
+      "guests_see_list": true,
+      "bid_allow": "members"
     }
   },
   "frontend_schema": {
@@ -67,7 +68,8 @@
       "expose": true,
       "fields": {
         "default_job_status": { "expose": true },
-        "guests_see_list": { "expose": true }
+        "guests_see_list": { "expose": true },
+        "bid_allow": { "expose": true }
       }
     }
   }

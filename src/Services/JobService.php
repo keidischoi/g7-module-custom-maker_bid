@@ -108,11 +108,16 @@ class JobService
         );
         $hasApprovedCompany = (bool) ($ctx['hasApprovedCompany'] ?? false);
         $companyKind = $ctx['companyKind'] ?? null;
+        $isDesignated = (bool) ($ctx['isDesignated'] ?? false);
+        $allowMode = $this->bidAllowMode();
         $canBid = $userId > 0 && ! $isOwner && $open && JobRules::canBidAudience(
             $job->audience ?? 'all',
             true,
             $hasApprovedCompany,
             $companyKind,
+            $allowMode,
+            $isAdmin,
+            $isDesignated,
         );
 
         return [
@@ -315,7 +320,7 @@ class JobService
     }
 
     /**
-     * @return array{userId:int,isAdmin:bool,isMember:bool,hasApprovedCompany:bool,companyKind:?string}
+     * @return array{userId:int,isAdmin:bool,isMember:bool,hasApprovedCompany:bool,companyKind:?string,isDesignated:bool}
      */
     public function viewerFromRequest(Request $request): array
     {
@@ -339,7 +344,18 @@ class JobService
             'isMember' => $userId > 0,
             'hasApprovedCompany' => CompanyRules::isApproved($company?->status),
             'companyKind' => $company?->kind,
+            'isDesignated' => CompanyRules::isDesignated($company),
         ];
+    }
+
+    public function isAdminActor(mixed $user): bool
+    {
+        return $this->isAdminUser($user);
+    }
+
+    public function bidAllowMode(): string
+    {
+        return BidRules::normalizeAllow($this->setting('general.bid_allow', BidRules::ALLOW_MEMBERS));
     }
 
     /**
@@ -532,7 +548,7 @@ class JobService
      */
     private function ownerContext(int $userId): array
     {
-        return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null];
+        return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null, 'isDesignated' => false];
     }
 
     /**

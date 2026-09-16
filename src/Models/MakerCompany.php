@@ -17,7 +17,7 @@ class MakerCompany extends Model
         'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
         'admin_memo', 'hold_reason', 'rejected_reason', 'reviewed_at',
         'rating_score', 'rating_count', 'claim_count', 'claim_history', 'report_count',
-        'is_recommended', 'priority', 'upload_token',
+        'is_recommended', 'is_designated', 'priority', 'upload_token',
     ];
 
     protected $casts = [
@@ -30,6 +30,7 @@ class MakerCompany extends Model
         'claim_count' => 'integer',
         'report_count' => 'integer',
         'is_recommended' => 'boolean',
+        'is_designated' => 'boolean',
         'priority' => 'integer',
     ];
 

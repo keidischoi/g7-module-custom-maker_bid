@@ -47,7 +47,7 @@ expectTrue('admin settings update permission', str_contains($api, 'permission:ad
 expectTrue('admin settings put route', str_contains($api, "Route::put('settings'"));
 expectTrue('admin bid patch route', str_contains($api, "Route::patch('bids/{id}', [BidAdminController::class, 'update'])"));
 expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}', [JobAdminController::class, 'update'])"));
-expectTrue('module version is 0.7.0', str_contains($moduleJson, '"version": "0.7.0"'));
+expectTrue('module version is 0.7.1', str_contains($moduleJson, '"version": "0.7.1"'));
 expectTrue('job types public route', str_contains($api, "Route::get('job-types', [JobTypeController::class, 'index'])"));
 expectTrue('job form-defaults route', str_contains($api, "Route::get('jobs/form-defaults'"));
 expectTrue('owner job update route', str_contains($api, "Route::patch('jobs/{id}', [JobController::class, 'update'])"));
@@ -61,6 +61,11 @@ expectTrue('findPublic maps missing id to domain 404', str_contains($jobService,
 expectTrue('findPublic keeps same 404 copy for hidden jobs', str_contains($jobService, '의뢰를 찾을 수 없습니다.'));
 expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])"));
 expectTrue('listPublic uses listStatusFilter', str_contains($jobService, 'listStatusFilter'));
+expectTrue('listPublic keeps optional owner visibility 0.6.1', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])") && str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
+expectTrue('viewerContext uses bidAllowMode', str_contains($jobService, 'bidAllowMode') && str_contains($jobService, 'isDesignated'));
+$bidService = (string) file_get_contents($root.'/src/Services/BidService.php');
+expectTrue('bid create/update uses denyMessage', str_contains($bidService, 'BidRules::denyMessage') && str_contains($bidService, 'assertEligible'));
+expectTrue('user bid update re-checks eligibility', substr_count($bidService, 'assertEligible') >= 2);
 expectTrue('bids mine route exists', str_contains($api, "Route::get('bids/mine', [BidController::class, 'mine'])"));
 expectTrue('admin job cancel route exists', str_contains($api, "Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])"));
 expectTrue('admin menus include 의뢰 목록', str_contains($modulePhp, '의뢰 목록'));

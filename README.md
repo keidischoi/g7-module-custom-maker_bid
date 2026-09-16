@@ -2,16 +2,16 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.7.0**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문)이 포함됩니다.
+버전 **0.7.1**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
 
 - 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/jobs/{id}` `/admin/maker-bid/bids` `/admin/maker-bid/bids/{id}` `/admin/maker-bid/companies` `/admin/maker-bid/activity` `/admin/maker-bid/settings`
 - 회원: `/maker-bid` `/maker-bid/new` `/maker-bid/bids` `/maker-bid/history` `/maker-bid/company` `/maker-bid/{id}` `/maker-bid/{id}/edit`
 
 홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.7.0)
+## 설치 / 업그레이드 (0.7.1)
 
-0.6.1에서 올라올 때 additive 마이그레이션 `maker_module_settings` 가 있습니다. 관리자 의뢰/입찰 수정 UI와 설정(안내문·메뉴 위치)이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
+0.6.1에서 올라올 때 additive 마이그레이션 `maker_module_settings` 와 `maker_companies.is_designated` 가 있습니다. 관리자 의뢰/입찰 수정 UI와 설정(안내문·메뉴 위치·입찰 허용)이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
@@ -53,6 +53,7 @@ php artisan cache:clear
 **모듈 동작**
 - 의뢰 등록 기본 상태 (견적요청 / 의뢰 / 보류).
 - 비회원 의뢰목록 공개. 꺼도 로그인 작성자의 본인 의뢰는 0.6.1과 같이 목록·상세에 나옵니다.
+- **입찰 허용 권한** (`bid_allow`): 모두(로그인 회원) / 관리자 / 지정업체 / 업체 / 개인. 비회원은 입찰할 수 없습니다. 의뢰의 공개 설정(전체/업체만/개인만)과 함께 적용됩니다. 지정업체는 회사 목록에서 관리자가 표시한 승인 업체만 해당합니다. 관리자 입찰 수정 API는 이 제한을 타지 않습니다.
 
 ## 공개 / 회원 API
 
@@ -81,7 +82,7 @@ Prefix: `/api/modules/custom-maker_bid`
 | POST | `/companies` | sanctum | 입찰자 등록 |
 | GET | `/companies/me` | sanctum | 내 입찰자 신청 |
 
-입찰 가능: **로그인 회원** 또는 **승인된 MakerCompany**. 본인 의뢰에는 입찰 불가. 상태가 의뢰/견적요청이고 `closes_at` 이 없거나 미래일 때만 입찰/수정/낙찰. 공개 설정이 업체만/개인만이면 대상만 목록에 보이고 입찰할 수 있습니다.
+입찰 가능: 설정 **입찰 허용 권한**과 의뢰 공개 설정을 모두 통과한 로그인 회원. 기본(모두)은 로그인 회원입니다. 본인 의뢰에는 입찰 불가. 상태가 의뢰/견적요청이고 `closes_at` 이 없거나 미래일 때만 입찰/수정/낙찰. 공개 설정이 업체만/개인만이면 대상만 목록에 보이고 입찰할 수 있습니다. 허용되지 않으면 한국어 403입니다.
 
 의뢰 상태: `hold`(보류, 비공개) / `request`(의뢰) / `quote_request`(견적요청) / `awarded` / `done` / `cancelled`.
 공개 설정 `audience`: `all`(전체) / `company`(업체만) / `individual`(개인만).
@@ -172,4 +173,4 @@ php tests/run.php
 | identifier | `custom-maker_bid` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.7.0` |
+| version | `0.7.1` |

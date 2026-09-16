@@ -23,13 +23,13 @@ class BidService
      * @param  array<string, mixed>  $payload
      * @return array{bid: MakerBid, created: bool}
      */
-    public function createOrUpdateOwn(int $userId, int $jobId, array $payload): array
+    public function createOrUpdateOwn(int $userId, int $jobId, array $payload, bool $isAdmin = false): array
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $this->assertCanWrite($userId, $job);
 
         $company = $this->approvedCompany($userId);
-        $this->assertEligible($userId, $job, $company);
+        $this->assertEligible($userId, $job, $company, $isAdmin);
 
         $existing = MakerBid::query()
             ->where('job_id', $job->id)
@@ -62,7 +62,7 @@ class BidService
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function updateOwn(int $userId, int $jobId, int $bidId, array $payload): MakerBid
+    public function updateOwn(int $userId, int $jobId, int $bidId, array $payload, bool $isAdmin = false): MakerBid
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $bid = MakerBid::query()->where('job_id', $job->id)->findOrFail($bidId);
@@ -78,6 +78,7 @@ class BidService
         }
 
         $company = $this->approvedCompany($userId);
+        $this->assertEligible($userId, $job, $company, $isAdmin);
         $bid->fill($this->writeAttributes($payload, $company));
         $bid->save();
 
@@ -185,14 +186,16 @@ class BidService
         }
     }
 
-    private function assertEligible(int $userId, MakerJob $job, ?MakerCompany $company): void
+    private function assertEligible(int $userId, MakerJob $job, ?MakerCompany $company, bool $isAdmin = false): void
     {
         $isMember = $userId > 0;
         $approved = CompanyRules::isApproved($company?->status);
-        if (! BidRules::canBid($isMember, $approved)) {
-            throw new DomainException('회원 또는 승인된 업체만 입찰할 수 있습니다.', 403);
+        $designated = CompanyRules::isDesignated($company);
+        $mode = $this->jobs->bidAllowMode();
+        if (! BidRules::canBid($isMember, $approved, $mode, $isAdmin, $company?->kind, $designated)) {
+            throw new DomainException(BidRules::denyMessage($mode), 403);
         }
-        if (! JobRules::canBidAudience($job->audience ?? 'all', $isMember, $approved, $company?->kind)) {
+        if (! JobRules::canBidAudience($job->audience ?? 'all', $isMember, $approved, $company?->kind, $mode, $isAdmin, $designated)) {
             throw new DomainException('이 의뢰의 공개 대상만 입찰할 수 있습니다.', 403);
         }
     }

@@ -25,6 +25,7 @@
       "claim_history": "",
       "report_count": "0",
       "is_recommended": false,
+      "is_designated": false,
       "priority": "0"
     }
   },
@@ -66,7 +67,7 @@
               { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "입찰자 신청을 보류·승인·거절하고, 추천/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "입찰자 신청을 보류·승인·거절하고, 추천/지정업체/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다. 지정업체는 설정에서 입찰 허용이 「지정업체」일 때 입찰할 수 있습니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -123,6 +124,16 @@
                 "children": [
                   { "id": "erec", "type": "basic", "name": "Checkbox", "props": { "name": "is_recommended" } },
                   { "id": "erec_txt", "type": "basic", "name": "Span", "text": "추천업체 또는 추천 입찰자" }
+                ]
+              },
+              {
+                "id": "edes_wrap",
+                "type": "basic",
+                "name": "Label",
+                "props": { "className": "inline-flex items-center gap-2 text-sm cursor-pointer" },
+                "children": [
+                  { "id": "edes", "type": "basic", "name": "Checkbox", "props": { "name": "is_designated" } },
+                  { "id": "edes_txt", "type": "basic", "name": "Span", "text": "지정업체 (입찰 허용 「지정업체」일 때 입찰 가능)" }
                 ]
               },
               { "id": "epri_l", "type": "basic", "name": "P", "props": { "className": "text-sm text-secondary" }, "text": "업체 우선 노출 (숫자 클수록 앞)" },
@@ -187,7 +198,7 @@
             "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
             "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
             "children": [
-              { "id": "ctxt", "type": "basic", "name": "P", "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}} · 회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}" },
+              { "id": "ctxt", "type": "basic", "name": "P", "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}} · 회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}}{{$co.is_designated ? ' · 지정업체' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}" },
               { "id": "cmemo", "type": "basic", "name": "P", "props": { "className": "text-sm text-secondary" }, "text": "{{$co.admin_memo || $co.hold_reason || $co.rejected_reason || ''}}" },
               {
                 "id": "cacts",
@@ -217,6 +228,7 @@
                           "edit.claim_history": "{{$co.claim_history}}",
                           "edit.report_count": "{{$co.report_count}}",
                           "edit.is_recommended": "{{$co.is_recommended}}",
+                          "edit.is_designated": "{{$co.is_designated}}",
                           "edit.priority": "{{$co.priority}}"
                         }
                       }

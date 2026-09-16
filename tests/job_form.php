@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Custom\MakerBid\Support\BidRules;
 use Modules\Custom\MakerBid\Support\JobPresenter;
 use Modules\Custom\MakerBid\Support\JobRules;
 use Modules\Custom\MakerBid\Support\PrivacyRules;
@@ -120,6 +121,12 @@ expectTrue('individual can bid individual-only', JobRules::canBidAudience('indiv
 expectFalse('company cannot bid individual-only', JobRules::canBidAudience('individual', true, true, 'company'));
 expectTrue('member can bid all', JobRules::canBidAudience('all', true, false, null));
 expectFalse('guest cannot bid all', JobRules::canBidAudience('all', false, false, null));
+expectTrue('admin mode skips job audience', JobRules::canBidAudience('company', true, false, null, BidRules::ALLOW_ADMIN, true, false));
+expectFalse('member blocked by admin mode even on all jobs', JobRules::canBidAudience('all', true, false, null, BidRules::ALLOW_ADMIN, false, false));
+expectTrue('designated company can bid all', JobRules::canBidAudience('all', true, true, 'company', BidRules::ALLOW_DESIGNATED, false, true));
+expectFalse('designated company cannot bid individual-only', JobRules::canBidAudience('individual', true, true, 'company', BidRules::ALLOW_DESIGNATED, false, true));
+expectTrue('company mode and company audience compose', JobRules::canBidAudience('company', true, true, 'company', BidRules::ALLOW_COMPANY, false, false));
+expectFalse('individual mode cannot bid company-only job', JobRules::canBidAudience('company', true, false, null, BidRules::ALLOW_INDIVIDUAL, false, false));
 expectTrue('undefined type query ignored', JobRules::listTypeFilter('undefined') === null);
 expectTrue('empty type query ignored', JobRules::listTypeFilter('') === null);
 expect('print type query kept', JobRules::listTypeFilter('print_3d'), 'print_3d');

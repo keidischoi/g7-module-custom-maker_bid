@@ -9,6 +9,7 @@ use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBid\Http\Requests\StoreBidRequest;
 use Modules\Custom\MakerBid\Http\Requests\UpdateBidRequest;
 use Modules\Custom\MakerBid\Services\BidService;
+use Modules\Custom\MakerBid\Services\JobService;
 use Modules\Custom\MakerBid\Support\DomainException;
 
 class BidController extends Controller
@@ -17,6 +18,7 @@ class BidController extends Controller
 
     public function __construct(
         private readonly BidService $bids,
+        private readonly JobService $jobs,
     ) {}
 
     public function mine(Request $request): JsonResponse
@@ -31,6 +33,7 @@ class BidController extends Controller
                 (int) $request->user()->id,
                 $id,
                 $request->validated(),
+                $this->jobs->isAdminActor($request->user()),
             );
         } catch (DomainException $e) {
             return $this->domainError($e);
@@ -47,6 +50,7 @@ class BidController extends Controller
                 $id,
                 $bidId,
                 $request->validated(),
+                $this->jobs->isAdminActor($request->user()),
             );
         } catch (DomainException $e) {
             return $this->domainError($e);

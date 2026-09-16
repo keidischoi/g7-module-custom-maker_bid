@@ -13,6 +13,7 @@ expectTrue('default nav insert append_row', $defaults['menu']['nav_insert'] === 
 expectTrue('default nav js on', $defaults['menu']['nav_js_enabled'] === true);
 expectTrue('default guests see list', $defaults['general']['guests_see_list'] === true);
 expectTrue('default job status quote_request', $defaults['general']['default_job_status'] === 'quote_request');
+expectTrue('default bid allow members', $defaults['general']['bid_allow'] === 'members');
 expectTrue('list notice off by default', $defaults['notices']['list_enabled'] === false);
 
 $pages = SettingsRules::pages();
@@ -27,6 +28,7 @@ $saved = SettingsRules::fromInput([
     'list_body' => '<p>안녕</p><script>alert(1)</script>',
     'default_job_status' => 'hold',
     'guests_see_list' => 'false',
+    'bid_allow' => '지정업체',
 ]);
 expectTrue('fromInput turns off nav js', $saved['menu']['nav_js_enabled'] === false);
 expectTrue('fromInput nav insert after_shop', $saved['menu']['nav_insert'] === 'after_shop');
@@ -34,6 +36,8 @@ expectTrue('fromInput nav label', $saved['menu']['nav_label'] === '제작의뢰'
 expectTrue('fromInput strips script', ! str_contains($saved['notices']['list_body'], 'script') && str_contains($saved['notices']['list_body'], '<p>안녕</p>'));
 expectTrue('fromInput default status hold', $saved['general']['default_job_status'] === 'hold');
 expectTrue('fromInput guests false string is false', $saved['general']['guests_see_list'] === false);
+expectTrue('fromInput Korean designated mode', $saved['general']['bid_allow'] === 'designated');
+expectTrue('bad bid_allow falls back to members', SettingsRules::fromInput(['bid_allow' => 'nope'])['general']['bid_allow'] === 'members');
 expectTrue('bad insert falls back', SettingsRules::fromInput(['nav_insert' => 'nope'])['menu']['nav_insert'] === 'append_row');
 expectTrue('open status maps to quote_request', SettingsRules::fromInput(['default_job_status' => 'open'])['general']['default_job_status'] === 'quote_request');
 expectTrue('awarded not allowed as default', SettingsRules::fromInput(['default_job_status' => 'awarded'])['general']['default_job_status'] === 'quote_request');

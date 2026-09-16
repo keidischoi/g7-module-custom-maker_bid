@@ -4,6 +4,22 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.7.1] - 2026-09-16
+
+### Added
+
+- 관리자 설정 **입찰 허용 권한**: 모두(로그인 회원) / 관리자 / 지정업체 / 업체 / 개인. `general.bid_allow`. 기본값은 모두(비회원 입찰 불가). 의뢰 공개 설정(전체/업체만/개인만)과 AND로 적용됩니다. 관리자 모드일 때만 관리자가 의뢰 공개 대상을 건너뜁니다. 관리자 입찰 API(`PATCH /admin/bids/{id}`)는 이 제한을 타지 않습니다.
+- 업체 `is_designated`(지정업체) additive 컬럼. 관리자 회사 목록에서 토글. 입찰자 등록 화면은 읽기 전용(관리자만 지정). **지정업체** 모드에서는 승인+지정 플래그인 업체만 입찰할 수 있습니다. 비허용 시 한국어 403.
+
+### Changed
+
+- 버전 **0.7.1**. nav/form.js·form.css 캐시 `?v=0.7.1`.
+- 0.6.1 소유자 목록/상세(`optional.sanctum`, `auth_mode: "optional"`)는 그대로입니다.
+
+### Notes
+
+- `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**. `is_designated` 마이그레이션이 적용됩니다.
+
 ## [0.7.0] - 2026-09-16
 
 ### Added

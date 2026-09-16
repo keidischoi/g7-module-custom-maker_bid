@@ -131,6 +131,7 @@ expectTrue('company apply FileUploader logos', str_contains($company, 'FileUploa
 expectTrue('company apply profile fill helper', str_contains($company, 'data-cmb-profile-fill') && str_contains($company, '회원정보'));
 expectTrue('company apply job types host', str_contains($company, 'data-cmb-job-types'));
 expectTrue('company apply daum postcode', str_contains($company, 'data-cmb-postcode'));
+expectTrue('company apply designated is read-only copy', str_contains($company, '지정업체') && ! str_contains($company, '"name": "is_designated"'));
 
 $adminJobs = (string) file_get_contents($root.'/resources/layouts/admin/jobs_index.json');
 expectTrue('admin jobs hold', str_contains($adminJobs, '/hold'));
@@ -160,12 +161,13 @@ expectTrue('admin company reject', str_contains($adminCos, '/reject'));
 expectTrue('admin company hold', str_contains($adminCos, '/hold'));
 expectTrue('admin company patch', str_contains($adminCos, '"method": "PATCH"') || str_contains($adminCos, '"method": "patch"'));
 expectTrue('admin company recommended/priority', str_contains($adminCos, 'is_recommended') && str_contains($adminCos, 'priority'));
+expectTrue('admin company designated toggle', str_contains($adminCos, 'is_designated') && str_contains($adminCos, '지정업체'));
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.7.0', str_contains($nav, 'nav.js?v=0.7.0'));
-expectTrue('form.js cache bust 0.7.0', str_contains($nav, 'form.js?v=0.7.0'));
-expectTrue('form.css cache bust 0.7.0', str_contains($nav, 'form.css?v=0.7.0'));
+expectTrue('nav cache bust 0.7.1', str_contains($nav, 'nav.js?v=0.7.1'));
+expectTrue('form.js cache bust 0.7.1', str_contains($nav, 'form.js?v=0.7.1'));
+expectTrue('form.css cache bust 0.7.1', str_contains($nav, 'form.css?v=0.7.1'));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bid_user_nav') && str_contains($nav, 'extension_user_base'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
@@ -203,7 +205,7 @@ expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box')
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.7.0'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.7.1'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
@@ -223,6 +225,7 @@ expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrat
 expectTrue('company profile admin fields migration', is_file($root.'/database/migrations/2026_09_16_000010_ensure_company_profile_admin_fields.php'));
 expectTrue('job audience and ownership migration', is_file($root.'/database/migrations/2026_09_16_000011_ensure_job_audience_and_copyright.php'));
 expectTrue('module settings migration', is_file($root.'/database/migrations/2026_09_16_000012_create_maker_module_settings_table.php'));
+expectTrue('company is_designated migration', is_file($root.'/database/migrations/2026_09_16_000013_ensure_company_is_designated.php'));
 expectTrue('settings defaults json', is_file($root.'/config/settings/defaults.json'));
 
 $fileModel = (string) file_get_contents($root.'/src/Models/MakerJobFile.php');
@@ -248,6 +251,7 @@ expectTrue('admin settings put', str_contains($adminSettings, '/admin/settings')
 expectTrue('admin settings menu fields', str_contains($adminSettings, 'nav_js_enabled') && str_contains($adminSettings, 'nav_insert') && str_contains($adminSettings, 'extension_user_base'));
 expectTrue('admin settings notices', str_contains($adminSettings, 'list_body') && str_contains($adminSettings, 'create_body') && str_contains($adminSettings, '의뢰목록 안내문'));
 expectTrue('admin settings general', str_contains($adminSettings, 'default_job_status') && str_contains($adminSettings, 'guests_see_list'));
+expectTrue('admin settings bid_allow', str_contains($adminSettings, 'bid_allow') && str_contains($adminSettings, '지정업체') && str_contains($adminSettings, '"value": "members"'));
 expectTrue('admin settings permission', str_contains($adminSettings, 'custom-maker_bid.settings.read'));
 
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');

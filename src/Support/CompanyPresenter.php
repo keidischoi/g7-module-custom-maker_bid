@@ -33,6 +33,7 @@ class CompanyPresenter
             'rating_score' => CompanyRules::clampRatingScore($row->rating_score),
             'rating_count' => (int) ($row->rating_count ?? 0),
             'is_recommended' => (bool) $row->is_recommended,
+            'is_designated' => CompanyRules::isDesignated($row),
             'priority' => CompanyRules::clampPriority($row->priority),
             'created_at' => optional($row->created_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('created_at'),
             'updated_at' => optional($row->updated_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('updated_at'),

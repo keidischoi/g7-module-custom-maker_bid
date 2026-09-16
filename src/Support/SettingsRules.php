@@ -55,6 +55,7 @@ class SettingsRules
             'general' => [
                 'default_job_status' => 'quote_request',
                 'guests_see_list' => true,
+                'bid_allow' => BidRules::ALLOW_MEMBERS,
             ],
         ];
     }
@@ -200,6 +201,7 @@ class SettingsRules
             'general' => [
                 'default_job_status' => $status,
                 'guests_see_list' => self::boolish($general['guests_see_list'] ?? true),
+                'bid_allow' => BidRules::normalizeAllow($general['bid_allow'] ?? BidRules::ALLOW_MEMBERS),
             ],
         ];
     }
@@ -270,6 +272,7 @@ class SettingsRules
             'extension_home' => ['nullable'],
             'default_job_status' => ['nullable', 'string', 'in:'.implode(',', JobRules::LISTING_STATUSES)],
             'guests_see_list' => ['nullable'],
+            'bid_allow' => ['nullable', 'string', 'in:'.implode(',', BidRules::ALLOW_MODES)],
             'menu' => ['nullable', 'array'],
             'notices' => ['nullable', 'array'],
             'general' => ['nullable', 'array'],
