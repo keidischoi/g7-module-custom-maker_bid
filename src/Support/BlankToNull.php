@@ -21,9 +21,47 @@ trait BlankToNull
     }
 
     /**
-     * G7 sometimes posts the dataKey object nested as `form` / `company`
-     * instead of flattening `name` fields onto the root.
+     * G7 select often posts {value,label} instead of a slug string.
      *
+     * @param  list<string>  $keys
+     */
+    protected function coerceSlugFields(array $keys = ['type', 'kind', 'status', 'audience']): void
+    {
+        $merge = [];
+        foreach ($keys as $key) {
+            if (! $this->exists($key)) {
+                continue;
+            }
+            $merge[$key] = $this->slugString($this->input($key));
+        }
+        if ($merge !== []) {
+            $this->merge($merge);
+        }
+    }
+
+    protected function slugString(mixed $value): string
+    {
+        if (is_array($value)) {
+            foreach (['value', 'slug', 'type', 'id'] as $k) {
+                if (isset($value[$k]) && ! is_array($value[$k]) && (string) $value[$k] !== '') {
+                    return trim((string) $value[$k]);
+                }
+            }
+            $first = reset($value);
+
+            return is_array($first) ? $this->slugString($first) : trim((string) $first);
+        }
+        if (is_object($value)) {
+            return $this->slugString((array) $value);
+        }
+        if (is_bool($value)) {
+            return $value ? '1' : '';
+        }
+
+        return trim((string) $value);
+    }
+
+    /**
      * @param  list<string>  $roots
      */
     protected function liftNestedFormFields(array $roots = ['form']): void
