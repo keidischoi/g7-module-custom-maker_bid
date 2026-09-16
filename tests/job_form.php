@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Custom\MakerBid\Support\JobPresenter;
 use Modules\Custom\MakerBid\Support\JobRules;
 use Modules\Custom\MakerBid\Support\PrivacyRules;
 use Modules\Custom\MakerBid\Support\TypeCatalog;
@@ -108,7 +109,11 @@ expect('audience default all', JobRules::normalizeAudience(''), 'all');
 expect('audience label company', JobRules::audienceLabel('company'), '업체만');
 expectTrue('company viewer sees company jobs', JobRules::canViewAudience('company', false, false, true, true, 'company'));
 expectFalse('individual cannot see company-only', JobRules::canViewAudience('company', false, false, true, false, null));
+expectTrue('owner sees company-only', JobRules::canViewAudience('company', true, false, true, false, null));
+expectTrue('owner sees individual-only', JobRules::canViewAudience('individual', true, false, false, false, null));
 expectTrue('guest sees all', JobRules::canViewAudience('all', false, false, false, false, null));
+expectFalse('guest cannot see company-only', JobRules::canViewAudience('company', false, false, false, false, null));
+expectFalse('guest cannot see individual-only', JobRules::canViewAudience('individual', false, false, false, false, null));
 expectTrue('company can bid company-only', JobRules::canBidAudience('company', true, true, 'company'));
 expectFalse('individual cannot bid company-only', JobRules::canBidAudience('company', true, false, null));
 expectTrue('individual can bid individual-only', JobRules::canBidAudience('individual', true, false, null));
@@ -158,6 +163,11 @@ expectTrue('png attachment has download_url', str_contains((string) $att['downlo
 $payload = $row->toUploaderPayload();
 expectTrue('uploader payload success wrap', $payload['success'] === true && is_array($payload['data']) && $payload['data']['hash'] === $att['hash']);
 expectTrue('uploader payload also top-level hash', $payload['hash'] === $att['hash']);
+
+$env = JobPresenter::envelope(['id' => 42, 'title' => 'test-job']);
+expectTrue('job envelope has top-level id', ($env['id'] ?? null) === 42);
+expectTrue('job envelope nested data id', is_array($env['data'] ?? null) && ($env['data']['id'] ?? null) === 42);
+expectTrue('job envelope success flag', ($env['success'] ?? null) === true);
 
 $zip = new MakerJobFile();
 $zip->id = 8;

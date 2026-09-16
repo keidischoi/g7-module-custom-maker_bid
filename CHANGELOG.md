@@ -4,6 +4,22 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.6.1] - 2026-09-16
+
+### Fixed
+
+- 의뢰 상세에서 작성자·로그인 회원이 「의뢰를 찾을 수 없습니다.」를 보던 문제를 수정. `GET /jobs`·`GET /jobs/{id}`에 `optional.sanctum`을 붙이고, 목록/상세 data_source는 `auth_mode: "optional"`로 세션 토큰을 실어 보류·업체만/개인만 의뢰도 소유자·해당 회원이 열 수 있습니다. 비회원에게는 기존과 같이 숨깁니다.
+- 등록/수정 성공 후 `/maker-bid/undefined`로 가던 문제를 수정. 응답을 `{ data: job, ...job }`로 맞추고 `{{response.data.id || response.id}}`로 숫자 id에 이동합니다.
+- 없는 id는 `findOrFail` 대신 같은 404 문구의 `DomainException`을 씁니다. 권한 없는 이에게 존재 여부를 드러내지 않습니다.
+
+### Changed
+
+- 버전 **0.6.1**.
+
+### Notes
+
+- 레이아웃 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다.
+
 ## [0.6.0] - 2026-09-16
 
 ### Fixed

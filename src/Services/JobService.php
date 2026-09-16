@@ -124,10 +124,13 @@ class JobService
      */
     public function findPublic(int $id, Request $request): array
     {
-        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->find($id);
+        if ($job === null) {
+            $this->denyPublic();
+        }
         $ctx = $this->viewerFromRequest($request);
         if (JobRules::isHiddenFromPublic((string) $job->status) && ! $this->canSeeHold($job, $ctx)) {
-            throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
+            $this->denyPublic();
         }
         $isOwner = $ctx['userId'] > 0 && (int) $job->user_id === $ctx['userId'];
         if (! JobRules::canViewAudience(
@@ -138,7 +141,7 @@ class JobService
             $ctx['hasApprovedCompany'],
             $ctx['companyKind'],
         ) && ! $this->hasBidOnJob($job, $ctx['userId'])) {
-            throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
+            $this->denyPublic();
         }
 
         return $this->present($job, $ctx, true, true);
@@ -520,6 +523,14 @@ class JobService
     private function ownerContext(int $userId): array
     {
         return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null];
+    }
+
+    /**
+     * Same 404 copy for missing, hold, and out-of-audience so existence is not leaked.
+     */
+    private function denyPublic(): never
+    {
+        throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
     }
 
     /**

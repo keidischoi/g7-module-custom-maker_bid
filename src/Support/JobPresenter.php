@@ -124,4 +124,19 @@ class JobPresenter
 
         return $payload;
     }
+
+    /**
+     * Dual-shaped body so layout onSuccess can read `response.data.id` whether
+     * G7Core.api leaves `{data: job}` intact or unwraps one layer.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public static function envelope(array $payload): array
+    {
+        return array_merge($payload, [
+            'success' => true,
+            'data' => $payload,
+        ]);
+    }
 }

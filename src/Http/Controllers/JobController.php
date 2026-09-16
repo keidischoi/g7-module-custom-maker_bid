@@ -15,6 +15,7 @@ use Modules\Custom\MakerBid\Services\JobFileService;
 use Modules\Custom\MakerBid\Services\JobService;
 use Modules\Custom\MakerBid\Services\JobTypeService;
 use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBid\Support\JobPresenter;
 
 class JobController extends Controller
 {
@@ -110,7 +111,7 @@ class JobController extends Controller
             return $this->domainError($e);
         }
 
-        return response()->json(['data' => $job], 201);
+        return response()->json(JobPresenter::envelope($job), 201);
     }
 
     public function update(UpdateOwnedJobRequest $request, int $id): JsonResponse
@@ -121,7 +122,7 @@ class JobController extends Controller
             return $this->domainError($e);
         }
 
-        return response()->json(['data' => $job]);
+        return response()->json(JobPresenter::envelope($job));
     }
 
     public function award(AwardJobRequest $request, int $id): JsonResponse

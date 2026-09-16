@@ -701,7 +701,7 @@
                           },
                           "onSuccess": [
                             { "handler": "toast", "params": { "type": "success", "message": "의뢰가 등록되었습니다." } },
-                            { "handler": "navigate", "params": { "path": "/maker-bid/{{response.data.id}}" } }
+                            { "handler": "navigate", "params": { "path": "/maker-bid/{{response.data.id || response.id}}" } }
                           ],
                           "onError": [
                             { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }

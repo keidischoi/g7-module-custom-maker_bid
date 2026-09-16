@@ -26,6 +26,7 @@
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
+      "auth_mode": "optional",
       "params": { "type": "{{query.type}}" },
       "fallback": { "data": [] }
     }

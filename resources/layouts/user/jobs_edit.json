@@ -1832,7 +1832,7 @@
                             {
                               "handler": "navigate",
                               "params": {
-                                "path": "/maker-bid/{{response.data.id}}"
+                                "path": "/maker-bid/{{response.data.id || response.id || route.id}}"
                               }
                             }
                           ],
