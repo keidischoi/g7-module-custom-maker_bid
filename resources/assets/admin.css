@@ -566,8 +566,18 @@ html.dark .cmb-admin-row,
   }
 }
 
-/* Portaled G7 menus leave .cmb-admin. admin.js marks the real open node
-   with .cmb-admin-listbox so we do not depend on body:has or Radix vars. */
+/* Portaled menus leave .cmb-admin. admin.css is only on this module's
+   admin layouts, so these rules may target [role=listbox] on the page.
+   html.cmb-admin-ui is set by admin.js; .cmb-admin-listbox is marked on
+   the real open node. Do not use body:has or --radix-select-trigger-width. */
+.cmb-admin [role="listbox"],
+.cmb-admin-select-host [role="listbox"],
+.cmb-admin [data-slot="select-content"],
+.cmb-admin-select-host [data-slot="select-content"],
+html.cmb-admin-ui [role="listbox"],
+html.cmb-admin-ui [data-slot="select-content"],
+html.cmb-admin-ui [data-radix-select-content],
+html.cmb-admin-ui [data-radix-popper-content-wrapper],
 .cmb-admin-listbox,
 .cmb-admin-listbox [role="listbox"],
 .cmb-admin-listbox [data-slot="select-content"],
@@ -582,6 +592,10 @@ html.dark .cmb-admin-row,
   padding-inline: 0.35rem;
 }
 
+.cmb-admin [role="option"],
+.cmb-admin-select-host [role="option"],
+html.cmb-admin-ui [role="option"],
+html.cmb-admin-ui [data-slot="select-item"],
 .cmb-admin-listbox [role="option"],
 .cmb-admin-listbox [data-slot="select-item"],
 .cmb-admin-listbox li {

@@ -158,12 +158,28 @@
     window.setTimeout(scanListboxes, 160);
   }
 
+  function injectPortalCss() {
+    if (document.getElementById('cmb-admin-select-portal-css')) {
+      return;
+    }
+    var s = document.createElement('style');
+    s.id = 'cmb-admin-select-portal-css';
+    s.textContent =
+      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],html.cmb-admin-ui [data-radix-popper-content-wrapper]{width:max-content!important;min-width:14rem!important;max-width:min(90vw,40rem)!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;box-sizing:border-box!important;}' +
+      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;}';
+    (document.head || document.documentElement).appendChild(s);
+  }
+
   function start() {
     if (!adminRoot()) {
       return;
     }
     document.documentElement.classList.add('cmb-admin-ui');
+    injectPortalCss();
     styleHosts();
+    scanListboxes();
+    window.setTimeout(scanListboxes, 0);
+    window.setTimeout(scanListboxes, 50);
     if (window.MutationObserver) {
       var obs = new MutationObserver(function () {
         styleHosts();
