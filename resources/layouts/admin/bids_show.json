@@ -108,6 +108,7 @@
                     "id": "status_wrap",
                     "type": "basic",
                     "name": "Div",
+                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-sm" },
                     "children": [
                       { "id": "status_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
                       {

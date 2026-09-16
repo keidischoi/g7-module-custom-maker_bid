@@ -4,6 +4,21 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.5] - 2026-09-16
+
+### Fixed
+
+- 관리자 **목록 행**을 한 줄 둥근 카드로 맞춥니다. G7 `Div`가 column으로 쌓아 제목·메타·버튼이 세로로 나뉘던 문제를 `flex-direction: row` + nowrap으로 고칩니다. `#id 제목 · 메타 [상세] [보류] [취소] [삭제]` 가 한 줄이고, 제목은 길면 ellipsis, 버튼은 오른쪽입니다. 640px 이하에서만 버튼이 감쌉니다.
+- 대상: `jobs_index` · `bids_index` · `companies_index` · `types_index` · `activity_index` · 의뢰 상세 입찰 행. 다크 테마 테두리 대비(0.9.2)는 유지합니다.
+- 관리자 **Select** 너비. 0.9.4의 `.cmb-admin-select` / `body:has` / `--radix-select-trigger-width` 는 라이브 G7 DOM(옵션 모드 커스텀 드롭다운·포털 메뉴)에 맞지 않아 닫힌 트리거가 줄어들고, 열린 「입찰 허용 권한」이 한글 한 글자씩 줄바꿈됐습니다. 이번에는 Select를 `cmb-admin-select-host` Div로 감싸 트리거 너비를 레이아웃이 보장하고, `admin.js`가 실제 button/listbox에 nowrap·min-width를 직접 넣습니다.
+- 대상: 설정(기본 상태·입찰 허용·메뉴 위치), 목록 필터, 의뢰·입찰·업체 상세의 모든 관리자 Select. 필터 필드 너비(유형 ~14rem, 상태 ~12rem, ID ~8.5rem)는 0.9.2와 같습니다. 열린 메뉴만 옵션 텍스트에 맞게 넓어집니다.
+
+### Changed
+
+- 버전 **0.9.5**. nav/form.js·form.css·admin.css·admin.js 캐시 `?v=0.9.5`.
+- identifier·권한·API prefix `custom-maker_bids`, namespace `Modules\Custom\MakerBids` 는 변경하지 않습니다.
+- 0.9.3 목록 카드 PR(#12)은 main(0.9.4) 기준으로 다시 구현해 이 버전에 포함합니다. #12는 대체됩니다.
+
 ## [0.9.4] - 2026-09-16
 
 ### Fixed

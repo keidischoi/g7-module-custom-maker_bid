@@ -159,6 +159,12 @@
                   },
                   { "id": "nav_insert_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "삽입 위치" },
                   {
+                    "id": "nav_insert_host",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-md" },
+                    "children": [
+                  {
                     "id": "nav_insert",
                     "type": "basic",
                     "name": "Select",
@@ -175,6 +181,8 @@
                     },
                     "actions": [
                       { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.nav_insert": "{{$event.target.value}}" } }
+                    ]
+                  }
                     ]
                   },
                   { "id": "nav_label_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "메뉴 라벨" },
@@ -218,6 +226,12 @@
                   { "id": "gen_h", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "모듈 동작" },
                   { "id": "status_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "의뢰 등록 기본 상태 (작성자가 고르지 않았을 때)" },
                   {
+                    "id": "default_job_status_host",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-md" },
+                    "children": [
+                  {
                     "id": "default_job_status",
                     "type": "basic",
                     "name": "Select",
@@ -234,6 +248,8 @@
                     "actions": [
                       { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.default_job_status": "{{$event.target.value}}" } }
                     ]
+                  }
+                    ]
                   },
                   {
                     "id": "guests_wrap",
@@ -247,6 +263,12 @@
                   },
                   { "id": "guests_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "끄면 로그인 회원만 목록을 봅니다. 작성자 본인 의뢰는 0.6.1과 같이 로그인 후 보입니다." },
                   { "id": "bid_allow_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "입찰 허용 권한" },
+                  {
+                    "id": "bid_allow_host",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-lg" },
+                    "children": [
                   {
                     "id": "bid_allow",
                     "type": "basic",
@@ -267,6 +289,8 @@
                     },
                     "actions": [
                       { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.bid_allow": "{{$event.target.value}}" } }
+                    ]
+                  }
                     ]
                   },
                   { "id": "bid_allow_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "사이트 전체 기본입니다. 비회원(게스트)은 입찰할 수 없어 「모두」는 로그인 회원 전체입니다. 「일반회원」은 업체/개인 입찰자 등록이 없는 로그인 회원입니다. 의뢰 공개 설정(전체/업체만/개인만)과 함께 적용됩니다. 지정업체는 회사 목록에서 관리자가 표시한 승인 업체만 해당합니다. 관리자 입찰 수정(관리자 API)은 이 제한을 타지 않습니다." }
