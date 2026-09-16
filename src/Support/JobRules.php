@@ -118,8 +118,8 @@ class JobRules
             'contact_email.required' => '이메일을 입력해 주세요.',
             'contact_email.email' => '이메일 형식이 올바르지 않습니다.',
             'rush_deadline.required_if' => '급행비를 적용하면 적용 조건 시각을 선택해 주세요.',
-            'revision_count.required_if' => '몇 회 수정 가능한지 입력해 주세요.',
-            'revision_cost.required_if' => '최소 수정 비용을 입력해 주세요.',
+            'revision_count.required_if' => '최소 수정 횟수를 입력해 주세요.',
+            'revision_cost.required_if' => '회당 또는 최대 수정비용을 입력해 주세요.',
             'manager_email.email' => '담당자 이메일 형식이 올바르지 않습니다.',
             'budget_max.gte' => '예산 최댓값은 최솟값보다 크거나 같아야 합니다.',
         ];

@@ -158,6 +158,50 @@ html.dark .cmb-order-card .cmb-order-submit,
   cursor: not-allowed;
 }
 
+.cmb-order-card,
+.cmb-order-card .cmb-order-select-wrap {
+  overflow: visible;
+}
+
+.cmb-order-card .cmb-order-select-wrap {
+  position: relative;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+.cmb-order-card .cmb-order-select,
+.cmb-order-card .cmb-order-select-wrap button,
+.cmb-order-card [name="type"],
+.cmb-order-card [name="status"] {
+  pointer-events: auto !important;
+}
+
+body [role="listbox"] {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+/* Conditional blocks: rush calendar, revision inputs, modeling extensions.
+   G7 `if` often does not re-render after a checkbox click, so keep nodes in
+   the DOM and toggle with :has() / .is-open (form.js). */
+.cmb-order-card .cmb-cond {
+  display: none;
+}
+
+.cmb-order-card .cmb-cond-rush.is-open,
+.cmb-order-card:has([name="rush_fee_enabled"]:checked) .cmb-cond-rush {
+  display: block;
+}
+
+.cmb-order-card .cmb-cond-rev.is-open,
+.cmb-order-card:has([name="revision_enabled"]:checked) .cmb-cond-rev {
+  display: grid;
+}
+
+.cmb-order-card .cmb-cond-ext.is-open {
+  display: block;
+}
+
 .cmb-order-card .cmb-manager-box {
   background-color: color-mix(in srgb, var(--cmb-muted) 55%, transparent);
   border-color: var(--cmb-border);

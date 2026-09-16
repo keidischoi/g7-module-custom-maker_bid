@@ -15,6 +15,7 @@ class TypeRules
             'description' => ['nullable', 'string', 'max:500'],
             'requires_address' => ['nullable', 'boolean'],
             'is_design_only' => ['nullable', 'boolean'],
+            'includes_modeling' => ['nullable', 'boolean'],
             'is_enabled' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:99999'],
         ];

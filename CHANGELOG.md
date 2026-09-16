@@ -4,6 +4,27 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.5.3] - 2026-09-16
+
+### Fixed
+
+- `/maker-bid/new` · `/maker-bid/:id/edit` 급행비 체크 시 **적용 조건 달력**(`datetime-local`)이 바로 아래에 나타나도록 수정. G7 `if`에만 의존하지 않고 필드를 항상 두고 CSS `:has()` / `form.js`로 표시·활성합니다. `rush_deadline`에 저장.
+- 유형·상태 **Select**가 열리고 옵션을 고를 수 있게 수정. G7 커스텀 드롭다운은 `value` + `change` `setState`가 필요합니다. 빈 `[]` options(`||` 함정) 대신 `?.length`와 시드 폴백을 씁니다. 오버레이 `z-index` / `pointer-events` / `overflow: visible`도 맞춥니다.
+- 수정 횟수 체크 시 **최소 횟수**(`revision_count`)와 **회당 / 최대 수정비용**(`revision_cost`) 입력이 보이게 수정. 기존 0.5.2 컬럼을 유지하고 라벨만 사용자 표현에 맞춥니다.
+
+### Added
+
+- 주문자명 옆 **회원정보 사용** 헬퍼(주간만과 동일). 체크 시 로그인 회원명 또는 승인 업체명을 채우고, 직접 수정하면 체크가 해제됩니다. DB 플래그는 없고 문자열만 저장합니다.
+- 제공 확장자는 **모델링 포함 유형**에서만 표시. 유형 카탈로그 `includes_modeling` 플래그(시드: 3D 모델링·풀 패키지·커미션·워킹 프로토타입 = 켜짐, 3D 출력 대행·디자인 목업 = 꺼짐). 숨기면 제출 시 확장자를 비웁니다. 관리자 유형 화면에 체크박스가 있습니다.
+
+### Changed
+
+- 버전 **0.5.3**. nav/form.js·form.css 캐시 `?v=0.5.3`.
+
+### Notes
+
+- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다. `includes_modeling` 컬럼이 없는 설치에는 additive 마이그레이션이 적용됩니다.
+
 ## [0.5.2] - 2026-09-16
 
 ### Fixed
