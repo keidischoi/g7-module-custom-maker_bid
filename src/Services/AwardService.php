@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\AwardRules;
+use Modules\Custom\MakerBids\Support\BiddingRules;
 use Modules\Custom\MakerBids\Support\DomainException;
-use Modules\Custom\MakerBids\Support\JobRules;
 
 class AwardService
 {
@@ -25,7 +25,7 @@ class AwardService
                 throw new DomainException('의뢰 작성자만 낙찰할 수 있습니다.', 403);
             }
 
-            if (! JobRules::isBiddingOpen($job->bidding_status ?? 'open', (string) $job->status, $job->closes_at)) {
+            if (! BiddingRules::isOpen($job->bidding_status ?? BiddingRules::OPEN, (string) $job->status, $job->closes_at)) {
                 throw new DomainException('입찰이 종료되어 낙찰할 수 없습니다.', 422);
             }
 
@@ -59,7 +59,7 @@ class AwardService
             if (! $isAdmin && (int) $job->user_id !== $actorId) {
                 throw new DomainException('의뢰 작성자만 입찰을 종료할 수 있습니다.', 403);
             }
-            $job->bidding_status = JobRules::BIDDING_CLOSED;
+            $job->bidding_status = BiddingRules::CLOSED;
             $job->bidding_closed_at = now();
             $job->save();
 
