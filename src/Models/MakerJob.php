@@ -13,7 +13,8 @@ class MakerJob extends Model
 
     protected $fillable = [
         'user_id', 'type_id', 'type', 'title', 'description', 'budget', 'budget_min', 'budget_max',
-        'status', 'awarded_bid_id', 'closes_at', 'rush_fee_enabled', 'rush_deadline',
+        'status', 'bidding_status', 'bidding_closed_at', 'awarded_bid_id', 'closes_at',
+        'rush_fee_enabled', 'rush_deadline',
         'audience', 'schedule_premium_enabled', 'size_w', 'size_d', 'size_h', 'sizes',
         'provided_extensions', 'ownership_requested',
         'revision_enabled', 'revision_count', 'revision_cost', 'contact_name', 'contact_phone',
@@ -29,6 +30,7 @@ class MakerJob extends Model
         'budget_max' => 'integer',
         'awarded_bid_id' => 'integer',
         'closes_at' => 'datetime',
+        'bidding_closed_at' => 'datetime',
         'audience' => 'string',
         'rush_fee_enabled' => 'boolean',
         'rush_deadline' => 'datetime',
@@ -66,6 +68,10 @@ class MakerJob extends Model
 
     public function isOpen(): bool
     {
-        return JobRules::isOpen((string) $this->status, $this->closes_at);
+        return JobRules::isBiddingOpen(
+            $this->bidding_status ?? JobRules::BIDDING_OPEN,
+            (string) $this->status,
+            $this->closes_at,
+        );
     }
 }
