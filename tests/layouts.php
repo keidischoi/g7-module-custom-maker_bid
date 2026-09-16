@@ -134,6 +134,7 @@ expectTrue('company apply daum postcode', str_contains($company, 'data-cmb-postc
 expectTrue('company apply designated is read-only copy', str_contains($company, '지정업체') && ! str_contains($company, '"name": "is_designated"'));
 expectTrue('company apply submit is 입찰자 등록 top-right', str_contains($company, 'cmb-company-submit-top') && str_contains($company, '"text": "입찰자 등록"') && str_contains($company, 'data-cmb-company-submit'));
 expectTrue('company apply submit sits in header not form card', preg_match('/"id": "head_right"[\s\S]*"id": "submit"[\s\S]*"id": "card"/', $company) === 1);
+expectTrue('company apply has bottom 입찰자 등록 submit', str_contains($company, '"id": "submit_bottom"') && preg_match('/"id": "address_detail"[\s\S]*"id": "submit_bottom"[\s\S]*"text": "입찰자 등록"/', $company) === 1);
 expectTrue('company apply submit posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bids/companies"') && str_contains($company, '"method": "POST"'));
 
 $adminJobs = (string) file_get_contents($root.'/resources/layouts/admin/jobs_index.json');
@@ -168,9 +169,9 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.8.0', str_contains($nav, 'nav.js?v=0.8.0'));
-expectTrue('form.js cache bust 0.8.0', str_contains($nav, 'form.js?v=0.8.0'));
-expectTrue('form.css cache bust 0.8.0', str_contains($nav, 'form.css?v=0.8.0'));
+expectTrue('nav cache bust 0.8.1', str_contains($nav, 'nav.js?v=0.8.1'));
+expectTrue('form.js cache bust 0.8.1', str_contains($nav, 'form.js?v=0.8.1'));
+expectTrue('form.css cache bust 0.8.1', str_contains($nav, 'form.css?v=0.8.1'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -209,7 +210,7 @@ expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box')
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.8.0'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.8.1'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
