@@ -10,6 +10,7 @@ use Modules\Custom\MakerBid\Models\MakerJob;
 use Modules\Custom\MakerBid\Support\BidRules;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBid\Support\JobRules;
 
 class BidService
 {
@@ -27,7 +28,7 @@ class BidService
         $this->assertCanWrite($userId, $job);
 
         $company = $this->approvedCompany($userId);
-        $this->assertEligible($userId, $company);
+        $this->assertEligible($userId, $job, $company);
 
         $existing = MakerBid::query()
             ->where('job_id', $job->id)
@@ -154,12 +155,15 @@ class BidService
         }
     }
 
-    private function assertEligible(int $userId, ?MakerCompany $company): void
+    private function assertEligible(int $userId, MakerJob $job, ?MakerCompany $company): void
     {
         $isMember = $userId > 0;
         $approved = CompanyRules::isApproved($company?->status);
         if (! BidRules::canBid($isMember, $approved)) {
             throw new DomainException('회원 또는 승인된 업체만 입찰할 수 있습니다.', 403);
+        }
+        if (! JobRules::canBidAudience($job->audience ?? 'all', $isMember, $approved, $company?->kind)) {
+            throw new DomainException('이 의뢰의 공개 대상만 입찰할 수 있습니다.', 403);
         }
     }
 

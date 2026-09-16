@@ -84,7 +84,7 @@ expectTrue('create rush calendar nested in rush_row', preg_match('/"id": "rush_r
 expectTrue('create rush calendar not gated only by if', ! str_contains($create, '"id": "rush_date_wrap"') || ! preg_match('/"id": "rush_date_wrap"[\s\S]{0,200}"if": "{{_local.form.rush_fee_enabled}}"/', $create));
 expectTrue('create Select is value-controlled', str_contains($create, '"value": "{{_local.form.type}}"') && str_contains($create, '"value": "{{_local.form.status}}"') && str_contains($create, 'form.type') && str_contains($create, 'cmb-order-select'));
 expectTrue('create Select options use length fallback', str_contains($create, 'defaults.data?.types?.length') || str_contains($create, 'types.data?.length'));
-expectTrue('create extension checkbox labels are explicit text', str_contains($create, '"text": "STL"') && str_contains($create, '"text": "3MF"') && str_contains($create, '"text": "GCODE"') && str_contains($create, '"text": "FBX"'));
+expectTrue('create extension checkbox labels are explicit text', str_contains($create, '"text": "STL"') && str_contains($create, '"text": "3MF"') && str_contains($create, '"text": "GCODE"') && str_contains($create, '"text": "FBX"') && str_contains($create, '"text": "DWG"'));
 expectTrue('create checkbox labels use contrast classes', str_contains($create, 'cmb-order-check-label') && str_contains($create, 'cmb-order-check-text') && str_contains($create, 'dark:text-gray-100'));
 expectTrue('create rush/premium/revision checkbox labels', str_contains($create, '"text": "적용 가능"') && str_contains($create, '"text": "적용 유무"'));
 expectTrue('create daytime helper 주간만', str_contains($create, '주간만') && str_contains($create, 'data-cmb-daytime'));
@@ -94,7 +94,14 @@ expectTrue('create profile name helper 회원정보 사용', str_contains($creat
 expectTrue('create extensions hidden unless modeling', str_contains($create, 'cmb-cond-ext') && str_contains($create, 'data-cmb-ext') && str_contains($create, 'includes_modeling'));
 expectTrue('create size rows add and delete', str_contains($create, 'data-cmb-size-add') && str_contains($create, '"text": "추가"') && str_contains($create, 'data-cmb-sizes-list') && str_contains($create, 'data-cmb-sizes'));
 expectTrue('create manager info card', str_contains($create, '담당자 정보') && str_contains($create, '담당자 명') && str_contains($create, '담당자 연락처') && str_contains($create, '담당자 이메일') && str_contains($create, 'cmb-manager-box') && str_contains($create, 'manager_name'));
+expectTrue('create title is value-controlled', str_contains($create, '"value": "{{_local.form.title}}"') && str_contains($create, 'form.title'));
+expectTrue('create budget/closes are value-controlled', str_contains($create, '"value": "{{_local.form.budget_min}}"') && str_contains($create, '"value": "{{_local.form.closes_at}}"'));
+expectTrue('create contact/manager are value-controlled', str_contains($create, '"value": "{{_local.form.contact_name}}"') && str_contains($create, '"value": "{{_local.form.manager_name}}"'));
+expectTrue('create rush/revision checkboxes bind local state', str_contains($create, '"checked": "{{_local.form.rush_fee_enabled}}"') && str_contains($create, '"checked": "{{_local.form.revision_enabled}}"'));
 expectTrue('create temp QA fill button', str_contains($create, 'data-cmb-qa-fill') && str_contains($create, '임의입력') && str_contains($create, 'cmb-qa-fill'));
+expectTrue('create tab is 입찰자 등록', str_contains($create, '입찰자 등록'));
+expectTrue('create 소유권한 요청 near extensions', str_contains($create, '소유권한 요청') && str_contains($create, 'ownership_requested') && ! str_contains($create, '저작권 있음'));
+expectTrue('create 공개 설정 전체/업체만/개인만', str_contains($create, '공개 설정') && str_contains($create, '"value": "all"') && str_contains($create, '업체만') && str_contains($create, '개인만'));
 expectTrue('create status options 보류', str_contains($create, '보류'));
 expectTrue('create privacy block', str_contains($create, '주문자명 또는 업체명'));
 
@@ -107,6 +114,11 @@ expectTrue('list notes 보류 hidden', str_contains($list, '보류'));
 $company = (string) file_get_contents($root.'/resources/layouts/user/company_apply.json');
 expectTrue('company apply posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bid/companies"'));
 expectTrue('company apply auth_required', str_contains($company, '"auth_required": true'));
+expectTrue('company apply title is 입찰자 등록', str_contains($company, '입찰자 등록'));
+expectTrue('company apply FileUploader logos', str_contains($company, 'FileUploader') && str_contains($company, '"collection": "logos"'));
+expectTrue('company apply profile fill helper', str_contains($company, 'data-cmb-profile-fill') && str_contains($company, '회원정보'));
+expectTrue('company apply job types host', str_contains($company, 'data-cmb-job-types'));
+expectTrue('company apply daum postcode', str_contains($company, 'data-cmb-postcode'));
 
 $adminJobs = (string) file_get_contents($root.'/resources/layouts/admin/jobs_index.json');
 expectTrue('admin jobs hold', str_contains($adminJobs, '/hold'));
@@ -120,12 +132,15 @@ expectTrue('admin bids delete', str_contains($adminBids, '/admin/bids/{{$item.id
 $adminCos = (string) file_get_contents($root.'/resources/layouts/admin/companies_index.json');
 expectTrue('admin company approve', str_contains($adminCos, '/approve'));
 expectTrue('admin company reject', str_contains($adminCos, '/reject'));
+expectTrue('admin company hold', str_contains($adminCos, '/hold'));
+expectTrue('admin company patch', str_contains($adminCos, '"method": "PATCH"') || str_contains($adminCos, '"method": "patch"'));
+expectTrue('admin company recommended/priority', str_contains($adminCos, 'is_recommended') && str_contains($adminCos, 'priority'));
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.5.3', str_contains($nav, 'nav.js?v=0.5.3'));
-expectTrue('form.js cache bust 0.5.3', str_contains($nav, 'form.js?v=0.5.3'));
-expectTrue('form.css cache bust 0.5.3', str_contains($nav, 'form.css?v=0.5.3'));
+expectTrue('nav cache bust 0.6.0', str_contains($nav, 'nav.js?v=0.6.0'));
+expectTrue('form.js cache bust 0.6.0', str_contains($nav, 'form.js?v=0.6.0'));
+expectTrue('form.css cache bust 0.6.0', str_contains($nav, 'form.css?v=0.6.0'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
@@ -142,6 +157,14 @@ expectTrue('edit extensions hidden unless modeling', str_contains($edit, 'cmb-co
 expectTrue('edit size rows add and delete', str_contains($edit, 'data-cmb-size-add') && str_contains($edit, '"text": "추가"') && str_contains($edit, 'data-cmb-sizes-list'));
 expectTrue('edit manager info card', str_contains($edit, '담당자 정보') && str_contains($edit, 'manager_name') && str_contains($edit, 'cmb-manager-box'));
 expectTrue('edit has no QA fill button', ! str_contains($edit, 'data-cmb-qa-fill'));
+expectTrue('edit 소유권한 요청 near extensions', str_contains($edit, '소유권한 요청') && str_contains($edit, 'ownership_requested') && ! str_contains($edit, '저작권 있음'));
+expectTrue('edit DWG extension', str_contains($edit, '"text": "DWG"') && str_contains($edit, 'ext_dwg'));
+expectTrue('edit 공개 설정 전체/업체만/개인만', str_contains($edit, '공개 설정') && str_contains($edit, '"value": "all"') && str_contains($edit, '업체만') && str_contains($edit, '개인만'));
+
+$show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json');
+expectTrue('show 소유권한 요청', str_contains($show, '소유권한 요청') && str_contains($show, 'ownership_requested') && ! str_contains($show, '저작권 있음'));
+expectTrue('show audience label', str_contains($show, 'audience_label'));
+expectTrue('list audience label', str_contains($list, 'audience_label'));
 
 $css = (string) file_get_contents($root.'/resources/assets/form.css');
 expectTrue('form.css themes dark card', str_contains($css, 'color-scheme: dark') && str_contains($css, '--cmb-card'));
@@ -153,9 +176,11 @@ expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box')
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.3'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.6.0'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
+expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
+expectTrue('form.js dummy fills audience and ownership', str_contains($formJs, 'form.audience') && str_contains($formJs, 'ownership_requested') && str_contains($formJs, 'ext_dwg'));
 expectTrue('form.js QA fill does not emit upload events', ! str_contains($formJs, 'upload:maker_bid'));
 expectTrue('form.js dummy fills rush datetime', str_contains($formJs, 'rush_deadline') && str_contains($formJs, 'futureStamp'));
 expectTrue('form.js dummy fills revision fields', str_contains($formJs, 'revision_count') && str_contains($formJs, 'revision_cost'));
@@ -168,6 +193,14 @@ expectTrue('rush deadline ensure migration', is_file($root.'/database/migrations
 expectTrue('revision fields ensure migration', is_file($root.'/database/migrations/2026_09_16_000007_ensure_revision_fields.php'));
 expectTrue('sizes and manager ensure migration', is_file($root.'/database/migrations/2026_09_16_000008_ensure_sizes_and_manager_fields.php'));
 expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrations/2026_09_16_000009_ensure_includes_modeling.php'));
+expectTrue('company profile admin fields migration', is_file($root.'/database/migrations/2026_09_16_000010_ensure_company_profile_admin_fields.php'));
+expectTrue('job audience and ownership migration', is_file($root.'/database/migrations/2026_09_16_000011_ensure_job_audience_and_copyright.php'));
+
+$fileModel = (string) file_get_contents($root.'/src/Models/MakerJobFile.php');
+expectTrue('uploader payload wraps attachment data', str_contains($fileModel, 'function toUploaderPayload') && str_contains($fileModel, "'success' => true") && str_contains($fileModel, "'data' => \$att"));
+expectTrue('attachment has hash download_url is_image', str_contains($fileModel, "'download_url'") && str_contains($fileModel, "'is_image'") && str_contains($fileModel, "'hash'"));
+$uploadCtrl = (string) file_get_contents($root.'/src/Http/Controllers/JobFileController.php');
+expectTrue('upload responds HTTP 200 wrapped payload', str_contains($uploadCtrl, 'toUploaderPayload()') && str_contains($uploadCtrl, ', 200)'));
 
 $asset = (string) file_get_contents($root.'/src/Http/Controllers/AssetController.php');
 expectTrue('asset controller serves form.css', str_contains($asset, 'formCss') && str_contains($asset, 'form.css'));

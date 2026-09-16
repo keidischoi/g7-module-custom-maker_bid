@@ -7,6 +7,7 @@ use Modules\Custom\MakerBid\Support\PrivacyRules;
 use Modules\Custom\MakerBid\Support\TypeCatalog;
 use Modules\Custom\MakerBid\Support\TypeRules;
 use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBid\Models\MakerJobFile;
 
 require __DIR__.'/bootstrap.php';
 
@@ -95,6 +96,25 @@ $exts = JobRules::collectProvidedExtensions(['ext_stl' => true, 'ext_obj' => 1, 
 expectTrue('stl collected', in_array('STL', $exts, true));
 expectTrue('obj collected', in_array('OBJ', $exts, true));
 expectTrue('fbx collected', in_array('FBX', $exts, true));
+$dwg = JobRules::collectProvidedExtensions(['ext_dwg' => true]);
+expectTrue('dwg collected', in_array('DWG', $dwg, true));
+expectTrue('dwg provided ext allowed', UploadRules::isAllowedProvidedExtension('dwg'));
+expectTrue('create has audience rule', isset($create['audience']));
+expectTrue('create has ownership_requested', isset($create['ownership_requested']));
+expectFalse('create has no has_copyright field', isset($create['has_copyright']));
+expect('audience 업체만', JobRules::normalizeAudience('업체만'), 'company');
+expect('audience 개인만', JobRules::normalizeAudience('개인만'), 'individual');
+expect('audience default all', JobRules::normalizeAudience(''), 'all');
+expect('audience label company', JobRules::audienceLabel('company'), '업체만');
+expectTrue('company viewer sees company jobs', JobRules::canViewAudience('company', false, false, true, true, 'company'));
+expectFalse('individual cannot see company-only', JobRules::canViewAudience('company', false, false, true, false, null));
+expectTrue('guest sees all', JobRules::canViewAudience('all', false, false, false, false, null));
+expectTrue('company can bid company-only', JobRules::canBidAudience('company', true, true, 'company'));
+expectFalse('individual cannot bid company-only', JobRules::canBidAudience('company', true, false, null));
+expectTrue('individual can bid individual-only', JobRules::canBidAudience('individual', true, false, null));
+expectFalse('company cannot bid individual-only', JobRules::canBidAudience('individual', true, true, 'company'));
+expectTrue('member can bid all', JobRules::canBidAudience('all', true, false, null));
+expectFalse('guest cannot bid all', JobRules::canBidAudience('all', false, false, null));
 
 expectTrue('personal keys include manager fields', in_array('manager_name', PrivacyRules::personalKeys(), true) && in_array('manager_phone', PrivacyRules::personalKeys(), true) && in_array('manager_email', PrivacyRules::personalKeys(), true));
 expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_request', null, false));
@@ -110,6 +130,9 @@ expectTrue('zip allowed archive', UploadRules::isAllowedExtension('archives', 'r
 expectTrue('tar.gz allowed', UploadRules::isAllowedExtension('archives', 'model.tar.gz'));
 expectFalse('stl not archive', UploadRules::isAllowedExtension('archives', 'a.stl'));
 expectTrue('png image', UploadRules::isAllowedExtension('images', 'a.png'));
+expectTrue('zip archive', UploadRules::isAllowedExtension('archives', 'a.zip'));
+expectTrue('png logo collection', UploadRules::isAllowedExtension('logos', 'keidis.png'));
+expectFalse('zip not logo', UploadRules::isAllowedExtension('logos', 'a.zip'));
 expectFalse('zip not image', UploadRules::isAllowedExtension('images', 'a.zip'));
 expectTrue('STL provided ext', UploadRules::isAllowedProvidedExtension('stl'));
 
@@ -118,6 +141,37 @@ expectTrue('type slug required', in_array('required', $store['slug'], true));
 expectTrue('type name required', in_array('required', $store['name'], true));
 expectTrue('type includes_modeling optional boolean', isset($store['includes_modeling']) && in_array('boolean', $store['includes_modeling'], true));
 expectTrue('provided_extensions not required', in_array('nullable', $create['provided_extensions'], true) && ! in_array('required', $create['provided_extensions'], true));
+
+$row = new MakerJobFile();
+$row->id = 7;
+$row->job_id = 1;
+$row->hash = 'pnghash01234567890123456789012';
+$row->original_filename = 'shot.png';
+$row->mime_type = 'image/png';
+$row->size = 2048;
+$row->collection = 'images';
+$row->sort_order = 0;
+$att = $row->toAttachmentArray();
+expectTrue('png attachment is_image', $att['is_image'] === true);
+expectTrue('png attachment has hash', $att['hash'] === 'pnghash01234567890123456789012');
+expectTrue('png attachment has download_url', str_contains((string) $att['download_url'], $att['hash']));
+$payload = $row->toUploaderPayload();
+expectTrue('uploader payload success wrap', $payload['success'] === true && is_array($payload['data']) && $payload['data']['hash'] === $att['hash']);
+expectTrue('uploader payload also top-level hash', $payload['hash'] === $att['hash']);
+
+$zip = new MakerJobFile();
+$zip->id = 8;
+$zip->job_id = 1;
+$zip->hash = 'ziphash01234567890123456789012';
+$zip->original_filename = 'refs.zip';
+$zip->mime_type = 'application/zip';
+$zip->size = 4096;
+$zip->collection = 'archives';
+$zip->sort_order = 0;
+$zipAtt = $zip->toAttachmentArray();
+expectFalse('zip attachment is not image', $zipAtt['is_image']);
+$zipPayload = $zip->toUploaderPayload();
+expectTrue('zip uploader payload wrapped', $zipPayload['success'] === true && $zipPayload['data']['hash'] === $zipAtt['hash']);
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

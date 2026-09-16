@@ -8,7 +8,7 @@ use Modules\Custom\MakerBid\Support\BlankToNull;
 use Modules\Custom\MakerBid\Support\BooleanishFields;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 
-class StoreCompanyRequest extends FormRequest
+class UpdateCompanyRequest extends FormRequest
 {
     use BlankToNull;
     use BooleanishFields;
@@ -22,7 +22,7 @@ class StoreCompanyRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['company', 'edit', 'form']);
-        $this->nullBlankFields(['type', 'note', 'status', 'kind', 'bio', 'admin_memo', 'hold_reason']);
+        $this->nullBlankFields(['type', 'note', 'status', 'kind', 'bio', 'admin_memo', 'hold_reason', 'rejected_reason']);
         $this->coerceBooleanFields(['is_recommended']);
         if ($this->exists('kind')) {
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);
@@ -40,7 +40,7 @@ class StoreCompanyRequest extends FormRequest
      */
     public function rules(): array
     {
-        return CompanyRules::adminStoreRules();
+        return CompanyRules::adminUpdateRules();
     }
 
     /**

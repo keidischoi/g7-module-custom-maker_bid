@@ -6,7 +6,7 @@
     "ko": "3D 출력, 디자인, 상품 제작 의뢰와 입찰",
     "en": "Commission and bidding"
   },
-  "version": "0.5.3",
+  "version": "0.6.0",
   "g7_version": ">=7.0.0",
   "license": "MIT"
 }

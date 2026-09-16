@@ -6,11 +6,11 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.5.3';
+    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.6.0';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.5.3';
+    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.6.0';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.5.3';
+    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.6.0';
 
     public static function getSubscribedHooks(): array
     {
@@ -35,7 +35,7 @@ class UserMenuListener implements HookListenerInterface
             }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
-            if (in_array($name, ['jobs_create', 'jobs_edit'], true)) {
+            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply'], true)) {
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);

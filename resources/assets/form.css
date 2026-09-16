@@ -172,7 +172,8 @@ html.dark .cmb-order-card .cmb-order-submit,
 .cmb-order-card .cmb-order-select,
 .cmb-order-card .cmb-order-select-wrap button,
 .cmb-order-card [name="type"],
-.cmb-order-card [name="status"] {
+.cmb-order-card [name="status"],
+.cmb-order-card [name="audience"] {
   pointer-events: auto !important;
 }
 

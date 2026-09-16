@@ -29,33 +29,67 @@ class MakerJobFile extends Model
 
     public function isImage(): bool
     {
-        return $this->collection === UploadRules::COLLECTION_IMAGES
+        return UploadRules::isImageCollection((string) $this->collection)
             || str_starts_with((string) $this->mime_type, 'image/');
     }
 
     /**
      * Attachment-shaped payload for G7 FileUploader.
      *
+     * G7 reads `response.data.data ?? response.data` after unwrapping the HTTP
+     * body, so callers should wrap this with {@see toUploaderPayload()}.
+     *
      * @return array<string, mixed>
      */
     public function toAttachmentArray(): array
     {
         $url = '/api/modules/custom-maker_bid/files/'.$this->hash;
+        $isImage = $this->isImage();
+        $size = (int) $this->size;
 
         return [
             'id' => (int) $this->id,
             'hash' => (string) $this->hash,
             'original_filename' => (string) $this->original_filename,
-            'mime_type' => (string) ($this->mime_type ?: ''),
-            'size' => (int) $this->size,
-            'size_formatted' => '',
+            'mime_type' => (string) ($this->mime_type ?: ($isImage ? 'image/png' : 'application/octet-stream')),
+            'size' => $size,
+            'size_formatted' => self::formatSize($size),
             'collection' => (string) $this->collection,
             'order' => (int) $this->sort_order,
             'download_url' => $url,
             'url' => $url,
-            'thumbnail_url' => $this->isImage() ? $url : null,
-            'is_image' => $this->isImage(),
+            'thumbnail_url' => $isImage ? $url : '',
+            'is_image' => $isImage,
+            'meta' => [],
             'job_id' => $this->job_id,
         ];
+    }
+
+    /**
+     * Dual-shaped body so FileUploader accepts both axios-style and
+     * already-unwrapped G7Core.api.post results.
+     *
+     * @return array<string, mixed>
+     */
+    public function toUploaderPayload(): array
+    {
+        $att = $this->toAttachmentArray();
+
+        return array_merge($att, [
+            'success' => true,
+            'data' => $att,
+        ]);
+    }
+
+    public static function formatSize(int $bytes): string
+    {
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+        if ($bytes < 1024 * 1024) {
+            return number_format($bytes / 1024, 2).' KB';
+        }
+
+        return number_format($bytes / (1024 * 1024), 2).' MB';
     }
 }

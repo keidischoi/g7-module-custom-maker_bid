@@ -46,7 +46,7 @@ class JobFileController extends Controller
             return $this->domainError($e);
         }
 
-        return response()->json($row->toAttachmentArray(), 201);
+        return response()->json($row->toUploaderPayload(), 200);
     }
 
     public function destroy(Request $request, string $hash): JsonResponse

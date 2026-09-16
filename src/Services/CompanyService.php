@@ -2,67 +2,131 @@
 
 namespace Modules\Custom\MakerBid\Services;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Modules\Custom\MakerBid\Models\MakerBid;
 use Modules\Custom\MakerBid\Models\MakerCompany;
+use Modules\Custom\MakerBid\Models\MakerJobFile;
+use Modules\Custom\MakerBid\Support\CompanyPresenter;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBid\Support\UploadRules;
 
 class CompanyService
 {
+    public function __construct(
+        private readonly JobFileService $files,
+        private readonly JobTypeService $types,
+    ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function formDefaults(object $user): array
+    {
+        $token = $this->files->newUploadToken();
+        $name = (string) ($user->name ?? '');
+        $phone = (string) ($user->mobile ?? $user->phone ?? '');
+        $email = (string) ($user->email ?? '');
+
+        return [
+            'upload_token' => $token,
+            'name' => $name,
+            'profile_name' => $name,
+            'manager_name' => $name,
+            'phone' => $phone,
+            'email' => $email,
+            'zipcode' => (string) ($user->zipcode ?? ''),
+            'address' => (string) ($user->address ?? ''),
+            'address_detail' => (string) ($user->address_detail ?? ''),
+            'types' => $this->types->listPublic()->map->toOptionArray()->values()->all(),
+        ];
+    }
+
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function apply(int $userId, array $payload): MakerCompany
+    public function apply(int $userId, array $payload): array
     {
         $existing = MakerCompany::query()->where('user_id', $userId)->first();
         if (! CompanyRules::canApply($existing?->status)) {
             throw new DomainException('이미 신청 중이거나 승인된 업체가 있습니다.', 422);
         }
 
-        $attrs = [
-            'user_id' => $userId,
-            'name' => $payload['name'],
-            'type' => $payload['type'] ?? null,
-            'status' => 'pending',
-            'note' => $payload['note'] ?? null,
-            'rejected_reason' => null,
-            'reviewed_at' => null,
-        ];
+        $attrs = CompanyRules::applicantAttributes($payload);
+        $attrs['user_id'] = $userId;
+        $attrs['status'] = 'pending';
+        $attrs['rejected_reason'] = null;
+        $attrs['hold_reason'] = null;
+        $attrs['reviewed_at'] = null;
 
         if ($existing) {
             $existing->fill($attrs);
             $existing->save();
-
-            return $existing->fresh() ?? $existing;
+            $row = $existing->fresh() ?? $existing;
+        } else {
+            $row = MakerCompany::query()->create($attrs);
         }
 
-        return MakerCompany::query()->create($attrs);
+        $this->attachLogo($row, $userId, (string) ($payload['upload_token'] ?? ''));
+
+        return CompanyPresenter::present($row->fresh() ?? $row, 'owner');
     }
 
-    public function mine(int $userId): ?MakerCompany
+    public function mine(int $userId): ?array
     {
-        return MakerCompany::query()->where('user_id', $userId)->first();
+        $row = MakerCompany::query()->where('user_id', $userId)->first();
+        if ($row === null) {
+            return null;
+        }
+
+        return CompanyPresenter::present($row, 'owner');
     }
 
     /**
-     * @return Collection<int, MakerCompany>
+     * @return list<array<string, mixed>>
      */
-    public function listAdmin(Request $request): Collection
+    public function listPublic(): array
     {
-        $q = MakerCompany::query()->latest();
+        return $this->listingQuery()
+            ->where('status', 'approved')
+            ->limit(200)
+            ->get()
+            ->map(fn (MakerCompany $row): array => CompanyPresenter::present($row, 'public'))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function listAdmin(Request $request): array
+    {
+        $q = $this->listingQuery();
         if ($status = $request->query('status')) {
             $q->where('status', $status);
         }
+        if ($request->query('recommended') === '1' || $request->query('is_recommended') === '1') {
+            $q->where('is_recommended', true);
+        }
 
-        return $q->limit(200)->get();
+        return $q->limit(200)
+            ->get()
+            ->map(fn (MakerCompany $row): array => CompanyPresenter::present($row, 'admin'))
+            ->values()
+            ->all();
+    }
+
+    public function findAdmin(int $id): array
+    {
+        $row = MakerCompany::query()->findOrFail($id);
+
+        return CompanyPresenter::present($row, 'admin');
     }
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function storeAdmin(array $payload): MakerCompany
+    public function storeAdmin(array $payload): array
     {
         $userId = (int) $payload['user_id'];
         if (MakerCompany::query()->where('user_id', $userId)->exists()) {
@@ -70,19 +134,59 @@ class CompanyService
         }
 
         $status = $payload['status'] ?? 'pending';
+        $attrs = array_merge(CompanyRules::applicantAttributes($payload), $this->adminOnlyAttributes($payload, true));
+        $attrs['user_id'] = $userId;
+        $attrs['status'] = $status;
+        $attrs['reviewed_at'] = in_array($status, ['approved', 'rejected'], true) ? now() : null;
+        if ($status === 'rejected') {
+            $attrs['rejected_reason'] = $payload['rejected_reason'] ?? $payload['note'] ?? null;
+        }
 
-        return MakerCompany::query()->create([
-            'user_id' => $userId,
-            'name' => $payload['name'],
-            'type' => $payload['type'] ?? null,
-            'status' => $status,
-            'note' => $payload['note'] ?? null,
-            'reviewed_at' => in_array($status, ['approved', 'rejected'], true) ? now() : null,
-            'rejected_reason' => $status === 'rejected' ? ($payload['note'] ?? null) : null,
-        ]);
+        $row = MakerCompany::query()->create($attrs);
+        $this->attachLogo($row, $userId, (string) ($payload['upload_token'] ?? ''));
+
+        return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
     }
 
-    public function approve(int $id): MakerCompany
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public function updateAdmin(int $id, array $payload): array
+    {
+        $row = MakerCompany::query()->findOrFail($id);
+        $attrs = $this->adminOnlyAttributes($payload, false);
+        foreach (['name', 'kind', 'business_no', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail', 'bio', 'note'] as $key) {
+            if (array_key_exists($key, $payload)) {
+                $attrs[$key] = $payload[$key];
+            }
+        }
+        if (array_key_exists('job_types', $payload) || $this->hasJobTypeFlags($payload)) {
+            $jobTypes = CompanyRules::collectJobTypes($payload);
+            $attrs['job_types'] = $jobTypes;
+            $attrs['type'] = $jobTypes[0] ?? ($payload['type'] ?? $row->type);
+        } elseif (array_key_exists('type', $payload)) {
+            $attrs['type'] = $payload['type'];
+        }
+        if (array_key_exists('kind', $payload)) {
+            $attrs['kind'] = CompanyRules::normalizeKind($payload['kind']);
+        }
+        if (array_key_exists('status', $payload) && CompanyRules::isAllowedStatus((string) $payload['status'])) {
+            $attrs['status'] = $payload['status'];
+            if (in_array($payload['status'], ['approved', 'rejected', 'pending'], true)) {
+                $attrs['reviewed_at'] = now();
+            }
+            if ($payload['status'] === 'approved') {
+                $attrs['rejected_reason'] = null;
+                $attrs['hold_reason'] = $payload['hold_reason'] ?? null;
+            }
+        }
+        $row->fill($attrs);
+        $row->save();
+
+        return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
+    }
+
+    public function approve(int $id): array
     {
         $row = MakerCompany::query()->findOrFail($id);
         if (! CompanyRules::canApprove($row->status)) {
@@ -90,16 +194,34 @@ class CompanyService
         }
         $row->status = 'approved';
         $row->rejected_reason = null;
+        $row->hold_reason = null;
         $row->reviewed_at = now();
         $row->save();
 
-        return $row;
+        return CompanyPresenter::present($row, 'admin');
     }
 
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function reject(int $id, array $payload): MakerCompany
+    public function hold(int $id, array $payload): array
+    {
+        $row = MakerCompany::query()->findOrFail($id);
+        $row->status = 'pending';
+        $row->hold_reason = $payload['hold_reason'] ?? $payload['note'] ?? $row->hold_reason;
+        if (array_key_exists('admin_memo', $payload)) {
+            $row->admin_memo = $payload['admin_memo'];
+        }
+        $row->reviewed_at = now();
+        $row->save();
+
+        return CompanyPresenter::present($row, 'admin');
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public function reject(int $id, array $payload): array
     {
         $row = MakerCompany::query()->findOrFail($id);
         if (! CompanyRules::canReject($row->status)) {
@@ -110,10 +232,13 @@ class CompanyService
         if (isset($payload['note'])) {
             $row->note = $payload['note'];
         }
+        if (array_key_exists('admin_memo', $payload)) {
+            $row->admin_memo = $payload['admin_memo'];
+        }
         $row->reviewed_at = now();
         $row->save();
 
-        return $row;
+        return CompanyPresenter::present($row, 'admin');
     }
 
     public function destroy(int $id): void
@@ -121,5 +246,86 @@ class CompanyService
         $row = MakerCompany::query()->findOrFail($id);
         MakerBid::query()->where('company_id', $row->id)->update(['company_id' => null]);
         $row->delete();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Builder<MakerCompany>
+     */
+    public function listingQuery()
+    {
+        return MakerCompany::query()
+            ->orderByDesc('is_recommended')
+            ->orderByDesc('priority')
+            ->orderByDesc('id');
+    }
+
+    private function attachLogo(MakerCompany $row, int $userId, string $token): void
+    {
+        if ($token === '') {
+            return;
+        }
+        $file = MakerJobFile::query()
+            ->where('user_id', $userId)
+            ->where('upload_token', $token)
+            ->where('collection', UploadRules::COLLECTION_LOGOS)
+            ->orderByDesc('id')
+            ->first();
+        if ($file) {
+            $row->logo_hash = $file->hash;
+            $row->upload_token = $token;
+            $row->save();
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function adminOnlyAttributes(array $payload, bool $creating): array
+    {
+        $out = [];
+        if ($creating || array_key_exists('admin_memo', $payload)) {
+            $out['admin_memo'] = $payload['admin_memo'] ?? null;
+        }
+        if ($creating || array_key_exists('hold_reason', $payload)) {
+            $out['hold_reason'] = $payload['hold_reason'] ?? null;
+        }
+        if ($creating || array_key_exists('rating_score', $payload)) {
+            $out['rating_score'] = CompanyRules::clampRatingScore($payload['rating_score'] ?? 0);
+        }
+        if ($creating || array_key_exists('rating_count', $payload)) {
+            $out['rating_count'] = max(0, (int) ($payload['rating_count'] ?? 0));
+        }
+        if ($creating || array_key_exists('claim_count', $payload)) {
+            $out['claim_count'] = max(0, (int) ($payload['claim_count'] ?? 0));
+        }
+        if ($creating || array_key_exists('claim_history', $payload)) {
+            $out['claim_history'] = CompanyRules::normalizeClaimHistory($payload['claim_history'] ?? []);
+        }
+        if ($creating || array_key_exists('report_count', $payload)) {
+            $out['report_count'] = max(0, (int) ($payload['report_count'] ?? 0));
+        }
+        if ($creating || array_key_exists('is_recommended', $payload)) {
+            $out['is_recommended'] = CompanyRules::isTruthy($payload['is_recommended'] ?? false);
+        }
+        if ($creating || array_key_exists('priority', $payload)) {
+            $out['priority'] = CompanyRules::clampPriority($payload['priority'] ?? 0);
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function hasJobTypeFlags(array $payload): bool
+    {
+        foreach ($payload as $key => $_) {
+            if (is_string($key) && str_starts_with($key, 'job_type_')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

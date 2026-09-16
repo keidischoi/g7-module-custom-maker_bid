@@ -29,7 +29,7 @@
       "path": "*/maker-bid/company",
       "layout": "company_apply",
       "auth_required": true,
-      "meta": { "title": "업체 등록" }
+      "meta": { "title": "입찰자 등록" }
     },
     {
       "path": "*/maker-bid/:id/edit",

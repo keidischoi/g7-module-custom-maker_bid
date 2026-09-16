@@ -2,16 +2,16 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형 관리.
 
-버전 **0.5.3**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다.
+버전 **0.6.0**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청이 포함됩니다.
 
 - 관리자: `/admin/maker-bid` `/admin/maker-bid/types` `/admin/maker-bid/bids` `/admin/maker-bid/companies` `/admin/maker-bid/activity`
 - 회원: `/maker-bid` `/maker-bid/new` `/maker-bid/bids` `/maker-bid/history` `/maker-bid/company` `/maker-bid/{id}` `/maker-bid/{id}/edit`
 
 홈 메뉴는 G7 메뉴 관리에 `의뢰/입찰` → `/maker-bid` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.5.3)
+## 설치 / 업그레이드 (0.6.0)
 
-0.5.2에서 올라올 때 additive 마이그레이션이 있습니다(`includes_modeling` 유형 플래그). 급행 조건 달력·셀렉트 선택·수정 횟수 필드·회원정보 사용·모델링 유형만 제공 확장자가 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
+0.5.3에서 올라올 때 additive 마이그레이션이 있습니다(입찰자 프로필 관리 필드, 의뢰 `audience` / `ownership_requested`). FileUploader 응답 형식·제목 바인딩·임의입력 유형 Select·공개 설정·DWG·소유권한 요청·입찰자 등록이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
@@ -51,18 +51,21 @@ Prefix: `/api/modules/custom-maker_bid`
 | GET | `/jobs/{id}/viewer` | sanctum | 상세 UI 플래그 + 열람 가능한 개인정보 |
 | POST | `/jobs` | sanctum | 의뢰 등록 |
 | PATCH | `/jobs/{id}` | sanctum | 작성자 수정 (보류/의뢰/견적요청) |
-| POST | `/uploads` | sanctum | FileUploader 스테이징 (collection=images\|archives) |
+| POST | `/uploads` | sanctum | FileUploader 스테이징 (collection=images\|archives\|logos) |
 | POST | `/jobs/{id}/files` | sanctum | 기존 의뢰에 파일 첨부 |
 | GET | `/bids/mine` | sanctum | 내 입찰 |
 | POST | `/jobs/{id}/bids` | sanctum | 입찰 생성/수정 |
 | PATCH | `/jobs/{id}/bids/{bidId}` | sanctum | 본인 입찰 수정 |
 | POST | `/jobs/{id}/award` | sanctum | 낙찰. 이후 상대에게 개인정보 공개 |
-| POST | `/companies` | sanctum | 업체 신청 |
-| GET | `/companies/me` | sanctum | 내 업체 신청 |
+| GET | `/companies` | 없음 | 공개 입찰자 목록 (추천·우선순위 순) |
+| GET | `/companies/form-defaults` | sanctum | 입찰자 등록 기본값 |
+| POST | `/companies` | sanctum | 입찰자 등록 |
+| GET | `/companies/me` | sanctum | 내 입찰자 신청 |
 
-입찰 가능: **로그인 회원** 또는 **승인된 MakerCompany**. 본인 의뢰에는 입찰 불가. 상태가 의뢰/견적요청이고 `closes_at` 이 없거나 미래일 때만 입찰/수정/낙찰.
+입찰 가능: **로그인 회원** 또는 **승인된 MakerCompany**. 본인 의뢰에는 입찰 불가. 상태가 의뢰/견적요청이고 `closes_at` 이 없거나 미래일 때만 입찰/수정/낙찰. 공개 설정이 업체만/개인만이면 대상만 목록에 보이고 입찰할 수 있습니다.
 
 의뢰 상태: `hold`(보류, 비공개) / `request`(의뢰) / `quote_request`(견적요청) / `awarded` / `done` / `cancelled`.
+공개 설정 `audience`: `all`(전체) / `company`(업체만) / `individual`(개인만).
 
 의뢰 등록 본문 예:
 
@@ -74,6 +77,8 @@ Prefix: `/api/modules/custom-maker_bid`
   "budget_max": 100000,
   "closes_at": "2026-10-01 23:59:59",
   "status": "quote_request",
+  "audience": "all",
+  "ownership_requested": false,
   "rush_fee_enabled": true,
   "rush_deadline": "2026-09-20T18:00",
   "schedule_premium_enabled": false,
@@ -84,7 +89,7 @@ Prefix: `/api/modules/custom-maker_bid`
   "size_w": 300,
   "size_d": 200,
   "size_h": 50,
-  "provided_extensions": ["STL", "3MF"],
+  "provided_extensions": ["STL", "3MF", "DWG"],
   "revision_enabled": true,
   "revision_count": 2,
   "revision_cost": 10000,
@@ -123,8 +128,11 @@ Prefix: `/api/modules/custom-maker_bid`
 | PATCH | `/admin/bids/{id}` | bids.update |
 | DELETE | `/admin/bids/{id}` | bids.delete |
 | GET | `/admin/companies` | companies.read (`status`) |
+| GET | `/admin/companies/{id}` | companies.read |
 | POST | `/admin/companies` | companies.create |
+| PATCH | `/admin/companies/{id}` | companies.update |
 | POST | `/admin/companies/{id}/approve` | companies.update |
+| POST | `/admin/companies/{id}/hold` | companies.update |
 | POST | `/admin/companies/{id}/reject` | companies.update |
 | DELETE | `/admin/companies/{id}` | companies.delete |
 
@@ -143,4 +151,4 @@ php tests/run.php
 | identifier | `custom-maker_bid` |
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.5.3` |
+| version | `0.6.0` |
