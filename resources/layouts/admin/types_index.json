@@ -51,7 +51,7 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5" },
+        "props": { "className": "admin-page-content cmb-admin space-y-5 w-full" },
         "children": [
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "유형 관리" },
           {
@@ -191,13 +191,13 @@
             "id": "tlist",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-list" },
+            "props": { "className": "cmb-admin-list w-full" },
             "children": [
               {
                 "id": "trow",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-row" },
+                "props": { "className": "cmb-admin-row w-full" },
                 "iteration": { "source": "{{types.data}}", "item_var": "$item" },
                 "children": [
                   {

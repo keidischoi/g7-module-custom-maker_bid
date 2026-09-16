@@ -266,14 +266,17 @@ html.dark .cmb-notice,
   color: rgb(229 231 235);
 }
 
-/* Admin maker-bids pages (_admin_base + .cmb-admin). */
+/* Admin maker-bids pages (_admin_base + .cmb-admin).
+   List/filter layout of record lives in admin.css; keep these fallbacks
+   so form.css alone still stretches lists and does not cap the page. */
 .cmb-admin {
   --cmb-admin-fg: rgb(17 24 39);
   --cmb-admin-muted: rgb(107 114 128);
   --cmb-admin-border: rgb(229 231 235);
   --cmb-admin-card: rgb(255 255 255);
   --cmb-admin-check: rgb(17 24 39);
-  max-width: 72rem;
+  width: 100%;
+  max-width: none;
   color: var(--cmb-admin-fg);
 }
 
@@ -435,13 +438,15 @@ html.dark .cmb-admin-check-text,
 .cmb-admin-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1rem;
   padding: 0.85rem 1rem;
   border: 1px solid var(--cmb-admin-border);
   border-radius: 0.75rem;
   background: var(--cmb-admin-card);
+  width: 100%;
+  max-width: none;
 }
 
 .cmb-admin-row-main {
@@ -469,6 +474,8 @@ html.dark .cmb-admin-check-text,
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  width: 100%;
+  max-width: none;
 }
 
 .cmb-admin-split {

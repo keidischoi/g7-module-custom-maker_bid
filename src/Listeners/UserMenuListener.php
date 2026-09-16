@@ -8,11 +8,13 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.0';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.2';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.0';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.2';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.0';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.2';
+
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.2';
 
     public static function getSubscribedHooks(): array
     {
@@ -34,7 +36,8 @@ class UserMenuListener implements HookListenerInterface
             $name = (string) ($layout['layout_name'] ?? '');
             if (($layout['extends'] ?? '') === '_admin_base') {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
-                $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+                $styles = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+                $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_admin_css', self::ADMIN_CSS);
 
                 return $layout;
             }
@@ -160,8 +163,13 @@ class UserMenuListener implements HookListenerInterface
     private function upsertStyle(array $styles, string $id, string $href): array
     {
         $found = false;
+        $path = (string) (parse_url($href, PHP_URL_PATH) ?: $href);
+        $needle = str_contains($path, 'admin.css')
+            ? 'custom-maker_bids/assets/admin.css'
+            : 'custom-maker_bids/assets/form.css';
         foreach ($styles as $i => $style) {
-            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bids/assets/form.css'))) {
+            $existing = (string) ($style['href'] ?? $style['src'] ?? '');
+            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains($existing, $needle))) {
                 $styles[$i]['href'] = $href;
                 $styles[$i]['src'] = $href;
                 $found = true;
