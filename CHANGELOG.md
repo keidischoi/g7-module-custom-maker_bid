@@ -4,6 +4,30 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.0] - 2026-09-16
+
+### Changed
+
+- **완전한 identifier 정렬 (breaking)**: `custom-maker_bids` + PHP namespace **`Modules\Custom\MakerBids`**. G7 `ExtensionManager::moduleIdentifierToNamespace` 가 `custom-maker_bids` → `MakerBids` 로 매핑합니다.
+- 0.8.4/0.8.5는 identifier가 `custom-maker_bid` 인 채 관리자 권한·nav 에셋 경로만 임시 id에 맞춘 응급 패치입니다. 0.9.0은 권한 **`custom-maker_bids.*`**, 에셋 `/api/modules/custom-maker_bids/assets/nav.js` (및 form.js/css), 라우트 `/maker-bids` `/admin/maker-bids` 를 namespace와 함께 맞춥니다. 반쪽 권한/에셋 상태는 남기지 않습니다.
+- composer `custom/maker-bids`, `github_url` `https://github.com/keidischoi/g7-module-custom-maker_bids`.
+- **재설치 필요.** `custom-maker_bid` 설치를 제거하고 `custom-maker_bids` 로 설치·활성화해 권한을 다시 동기화하세요. dual-id 호환은 없습니다.
+- 0.7–0.8 기능은 유지합니다.
+- 버전 **0.9.0**. nav/form.js·form.css 캐시 `?v=0.9.0`.
+- DB 테이블 이름(`maker_*`)은 그대로입니다. 모델 클래스 `MakerBid` 이름은 유지하고 namespace만 `MakerBids` 입니다.
+
+## [0.8.5] - 2026-09-16
+
+### Fixed
+
+- **응급:** `cmb_maker_nav` / `UserMenuListener` / nav.js / form.js / 회원·관리자 라우트 에셋·경로를 `custom-maker_bid` 에 맞춰, 임시 identifier에서 nav 에셋이 로드되게 합니다. 정식 정렬은 0.9.0입니다.
+
+## [0.8.4] - 2026-09-16
+
+### Fixed
+
+- **응급:** 관리자 레이아웃·`module.php`·API 권한 문자열을 `custom-maker_bid.*` 로 맞춰 「레이아웃 접근 권한이 없습니다」 403을 막습니다. 정식 정렬은 0.9.0입니다.
+
 ## [0.8.2] - 2026-09-16
 
 ### Changed

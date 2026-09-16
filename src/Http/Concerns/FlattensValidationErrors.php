@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Concerns;
+namespace Modules\Custom\MakerBids\Http\Concerns;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;

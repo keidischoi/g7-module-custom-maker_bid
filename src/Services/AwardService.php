@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Support\Facades\DB;
-use Modules\Custom\MakerBid\Models\MakerBid;
-use Modules\Custom\MakerBid\Models\MakerJob;
-use Modules\Custom\MakerBid\Support\AwardRules;
-use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Support\AwardRules;
+use Modules\Custom\MakerBids\Support\DomainException;
 
 class AwardService
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Support;
+namespace Modules\Custom\MakerBids\Support;
 
-use Modules\Custom\MakerBid\Models\MakerBid;
-use Modules\Custom\MakerBid\Models\MakerCompany;
-use Modules\Custom\MakerBid\Support\BidRules;
+use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Support\BidRules;
 
 class CompanyPresenter
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Database\Eloquent\Collection;
-use Modules\Custom\MakerBid\Models\MakerJobType;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\TypeCatalog;
+use Modules\Custom\MakerBids\Models\MakerJobType;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\TypeCatalog;
 
 class JobTypeService
 {

@@ -1,17 +1,17 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
+namespace Modules\Custom\MakerBids\Http\Controllers\Admin;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
-use Modules\Custom\MakerBid\Http\Requests\Admin\HoldCompanyRequest;
-use Modules\Custom\MakerBid\Http\Requests\Admin\RejectCompanyRequest;
-use Modules\Custom\MakerBid\Http\Requests\Admin\StoreCompanyRequest;
-use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateCompanyRequest;
-use Modules\Custom\MakerBid\Services\CompanyService;
-use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
+use Modules\Custom\MakerBids\Http\Requests\Admin\HoldCompanyRequest;
+use Modules\Custom\MakerBids\Http\Requests\Admin\RejectCompanyRequest;
+use Modules\Custom\MakerBids\Http\Requests\Admin\StoreCompanyRequest;
+use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateCompanyRequest;
+use Modules\Custom\MakerBids\Services\CompanyService;
+use Modules\Custom\MakerBids\Support\DomainException;
 
 class CompanyAdminController extends Controller
 {

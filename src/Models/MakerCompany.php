@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Models;
+namespace Modules\Custom\MakerBids\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Custom\MakerBid\Support\CompanyPresenter;
-use Modules\Custom\MakerBid\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\CompanyPresenter;
+use Modules\Custom\MakerBids\Support\CompanyRules;
 
 class MakerCompany extends Model
 {

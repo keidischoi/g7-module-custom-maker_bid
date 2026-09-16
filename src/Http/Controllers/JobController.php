@@ -1,21 +1,21 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers;
+namespace Modules\Custom\MakerBids\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
-use Modules\Custom\MakerBid\Http\Requests\AwardJobRequest;
-use Modules\Custom\MakerBid\Http\Requests\StoreJobRequest;
-use Modules\Custom\MakerBid\Http\Requests\UpdateOwnedJobRequest;
-use Modules\Custom\MakerBid\Models\MakerCompany;
-use Modules\Custom\MakerBid\Services\AwardService;
-use Modules\Custom\MakerBid\Services\JobFileService;
-use Modules\Custom\MakerBid\Services\JobService;
-use Modules\Custom\MakerBid\Services\JobTypeService;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\JobPresenter;
+use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
+use Modules\Custom\MakerBids\Http\Requests\AwardJobRequest;
+use Modules\Custom\MakerBids\Http\Requests\StoreJobRequest;
+use Modules\Custom\MakerBids\Http\Requests\UpdateOwnedJobRequest;
+use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Services\AwardService;
+use Modules\Custom\MakerBids\Services\JobFileService;
+use Modules\Custom\MakerBids\Services\JobService;
+use Modules\Custom\MakerBids\Services\JobTypeService;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\JobPresenter;
 
 class JobController extends Controller
 {

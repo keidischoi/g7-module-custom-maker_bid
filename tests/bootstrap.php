@@ -17,7 +17,7 @@ PHP);
 $root = dirname(__DIR__);
 
 spl_autoload_register(static function (string $class) use ($root): void {
-    $prefix = 'Modules\\Custom\\MakerBid\\';
+    $prefix = 'Modules\\Custom\\MakerBids\\';
     if (! str_starts_with($class, $prefix)) {
         return;
     }

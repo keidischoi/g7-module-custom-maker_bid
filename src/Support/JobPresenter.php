@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Support;
+namespace Modules\Custom\MakerBids\Support;
 
-use Modules\Custom\MakerBid\Models\MakerJob;
-use Modules\Custom\MakerBid\Models\MakerJobFile;
+use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
 
 class JobPresenter
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Requests;
+namespace Modules\Custom\MakerBids\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Custom\MakerBid\Support\AwardRules;
+use Modules\Custom\MakerBids\Support\AwardRules;
 
 class AwardJobRequest extends FormRequest
 {

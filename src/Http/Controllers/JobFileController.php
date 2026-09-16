@@ -1,20 +1,20 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers;
+namespace Modules\Custom\MakerBids\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
-use Modules\Custom\MakerBid\Models\MakerBid;
-use Modules\Custom\MakerBid\Models\MakerJobFile;
-use Modules\Custom\MakerBid\Services\JobFileService;
-use Modules\Custom\MakerBid\Services\JobService;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\JobRules;
-use Modules\Custom\MakerBid\Support\PrivacyRules;
-use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
+use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
+use Modules\Custom\MakerBids\Services\JobFileService;
+use Modules\Custom\MakerBids\Services\JobService;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\PrivacyRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class JobFileController extends Controller

@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Requests\Admin;
+namespace Modules\Custom\MakerBids\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Custom\MakerBid\Support\BlankToNull;
-use Modules\Custom\MakerBid\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\BlankToNull;
+use Modules\Custom\MakerBids\Support\CompanyRules;
 
 class RejectCompanyRequest extends FormRequest
 {

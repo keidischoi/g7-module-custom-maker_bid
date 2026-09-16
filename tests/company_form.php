@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Modules\Custom\MakerBid\Support\CompanyRules;
-use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 
 require __DIR__.'/bootstrap.php';
 

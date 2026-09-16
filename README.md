@@ -2,16 +2,27 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.8.2**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
+버전 **0.9.0**. 의뢰 작성은 가운데 정렬 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
 
 - 관리자: `/admin/maker-bids` `/admin/maker-bids/types` `/admin/maker-bids/jobs/{id}` `/admin/maker-bids/bids` `/admin/maker-bids/bids/{id}` `/admin/maker-bids/companies` `/admin/maker-bids/activity` `/admin/maker-bids/settings`
 - 회원: `/maker-bids` `/maker-bids/new` `/maker-bids/bids` `/maker-bids/history` `/maker-bids/company` `/maker-bids/{id}` `/maker-bids/{id}/edit`
 
 홈 메뉴는 설정에서 헤더 삽입을 켜 두거나, G7 메뉴 관리에 `의뢰/입찰` → `/maker-bids` 를 매뉴얼로 넣으면 됩니다.
 
-## 설치 / 업그레이드 (0.8.2)
+## 설치 / 업그레이드 (0.9.0)
 
-**Breaking:** identifier가 `custom-maker_bids` 로 바뀌었습니다. 예전 `custom-maker_bid` 모듈은 제거하고 이 모듈을 **재설치**하세요. 권한·API·프론트 경로(`/maker-bids`)가 달라집니다. DB 테이블(`maker_*`) 이름은 그대로입니다.
+**Breaking (0.9.0):** identifier·권한·API·프론트 경로·에셋 URL을 **`custom-maker_bids`** 로 맞추고, PHP namespace를 **`Modules\Custom\MakerBids`** 로 바꿉니다. G7 `ExtensionManager::moduleIdentifierToNamespace` 는 identifier를 namespace로 만듭니다.
+
+| identifier | G7 namespace | 이 버전 |
+|---|---|---|
+| `custom-maker_bids` | `Modules\Custom\MakerBids\` | `module.php` / composer / 레이아웃 권한 `custom-maker_bids.*` / nav 에셋 `/api/modules/custom-maker_bids/assets/...` 가 일치 |
+| `custom-maker_bid` (0.8.3–0.8.5) | `Modules\Custom\MakerBid\` | 0.8.4/0.8.5는 권한·에셋 경로만 임시 id에 맞춘 응급 패치입니다 |
+
+0.8.3–0.8.5 `custom-maker_bid` 설치를 **제거**하고 이 모듈을 `custom-maker_bids` 로 **재설치·활성화**하세요. 권한 키가 달라지므로 모듈 활성화로 `custom-maker_bids.*` 를 다시 동기화해야 합니다. DB 테이블(`maker_*`) 이름과 0.7–0.8 기능은 그대로입니다.
+
+**관리자 설치:** 모듈 관리 → **수동 설치** → **GitHub**. 저장소 **전체 URL**을 넣으세요. G7은 GitHub에서 identifier만 입력해서 모듈을 찾지 않습니다.
+
+`https://github.com/keidischoi/g7-module-custom-maker_bids`
 
 레이아웃·CSS 반영은 모듈 설치 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
@@ -19,6 +30,7 @@ Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의�
 php artisan extension:update-autoload
 php artisan module:install custom-maker_bids
 php artisan module:activate custom-maker_bids
+# 권한이 안 맞으면 모듈을 비활성 후 다시 활성하거나, G7 권한 동기화를 실행하세요.
 php artisan cache:clear
 ```
 
@@ -172,5 +184,6 @@ php tests/run.php
 |------|-----|
 | identifier | `custom-maker_bids` |
 | vendor | `custom` |
-| namespace | `Modules\\Custom\\MakerBid` |
-| version | `0.8.2` |
+| namespace | `Modules\\Custom\\MakerBids` |
+| github_url | `https://github.com/keidischoi/g7-module-custom-maker_bids` |
+| version | `0.9.0` |

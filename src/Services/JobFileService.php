@@ -1,13 +1,13 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Modules\Custom\MakerBid\Models\MakerJob;
-use Modules\Custom\MakerBid\Models\MakerJobFile;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\UploadRules;
 
 class JobFileService
 {

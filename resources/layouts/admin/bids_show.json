@@ -3,7 +3,7 @@
   "layout_name": "bids_show",
   "extends": "_admin_base",
   "meta": { "title": "입찰 수정" },
-  "permissions": ["custom-maker_bid.bids.read"],
+  "permissions": ["custom-maker_bids.bids.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -22,7 +22,7 @@
     {
       "id": "bid",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/bids/{{route.id}}",
+      "endpoint": "/api/modules/custom-maker_bids/admin/bids/{{route.id}}",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -56,12 +56,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
           { "id": "meta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "의뢰 #{{bid.data.job_id}} {{bid.data.job.title ?? ''}} · 회원 {{bid.data.user_id}} · 업체 {{bid.data.company_id ?? '-'}} · {{bid.data.status_label || bid.data.status}}" },
@@ -70,7 +70,7 @@
             "type": "basic",
             "name": "A",
             "if": "{{bid.data.job_id}}",
-            "props": { "href": "/admin/maker-bid/jobs/{{bid.data.job_id}}" },
+            "props": { "href": "/admin/maker-bids/jobs/{{bid.data.job_id}}" },
             "text": "의뢰 상세로"
           },
           {
@@ -151,7 +151,7 @@
                         "type": "click",
                         "handler": "apiCall",
                         "auth_required": true,
-                        "target": "/api/modules/custom-maker_bid/admin/bids/{{route.id}}",
+                        "target": "/api/modules/custom-maker_bids/admin/bids/{{route.id}}",
                         "params": { "method": "PATCH", "body": "{{_local.form}}" },
                         "onSuccess": [
                           { "handler": "toast", "params": { "type": "success", "message": "입찰을 저장했습니다." } },
@@ -174,12 +174,12 @@
                         "type": "click",
                         "handler": "apiCall",
                         "auth_required": true,
-                        "target": "/api/modules/custom-maker_bid/admin/bids/{{route.id}}",
+                        "target": "/api/modules/custom-maker_bids/admin/bids/{{route.id}}",
                         "params": { "method": "DELETE" },
                         "confirm": "이 입찰을 삭제할까요?",
                         "onSuccess": [
                           { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                          { "handler": "navigate", "params": { "path": "/admin/maker-bid/bids" } }
+                          { "handler": "navigate", "params": { "path": "/admin/maker-bids/bids" } }
                         ],
                         "onError": [
                           { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers;
+namespace Modules\Custom\MakerBids\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Services\MakerBidSettingsService;
+use Modules\Custom\MakerBids\Services\MakerBidSettingsService;
 
 class SettingsController extends Controller
 {

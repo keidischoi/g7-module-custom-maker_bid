@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Models;
+namespace Modules\Custom\MakerBids\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Custom\MakerBid\Support\TypeCatalog;
+use Modules\Custom\MakerBids\Support\TypeCatalog;
 
 class MakerJobType extends Model
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Models;
+namespace Modules\Custom\MakerBids\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

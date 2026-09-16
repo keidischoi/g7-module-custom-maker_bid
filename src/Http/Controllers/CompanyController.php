@@ -1,14 +1,14 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers;
+namespace Modules\Custom\MakerBids\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
-use Modules\Custom\MakerBid\Http\Requests\ApplyCompanyRequest;
-use Modules\Custom\MakerBid\Services\CompanyService;
-use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
+use Modules\Custom\MakerBids\Http\Requests\ApplyCompanyRequest;
+use Modules\Custom\MakerBids\Services\CompanyService;
+use Modules\Custom\MakerBids\Support\DomainException;
 
 class CompanyController extends Controller
 {

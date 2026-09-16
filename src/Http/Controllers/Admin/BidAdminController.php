@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
+namespace Modules\Custom\MakerBids\Http\Controllers\Admin;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateBidRequest;
-use Modules\Custom\MakerBid\Services\BidService;
+use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateBidRequest;
+use Modules\Custom\MakerBids\Services\BidService;
 
 class BidAdminController extends Controller
 {

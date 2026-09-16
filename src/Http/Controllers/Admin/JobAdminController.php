@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
+namespace Modules\Custom\MakerBids\Http\Controllers\Admin;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateJobRequest;
-use Modules\Custom\MakerBid\Services\JobService;
+use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateJobRequest;
+use Modules\Custom\MakerBids\Services\JobService;
 
 class JobAdminController extends Controller
 {

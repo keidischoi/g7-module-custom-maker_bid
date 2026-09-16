@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Support;
+namespace Modules\Custom\MakerBids\Support;
 
 class TypeCatalog
 {

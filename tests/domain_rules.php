@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Modules\Custom\MakerBid\Support\AwardRules;
-use Modules\Custom\MakerBid\Support\BidRules;
-use Modules\Custom\MakerBid\Support\CompanyRules;
-use Modules\Custom\MakerBid\Support\JobRules;
+use Modules\Custom\MakerBids\Support\AwardRules;
+use Modules\Custom\MakerBids\Support\BidRules;
+use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\JobRules;
 
 require __DIR__.'/bootstrap.php';
 

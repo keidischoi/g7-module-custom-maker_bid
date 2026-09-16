@@ -171,9 +171,9 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.8.2', str_contains($nav, 'nav.js?v=0.8.2'));
-expectTrue('form.js cache bust 0.8.2', str_contains($nav, 'form.js?v=0.8.2'));
-expectTrue('form.css cache bust 0.8.2', str_contains($nav, 'form.css?v=0.8.2'));
+expectTrue('nav cache bust 0.9.0', str_contains($nav, 'nav.js?v=0.9.0'));
+expectTrue('form.js cache bust 0.9.0', str_contains($nav, 'form.js?v=0.9.0'));
+expectTrue('form.css cache bust 0.9.0', str_contains($nav, 'form.css?v=0.9.0'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -213,7 +213,7 @@ expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-ru
 expectTrue('form.css styles company submit top-right', str_contains($css, '.cmb-company-submit-top') && str_contains($css, 'white-space: nowrap'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.8.2'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.0'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
@@ -289,7 +289,7 @@ foreach ($scan as $file) {
         continue;
     }
     $rel = substr($file->getPathname(), strlen($root) + 1);
-    if (str_starts_with($rel, '.git/') || $rel === 'CHANGELOG.md' || $rel === 'README.md' || $rel === 'tests/layouts.php') {
+    if (str_starts_with($rel, '.git/') || str_starts_with($rel, 'tests/') || $rel === 'CHANGELOG.md' || $rel === 'README.md') {
         continue;
     }
     $ext = strtolower((string) pathinfo($rel, PATHINFO_EXTENSION));
@@ -297,11 +297,11 @@ foreach ($scan as $file) {
         continue;
     }
     $body = (string) file_get_contents($file->getPathname());
-    if (preg_match('/custom-maker_bid(?!s)/', $body) === 1) {
+    if (preg_match('/custom-maker_bid(?!s)/', $body) === 1 || preg_match('/Modules\\\\Custom\\\\MakerBid(?!s)/', $body) === 1) {
         $oldIdHits[] = $rel;
     }
 }
-expectTrue('no leftover custom-maker_bid identifier outside changelog/readme', $oldIdHits === []);
+expectTrue('no leftover custom-maker_bid identifier or MakerBid namespace outside changelog/readme/tests', $oldIdHits === []);
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

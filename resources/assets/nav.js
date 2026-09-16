@@ -1,5 +1,5 @@
 (function () {
-  var PATH = '/maker-bid';
+  var PATH = '/maker-bids';
   var BTN_ID = 'cmb-nav-jobs';
   var CLS =
     'px-3 py-2 text-sm font-medium whitespace-nowrap cursor-pointer rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 inline-flex items-center gap-1.5';
@@ -18,8 +18,8 @@
     var btn = document.createElement('button');
     btn.id = BTN_ID;
     btn.type = 'button';
-    btn.setAttribute('data-testid', 'nav-maker-bid');
-    btn.className = (location.pathname || '').indexOf('/maker-bid') === 0 ? ACTIVE : CLS;
+    btn.setAttribute('data-testid', 'nav-maker-bids');
+    btn.className = (location.pathname || '').indexOf('/maker-bids') === 0 ? ACTIVE : CLS;
     btn.textContent = label || '의뢰/입찰';
     btn.addEventListener('click', function (e) {
       e.preventDefault();
@@ -72,13 +72,13 @@
 
   function noticePage() {
     var p = location.pathname || '';
-    if (/\/maker-bid\/new\/?$/.test(p)) return 'create';
-    if (/\/maker-bid\/bids\/?$/.test(p)) return 'bids';
-    if (/\/maker-bid\/history\/?$/.test(p)) return 'history';
-    if (/\/maker-bid\/company\/?$/.test(p)) return 'company';
-    if (/\/maker-bid\/\d+\/edit\/?$/.test(p)) return 'edit';
-    if (/\/maker-bid\/\d+\/?$/.test(p)) return 'show';
-    if (/\/maker-bid\/?$/.test(p)) return 'list';
+    if (/\/maker-bids\/new\/?$/.test(p)) return 'create';
+    if (/\/maker-bids\/bids\/?$/.test(p)) return 'bids';
+    if (/\/maker-bids\/history\/?$/.test(p)) return 'history';
+    if (/\/maker-bids\/company\/?$/.test(p)) return 'company';
+    if (/\/maker-bids\/\d+\/edit\/?$/.test(p)) return 'edit';
+    if (/\/maker-bids\/\d+\/?$/.test(p)) return 'show';
+    if (/\/maker-bids\/?$/.test(p)) return 'list';
     return '';
   }
 
@@ -125,7 +125,7 @@
 
   function load() {
     try {
-      fetch('/api/modules/custom-maker_bid/settings', { credentials: 'same-origin' })
+      fetch('/api/modules/custom-maker_bids/settings', { credentials: 'same-origin' })
         .then(function (r) {
           return r.json();
         })

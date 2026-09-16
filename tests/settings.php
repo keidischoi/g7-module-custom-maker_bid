@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Modules\Custom\MakerBid\Support\JobRules;
-use Modules\Custom\MakerBid\Support\SettingsRules;
+use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 
 require __DIR__.'/bootstrap.php';
 

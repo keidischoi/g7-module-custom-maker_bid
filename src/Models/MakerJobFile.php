@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Models;
+namespace Modules\Custom\MakerBids\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 
 class MakerJobFile extends Model
 {
