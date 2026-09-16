@@ -52,7 +52,7 @@
               { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "목록에서 상세를 열어 필드를 수정할 수 있습니다. 보류·취소·삭제. 유형은 유형 관리. 상태 보류 / 의뢰 / 견적요청 / 낙찰 / 완료 / 취소. 보류는 공개 목록에 나오지 않습니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "승인하면 견적요청(open) 상태로 공개 입찰됩니다. 취소·삭제. 보류는 공개 목록에 나오지 않습니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -88,7 +88,7 @@
                         { "value": "", "label": "전체 상태" },
                         { "value": "hold", "label": "보류" },
                         { "value": "request", "label": "의뢰" },
-                        { "value": "quote_request", "label": "견적요청" },
+                        { "value": "quote_request", "label": "견적요청(open)" },
                         { "value": "awarded", "label": "낙찰" },
                         { "value": "done", "label": "완료" },
                         { "value": "cancelled", "label": "취소" }
@@ -144,21 +144,21 @@
                     "children": [
                       { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
                       {
-                        "id": "hold",
+                        "id": "approve",
                         "type": "basic",
                         "name": "Button",
-                        "text": "보류",
+                        "text": "승인",
                         "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
                         "actions": [
                           {
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/hold",
+                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/approve",
                             "params": { "method": "POST" },
-                            "confirm": "이 의뢰를 보류할까요?",
+                            "confirm": "이 의뢰를 승인하고 견적요청(open)으로 공개할까요?",
                             "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "보류했습니다." } },
+                              { "handler": "toast", "params": { "type": "success", "message": "승인했습니다. 견적요청(open) 상태입니다." } },
                               { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
                             ],
                             "onError": [
@@ -226,4 +226,3 @@
     ]
   }
 }
-
