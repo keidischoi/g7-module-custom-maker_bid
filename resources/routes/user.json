@@ -32,6 +32,12 @@
       "meta": { "title": "입찰자 등록" }
     },
     {
+      "path": "*/maker-bids/companies",
+      "layout": "company_list",
+      "auth_required": true,
+      "meta": { "title": "입찰자 목록" }
+    },
+    {
       "path": "*/maker-bids/:id/edit",
       "layout": "jobs_edit",
       "auth_required": true,
@@ -51,4 +57,3 @@
     }
   ]
 }
-
