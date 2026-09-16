@@ -320,31 +320,51 @@ html.dark .cmb-admin-row,
 .cmb-admin-row-main,
 .cmb-admin-row > *:first-child {
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center;
-  gap: 0.15rem;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start;
+  gap: 0.45rem 0.7rem;
   flex: 1 1 auto !important;
   min-width: 0 !important;
   width: auto !important;
   max-width: none !important;
 }
 
+.cmb-admin-row-main > *,
+.cmb-admin-row-main p,
+.cmb-admin-row-main a {
+  margin: 0;
+  width: auto !important;
+  max-width: none;
+  min-width: 0;
+  align-self: center !important;
+}
+
 .cmb-admin-row-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 28rem;
   font-weight: 600;
   color: var(--cmb-admin-fg);
   text-decoration: none;
-  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cmb-admin-row-main .cmb-admin-muted {
-  max-width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.cmb-admin-row-main .cmb-admin-muted::before {
+  content: "·";
+  margin-right: 0.55rem;
+  flex-shrink: 0;
 }
 
 .cmb-admin-row-actions,
@@ -382,10 +402,6 @@ html.dark .cmb-admin-row,
     white-space: normal;
   }
 
-  .cmb-admin-row-title,
-  .cmb-admin-row-main .cmb-admin-muted {
-    white-space: normal;
-  }
 }
 
 .cmb-admin-split {

@@ -508,7 +508,7 @@
                         "id": "bmain",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
+                        "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                         "children": [
                           { "id": "btxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days ?? '-'}}일 · {{$bid.status_label || $bid.status}}" },
                           { "id": "bmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "회원 {{$bid.user_id}} · {{$bid.message ?? ''}}" }

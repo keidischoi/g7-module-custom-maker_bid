@@ -276,7 +276,7 @@
                             "id": "cmain",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
+                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                             "children": [
                               { "id": "ctxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}" },
                               { "id": "cmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}}{{$co.is_designated ? ' · 지정업체' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}" },

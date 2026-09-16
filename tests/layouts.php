@@ -300,9 +300,10 @@ expectTrue('admin bids list is full width', str_contains($adminBidsLayout, 'cmb-
 $adminActivity = (string) file_get_contents($root.'/resources/layouts/admin/activity_index.json');
 expectTrue('admin activity lists are full width', str_contains($adminActivity, 'cmb-admin-list w-full') && str_contains($adminActivity, 'cmb-admin-row w-full') && str_contains($adminActivity, 'cmb-admin-filter-id'));
 expectTrue('admin.css rows are nowrap horizontal cards', str_contains($adminCss, 'flex-direction: row !important') && str_contains($adminCss, 'flex-wrap: nowrap !important') && str_contains($adminCss, 'border-radius: 0.75rem'));
+expectTrue('admin.css title and meta share one line', str_contains($adminCss, '.cmb-admin-row-main') && str_contains($adminCss, 'text-overflow: ellipsis') && str_contains($adminCss, '.cmb-admin-muted::before'));
 expectTrue('admin.css allows wrap only on narrow screens', str_contains($adminCss, '@media (max-width: 640px)') && str_contains($adminCss, 'flex-wrap: wrap !important'));
 expectTrue('form.css row fallback is nowrap', str_contains($css, 'flex-wrap: nowrap') && str_contains($css, '.cmb-admin-row-actions'));
-expectTrue('admin jobs row is single-line card', str_contains($adminJobs, 'flex-nowrap') && str_contains($adminJobs, 'cmb-admin-row-actions shrink-0'));
+expectTrue('admin jobs row is single-line card', str_contains($adminJobs, 'cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap') && str_contains($adminJobs, 'cmb-admin-row-actions shrink-0'));
 expectTrue('admin bids row is single-line card', str_contains($adminBidsLayout, 'flex-nowrap') && str_contains($adminBidsLayout, 'cmb-admin-row-actions shrink-0'));
 expectTrue('admin companies row is single-line card', str_contains($adminCos, 'flex-nowrap') && str_contains($adminCos, 'cmb-admin-row-actions shrink-0'));
 expectTrue('admin types row is single-line card', str_contains($adminTypes, 'flex-nowrap') && str_contains($adminTypes, 'cmb-admin-row-actions shrink-0'));

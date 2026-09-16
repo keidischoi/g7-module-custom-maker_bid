@@ -139,7 +139,7 @@
                     "id": "bmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
+                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                     "children": [
                       { "id": "btxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status_label || $item.status}}" },
                       { "id": "bmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "의뢰 {{$item.job_id}} {{$item.job.title ?? ''}} · 회원 {{$item.user_id}} · 업체 {{$item.company_id ?? '-'}}" }

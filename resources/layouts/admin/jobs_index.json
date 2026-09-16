@@ -130,7 +130,7 @@
                     "id": "jmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
+                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
                     "children": [
                       { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
                       { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}" }

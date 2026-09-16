@@ -451,14 +451,32 @@ html.dark .cmb-admin-check-text,
 }
 
 .cmb-admin-row-main {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.45rem 0.7rem;
   flex: 1 1 auto;
   min-width: 0;
 }
 
 .cmb-admin-row-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 550;
   color: var(--cmb-admin-fg);
   text-decoration: none;
+}
+
+.cmb-admin-row-main .cmb-admin-muted {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cmb-admin-row-actions {
