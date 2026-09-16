@@ -1,13 +1,16 @@
 (function () {
-  var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm';
+  var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ON_APPROVE = 'background:#059669;color:#fff;border-color:#059669';
   var ON_HOLD = 'background:#d97706;color:#fff;border-color:#d97706';
+  var ON_REJECT = 'background:#dc2626;color:#fff;border-color:#dc2626';
   var OFF = 'background:transparent;color:inherit';
 
   function statusFromText(text) {
     text = String(text || '');
+    if (text.indexOf('거절') >= 0) return 'rejected';
     if (text.indexOf('보류') >= 0) return 'hold';
-    if (text.indexOf('견적') >= 0 || text.indexOf('open') >= 0) return 'quote_request';
+    if (text.indexOf('견적') >= 0 || /\bopen\b/i.test(text)) return 'quote_request';
+    if (text.indexOf('승인') >= 0) return 'approved';
     return '';
   }
 
@@ -17,50 +20,94 @@
   }
 
   function buttonsIn(root) {
-    var all = root.querySelectorAll('button');
-    var approve = null;
-    var hold = null;
-    all.forEach(function (b) {
+    var out = { approve: null, hold: null, reject: null };
+    root.querySelectorAll('button').forEach(function (b) {
       var t = (b.textContent || '').trim();
-      if (t === '승인') approve = b;
-      if (t === '보류') hold = b;
+      if (t === '승인') out.approve = b;
+      if (t === '보류') out.hold = b;
+      if (t === '거절') out.reject = b;
     });
-    return { approve: approve, hold: hold };
+    return out;
+  }
+
+  function paintGroup(root, st) {
+    var btns = buttonsIn(root);
+    paintBtn(btns.approve, st === 'quote_request' || st === 'approved', ON_APPROVE);
+    paintBtn(btns.hold, st === 'hold', ON_HOLD);
+    paintBtn(btns.reject, st === 'rejected', ON_REJECT);
+  }
+
+  function companyIdFromEdit() {
+    var h = document.body.innerText.match(/선택 업체 관리 \(#(\d+)/);
+    return h ? h[1] : '';
+  }
+
+  function postCompany(id, action) {
+    if (!id) return;
+    fetch('/api/modules/custom-maker_bids/admin/companies/' + id + '/' + action, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function () { location.reload(); });
+  }
+
+  function ensureCompanyEditButtons() {
+    var save = null;
+    document.querySelectorAll('button').forEach(function (b) {
+      if ((b.textContent || '').trim() === '선택 업체 저장') save = b;
+    });
+    if (!save || save.getAttribute('data-cmb-co-btns')) return;
+    save.setAttribute('data-cmb-co-btns', '1');
+    var wrap = save.parentElement || save;
+    function add(label, action, confirmMsg) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.className = 'px-3 py-1.5 text-sm rounded-lg border mr-2';
+      b.addEventListener('click', function () {
+        var id = companyIdFromEdit();
+        if (!id) return alert('먼저 목록에서 업체를 불러오세요.');
+        if (!confirm(confirmMsg)) return;
+        postCompany(id, action);
+      });
+      wrap.insertBefore(b, save);
+      return b;
+    }
+    add('승인', 'approve', '이 업체를 승인할까요?');
+    add('보류', 'hold', '이 업체를 보류할까요?');
+    add('거절', 'reject', '이 업체를 거절할까요?');
   }
 
   function paintStatusButtons() {
     document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
       var meta = row.querySelector('.cmb-admin-muted, .cmb-admin-meta');
-      var st = statusFromText(meta && meta.textContent);
-      var btns = buttonsIn(row);
-      paintBtn(btns.approve, st === 'quote_request', ON_APPROVE);
-      paintBtn(btns.hold, st === 'hold', ON_HOLD);
+      paintGroup(row, statusFromText(meta && meta.textContent));
     });
     var bar = document.querySelector('.cmb-admin-toolbar');
     if (bar) {
       var meta = document.querySelector('.cmb-admin-meta');
-      var st = statusFromText(meta && meta.textContent);
-      var btns = buttonsIn(bar);
-      if (!btns.approve && btns.hold) {
-        var a = document.createElement('button');
-        a.type = 'button';
-        a.textContent = '승인';
-        a.className = 'cmb-btn-approve px-3 py-1.5 text-sm rounded-lg border';
-        a.addEventListener('click', function () {
-          var m = location.pathname.match(/jobs\/(\d+)/);
-          if (!m) return;
-          if (!confirm('승인하여 견적요청(open)으로 공개할까요?')) return;
-          fetch('/api/modules/custom-maker_bids/admin/jobs/' + m[1] + '/approve', {
-            method: 'POST',
-            credentials: 'same-origin',
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-          }).then(function () { location.reload(); });
-        });
-        bar.insertBefore(a, btns.hold);
-        btns.approve = a;
-      }
-      paintBtn(btns.approve, st === 'quote_request', ON_APPROVE);
-      paintBtn(btns.hold, st === 'hold', ON_HOLD);
+      paintGroup(bar, statusFromText(meta && meta.textContent));
+    }
+    ensureCompanyEditButtons();
+    var editTitle = Array.prototype.find.call(document.querySelectorAll('h2,h1,p'), function (el) {
+      return /선택 업체/.test(el.textContent || '');
+    });
+    if (editTitle) {
+      var card = editTitle.closest('.cmb-admin-card') || editTitle.parentElement;
+      var st = '';
+      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+        if (row.querySelector('[href*="companies"], button')) {
+          /* keep last loaded row if marked */
+        }
+      });
+      var selected = companyIdFromEdit();
+      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+        var title = row.querySelector('.cmb-admin-row-title, a');
+        if (selected && title && title.textContent.indexOf('#' + selected) >= 0) {
+          st = statusFromText((row.querySelector('.cmb-admin-muted') || {}).textContent);
+        }
+      });
+      if (card) paintGroup(card, st);
     }
   }
 
@@ -81,13 +128,13 @@
     wrap.setAttribute('data-cmb-size-row', '1');
     wrap.className = 'cmb-size-row flex flex-wrap items-center gap-2';
     wrap.innerHTML =
-      '<input data-cmb-size-name type="text" maxlength="80" placeholder="이름" class="' + CLS + ' cmb-size-name">' +
-      '<input data-cmb-size-w type="number" min="0" placeholder="W" class="' + CLS + ' cmb-size-dim">' +
-      '<span class="text-gray-400">×</span>' +
-      '<input data-cmb-size-d type="number" min="0" placeholder="D" class="' + CLS + ' cmb-size-dim">' +
-      '<span class="text-gray-400">×</span>' +
-      '<input data-cmb-size-h type="number" min="0" placeholder="H" class="' + CLS + ' cmb-size-dim">' +
-      '<button type="button" data-cmb-size-remove class="cmb-size-remove shrink-0 px-2.5 py-2 text-sm rounded-lg border">삭제</button>';
+      '<input data-cmb-size-name type="text" maxlength="80" placeholder="이름" class="' + CLS + '">' +
+      '<input data-cmb-size-w type="number" min="0" placeholder="W" class="' + CLS + '">' +
+      '<span>×</span>' +
+      '<input data-cmb-size-d type="number" min="0" placeholder="D" class="' + CLS + '">' +
+      '<span>×</span>' +
+      '<input data-cmb-size-h type="number" min="0" placeholder="H" class="' + CLS + '">' +
+      '<button type="button" data-cmb-size-remove class="px-2.5 py-2 text-sm rounded-lg border">삭제</button>';
     wrap.querySelector('[data-cmb-size-name]').value = item.name || '';
     wrap.querySelector('[data-cmb-size-w]').value = item.w || '';
     wrap.querySelector('[data-cmb-size-d]').value = item.d || '';
@@ -114,16 +161,9 @@
     if (!ta || ta.getAttribute('data-cmb-size-ui')) return;
     ta.setAttribute('data-cmb-size-ui', '1');
     ta.style.display = 'none';
-    ['size_w', 'size_d', 'size_h'].forEach(function (n) {
-      document.querySelectorAll('[name="' + n + '"]').forEach(function (el) {
-        (el.closest('div') || el).style.display = 'none';
-      });
-    });
     var items = parseSizes(ta.value || ta.getAttribute('placeholder'));
     var root = document.createElement('div');
-    root.className = 'cmb-sizes space-y-2';
     var list = document.createElement('div');
-    list.className = 'cmb-sizes-list space-y-2';
     items.forEach(function (it) { list.appendChild(makeRow(it, items.length > 1)); });
     var add = document.createElement('button');
     add.type = 'button';
@@ -132,10 +172,7 @@
     root.appendChild(list);
     root.appendChild(add);
     ta.parentNode.insertBefore(root, ta);
-    function sync() {
-      ta.value = JSON.stringify(collect(list));
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
-    }
+    function sync() { ta.value = JSON.stringify(collect(list)); ta.dispatchEvent(new Event('input', { bubbles: true })); }
     add.addEventListener('click', function (e) { e.preventDefault(); list.appendChild(makeRow({ name: '', w: '', d: '', h: '' }, true)); sync(); });
     list.addEventListener('click', function (e) {
       var btn = e.target.closest && e.target.closest('[data-cmb-size-remove]');
