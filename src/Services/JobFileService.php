@@ -47,8 +47,8 @@ class JobFileService
             $this->replaceExistingLogos($userId, $token, $job?->id);
         }
         $dir = $job
-            ? 'custom-maker-bid/jobs/'.$job->id.'/'.$collection
-            : 'custom-maker-bid/staging/'.($token ?: ('u'.$userId));
+            ? 'custom-maker-bids/jobs/'.$job->id.'/'.$collection
+            : 'custom-maker-bids/staging/'.($token ?: ('u'.$userId));
 
         $stored = $file->store($dir, 'public');
         if (! is_string($stored) || $stored === '') {

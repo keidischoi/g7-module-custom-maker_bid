@@ -5,21 +5,23 @@ use Modules\Custom\MakerBid\Http\Controllers\Admin\BidAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\Admin\JobTypeAdminController;
+use Modules\Custom\MakerBid\Http\Controllers\Admin\SettingsAdminController;
 use Modules\Custom\MakerBid\Http\Controllers\AssetController;
 use Modules\Custom\MakerBid\Http\Controllers\BidController;
 use Modules\Custom\MakerBid\Http\Controllers\CompanyController;
 use Modules\Custom\MakerBid\Http\Controllers\JobController;
 use Modules\Custom\MakerBid\Http\Controllers\JobFileController;
 use Modules\Custom\MakerBid\Http\Controllers\JobTypeController;
+use Modules\Custom\MakerBid\Http\Controllers\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
-| custom-maker_bid API Routes
+| custom-maker_bids API Routes
 |--------------------------------------------------------------------------
 |
 | Prefix is applied by ModuleRouteServiceProvider:
-| - URL:  /api/modules/custom-maker_bid
-| - Name: api.modules.custom-maker_bid.
+| - URL:  /api/modules/custom-maker_bids
+| - Name: api.modules.custom-maker_bids.
 |
 */
 
@@ -51,6 +53,9 @@ Route::get('jobs/{id}', [JobController::class, 'show'])
 Route::get('companies', [CompanyController::class, 'index'])
     ->middleware(['throttle:600,1'])
     ->name('companies.index');
+Route::get('settings', [SettingsController::class, 'show'])
+    ->middleware(['throttle:600,1'])
+    ->name('settings.show');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
@@ -86,92 +91,102 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(function () {
     Route::get('jobs', [JobAdminController::class, 'index'])
-        ->middleware('permission:admin,custom-maker_bid.jobs.read')
+        ->middleware('permission:admin,custom-maker_bids.jobs.read')
         ->name('admin.jobs.index');
     Route::get('jobs/{id}', [JobAdminController::class, 'show'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.read')
+        ->middleware('permission:admin,custom-maker_bids.jobs.read')
         ->name('admin.jobs.show');
     Route::patch('jobs/{id}', [JobAdminController::class, 'update'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.jobs.update');
     Route::post('jobs/{id}/hold', [JobAdminController::class, 'hold'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.jobs.hold');
     Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.jobs.cancel');
     Route::delete('jobs/{id}', [JobAdminController::class, 'destroy'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.delete')
+        ->middleware('permission:admin,custom-maker_bids.jobs.delete')
         ->name('admin.jobs.destroy');
 
     Route::get('job-types', [JobTypeAdminController::class, 'index'])
-        ->middleware('permission:admin,custom-maker_bid.jobs.read')
+        ->middleware('permission:admin,custom-maker_bids.jobs.read')
         ->name('admin.job-types.index');
     Route::post('job-types', [JobTypeAdminController::class, 'store'])
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.job-types.store');
     Route::patch('job-types/{id}', [JobTypeAdminController::class, 'update'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.job-types.update');
     Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.job-types.move');
     Route::delete('job-types/{id}', [JobTypeAdminController::class, 'destroy'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.jobs.update')
+        ->middleware('permission:admin,custom-maker_bids.jobs.update')
         ->name('admin.job-types.destroy');
 
     Route::get('bids', [BidAdminController::class, 'index'])
-        ->middleware('permission:admin,custom-maker_bid.bids.read')
+        ->middleware('permission:admin,custom-maker_bids.bids.read')
         ->name('admin.bids.index');
     Route::get('bids/{id}', [BidAdminController::class, 'show'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.bids.read')
+        ->middleware('permission:admin,custom-maker_bids.bids.read')
         ->name('admin.bids.show');
     Route::patch('bids/{id}', [BidAdminController::class, 'update'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.bids.update')
+        ->middleware('permission:admin,custom-maker_bids.bids.update')
         ->name('admin.bids.update');
     Route::delete('bids/{id}', [BidAdminController::class, 'destroy'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.bids.delete')
+        ->middleware('permission:admin,custom-maker_bids.bids.delete')
         ->name('admin.bids.destroy');
 
     Route::get('companies', [CompanyAdminController::class, 'index'])
-        ->middleware('permission:admin,custom-maker_bid.companies.read')
+        ->middleware('permission:admin,custom-maker_bids.companies.read')
         ->name('admin.companies.index');
     Route::get('companies/{id}', [CompanyAdminController::class, 'show'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.read')
+        ->middleware('permission:admin,custom-maker_bids.companies.read')
         ->name('admin.companies.show');
     Route::post('companies', [CompanyAdminController::class, 'store'])
-        ->middleware('permission:admin,custom-maker_bid.companies.create')
+        ->middleware('permission:admin,custom-maker_bids.companies.create')
         ->name('admin.companies.store');
     Route::patch('companies/{id}', [CompanyAdminController::class, 'update'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->middleware('permission:admin,custom-maker_bids.companies.update')
         ->name('admin.companies.update');
     Route::post('companies/{id}/approve', [CompanyAdminController::class, 'approve'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->middleware('permission:admin,custom-maker_bids.companies.update')
         ->name('admin.companies.approve');
     Route::post('companies/{id}/hold', [CompanyAdminController::class, 'hold'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->middleware('permission:admin,custom-maker_bids.companies.update')
         ->name('admin.companies.hold');
     Route::post('companies/{id}/reject', [CompanyAdminController::class, 'reject'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->middleware('permission:admin,custom-maker_bids.companies.update')
         ->name('admin.companies.reject');
     Route::delete('companies/{id}', [CompanyAdminController::class, 'destroy'])
         ->whereNumber('id')
-        ->middleware('permission:admin,custom-maker_bid.companies.delete')
+        ->middleware('permission:admin,custom-maker_bids.companies.delete')
         ->name('admin.companies.destroy');
+
+    Route::get('settings', [SettingsAdminController::class, 'show'])
+        ->middleware('permission:admin,custom-maker_bids.settings.read')
+        ->name('admin.settings.show');
+    Route::put('settings', [SettingsAdminController::class, 'update'])
+        ->middleware('permission:admin,custom-maker_bids.settings.update')
+        ->name('admin.settings.update');
+    Route::patch('settings', [SettingsAdminController::class, 'update'])
+        ->middleware('permission:admin,custom-maker_bids.settings.update')
+        ->name('admin.settings.patch');
 });

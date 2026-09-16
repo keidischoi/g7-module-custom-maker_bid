@@ -48,6 +48,10 @@ $apply = CompanyRules::applyRules();
 expectTrue('apply requires name', in_array('required', $apply['name'], true));
 expectTrue('apply requires kind', in_array('required', $apply['kind'], true));
 expectTrue('business_no optional', in_array('nullable', $apply['business_no'], true));
+expectFalse('apply cannot set is_designated', isset($apply['is_designated']));
+expectTrue('admin only has is_designated', isset(CompanyRules::adminOnlyRules()['is_designated']));
+expectTrue('designated helper from array', CompanyRules::isDesignated(['is_designated' => true]));
+expectFalse('not designated by default', CompanyRules::isDesignated(['is_recommended' => true]));
 
 $attrs = CompanyRules::applicantAttributes([
     'name' => '테스트랩',
@@ -55,10 +59,12 @@ $attrs = CompanyRules::applicantAttributes([
     'job_type_print_3d' => true,
     'bio' => '소개',
     'phone' => '010-0000-0000',
+    'is_designated' => true,
 ]);
 expect('kind stored as company', $attrs['kind'], 'company');
 expect('type from first job type', $attrs['type'], 'print_3d');
 expect('bio copied to note', $attrs['note'], '소개');
+expectFalse('applicant attributes omit is_designated', array_key_exists('is_designated', $attrs));
 
 expectTrue('logos collection allowed', UploadRules::isAllowedCollection('logos'));
 expectTrue('png allowed as logo', UploadRules::isAllowedExtension('logos', 'mark.png'));

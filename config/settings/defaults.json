@@ -1,0 +1,76 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "description": "의뢰/입찰 모듈 설정",
+    "categories": ["menu", "notices", "general"]
+  },
+  "defaults": {
+    "menu": {
+      "nav_js_enabled": true,
+      "nav_insert": "append_row",
+      "nav_label": "의뢰/입찰",
+      "extension_user_base": true,
+      "extension_home": true
+    },
+    "notices": {
+      "list_enabled": false,
+      "list_body": "",
+      "create_enabled": false,
+      "create_body": "",
+      "bids_enabled": false,
+      "bids_body": "",
+      "history_enabled": false,
+      "history_body": "",
+      "company_enabled": false,
+      "company_body": "",
+      "show_enabled": false,
+      "show_body": "",
+      "edit_enabled": false,
+      "edit_body": ""
+    },
+    "general": {
+      "default_job_status": "quote_request",
+      "guests_see_list": true,
+      "bid_allow": "all"
+    }
+  },
+  "frontend_schema": {
+    "menu": {
+      "expose": true,
+      "fields": {
+        "nav_js_enabled": { "expose": true },
+        "nav_insert": { "expose": true },
+        "nav_label": { "expose": true },
+        "extension_user_base": { "expose": true },
+        "extension_home": { "expose": true }
+      }
+    },
+    "notices": {
+      "expose": true,
+      "fields": {
+        "list_enabled": { "expose": true },
+        "list_body": { "expose": true },
+        "create_enabled": { "expose": true },
+        "create_body": { "expose": true },
+        "bids_enabled": { "expose": true },
+        "bids_body": { "expose": true },
+        "history_enabled": { "expose": true },
+        "history_body": { "expose": true },
+        "company_enabled": { "expose": true },
+        "company_body": { "expose": true },
+        "show_enabled": { "expose": true },
+        "show_body": { "expose": true },
+        "edit_enabled": { "expose": true },
+        "edit_body": { "expose": true }
+      }
+    },
+    "general": {
+      "expose": true,
+      "fields": {
+        "default_job_status": { "expose": true },
+        "guests_see_list": { "expose": true },
+        "bid_allow": { "expose": true }
+      }
+    }
+  }
+}

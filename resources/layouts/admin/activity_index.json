@@ -3,7 +3,7 @@
   "layout_name": "activity_index",
   "extends": "_admin_base",
   "meta": { "title": "회원 활동" },
-  "permissions": ["custom-maker_bid.jobs.read"],
+  "permissions": ["custom-maker_bids.jobs.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -17,7 +17,7 @@
     {
       "id": "jobs",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
+      "endpoint": "/api/modules/custom-maker_bids/admin/jobs",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -28,7 +28,7 @@
     {
       "id": "bids",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/bids",
+      "endpoint": "/api/modules/custom-maker_bids/admin/bids",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -43,30 +43,39 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content space-y-6" },
+        "props": { "className": "admin-page-content cmb-admin space-y-5" },
         "children": [
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회원 활동" },
           {
             "id": "nav",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "flex items-center gap-3 flex-wrap text-sm" },
+            "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "회원 ID로 해당 회원의 의뢰와 입찰을 봅니다. 비우면 최근 목록입니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "회원 ID로 해당 회원의 의뢰와 입찰을 봅니다. 비우면 최근 목록입니다." },
           {
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "flex items-end gap-2 flex-wrap", "dataKey": "filter", "trackChanges": true },
+            "props": { "className": "cmb-admin-card cmb-admin-filter", "dataKey": "filter", "trackChanges": true },
             "children": [
-              { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID" } },
+              {
+                "id": "fuser_wrap",
+                "type": "basic",
+                "name": "Div",
+                "children": [
+                  { "id": "fuser_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "회원 ID" },
+                  { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID", "className": "cmb-admin-w-xs" } }
+                ]
+              },
               {
                 "id": "fgo",
                 "type": "basic",
@@ -88,39 +97,105 @@
               }
             ]
           },
-          { "id": "jh", "type": "basic", "name": "H2", "text": "의뢰" },
           {
-            "id": "jempty",
+            "id": "split",
             "type": "basic",
-            "name": "P",
-            "if": "{{!(jobs.data && jobs.data.length)}}",
-            "props": { "className": "text-secondary text-sm py-4" },
-            "text": "의뢰가 없습니다."
-          },
-          {
-            "id": "jrow",
-            "type": "basic",
-            "name": "A",
-            "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}" },
-            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
-            "text": "#{{$item.id}} {{$item.title}} · {{$item.status}} · 회원 {{$item.user_id}}"
-          },
-          { "id": "bh", "type": "basic", "name": "H2", "text": "입찰" },
-          {
-            "id": "bempty",
-            "type": "basic",
-            "name": "P",
-            "if": "{{!(bids.data && bids.data.length)}}",
-            "props": { "className": "text-secondary text-sm py-4" },
-            "text": "입찰이 없습니다."
-          },
-          {
-            "id": "brow",
-            "type": "basic",
-            "name": "P",
-            "props": { "className": "py-2 border-b border-gray-200 dark:border-white/10" },
-            "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
-            "text": "#{{$item.id}} 의뢰 {{$item.job_id}} · {{$item.amount}}원 · {{$item.status}} · 회원 {{$item.user_id}}"
+            "name": "Div",
+            "props": { "className": "cmb-admin-split" },
+            "children": [
+              {
+                "id": "jobs_col",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "cmb-admin-card space-y-3" },
+                "children": [
+                  { "id": "jh", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "의뢰" },
+                  { "id": "jempty", "type": "basic", "name": "P", "if": "{{!(jobs.data && jobs.data.length)}}", "props": { "className": "cmb-admin-empty" }, "text": "의뢰가 없습니다." },
+                  {
+                    "id": "jlist",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-admin-list" },
+                    "children": [
+                      {
+                        "id": "jrow",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": { "className": "cmb-admin-row" },
+                        "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+                        "children": [
+                          {
+                            "id": "jmain",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": { "className": "cmb-admin-row-main" },
+                            "children": [
+                              { "id": "jtitle", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
+                              { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.status}} · 회원 {{$item.user_id}}" }
+                            ]
+                          },
+                          {
+                            "id": "jacts",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": { "className": "cmb-admin-row-actions" },
+                            "children": [
+                              { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "bids_col",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "cmb-admin-card space-y-3" },
+                "children": [
+                  { "id": "bh", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "입찰" },
+                  { "id": "bempty", "type": "basic", "name": "P", "if": "{{!(bids.data && bids.data.length)}}", "props": { "className": "cmb-admin-empty" }, "text": "입찰이 없습니다." },
+                  {
+                    "id": "blist",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-admin-list" },
+                    "children": [
+                      {
+                        "id": "brow",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": { "className": "cmb-admin-row" },
+                        "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
+                        "children": [
+                          {
+                            "id": "bmain",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": { "className": "cmb-admin-row-main" },
+                            "children": [
+                              { "id": "btxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status}}" },
+                              { "id": "bmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "의뢰 {{$item.job_id}} · 회원 {{$item.user_id}}" }
+                            ]
+                          },
+                          {
+                            "id": "bacts",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": { "className": "cmb-admin-row-actions" },
+                            "children": [
+                              { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세" }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

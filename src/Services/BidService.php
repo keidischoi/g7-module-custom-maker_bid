@@ -8,6 +8,7 @@ use Modules\Custom\MakerBid\Models\MakerBid;
 use Modules\Custom\MakerBid\Models\MakerCompany;
 use Modules\Custom\MakerBid\Models\MakerJob;
 use Modules\Custom\MakerBid\Support\BidRules;
+use Modules\Custom\MakerBid\Support\CompanyPresenter;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 use Modules\Custom\MakerBid\Support\DomainException;
 use Modules\Custom\MakerBid\Support\JobRules;
@@ -22,13 +23,13 @@ class BidService
      * @param  array<string, mixed>  $payload
      * @return array{bid: MakerBid, created: bool}
      */
-    public function createOrUpdateOwn(int $userId, int $jobId, array $payload): array
+    public function createOrUpdateOwn(int $userId, int $jobId, array $payload, bool $isAdmin = false): array
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $this->assertCanWrite($userId, $job);
 
         $company = $this->approvedCompany($userId);
-        $this->assertEligible($userId, $job, $company);
+        $this->assertEligible($userId, $job, $company, $isAdmin);
 
         $existing = MakerBid::query()
             ->where('job_id', $job->id)
@@ -61,7 +62,7 @@ class BidService
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function updateOwn(int $userId, int $jobId, int $bidId, array $payload): MakerBid
+    public function updateOwn(int $userId, int $jobId, int $bidId, array $payload, bool $isAdmin = false): MakerBid
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $bid = MakerBid::query()->where('job_id', $job->id)->findOrFail($bidId);
@@ -77,6 +78,7 @@ class BidService
         }
 
         $company = $this->approvedCompany($userId);
+        $this->assertEligible($userId, $job, $company, $isAdmin);
         $bid->fill($this->writeAttributes($payload, $company));
         $bid->save();
 
@@ -97,9 +99,9 @@ class BidService
     }
 
     /**
-     * @return Collection<int, MakerBid>
+     * @return list<array<string, mixed>>
      */
-    public function listAdmin(Request $request): Collection
+    public function listAdmin(Request $request): array
     {
         $q = MakerBid::query()->with(['job', 'company'])->latest();
         if ($jobId = $request->query('job_id')) {
@@ -112,24 +114,53 @@ class BidService
             $q->where('status', $status);
         }
 
-        return $q->limit(200)->get();
+        return $q->limit(200)->get()->map(fn (MakerBid $bid) => $this->presentAdmin($bid))->all();
     }
 
-    public function findAdmin(int $id): MakerBid
+    /**
+     * @return array<string, mixed>
+     */
+    public function findAdmin(int $id): array
     {
-        return MakerBid::query()->with(['job', 'company'])->findOrFail($id);
+        return $this->presentAdmin(
+            MakerBid::query()->with(['job', 'company'])->findOrFail($id)
+        );
     }
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
      */
-    public function updateAdmin(int $id, array $payload): MakerBid
+    public function updateAdmin(int $id, array $payload): array
     {
         $bid = MakerBid::query()->findOrFail($id);
-        $bid->fill($payload);
+        $allowed = [];
+        foreach (['amount', 'days', 'message', 'status'] as $key) {
+            if (array_key_exists($key, $payload)) {
+                $allowed[$key] = $payload[$key];
+            }
+        }
+        $bid->fill($allowed);
         $bid->save();
 
-        return $bid->fresh() ?? $bid;
+        return $this->findAdmin($id);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function presentAdmin(MakerBid $bid): array
+    {
+        $row = CompanyPresenter::presentBid($bid);
+        $job = $bid->relationLoaded('job') ? $bid->job : null;
+        $row['job'] = $job ? [
+            'id' => (int) $job->id,
+            'title' => (string) $job->title,
+            'status' => (string) $job->status,
+            'status_label' => JobRules::statusLabel((string) $job->status),
+        ] : null;
+
+        return $row;
     }
 
     public function destroyAdmin(int $id): void
@@ -155,14 +186,16 @@ class BidService
         }
     }
 
-    private function assertEligible(int $userId, MakerJob $job, ?MakerCompany $company): void
+    private function assertEligible(int $userId, MakerJob $job, ?MakerCompany $company, bool $isAdmin = false): void
     {
         $isMember = $userId > 0;
         $approved = CompanyRules::isApproved($company?->status);
-        if (! BidRules::canBid($isMember, $approved)) {
-            throw new DomainException('회원 또는 승인된 업체만 입찰할 수 있습니다.', 403);
+        $designated = CompanyRules::isDesignated($company);
+        $mode = $this->jobs->bidAllowMode();
+        if (! BidRules::canBid($isMember, $approved, $mode, $isAdmin, $company?->kind, $designated)) {
+            throw new DomainException(BidRules::denyMessage($mode), 403);
         }
-        if (! JobRules::canBidAudience($job->audience ?? 'all', $isMember, $approved, $company?->kind)) {
+        if (! JobRules::canBidAudience($job->audience ?? 'all', $isMember, $approved, $company?->kind, $mode, $isAdmin, $designated)) {
             throw new DomainException('이 의뢰의 공개 대상만 입찰할 수 있습니다.', 403);
         }
     }

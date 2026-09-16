@@ -3,14 +3,16 @@
 namespace Modules\Custom\MakerBid\Listeners;
 
 use App\Contracts\Extension\HookListenerInterface;
+use Modules\Custom\MakerBid\Services\MakerBidSettingsService;
+use Modules\Custom\MakerBid\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bid/assets/nav.js?v=0.6.0';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.8.2';
 
-    private const FORM_SRC = '/api/modules/custom-maker_bid/assets/form.js?v=0.6.0';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.8.2';
 
-    private const FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.6.0';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.8.2';
 
     public static function getSubscribedHooks(): array
     {
@@ -30,8 +32,21 @@ class UserMenuListener implements HookListenerInterface
                 return $layout;
             }
             $name = (string) ($layout['layout_name'] ?? '');
+            if (($layout['extends'] ?? '') === '_admin_base') {
+                $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
+                $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+
+                return $layout;
+            }
             if (str_starts_with($name, 'admin') || str_contains($name, 'admin')) {
                 return $layout;
+            }
+            $menu = $this->menuSettings();
+            if (! ($menu['extension_user_base'] ?? true)) {
+                $layout = $this->removeComponent($layout, 'maker_bids_user_nav');
+            }
+            if (! ($menu['extension_home'] ?? true)) {
+                $layout = $this->removeComponent($layout, 'maker_bids_home_nav');
             }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
@@ -48,6 +63,69 @@ class UserMenuListener implements HookListenerInterface
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function menuSettings(): array
+    {
+        try {
+            if (function_exists('app')) {
+                $all = app(MakerBidSettingsService::class)->getAllSettings();
+
+                return is_array($all['menu'] ?? null) ? $all['menu'] : SettingsRules::defaults()['menu'];
+            }
+        } catch (\Throwable) {
+        }
+
+        return SettingsRules::defaults()['menu'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $node
+     * @return array<string, mixed>
+     */
+    private function removeComponent(array $node, string $id): array
+    {
+        foreach (['children', 'injections', 'components'] as $key) {
+            if (! isset($node[$key]) || ! is_array($node[$key])) {
+                continue;
+            }
+            $kept = [];
+            foreach ($node[$key] as $child) {
+                if (! is_array($child)) {
+                    $kept[] = $child;
+                    continue;
+                }
+                if (($child['id'] ?? '') === $id) {
+                    continue;
+                }
+                $kept[] = $this->removeComponent($child, $id);
+            }
+            $node[$key] = array_values($kept);
+        }
+        if (isset($node['slots']) && is_array($node['slots'])) {
+            foreach ($node['slots'] as $slot => $items) {
+                if (! is_array($items)) {
+                    continue;
+                }
+                $kept = [];
+                foreach ($items as $child) {
+                    if (! is_array($child)) {
+                        $kept[] = $child;
+                        continue;
+                    }
+                    if (($child['id'] ?? '') === $id) {
+                        continue;
+                    }
+                    $kept[] = $this->removeComponent($child, $id);
+                }
+                $node['slots'][$slot] = array_values($kept);
+            }
+        }
+
+        return $node;
+    }
+
+    /**
      * @param  list<array<string, mixed>>  $scripts
      * @return list<array<string, mixed>>
      */
@@ -55,7 +133,7 @@ class UserMenuListener implements HookListenerInterface
     {
         $found = false;
         foreach ($scripts as $i => $script) {
-            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bid/assets/nav.js' : 'custom-maker_bid/assets/form.js'))) {
+            if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $id === 'cmb_maker_nav' ? 'custom-maker_bids/assets/nav.js' : 'custom-maker_bids/assets/form.js'))) {
                 $scripts[$i]['src'] = $src;
                 $found = true;
             }
@@ -83,7 +161,7 @@ class UserMenuListener implements HookListenerInterface
     {
         $found = false;
         foreach ($styles as $i => $style) {
-            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bid/assets/form.css'))) {
+            if (is_array($style) && (($style['id'] ?? '') === $id || str_contains((string) ($style['href'] ?? $style['src'] ?? ''), 'custom-maker_bids/assets/form.css'))) {
                 $styles[$i]['href'] = $href;
                 $styles[$i]['src'] = $href;
                 $found = true;

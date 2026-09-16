@@ -13,6 +13,7 @@ use Modules\Custom\MakerBid\Support\DomainException;
 use Modules\Custom\MakerBid\Support\JobPresenter;
 use Modules\Custom\MakerBid\Support\JobRules;
 use Modules\Custom\MakerBid\Support\PrivacyRules;
+use Modules\Custom\MakerBid\Support\SettingsRules;
 use Modules\Custom\MakerBid\Support\TypeCatalog;
 
 class JobService
@@ -29,6 +30,10 @@ class JobService
     {
         $q = MakerJob::query()->with(['jobType'])->withCount('bids')->latest();
         $ctx = $this->viewerFromRequest($request);
+
+        if (! $ctx['isAdmin'] && ! $ctx['isMember'] && ! $this->settingBool('general.guests_see_list', true)) {
+            return [];
+        }
 
         if ($type = JobRules::listTypeFilter($request->query('type'))) {
             $q->where('type', $type);
@@ -103,11 +108,16 @@ class JobService
         );
         $hasApprovedCompany = (bool) ($ctx['hasApprovedCompany'] ?? false);
         $companyKind = $ctx['companyKind'] ?? null;
+        $isDesignated = (bool) ($ctx['isDesignated'] ?? false);
+        $allowMode = $this->bidAllowMode();
         $canBid = $userId > 0 && ! $isOwner && $open && JobRules::canBidAudience(
             $job->audience ?? 'all',
             true,
             $hasApprovedCompany,
             $companyKind,
+            $allowMode,
+            $isAdmin,
+            $isDesignated,
         );
 
         return [
@@ -172,8 +182,8 @@ class JobService
 
         $attrs = $this->jobAttributes($payload, $type->id, (string) $type->slug);
         $attrs['user_id'] = $userId;
-        if (empty($attrs['status'])) {
-            $attrs['status'] = 'quote_request';
+        if (empty($payload['status']) || empty($attrs['status'])) {
+            $attrs['status'] = $this->defaultCreateStatus();
         }
 
         $job = MakerJob::query()->create($attrs);
@@ -310,7 +320,7 @@ class JobService
     }
 
     /**
-     * @return array{userId:int,isAdmin:bool,isMember:bool,hasApprovedCompany:bool,companyKind:?string}
+     * @return array{userId:int,isAdmin:bool,isMember:bool,hasApprovedCompany:bool,companyKind:?string,isDesignated:bool}
      */
     public function viewerFromRequest(Request $request): array
     {
@@ -334,7 +344,18 @@ class JobService
             'isMember' => $userId > 0,
             'hasApprovedCompany' => CompanyRules::isApproved($company?->status),
             'companyKind' => $company?->kind,
+            'isDesignated' => CompanyRules::isDesignated($company),
         ];
+    }
+
+    public function isAdminActor(mixed $user): bool
+    {
+        return $this->isAdminUser($user);
+    }
+
+    public function bidAllowMode(): string
+    {
+        return BidRules::normalizeAllow($this->setting('general.bid_allow', BidRules::ALLOW_ALL));
     }
 
     /**
@@ -527,7 +548,7 @@ class JobService
      */
     private function ownerContext(int $userId): array
     {
-        return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null];
+        return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null, 'isDesignated' => false];
     }
 
     /**
@@ -611,5 +632,40 @@ class JobService
         }
 
         return (int) $value;
+    }
+
+    private function defaultCreateStatus(): string
+    {
+        $raw = (string) $this->setting('general.default_job_status', 'quote_request');
+        if ($raw === 'open') {
+            return 'quote_request';
+        }
+        if (! in_array($raw, JobRules::LISTING_STATUSES, true)) {
+            return 'quote_request';
+        }
+
+        return $raw;
+    }
+
+    private function setting(string $key, mixed $default = null): mixed
+    {
+        try {
+            if (function_exists('app')) {
+                return app(MakerBidSettingsService::class)->getSetting($key, $default);
+            }
+        } catch (\Throwable) {
+        }
+
+        return $default;
+    }
+
+    private function settingBool(string $key, bool $default = false): bool
+    {
+        $value = $this->setting($key, $default);
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return SettingsRules::boolish($value);
     }
 }

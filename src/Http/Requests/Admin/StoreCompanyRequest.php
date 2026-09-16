@@ -23,7 +23,7 @@ class StoreCompanyRequest extends FormRequest
     {
         $this->liftNestedFormFields(['company', 'edit', 'form']);
         $this->nullBlankFields(['type', 'note', 'status', 'kind', 'bio', 'admin_memo', 'hold_reason']);
-        $this->coerceBooleanFields(['is_recommended']);
+        $this->coerceBooleanFields(['is_recommended', 'is_designated']);
         if ($this->exists('kind')) {
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);
         }

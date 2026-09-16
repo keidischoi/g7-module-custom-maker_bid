@@ -9,6 +9,7 @@ $files = [
     __DIR__.'/company_form.php',
     __DIR__.'/api_contracts.php',
     __DIR__.'/layouts.php',
+    __DIR__.'/settings.php',
 ];
 
 $failed = 0;

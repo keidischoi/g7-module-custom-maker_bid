@@ -108,6 +108,9 @@ class CompanyService
         if ($request->query('recommended') === '1' || $request->query('is_recommended') === '1') {
             $q->where('is_recommended', true);
         }
+        if ($request->query('designated') === '1' || $request->query('is_designated') === '1') {
+            $q->where('is_designated', true);
+        }
 
         return $q->limit(200)
             ->get()
@@ -307,6 +310,9 @@ class CompanyService
         }
         if ($creating || array_key_exists('is_recommended', $payload)) {
             $out['is_recommended'] = CompanyRules::isTruthy($payload['is_recommended'] ?? false);
+        }
+        if ($creating || array_key_exists('is_designated', $payload)) {
+            $out['is_designated'] = CompanyRules::isTruthy($payload['is_designated'] ?? false);
         }
         if ($creating || array_key_exists('priority', $payload)) {
             $out['priority'] = CompanyRules::clampPriority($payload['priority'] ?? 0);

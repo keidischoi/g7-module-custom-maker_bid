@@ -232,9 +232,16 @@ class JobRules
         bool $isMember,
         bool $hasApprovedCompany,
         mixed $companyKind = null,
+        mixed $allowMode = BidRules::ALLOW_ALL,
+        bool $isAdmin = false,
+        bool $isDesignated = false,
     ): bool {
-        if (! BidRules::canBid($isMember, $hasApprovedCompany)) {
+        if (! BidRules::canBid($isMember, $hasApprovedCompany, $allowMode, $isAdmin, $companyKind, $isDesignated)) {
             return false;
+        }
+        $mode = BidRules::normalizeAllow($allowMode);
+        if ($isAdmin && $mode === BidRules::ALLOW_ADMIN) {
+            return true;
         }
         $role = self::viewerRole($isMember, $hasApprovedCompany, $companyKind);
         $scope = self::normalizeAudience($audience);
