@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateJobRequest;
+use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Services\JobService;
 
 class JobAdminController extends Controller
@@ -31,7 +32,15 @@ class JobAdminController extends Controller
 
     public function approve(int $id): JsonResponse
     {
-        return response()->json(['data' => $this->jobs->approve($id)]);
+        $job = MakerJob::query()->findOrFail($id);
+        $job->status = 'quote_request';
+        if (\Illuminate\Support\Facades\Schema::hasColumn($job->getTable(), 'bidding_status')) {
+            $job->bidding_status = 'open';
+            $job->bidding_closed_at = null;
+        }
+        $job->save();
+
+        return response()->json(['data' => $this->jobs->findAdmin($id)]);
     }
 
     public function hold(int $id): JsonResponse
