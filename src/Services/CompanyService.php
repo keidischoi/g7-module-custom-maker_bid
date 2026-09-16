@@ -18,9 +18,6 @@ class CompanyService
         private readonly JobTypeService $types,
     ) {}
 
-    /**
-     * @return array<string, mixed>
-     */
     public function formDefaults(object $user): array
     {
         $token = $this->files->newUploadToken();
@@ -42,22 +39,20 @@ class CompanyService
         ];
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function apply(int $userId, array $payload): array
     {
         $existing = MakerCompany::query()->where('user_id', $userId)->first();
-        if (! CompanyRules::canApply($existing?->status)) {
-            throw new DomainException('이미 신청 중이거나 승인된 업체가 있습니다.', 422);
-        }
-
         $attrs = CompanyRules::applicantAttributes($payload);
         $attrs['user_id'] = $userId;
-        $attrs['status'] = 'pending';
-        $attrs['rejected_reason'] = null;
-        $attrs['hold_reason'] = null;
-        $attrs['reviewed_at'] = null;
+
+        if ($existing && $existing->status === 'approved') {
+            $attrs['status'] = 'approved';
+        } else {
+            $attrs['status'] = 'pending';
+            $attrs['rejected_reason'] = null;
+            $attrs['hold_reason'] = null;
+            $attrs['reviewed_at'] = null;
+        }
 
         if ($existing) {
             $existing->fill($attrs);
@@ -82,9 +77,6 @@ class CompanyService
         return CompanyPresenter::present($row, 'owner');
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function listPublic(): array
     {
         return $this->listingQuery()
@@ -96,9 +88,6 @@ class CompanyService
             ->all();
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function listAdmin(Request $request): array
     {
         $q = $this->listingQuery();
@@ -126,9 +115,6 @@ class CompanyService
         return CompanyPresenter::present($row, 'admin');
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function storeAdmin(array $payload): array
     {
         $userId = (int) $payload['user_id'];
@@ -151,9 +137,6 @@ class CompanyService
         return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function updateAdmin(int $id, array $payload): array
     {
         $row = MakerCompany::query()->findOrFail($id);
@@ -204,9 +187,6 @@ class CompanyService
         return CompanyPresenter::present($row, 'admin');
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function hold(int $id, array $payload): array
     {
         $row = MakerCompany::query()->findOrFail($id);
@@ -221,9 +201,6 @@ class CompanyService
         return CompanyPresenter::present($row, 'admin');
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function reject(int $id, array $payload): array
     {
         $row = MakerCompany::query()->findOrFail($id);
@@ -251,9 +228,6 @@ class CompanyService
         $row->delete();
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Builder<MakerCompany>
-     */
     public function listingQuery()
     {
         return MakerCompany::query()
@@ -280,10 +254,6 @@ class CompanyService
         }
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
     private function adminOnlyAttributes(array $payload, bool $creating): array
     {
         $out = [];
@@ -321,9 +291,6 @@ class CompanyService
         return $out;
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     private function hasJobTypeFlags(array $payload): bool
     {
         foreach ($payload as $key => $_) {
