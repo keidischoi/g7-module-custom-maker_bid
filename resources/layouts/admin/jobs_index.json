@@ -10,9 +10,7 @@
     "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
     "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
   },
-  "state": {
-    "filter": { "type": "", "status": "" }
-  },
+  "state": { "filter": { "type": "", "status": "" } },
   "data_sources": [
     {
       "id": "jobs",
@@ -22,10 +20,7 @@
       "auto_fetch": true,
       "auth_required": true,
       "refetchOnMount": true,
-      "params": {
-        "type": "{{_local.filter.type}}",
-        "status": "{{_local.filter.status}}"
-      },
+      "params": { "type": "{{_local.filter.type}}", "status": "{{_local.filter.status}}" },
       "fallback": { "data": [] }
     }
   ],
@@ -52,7 +47,7 @@
               { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "승인하면 견적요청(open) 상태로 공개 입찰됩니다. 취소·삭제. 보류는 공개 목록에 나오지 않습니다." },
+          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "승인=견적요청(open) 공개, 보류=공개 목록 숨김. 현재 상태 버튼은 색이 치며니다." },
           {
             "id": "filters",
             "type": "basic",
@@ -83,7 +78,7 @@
                     "props": {
                       "name": "status",
                       "value": "{{_local.filter.status}}",
-                      "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                      "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 px-3 py-1.5 text-sm",
                       "options": [
                         { "value": "", "label": "전체 상태" },
                         { "value": "hold", "label": "보류" },
@@ -105,10 +100,8 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "필터",
-                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
-                "actions": [
-                  { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
-                ]
+                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white" },
+                "actions": [{ "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }]
               }
             ]
           },
@@ -130,7 +123,7 @@
                     "id": "jmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
+                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1" },
                     "children": [
                       { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
                       { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}" }
@@ -140,56 +133,62 @@
                     "id": "jacts",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
+                    "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row items-center" },
                     "children": [
-                      { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
+                      { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border" }, "text": "상세/수정" },
                       {
                         "id": "approve",
                         "type": "basic",
                         "name": "Button",
                         "text": "승인",
-                        "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
-                        "actions": [
-                          {
-                            "type": "click",
-                            "handler": "apiCall",
-                            "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/approve",
-                            "params": { "method": "POST" },
-                            "confirm": "이 의뢰를 승인하고 견적요청(open)으로 공개할까요?",
-                            "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "승인했습니다. 견적요청(open) 상태입니다." } },
-                              { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
-                            ],
-                            "onError": [
-                              { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
-                            ]
-                          }
-                        ]
+                        "props": { "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border" },
+                        "actions": [{
+                          "type": "click", "handler": "apiCall", "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/approve",
+                          "params": { "method": "POST" },
+                          "confirm": "승인하여 견적요청(open)으로 공개할까요?",
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "승인했습니다." } },
+                            { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          ],
+                          "onError": [{ "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }]
+                        }]
+                      },
+                      {
+                        "id": "hold",
+                        "type": "basic",
+                        "name": "Button",
+                        "text": "보류",
+                        "props": { "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border" },
+                        "actions": [{
+                          "type": "click", "handler": "apiCall", "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/hold",
+                          "params": { "method": "POST" },
+                          "confirm": "이 의뢰를 보류할까요?",
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "보류했습니다." } },
+                            { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          ],
+                          "onError": [{ "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }]
+                        }]
                       },
                       {
                         "id": "cancel",
                         "type": "basic",
                         "name": "Button",
                         "text": "취소",
-                        "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
-                        "actions": [
-                          {
-                            "type": "click",
-                            "handler": "apiCall",
-                            "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/cancel",
-                            "params": { "method": "POST" },
-                            "confirm": "이 의뢰를 취소할까요?",
-                            "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "취소했습니다." } },
-                              { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
-                            ],
-                            "onError": [
-                              { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
-                            ]
-                          }
-                        ]
+                        "props": { "className": "px-3 py-1 text-sm rounded-lg border" },
+                        "actions": [{
+                          "type": "click", "handler": "apiCall", "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/cancel",
+                          "params": { "method": "POST" },
+                          "confirm": "취소할까요?",
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "취소했습니다." } },
+                            { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          ],
+                          "onError": [{ "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }]
+                        }]
                       },
                       {
                         "id": "del",
@@ -197,23 +196,17 @@
                         "name": "Button",
                         "text": "삭제",
                         "props": { "className": "px-3 py-1 text-sm rounded-lg text-red-600" },
-                        "actions": [
-                          {
-                            "type": "click",
-                            "handler": "apiCall",
-                            "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}",
-                            "params": { "method": "DELETE" },
-                            "confirm": "의뢰와 입찰을 삭제할까요?",
-                            "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                              { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
-                            ],
-                            "onError": [
-                              { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
-                            ]
-                          }
-                        ]
+                        "actions": [{
+                          "type": "click", "handler": "apiCall", "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}",
+                          "params": { "method": "DELETE" },
+                          "confirm": "삭제할까요?",
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
+                            { "handler": "refetchDataSource", "params": { "dataSourceId": "jobs" } }
+                          ],
+                          "onError": [{ "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }]
+                        }]
                       }
                     ]
                   }
