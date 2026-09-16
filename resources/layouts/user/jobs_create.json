@@ -60,7 +60,7 @@
     {
       "id": "types",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/job-types",
+      "endpoint": "/api/modules/custom-maker_bids/job-types",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -69,7 +69,7 @@
     {
       "id": "defaults",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/jobs/form-defaults",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/form-defaults",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -115,11 +115,11 @@
                 "name": "Div",
                 "props": { "className": "flex items-center gap-1 ml-auto flex-wrap" },
                 "children": [
-                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bid/new", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰서 작성" },
-                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
-                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
-                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bid/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
+                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰서 작성" },
+                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
+                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
+                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
                 ]
               }
             ]
@@ -454,10 +454,10 @@
                       "accept": ".jpg,.jpeg,.png,.gif,.webp",
                       "autoUpload": false,
                       "className": "cmb-order-uploader mt-1",
-                      "uploadTriggerEvent": "upload:maker_bid_images",
+                      "uploadTriggerEvent": "upload:maker_bids_images",
                       "apiEndpoints": {
-                        "upload": "/api/modules/custom-maker_bid/uploads",
-                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "upload": "/api/modules/custom-maker_bids/uploads",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
                         "reorder": ""
                       },
                       "uploadParams": {
@@ -494,10 +494,10 @@
                       "accept": ".zip,.tar,.gz,.tgz,.7z,.rar,.bz2,.xz",
                       "autoUpload": false,
                       "className": "cmb-order-uploader mt-1",
-                      "uploadTriggerEvent": "upload:maker_bid_archives",
+                      "uploadTriggerEvent": "upload:maker_bids_archives",
                       "apiEndpoints": {
-                        "upload": "/api/modules/custom-maker_bid/uploads",
-                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "upload": "/api/modules/custom-maker_bids/uploads",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
                         "reorder": ""
                       },
                       "uploadParams": {
@@ -690,19 +690,19 @@
                     "handler": "sequence",
                     "params": {
                       "actions": [
-                        { "handler": "emitEvent", "params": { "event": "upload:maker_bid_images" } },
-                        { "handler": "emitEvent", "params": { "event": "upload:maker_bid_archives" } },
+                        { "handler": "emitEvent", "params": { "event": "upload:maker_bids_images" } },
+                        { "handler": "emitEvent", "params": { "event": "upload:maker_bids_archives" } },
                         {
                           "handler": "apiCall",
                           "auth_required": true,
-                          "target": "/api/modules/custom-maker_bid/jobs",
+                          "target": "/api/modules/custom-maker_bids/jobs",
                           "params": {
                             "method": "POST",
                             "body": "{{_local.form}}"
                           },
                           "onSuccess": [
                             { "handler": "toast", "params": { "type": "success", "message": "의뢰가 등록되었습니다." } },
-                            { "handler": "navigate", "params": { "path": "/maker-bid/{{response.data.id || response.id}}" } }
+                            { "handler": "navigate", "params": { "path": "/maker-bids/{{response.data.id || response.id}}" } }
                           ],
                           "onError": [
                             { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }

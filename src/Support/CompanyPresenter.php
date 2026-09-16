@@ -97,6 +97,6 @@ class CompanyPresenter
             return null;
         }
 
-        return '/api/modules/custom-maker_bid/files/'.$hash;
+        return '/api/modules/custom-maker_bids/files/'.$hash;
     }
 }

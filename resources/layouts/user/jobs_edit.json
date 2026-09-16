@@ -86,7 +86,7 @@
     {
       "id": "job",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/jobs/{{route.id}}",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -142,7 +142,7 @@
     {
       "id": "types",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/job-types",
+      "endpoint": "/api/modules/custom-maker_bids/job-types",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -153,7 +153,7 @@
     {
       "id": "defaults",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/jobs/form-defaults",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/form-defaults",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -233,7 +233,7 @@
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bid/new",
+                      "href": "/maker-bids/new",
                       "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
                     },
                     "text": "의뢰서 작성"
@@ -243,7 +243,7 @@
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bid",
+                      "href": "/maker-bids",
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
                     "text": "의뢰목록"
@@ -253,7 +253,7 @@
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bid/bids",
+                      "href": "/maker-bids/bids",
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
                     "text": "입찰현황"
@@ -263,7 +263,7 @@
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bid/history",
+                      "href": "/maker-bids/history",
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
                     "text": "이력"
@@ -273,7 +273,7 @@
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bid/company",
+                      "href": "/maker-bids/company",
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400"
                     },
                     "text": "입찰자 등록"
@@ -1276,10 +1276,10 @@
                       "accept": ".jpg,.jpeg,.png,.gif,.webp",
                       "autoUpload": false,
                       "className": "cmb-order-uploader mt-1",
-                      "uploadTriggerEvent": "upload:maker_bid_images",
+                      "uploadTriggerEvent": "upload:maker_bids_images",
                       "apiEndpoints": {
-                        "upload": "/api/modules/custom-maker_bid/jobs/{{route.id}}/files",
-                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
                         "reorder": ""
                       },
                       "uploadParams": {
@@ -1328,10 +1328,10 @@
                       "accept": ".zip,.tar,.gz,.tgz,.7z,.rar,.bz2,.xz",
                       "autoUpload": false,
                       "className": "cmb-order-uploader mt-1",
-                      "uploadTriggerEvent": "upload:maker_bid_archives",
+                      "uploadTriggerEvent": "upload:maker_bids_archives",
                       "apiEndpoints": {
-                        "upload": "/api/modules/custom-maker_bid/jobs/{{route.id}}/files",
-                        "delete": "/api/modules/custom-maker_bid/uploads/:id",
+                        "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
                         "reorder": ""
                       },
                       "uploadParams": {
@@ -1813,19 +1813,19 @@
                         {
                           "handler": "emitEvent",
                           "params": {
-                            "event": "upload:maker_bid_images"
+                            "event": "upload:maker_bids_images"
                           }
                         },
                         {
                           "handler": "emitEvent",
                           "params": {
-                            "event": "upload:maker_bid_archives"
+                            "event": "upload:maker_bids_archives"
                           }
                         },
                         {
                           "handler": "apiCall",
                           "auth_required": true,
-                          "target": "/api/modules/custom-maker_bid/jobs/{{route.id}}",
+                          "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
                           "params": {
                             "method": "PATCH",
                             "body": "{{_local.form}}"
@@ -1841,7 +1841,7 @@
                             {
                               "handler": "navigate",
                               "params": {
-                                "path": "/maker-bid/{{response.data.id || response.id || route.id}}"
+                                "path": "/maker-bids/{{response.data.id || response.id || route.id}}"
                               }
                             }
                           ],
