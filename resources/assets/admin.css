@@ -533,7 +533,7 @@ body:has(.cmb-admin-select[data-state="open"]) [data-radix-select-content],
 body:has(.cmb-admin [role="combobox"][data-state="open"]) [data-radix-select-content],
 body:has(.cmb-admin [role="combobox"][aria-expanded="true"]) [data-radix-select-content] {
   width: max-content !important;
-  min-width: max(var(--radix-select-trigger-width, 12rem), max-content) !important;
+  min-width: var(--radix-select-trigger-width, 12rem) !important;
   max-width: min(90vw, 36rem) !important;
   box-sizing: border-box;
   padding-inline: 0.35rem;
