@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Concerns;
+namespace Modules\Custom\MakerBids\Http\Concerns;
 
 use Illuminate\Http\JsonResponse;
-use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBids\Support\DomainException;
 
 trait RespondsWithDomainErrors
 {

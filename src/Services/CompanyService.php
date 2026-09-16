@@ -1,15 +1,15 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Http\Request;
-use Modules\Custom\MakerBid\Models\MakerBid;
-use Modules\Custom\MakerBid\Models\MakerCompany;
-use Modules\Custom\MakerBid\Models\MakerJobFile;
-use Modules\Custom\MakerBid\Support\CompanyPresenter;
-use Modules\Custom\MakerBid\Support\CompanyRules;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\UploadRules;
+use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
+use Modules\Custom\MakerBids\Support\CompanyPresenter;
+use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\UploadRules;
 
 class CompanyService
 {

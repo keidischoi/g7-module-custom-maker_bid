@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use Modules\Custom\MakerBid\Support\BidRules;
-use Modules\Custom\MakerBid\Support\JobPresenter;
-use Modules\Custom\MakerBid\Support\JobRules;
-use Modules\Custom\MakerBid\Support\PrivacyRules;
-use Modules\Custom\MakerBid\Support\TypeCatalog;
-use Modules\Custom\MakerBid\Support\TypeRules;
-use Modules\Custom\MakerBid\Support\UploadRules;
-use Modules\Custom\MakerBid\Models\MakerJobFile;
+use Modules\Custom\MakerBids\Support\BidRules;
+use Modules\Custom\MakerBids\Support\JobPresenter;
+use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\PrivacyRules;
+use Modules\Custom\MakerBids\Support\TypeCatalog;
+use Modules\Custom\MakerBids\Support\TypeRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
 
 require __DIR__.'/bootstrap.php';
 

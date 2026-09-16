@@ -1,9 +1,9 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
-use Modules\Custom\MakerBid\Models\MakerModuleSetting;
-use Modules\Custom\MakerBid\Support\SettingsRules;
+use Modules\Custom\MakerBids\Models\MakerModuleSetting;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class MakerBidSettingsService
 {

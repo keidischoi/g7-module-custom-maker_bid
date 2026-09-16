@@ -3,7 +3,7 @@
   "layout_name": "types_index",
   "extends": "_admin_base",
   "meta": { "title": "유형 관리" },
-  "permissions": ["custom-maker_bid.jobs.read"],
+  "permissions": ["custom-maker_bids.jobs.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -37,7 +37,7 @@
     {
       "id": "types",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/job-types",
+      "endpoint": "/api/modules/custom-maker_bids/admin/job-types",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -60,12 +60,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n5", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
+              { "id": "n5", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "의뢰 유형을 추가·수정·정렬·활성화합니다. 설치 시 기본 6종이 시드됩니다. 디자인 전용 유형은 주소가 필수가 아닙니다." },
@@ -172,7 +172,7 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/job-types",
+                    "target": "/api/modules/custom-maker_bids/admin/job-types",
                     "params": { "method": "POST", "body": "{{_local.create}}" },
                     "onSuccess": [
                       { "handler": "toast", "params": { "type": "success", "message": "유형을 등록했습니다." } },
@@ -227,7 +227,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}/move",
+                            "target": "/api/modules/custom-maker_bids/admin/job-types/{{$item.id}}/move",
                             "params": { "method": "POST", "body": { "direction": "up" } },
                             "onSuccess": [
                               { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
@@ -249,7 +249,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}/move",
+                            "target": "/api/modules/custom-maker_bids/admin/job-types/{{$item.id}}/move",
                             "params": { "method": "POST", "body": { "direction": "down" } },
                             "onSuccess": [
                               { "handler": "refetchDataSource", "params": { "dataSourceId": "types" } }
@@ -271,7 +271,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}",
+                            "target": "/api/modules/custom-maker_bids/admin/job-types/{{$item.id}}",
                             "params": { "method": "PATCH", "body": { "is_enabled": "{{!$item.is_enabled}}" } },
                             "onSuccess": [
                               { "handler": "toast", "params": { "type": "success", "message": "유형 상태를 바꿨습니다." } },
@@ -319,7 +319,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bid/admin/job-types/{{$item.id}}",
+                            "target": "/api/modules/custom-maker_bids/admin/job-types/{{$item.id}}",
                             "params": { "method": "DELETE" },
                             "confirm": "이 유형을 삭제할까요?",
                             "onSuccess": [
@@ -442,7 +442,7 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/job-types/{{_local.edit.id}}",
+                    "target": "/api/modules/custom-maker_bids/admin/job-types/{{_local.edit.id}}",
                     "params": { "method": "PATCH", "body": "{{_local.edit}}" },
                     "onSuccess": [
                       { "handler": "toast", "params": { "type": "success", "message": "유형을 수정했습니다." } },

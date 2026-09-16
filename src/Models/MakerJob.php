@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Models;
+namespace Modules\Custom\MakerBids\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Modules\Custom\MakerBid\Support\JobRules;
+use Modules\Custom\MakerBids\Support\JobRules;
 
 class MakerJob extends Model
 {

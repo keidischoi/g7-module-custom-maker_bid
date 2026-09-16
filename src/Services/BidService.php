@@ -1,17 +1,17 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Services;
+namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Modules\Custom\MakerBid\Models\MakerBid;
-use Modules\Custom\MakerBid\Models\MakerCompany;
-use Modules\Custom\MakerBid\Models\MakerJob;
-use Modules\Custom\MakerBid\Support\BidRules;
-use Modules\Custom\MakerBid\Support\CompanyPresenter;
-use Modules\Custom\MakerBid\Support\CompanyRules;
-use Modules\Custom\MakerBid\Support\DomainException;
-use Modules\Custom\MakerBid\Support\JobRules;
+use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Support\BidRules;
+use Modules\Custom\MakerBids\Support\CompanyPresenter;
+use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\DomainException;
+use Modules\Custom\MakerBids\Support\JobRules;
 
 class BidService
 {

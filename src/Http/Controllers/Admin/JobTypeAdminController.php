@@ -1,15 +1,15 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
+namespace Modules\Custom\MakerBids\Http\Controllers\Admin;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
-use Modules\Custom\MakerBid\Http\Requests\Admin\StoreJobTypeRequest;
-use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateJobTypeRequest;
-use Modules\Custom\MakerBid\Services\JobTypeService;
-use Modules\Custom\MakerBid\Support\DomainException;
+use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
+use Modules\Custom\MakerBids\Http\Requests\Admin\StoreJobTypeRequest;
+use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateJobTypeRequest;
+use Modules\Custom\MakerBids\Services\JobTypeService;
+use Modules\Custom\MakerBids\Support\DomainException;
 
 class JobTypeAdminController extends Controller
 {

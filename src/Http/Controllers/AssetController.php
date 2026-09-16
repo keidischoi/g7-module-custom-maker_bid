@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers;
+namespace Modules\Custom\MakerBids\Http\Controllers;
 
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;

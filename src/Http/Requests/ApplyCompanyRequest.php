@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Requests;
+namespace Modules\Custom\MakerBids\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Custom\MakerBid\Http\Concerns\FlattensValidationErrors;
-use Modules\Custom\MakerBid\Support\BlankToNull;
-use Modules\Custom\MakerBid\Support\CompanyRules;
+use Modules\Custom\MakerBids\Http\Concerns\FlattensValidationErrors;
+use Modules\Custom\MakerBids\Support\BlankToNull;
+use Modules\Custom\MakerBids\Support\CompanyRules;
 
 class ApplyCompanyRequest extends FormRequest
 {

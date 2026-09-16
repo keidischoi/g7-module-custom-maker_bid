@@ -3,7 +3,7 @@
   "layout_name": "jobs_show",
   "extends": "_admin_base",
   "meta": { "title": "의뢰 상세" },
-  "permissions": ["custom-maker_bid.jobs.read"],
+  "permissions": ["custom-maker_bids.jobs.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -55,7 +55,7 @@
     {
       "id": "job",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}",
+      "endpoint": "/api/modules/custom-maker_bids/admin/jobs/{{route.id}}",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -109,7 +109,7 @@
     {
       "id": "types",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bid/admin/job-types",
+      "endpoint": "/api/modules/custom-maker_bids/admin/job-types",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -132,12 +132,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
             ]
           },
           {
@@ -170,7 +170,7 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}/hold",
+                    "target": "/api/modules/custom-maker_bids/admin/jobs/{{route.id}}/hold",
                     "params": { "method": "POST" },
                     "confirm": "이 의뢰를 보류할까요?",
                     "onSuccess": [
@@ -194,7 +194,7 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}/cancel",
+                    "target": "/api/modules/custom-maker_bids/admin/jobs/{{route.id}}/cancel",
                     "params": { "method": "POST" },
                     "confirm": "이 의뢰를 취소할까요?",
                     "onSuccess": [
@@ -218,12 +218,12 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}",
+                    "target": "/api/modules/custom-maker_bids/admin/jobs/{{route.id}}",
                     "params": { "method": "DELETE" },
                     "confirm": "의뢰와 입찰을 삭제할까요?",
                     "onSuccess": [
                       { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                      { "handler": "navigate", "params": { "path": "/admin/maker-bid" } }
+                      { "handler": "navigate", "params": { "path": "/admin/maker-bids" } }
                     ],
                     "onError": [
                       { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
@@ -462,7 +462,7 @@
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
-                    "target": "/api/modules/custom-maker_bid/admin/jobs/{{route.id}}",
+                    "target": "/api/modules/custom-maker_bids/admin/jobs/{{route.id}}",
                     "params": { "method": "PATCH", "body": "{{_local.form}}" },
                     "onSuccess": [
                       { "handler": "toast", "params": { "type": "success", "message": "의뢰를 저장했습니다." } },
@@ -520,7 +520,7 @@
                         "name": "Div",
                         "props": { "className": "cmb-admin-row-actions" },
                         "children": [
-                          { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids/{{$bid.id}}" }, "text": "수정" }
+                          { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids/{{$bid.id}}" }, "text": "수정" }
                         ]
                       }
                     ]

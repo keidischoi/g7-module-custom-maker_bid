@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Controllers\Admin;
+namespace Modules\Custom\MakerBids\Http\Controllers\Admin;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Modules\Custom\MakerBid\Http\Requests\Admin\UpdateSettingsRequest;
-use Modules\Custom\MakerBid\Services\MakerBidSettingsService;
-use Modules\Custom\MakerBid\Support\SettingsRules;
+use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateSettingsRequest;
+use Modules\Custom\MakerBids\Services\MakerBidSettingsService;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class SettingsAdminController extends Controller
 {

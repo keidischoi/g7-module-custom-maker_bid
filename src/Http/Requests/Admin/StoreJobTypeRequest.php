@@ -1,12 +1,12 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Requests\Admin;
+namespace Modules\Custom\MakerBids\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Custom\MakerBid\Http\Concerns\FlattensValidationErrors;
-use Modules\Custom\MakerBid\Support\BlankToNull;
-use Modules\Custom\MakerBid\Support\BooleanishFields;
-use Modules\Custom\MakerBid\Support\TypeRules;
+use Modules\Custom\MakerBids\Http\Concerns\FlattensValidationErrors;
+use Modules\Custom\MakerBids\Support\BlankToNull;
+use Modules\Custom\MakerBids\Support\BooleanishFields;
+use Modules\Custom\MakerBids\Support\TypeRules;
 
 class StoreJobTypeRequest extends FormRequest
 {

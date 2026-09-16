@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\Custom\MakerBid\Http\Requests;
+namespace Modules\Custom\MakerBids\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Custom\MakerBid\Support\BidRules;
-use Modules\Custom\MakerBid\Support\BlankToNull;
+use Modules\Custom\MakerBids\Support\BidRules;
+use Modules\Custom\MakerBids\Support\BlankToNull;
 
 class UpdateBidRequest extends FormRequest
 {
