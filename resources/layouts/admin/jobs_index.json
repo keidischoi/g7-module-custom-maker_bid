@@ -3,7 +3,7 @@
   "layout_name": "jobs_index",
   "extends": "_admin_base",
   "meta": { "title": "의뢰 목록" },
-  "permissions": ["custom-maker_bids.jobs.read"],
+  "permissions": ["custom-maker_bid.jobs.read"],
   "errorHandling": {
     "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
     "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
@@ -17,7 +17,7 @@
     {
       "id": "jobs",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/admin/jobs",
+      "endpoint": "/api/modules/custom-maker_bid/admin/jobs",
       "method": "GET",
       "auto_fetch": true,
       "auth_required": true,
@@ -44,12 +44,12 @@
             "name": "Div",
             "props": { "className": "cmb-admin-nav text-sm" },
             "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
+              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid" }, "text": "의뢰 목록" },
+              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/types" }, "text": "유형 관리" },
+              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/bids" }, "text": "입찰 관리" },
+              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/companies" }, "text": "회사 목록" },
+              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" },
+              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/settings" }, "text": "설정" }
             ]
           },
           { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "목록에서 상세를 열어 필드를 수정할 수 있습니다. 보류·취소·삭제. 유형은 유형 관리. 상태 보류 / 의뢰 / 견적요청 / 낙찰 / 완료 / 취소. 보류는 공개 목록에 나오지 않습니다." },
@@ -130,7 +130,7 @@
                     "name": "Div",
                     "props": { "className": "cmb-admin-row-main" },
                     "children": [
-                      { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
+                      { "id": "jlink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}", "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.title}}" },
                       { "id": "jmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}" }
                     ]
                   },
@@ -140,7 +140,7 @@
                     "name": "Div",
                     "props": { "className": "cmb-admin-row-actions" },
                     "children": [
-                      { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
+                      { "id": "jedit", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/jobs/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
                       {
                         "id": "hold",
                         "type": "basic",
@@ -152,7 +152,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/hold",
+                            "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}/hold",
                             "params": { "method": "POST" },
                             "confirm": "이 의뢰를 보류할까요?",
                             "onSuccess": [
@@ -176,7 +176,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}/cancel",
+                            "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}/cancel",
                             "params": { "method": "POST" },
                             "confirm": "이 의뢰를 취소할까요?",
                             "onSuccess": [
@@ -200,7 +200,7 @@
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/jobs/{{$item.id}}",
+                            "target": "/api/modules/custom-maker_bid/admin/jobs/{{$item.id}}",
                             "params": { "method": "DELETE" },
                             "confirm": "의뢰와 입찰을 삭제할까요?",
                             "onSuccess": [
@@ -224,3 +224,4 @@
     ]
   }
 }
+
