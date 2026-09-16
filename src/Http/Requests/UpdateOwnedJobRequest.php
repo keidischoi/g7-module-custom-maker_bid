@@ -22,7 +22,12 @@ class UpdateOwnedJobRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['form']);
-        $this->coerceSlugFields(['type', 'status', 'audience', 'title', 'description']);
+        $this->coerceSlugFields([
+            'type', 'status', 'audience', 'title', 'description',
+            'contact_name', 'contact_phone', 'contact_hours', 'contact_email',
+            'zipcode', 'address', 'address_detail',
+            'manager_name', 'manager_phone', 'manager_email',
+        ]);
         $this->nullBlankFields([
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
