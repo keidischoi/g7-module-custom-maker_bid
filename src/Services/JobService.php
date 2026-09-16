@@ -4,9 +4,11 @@ namespace Modules\Custom\MakerBid\Services;
 
 use Illuminate\Http\Request;
 use Modules\Custom\MakerBid\Models\MakerBid;
+use Modules\Custom\MakerBid\Models\MakerCompany;
 use Modules\Custom\MakerBid\Models\MakerJob;
 use Modules\Custom\MakerBid\Support\AwardRules;
 use Modules\Custom\MakerBid\Support\BidRules;
+use Modules\Custom\MakerBid\Support\CompanyRules;
 use Modules\Custom\MakerBid\Support\DomainException;
 use Modules\Custom\MakerBid\Support\JobPresenter;
 use Modules\Custom\MakerBid\Support\JobRules;
@@ -39,6 +41,19 @@ class JobService
         }
 
         $ctx = $this->viewerFromRequest($request);
+        if (! $ctx['isAdmin']) {
+            $allowed = JobRules::visibleAudiencesFor(
+                $ctx['isMember'],
+                $ctx['hasApprovedCompany'],
+                $ctx['companyKind'],
+            );
+            $q->where(function ($qq) use ($allowed, $ctx) {
+                $qq->whereIn('audience', $allowed)->orWhereNull('audience');
+                if ($ctx['userId'] > 0) {
+                    $qq->orWhere('user_id', $ctx['userId']);
+                }
+            });
+        }
 
         return $q->limit(100)->get()->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
     }
@@ -60,9 +75,10 @@ class JobService
     }
 
     /**
+     * @param  array<string, mixed>  $ctx
      * @return array<string, mixed>
      */
-    public function viewerContext(int $userId, MakerJob $job, bool $isAdmin = false): array
+    public function viewerContext(int $userId, MakerJob $job, bool $isAdmin = false, array $ctx = []): array
     {
         $open = $job->isOpen();
         $isOwner = BidRules::isOwnJob($userId, $job->user_id);
@@ -80,12 +96,20 @@ class JobService
             $awardedUserId,
             $isAdmin,
         );
+        $hasApprovedCompany = (bool) ($ctx['hasApprovedCompany'] ?? false);
+        $companyKind = $ctx['companyKind'] ?? null;
+        $canBid = $userId > 0 && ! $isOwner && $open && JobRules::canBidAudience(
+            $job->audience ?? 'all',
+            true,
+            $hasApprovedCompany,
+            $companyKind,
+        );
 
         return [
             'authenticated' => $userId > 0,
             'is_owner' => $isOwner,
             'is_open' => $open,
-            'can_bid' => $userId > 0 && ! $isOwner && $open,
+            'can_bid' => $canBid,
             'can_award' => AwardRules::canAward($userId, $job->user_id) && $open,
             'can_update_bid' => $canUpdate,
             'can_edit' => $isOwner && JobRules::isListingStatus((string) $job->status),
@@ -100,9 +124,20 @@ class JobService
      */
     public function findPublic(int $id, Request $request): array
     {
-        $job = MakerJob::query()->with(['bids', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
         $ctx = $this->viewerFromRequest($request);
         if (JobRules::isHiddenFromPublic((string) $job->status) && ! $this->canSeeHold($job, $ctx)) {
+            throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
+        }
+        $isOwner = $ctx['userId'] > 0 && (int) $job->user_id === $ctx['userId'];
+        if (! JobRules::canViewAudience(
+            $job->audience ?? 'all',
+            $isOwner,
+            $ctx['isAdmin'],
+            $ctx['isMember'],
+            $ctx['hasApprovedCompany'],
+            $ctx['companyKind'],
+        ) && ! $this->hasBidOnJob($job, $ctx['userId'])) {
             throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
         }
 
@@ -202,7 +237,7 @@ class JobService
      */
     public function findAdmin(int $id): array
     {
-        $job = MakerJob::query()->with(['bids', 'jobType', 'files'])->withCount('bids')->findOrFail($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files'])->withCount('bids')->findOrFail($id);
 
         return $this->present($job, ['userId' => 0, 'isAdmin' => true], true, true);
     }
@@ -263,19 +298,34 @@ class JobService
 
     public function rawFind(int $id): MakerJob
     {
-        return MakerJob::query()->with(['bids', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
+        return MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
     }
 
     /**
-     * @return array{userId:int,isAdmin:bool}
+     * @return array{userId:int,isAdmin:bool,isMember:bool,hasApprovedCompany:bool,companyKind:?string}
      */
     public function viewerFromRequest(Request $request): array
     {
         $user = $request->user() ?? (function_exists('auth') ? auth('sanctum')->user() : null);
+        $userId = $user ? (int) $user->id : 0;
+        $company = null;
+        if ($userId > 0) {
+            try {
+                $company = MakerCompany::query()
+                    ->where('user_id', $userId)
+                    ->where('status', 'approved')
+                    ->first();
+            } catch (\Throwable) {
+                $company = null;
+            }
+        }
 
         return [
-            'userId' => $user ? (int) $user->id : 0,
+            'userId' => $userId,
             'isAdmin' => $this->isAdminUser($user),
+            'isMember' => $userId > 0,
+            'hasApprovedCompany' => CompanyRules::isApproved($company?->status),
+            'companyKind' => $company?->kind,
         ];
     }
 
@@ -337,6 +387,7 @@ class JobService
             'budget_max' => $max,
             'budget' => $max,
             'closes_at' => $payload['closes_at'] ?? null,
+            'audience' => JobRules::normalizeAudience($payload['audience'] ?? 'all'),
             'rush_fee_enabled' => $rush,
             'rush_deadline' => $rush ? ($payload['rush_deadline'] ?? null) : null,
             'schedule_premium_enabled' => ! empty($payload['schedule_premium_enabled']),
@@ -345,6 +396,7 @@ class JobService
             'size_d' => null,
             'size_h' => null,
             'provided_extensions' => $this->extensionsForType($payload, $typeSlug),
+            'ownership_requested' => ! empty($payload['ownership_requested']),
             'revision_enabled' => $revision,
             'revision_count' => $revision ? $this->nullableInt($payload['revision_count'] ?? null) : null,
             'revision_cost' => $revision ? $this->nullableInt($payload['revision_cost'] ?? null) : null,
@@ -377,7 +429,7 @@ class JobService
 
         if (! $creating) {
             $attrs = array_filter($attrs, static function (mixed $value, string $key) use ($payload): bool {
-                if (in_array($key, ['rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'provided_extensions'], true)) {
+                if (in_array($key, ['rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'provided_extensions', 'ownership_requested'], true)) {
                     return array_key_exists($key, $payload)
                         || array_key_exists('ext_stl', $payload)
                         || array_key_exists('type', $payload)
@@ -426,6 +478,7 @@ class JobService
                     'manager_email' => 'manager_email',
                     'upload_token' => 'upload_token',
                     'status' => 'status',
+                    'audience' => 'audience',
                 ];
 
                 return isset($map[$key]) && array_key_exists($map[$key], $payload);
@@ -466,7 +519,7 @@ class JobService
      */
     private function ownerContext(int $userId): array
     {
-        return ['userId' => $userId, 'isAdmin' => false];
+        return ['userId' => $userId, 'isAdmin' => false, 'isMember' => true, 'hasApprovedCompany' => false, 'companyKind' => null];
     }
 
     /**
@@ -479,6 +532,15 @@ class JobService
         }
 
         return $ctx['userId'] > 0 && (int) $job->user_id === $ctx['userId'];
+    }
+
+    private function hasBidOnJob(MakerJob $job, int $userId): bool
+    {
+        if ($userId <= 0) {
+            return false;
+        }
+
+        return MakerBid::query()->where('job_id', $job->id)->where('user_id', $userId)->exists();
     }
 
     private function awardedBidderUserId(MakerJob $job): ?int

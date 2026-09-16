@@ -8,7 +8,13 @@ class UploadRules
 
     public const COLLECTION_ARCHIVES = 'archives';
 
-    public const COLLECTIONS = [self::COLLECTION_IMAGES, self::COLLECTION_ARCHIVES];
+    public const COLLECTION_LOGOS = 'logos';
+
+    public const COLLECTIONS = [self::COLLECTION_IMAGES, self::COLLECTION_ARCHIVES, self::COLLECTION_LOGOS];
+
+    public const LOGO_MAX_PX = 512;
+
+    public const LOGO_MAX_FILES = 1;
 
     public const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
@@ -22,7 +28,7 @@ class UploadRules
 
     public const ARCHIVE_MAX_MB = 50;
 
-    public const PROVIDED_EXTENSIONS = ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX'];
+    public const PROVIDED_EXTENSIONS = ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX', 'DWG'];
 
     public static function isAllowedCollection(string $collection): bool
     {
@@ -31,9 +37,16 @@ class UploadRules
 
     public static function extensionsFor(string $collection): array
     {
-        return $collection === self::COLLECTION_ARCHIVES
-            ? self::ARCHIVE_EXTENSIONS
-            : self::IMAGE_EXTENSIONS;
+        if ($collection === self::COLLECTION_ARCHIVES) {
+            return self::ARCHIVE_EXTENSIONS;
+        }
+
+        return self::IMAGE_EXTENSIONS;
+    }
+
+    public static function isImageCollection(string $collection): bool
+    {
+        return $collection === self::COLLECTION_IMAGES || $collection === self::COLLECTION_LOGOS;
     }
 
     public static function maxKilobytes(string $collection): int
@@ -41,6 +54,11 @@ class UploadRules
         $mb = $collection === self::COLLECTION_ARCHIVES ? self::ARCHIVE_MAX_MB : self::IMAGE_MAX_MB;
 
         return $mb * 1024;
+    }
+
+    public static function isWithinLogoDimensions(int $width, int $height): bool
+    {
+        return $width > 0 && $height > 0 && $width <= self::LOGO_MAX_PX && $height <= self::LOGO_MAX_PX;
     }
 
     public static function isAllowedExtension(string $collection, string $filename): bool

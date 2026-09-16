@@ -35,9 +35,9 @@ class MakerJobType extends Model
     public function toOptionArray(): array
     {
         return [
-            'id' => (int) $this->id,
             'value' => (string) $this->slug,
             'label' => (string) $this->name,
+            'id' => (int) $this->id,
             'slug' => (string) $this->slug,
             'name' => (string) $this->name,
             'description' => $this->description,

@@ -28,8 +28,8 @@ class UpdateJobRequest extends FormRequest
             'manager_name', 'manager_phone', 'manager_email',
         ]);
         $this->coerceBooleanFields([
-            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled',
-            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx',
+            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',
+            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg',
         ]);
         if ($this->exists('sizes')) {
             $this->merge(['sizes' => JobRules::decodeSizesInput($this->input('sizes'))]);

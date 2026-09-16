@@ -51,6 +51,8 @@ class JobPresenter
             'budget_label' => JobRules::budgetLabel($job->budget_min, $job->budget_max, $job->budget),
             'status' => (string) $job->status,
             'status_label' => JobRules::statusLabel((string) $job->status),
+            'audience' => JobRules::normalizeAudience($job->audience ?? 'all'),
+            'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
             'awarded_bid_id' => $job->awarded_bid_id !== null ? (int) $job->awarded_bid_id : null,
             'closes_at' => optional($job->closes_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('closes_at'),
             'rush_fee_enabled' => (bool) $job->rush_fee_enabled,
@@ -79,6 +81,15 @@ class JobPresenter
                 $job->size_h,
             ),
             'provided_extensions' => is_array($job->provided_extensions) ? $job->provided_extensions : [],
+            'ext_stl' => in_array('STL', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_3mf' => in_array('3MF', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_obj' => in_array('OBJ', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_step' => in_array('STEP', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_stp' => in_array('STP', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_gcode' => in_array('GCODE', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_fbx' => in_array('FBX', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_dwg' => in_array('DWG', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ownership_requested' => (bool) $job->ownership_requested,
             'revision_enabled' => (bool) $job->revision_enabled,
             'revision_count' => $job->revision_count,
             'revision_cost' => $job->revision_cost,
@@ -102,7 +113,13 @@ class JobPresenter
         }
 
         if ($includeBids) {
-            $payload['bids'] = $job->relationLoaded('bids') ? $job->bids : [];
+            $bids = $job->relationLoaded('bids') ? $job->bids : collect();
+            $sorted = $bids->sort(static function ($a, $b): int {
+                $cmp = CompanyRules::compareListing($a->company ?? null, $b->company ?? null);
+
+                return $cmp !== 0 ? $cmp : ((int) $b->id <=> (int) $a->id);
+            })->values();
+            $payload['bids'] = $sorted->map(static fn ($bid) => CompanyPresenter::presentBid($bid))->all();
         }
 
         return $payload;

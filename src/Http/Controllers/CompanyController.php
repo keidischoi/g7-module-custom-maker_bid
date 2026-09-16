@@ -18,6 +18,16 @@ class CompanyController extends Controller
         private readonly CompanyService $companies,
     ) {}
 
+    public function index(): JsonResponse
+    {
+        return response()->json(['data' => $this->companies->listPublic()]);
+    }
+
+    public function formDefaults(Request $request): JsonResponse
+    {
+        return response()->json(['data' => $this->companies->formDefaults($request->user())]);
+    }
+
     public function store(ApplyCompanyRequest $request): JsonResponse
     {
         try {
@@ -32,9 +42,6 @@ class CompanyController extends Controller
     public function me(Request $request): JsonResponse
     {
         $row = $this->companies->mine((int) $request->user()->id);
-        if ($row === null) {
-            return response()->json(['data' => null]);
-        }
 
         return response()->json(['data' => $row]);
     }

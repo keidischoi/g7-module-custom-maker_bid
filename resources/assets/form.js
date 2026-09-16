@@ -1,10 +1,10 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bid/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.5.3';
+  var FORM_CSS = '/api/modules/custom-maker_bid/assets/form.css?v=0.6.0';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
-  var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx'];
+  var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
   var TYPE_FALLBACK = [
     { value: 'modeling_3d', slug: 'modeling_3d', label: '3D 모델링', name: '3D 모델링', requires_address: false, is_design_only: true, includes_modeling: true },
     { value: 'print_3d', slug: 'print_3d', label: '3D 출력 대행', name: '3D 출력 대행', requires_address: true, is_design_only: false, includes_modeling: false },
@@ -34,27 +34,546 @@
     dispatch('setState', params);
   }
 
+  function g7Get(path) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        return window.G7Core.state.get(path);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function extractTypesList(body) {
+    if (!body) {
+      return [];
+    }
+    if (Object.prototype.toString.call(body) === '[object Array]') {
+      return body;
+    }
+    var d = body.data;
+    if (Object.prototype.toString.call(d) === '[object Array]') {
+      return d;
+    }
+    if (d && Object.prototype.toString.call(d.data) === '[object Array]') {
+      return d.data;
+    }
+    if (d && Object.prototype.toString.call(d.types) === '[object Array]') {
+      return d.types;
+    }
+    if (Object.prototype.toString.call(body.types) === '[object Array]') {
+      return body.types;
+    }
+    return [];
+  }
+
+  function typeToken(row) {
+    if (row == null) {
+      return '';
+    }
+    if (typeof row !== 'object') {
+      return String(row);
+    }
+    if (row.value != null && String(row.value).trim() !== '') {
+      return String(row.value);
+    }
+    if (row.slug != null && String(row.slug).trim() !== '') {
+      return String(row.slug);
+    }
+    if (row.id != null && String(row.id).trim() !== '') {
+      return String(row.id);
+    }
+    return '';
+  }
+
+  function typeLabelOf(row, fallback) {
+    if (row && typeof row === 'object') {
+      return String(row.label || row.name || fallback || typeToken(row) || '');
+    }
+    return String(fallback || row || '');
+  }
+
+  function setNativeValue(el, value) {
+    if (!el) {
+      return;
+    }
+    var tag = (el.tagName || '').toUpperCase();
+    if (el.type === 'file' || el.type === 'checkbox' || el.type === 'radio') {
+      return;
+    }
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+      try {
+        el.value = value;
+      } catch (e) {}
+      return;
+    }
+    var proto =
+      tag === 'TEXTAREA'
+        ? window.HTMLTextAreaElement.prototype
+        : tag === 'SELECT'
+          ? window.HTMLSelectElement.prototype
+          : window.HTMLInputElement.prototype;
+    var desc = proto && Object.getOwnPropertyDescriptor(proto, 'value');
+    if (desc && desc.set) {
+      desc.set.call(el, value);
+    } else {
+      el.value = value;
+    }
+    try {
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch (e2) {}
+  }
+
+  function firePointerClick(el) {
+    if (!el) {
+      return;
+    }
+    var opts = { bubbles: true, cancelable: true, view: window, buttons: 1, composed: true };
+    try {
+      if (window.PointerEvent) {
+        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+      }
+    } catch (e) {}
+    try {
+      el.dispatchEvent(new MouseEvent('mousedown', opts));
+    } catch (e2) {}
+    try {
+      if (window.PointerEvent) {
+        el.dispatchEvent(new PointerEvent('pointerup', opts));
+      }
+    } catch (e3) {}
+    try {
+      el.dispatchEvent(new MouseEvent('mouseup', opts));
+    } catch (e4) {}
+    try {
+      el.dispatchEvent(new MouseEvent('click', opts));
+    } catch (e5) {}
+    try {
+      if (typeof el.click === 'function') {
+        el.click();
+      }
+    } catch (e6) {}
+  }
+
   function fillNamed(name, value) {
     var nodes = document.querySelectorAll('[name="' + name + '"]');
     var i;
+    var el;
     for (i = 0; i < nodes.length; i++) {
-      nodes[i].value = value;
-      try {
-        nodes[i].dispatchEvent(new Event('input', { bubbles: true }));
-        nodes[i].dispatchEvent(new Event('change', { bubbles: true }));
-      } catch (e) {}
+      el = nodes[i];
+      if (el.type === 'checkbox' || el.type === 'radio' || el.type === 'file') {
+        continue;
+      }
+      setNativeValue(el, value);
     }
   }
 
+  function localFormKey() {
+    if (document.querySelector('[data-cmb-company-form]')) {
+      return 'company';
+    }
+    return 'form';
+  }
+
+  function harvestNamedFields() {
+    var prefix = localFormKey();
+    var map = {};
+    var nodes = document.querySelectorAll('.cmb-order-card [name]');
+    var i;
+    var el;
+    var name;
+    var tag;
+    for (i = 0; i < nodes.length; i++) {
+      el = nodes[i];
+      name = el.getAttribute('name');
+      if (!name || el.type === 'file') {
+        continue;
+      }
+      tag = (el.tagName || '').toUpperCase();
+      if (el.type === 'checkbox') {
+        map[prefix + '.' + name] = !!el.checked;
+        continue;
+      }
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        map[prefix + '.' + name] = el.value;
+      }
+    }
+    if (Object.keys(map).length) {
+      setLocal(map);
+    }
+  }
+
+  function bindFieldSync() {
+    var card = document.querySelector('.cmb-order-card');
+    if (!card || card.getAttribute('data-cmb-sync-bound')) {
+      return;
+    }
+    card.setAttribute('data-cmb-sync-bound', '1');
+    var on = function (e) {
+      var el = e.target;
+      if (!el || !el.getAttribute) {
+        return;
+      }
+      var name = el.getAttribute('name');
+      if (!name || el.type === 'file' || el.type === 'checkbox') {
+        return;
+      }
+      var tag = (el.tagName || '').toUpperCase();
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        return;
+      }
+      var map = {};
+      map[localFormKey() + '.' + name] = el.value;
+      setLocal(map);
+    };
+    card.addEventListener('input', on, true);
+    card.addEventListener('change', on, true);
+  }
+
+  function bindHarvest() {
+    var btns = document.querySelectorAll('.cmb-order-submit, [data-cmb-company-submit]');
+    var i;
+    for (i = 0; i < btns.length; i++) {
+      if (btns[i].getAttribute('data-cmb-harvest')) {
+        continue;
+      }
+      btns[i].setAttribute('data-cmb-harvest', '1');
+      btns[i].addEventListener('click', function () {
+        harvestNamedFields();
+      }, true);
+    }
+  }
+
+  function pushTypeList(out, seen, list) {
+    list = extractTypesList(list);
+    var i;
+    var row;
+    var key;
+    for (i = 0; i < list.length; i++) {
+      row = list[i];
+      if (!row) {
+        continue;
+      }
+      if (typeof row !== 'object') {
+        row = { value: String(row), label: String(row) };
+      }
+      key = typeToken(row) + '|' + typeLabelOf(row);
+      if (!key || seen[key]) {
+        continue;
+      }
+      seen[key] = true;
+      out.push(row);
+    }
+  }
+
+  function catalogTypes() {
+    var out = [];
+    var seen = {};
+    pushTypeList(out, seen, typesCache);
+    pushTypeList(out, seen, g7Get('_data.defaults.data.types'));
+    pushTypeList(out, seen, g7Get('_data.types.data'));
+    pushTypeList(out, seen, g7Get('defaults.data.types'));
+    pushTypeList(out, seen, g7Get('types.data'));
+    var defaultsData = g7Get('_data.defaults.data');
+    if (defaultsData && defaultsData.types) {
+      pushTypeList(out, seen, defaultsData.types);
+    }
+    if (!out.length) {
+      pushTypeList(out, seen, TYPE_FALLBACK);
+    }
+    return out;
+  }
+
+  function findSelectWrap(name) {
+    var byId = document.getElementById(name + '_wrap');
+    if (byId) {
+      return byId;
+    }
+    var host = document.querySelector('[name="' + name + '"]');
+    if (host && host.closest) {
+      return host.closest('.cmb-order-select-wrap') || host.parentElement;
+    }
+    return null;
+  }
+
+  function readOptionChoice(el) {
+    var label = String((el && (el.textContent || el.getAttribute('label') || '')) || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    var value = '';
+    if (el) {
+      value =
+        el.getAttribute('data-value') ||
+        el.getAttribute('data-option-value') ||
+        el.getAttribute('value') ||
+        (el.dataset && (el.dataset.value || el.dataset.optionValue)) ||
+        '';
+      if (!value && el.tagName === 'OPTION') {
+        value = el.value || '';
+      }
+    }
+    return { value: String(value || ''), label: label, el: el };
+  }
+
+  function listSelectOptionNodes(name) {
+    var wrap = findSelectWrap(name);
+    var nodes = [];
+    var seen = [];
+    var add = function (el) {
+      if (!el || seen.indexOf(el) !== -1) {
+        return;
+      }
+      seen.push(el);
+      nodes.push(el);
+    };
+    var i;
+    var nlist;
+    var native;
+    if (wrap) {
+      nlist = wrap.querySelectorAll('[role="option"], option, [data-slot="select-item"], [data-value]');
+      for (i = 0; i < nlist.length; i++) {
+        add(nlist[i]);
+      }
+      native = wrap.querySelector('select');
+      if (native && native.options) {
+        for (i = 0; i < native.options.length; i++) {
+          add(native.options[i]);
+        }
+      }
+    }
+    nlist = document.querySelectorAll(
+      '[role="listbox"] [role="option"], [data-radix-select-viewport] [role="option"], [data-slot="select-content"] [role="option"], [data-state="open"] [role="option"]'
+    );
+    for (i = 0; i < nlist.length; i++) {
+      add(nlist[i]);
+    }
+    return nodes;
+  }
+
+  function collectLiveChoices(name) {
+    var nodes = listSelectOptionNodes(name);
+    var out = [];
+    var i;
+    var c;
+    for (i = 0; i < nodes.length; i++) {
+      c = readOptionChoice(nodes[i]);
+      if (c.value || c.label) {
+        out.push(c);
+      }
+    }
+    return out;
+  }
+
+  function optionMatchesChoice(choice, value, label) {
+    var v = String(value || '');
+    var lab = String(label || '').replace(/\s+/g, ' ').trim();
+    var cv = String((choice && choice.value) || '');
+    var cl = String((choice && choice.label) || '').replace(/\s+/g, ' ').trim();
+    if (v && cv && cv === v) {
+      return true;
+    }
+    if (lab && cl && (cl === lab || cl.indexOf(lab) !== -1 || lab.indexOf(cl) !== -1)) {
+      return true;
+    }
+    if (v && cl && cl === v) {
+      return true;
+    }
+    return false;
+  }
+
+  function paintSelectTrigger(name, value, label) {
+    var wrap = findSelectWrap(name);
+    var text = label || optionLabelFor(name, value);
+    if (!wrap || !text) {
+      return;
+    }
+    wrap.setAttribute('data-cmb-selected-value', String(value || ''));
+    var btn =
+      wrap.querySelector('[role="combobox"]') ||
+      wrap.querySelector('[data-slot="select-trigger"]') ||
+      wrap.querySelector('button');
+    if (!btn) {
+      return;
+    }
+    var txt = btn.querySelector('span:not([class*="icon"]):not(.sr-only)') || btn.querySelector('span') || btn;
+    try {
+      txt.textContent = text;
+    } catch (e) {}
+  }
+
+  function closeOpenSelect() {
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
+    } catch (e) {}
+  }
+
+  function openSelectMenu(name, cb) {
+    var wrap = findSelectWrap(name);
+    var trigger =
+      (wrap &&
+        (wrap.querySelector('[role="combobox"]') ||
+          wrap.querySelector('[data-slot="select-trigger"]') ||
+          wrap.querySelector('button') ||
+          wrap.querySelector('[name="' + name + '"]'))) ||
+      document.querySelector('[name="' + name + '"]');
+    var openList = document.querySelector('[role="listbox"], [data-slot="select-content"][data-state="open"]');
+    if (!openList && trigger) {
+      firePointerClick(trigger);
+    }
+    setTimeout(function () {
+      cb();
+    }, 50);
+  }
+
+  function optionLabelFor(name, value) {
+    var row;
+    if (name === 'type') {
+      row = findTypeRow(value);
+      if (row) {
+        return row.label || row.name || value;
+      }
+    }
+    if (name === 'status') {
+      if (value === 'hold') {
+        return '보류';
+      }
+      if (value === 'request') {
+        return '의뢰';
+      }
+      if (value === 'quote_request' || value === 'open') {
+        return '견적요청';
+      }
+    }
+    if (name === 'audience') {
+      if (value === 'company') {
+        return '업체만';
+      }
+      if (value === 'individual') {
+        return '개인만';
+      }
+      return '전체';
+    }
+    if (name === 'kind') {
+      if (value === 'individual') {
+        return '개인';
+      }
+      return '업체';
+    }
+    return value;
+  }
+
+  function setG7Select(name, value, done) {
+    var prefix = localFormKey();
+    var chosen = String(value || '');
+    var label = optionLabelFor(name, chosen);
+    var map = {};
+    var finish = function () {
+      paintSelectTrigger(name, chosen, label);
+      if (typeof done === 'function') {
+        done();
+      }
+    };
+    var writeState = function (next) {
+      chosen = String(next || chosen);
+      map = {};
+      map[prefix + '.' + name] = chosen;
+      setLocal(map);
+      fillNamed(name, chosen);
+    };
+    writeState(chosen);
+    var host = document.querySelector('[name="' + name + '"]');
+    if (host) {
+      setNativeValue(host, chosen);
+    }
+    var native = document.querySelector('select[name="' + name + '"]');
+    if (native) {
+      native.value = chosen;
+      try {
+        native.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch (e) {}
+    }
+    var hiddenWrap = findSelectWrap(name);
+    if (hiddenWrap) {
+      var hidden = hiddenWrap.querySelector('input[type="hidden"]');
+      if (hidden) {
+        setNativeValue(hidden, chosen);
+      }
+    }
+
+    var clickMatch = function () {
+      var nodes = listSelectOptionNodes(name);
+      var i;
+      var choice;
+      var picked = null;
+      for (i = 0; i < nodes.length; i++) {
+        choice = readOptionChoice(nodes[i]);
+        if (optionMatchesChoice(choice, chosen, label)) {
+          picked = nodes[i];
+          if (choice.value) {
+            writeState(choice.value);
+          }
+          if (choice.label) {
+            label = choice.label;
+          }
+          break;
+        }
+      }
+      if (picked) {
+        picked.setAttribute('aria-selected', 'true');
+        firePointerClick(picked);
+        setTimeout(function () {
+          writeState(chosen);
+          closeOpenSelect();
+          finish();
+        }, 40);
+        return true;
+      }
+      return false;
+    };
+
+    if (clickMatch()) {
+      return;
+    }
+    openSelectMenu(name, function () {
+      if (!clickMatch()) {
+        closeOpenSelect();
+        finish();
+      }
+    });
+  }
+
   function fillCheck(name, checked) {
+    checked = !!checked;
+    var map = {};
+    map[localFormKey() + '.' + name] = checked;
+    setLocal(map);
     var nodes = document.querySelectorAll('[name="' + name + '"]');
     var i;
+    var el;
+    var inner;
+    var target;
+    var isOn;
     for (i = 0; i < nodes.length; i++) {
-      nodes[i].checked = !!checked;
-      try {
-        nodes[i].dispatchEvent(new Event('input', { bubbles: true }));
-        nodes[i].dispatchEvent(new Event('change', { bubbles: true }));
-      } catch (e) {}
+      el = nodes[i];
+      inner = el.type === 'checkbox' ? el : el.querySelector && el.querySelector('input[type="checkbox"]');
+      target =
+        inner ||
+        (el.getAttribute && el.getAttribute('role') === 'checkbox' ? el : null) ||
+        (el.querySelector && (el.querySelector('[role="checkbox"]') || el.querySelector('button'))) ||
+        el;
+      isOn = inner
+        ? !!inner.checked
+        : el.getAttribute('aria-checked') === 'true' || el.getAttribute('data-state') === 'checked';
+      if (isOn !== checked) {
+        firePointerClick(target);
+      }
+      if (inner) {
+        inner.checked = checked;
+        try {
+          inner.dispatchEvent(new Event('input', { bubbles: true }));
+          inner.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (e) {}
+      }
     }
   }
 
@@ -100,22 +619,29 @@
           var addr = data.roadAddress || data.jibunAddress || data.address || '';
           fillNamed('zipcode', zip);
           fillNamed('address', addr);
-          setLocal({
-            'form.zipcode': zip,
-            'form.address': addr
-          });
+          var addrMap = {};
+          addrMap[localFormKey() + '.zipcode'] = zip;
+          addrMap[localFormKey() + '.address'] = addr;
+          setLocal(addrMap);
         }
       }).open();
     });
   }
 
   function findTypeRow(slug) {
-    var list = (typesCache && typesCache.length) ? typesCache : TYPE_FALLBACK;
+    var list = catalogTypes();
     var i;
     var row;
+    var s = String(slug || '');
     for (i = 0; i < list.length; i++) {
       row = list[i];
-      if (row.value === slug || row.slug === slug) {
+      if (
+        String(row.value) === s ||
+        String(row.slug) === s ||
+        String(row.id) === s ||
+        String(row.label) === s ||
+        String(row.name) === s
+      ) {
         return row;
       }
     }
@@ -176,7 +702,18 @@
   }
 
   function loadTypes(cb) {
-    if (typesCache) {
+    if (typesCache && typesCache.length) {
+      cb();
+      return;
+    }
+    var fromState = [];
+    var seen = {};
+    pushTypeList(fromState, seen, g7Get('_data.defaults.data.types'));
+    pushTypeList(fromState, seen, g7Get('_data.types.data'));
+    pushTypeList(fromState, seen, g7Get('defaults.data.types'));
+    pushTypeList(fromState, seen, g7Get('types.data'));
+    if (fromState.length) {
+      typesCache = fromState;
       cb();
       return;
     }
@@ -185,7 +722,7 @@
         return res.json();
       })
       .then(function (body) {
-        typesCache = (body && body.data) || [];
+        typesCache = extractTypesList(body);
         if (!typesCache.length) {
           typesCache = TYPE_FALLBACK;
         }
@@ -462,7 +999,7 @@
           }
           var label = String(opt.textContent || '').replace(/\s+/g, ' ').trim();
           loadTypes(function () {
-            var list = (typesCache && typesCache.length) ? typesCache : TYPE_FALLBACK;
+            var list = catalogTypes();
             var i;
             var row;
             var slug = '';
@@ -745,21 +1282,47 @@
   }
 
   function pickQaType() {
+    var catalog = catalogTypes();
+    var live = collectLiveChoices('type');
     var i;
+    var j;
     var row;
-    var list = [];
-    if (typesCache && typesCache.length) {
-      for (i = 0; i < typesCache.length; i++) {
-        row = typesCache[i];
-        list.push(row.value || row.slug);
+    var tok;
+    var lab;
+    var matched = [];
+    var choice;
+    if (live.length) {
+      for (i = 0; i < live.length; i++) {
+        for (j = 0; j < catalog.length; j++) {
+          row = catalog[j];
+          tok = typeToken(row);
+          lab = typeLabelOf(row);
+          if (
+            optionMatchesChoice(live[i], tok, lab) ||
+            optionMatchesChoice(live[i], String(row.id || ''), lab)
+          ) {
+            matched.push(live[i].value || tok);
+            break;
+          }
+        }
       }
+      if (matched.length) {
+        return pick(matched);
+      }
+      choice = pick(live);
+      return choice.value || typeToken(pick(catalog));
     }
-    return pick(list.length ? list : TYPE_FALLBACK.map(function (t) { return t.value; }));
+    row = pick(catalog);
+    return typeToken(row);
   }
 
   function fillQaDummy() {
     loadTypes(function () {
       var type = pickQaType();
+      var typeRow = findTypeRow(type);
+      if (typeRow) {
+        type = typeToken(typeRow) || type;
+      }
       var title = pick([
         'PLA 피규어 15cm 출력',
         '워킹 프로토타입 하우징',
@@ -772,6 +1335,8 @@
       var max = min + randInt(2, 10) * 10000;
       var closes = futureStamp(randInt(5, 14), pick([12, 15, 18, 21]), pick([0, 30]), false);
       var status = pick(['hold', 'request', 'quote_request']);
+      var audience = pick(['all', 'company', 'individual']);
+      var ownership = Math.random() < 0.45;
       var rush = Math.random() < 0.5;
       var premium = Math.random() < 0.4;
       var revision = Math.random() < 0.6;
@@ -794,7 +1359,7 @@
       var extOn = {};
       var i;
       var onCount = 0;
-      var modeling = rowIncludesModeling(findTypeRow(type), type);
+      var modeling = rowIncludesModeling(typeRow || findTypeRow(type), type);
       for (i = 0; i < extKeys.length; i++) {
         extOn[extKeys[i]] = modeling && Math.random() < 0.4;
         if (extOn[extKeys[i]]) {
@@ -824,32 +1389,59 @@
         '테스트 임의입력. 후가공(샌딩) 포함, 납기 협의.',
         '테스트 임의입력. PETG, 인필 40%, 레이어 0.2mm.'
       ]);
-      applyingDaytime = true;
-      fillNamed('title', title);
-      fillNamed('type', type);
-      fillNamed('budget_min', String(min));
-      fillNamed('budget_max', String(max));
-      fillNamed('closes_at', closes);
-      fillNamed('status', status);
-      fillNamed('description', desc);
-      fillNamed('contact_name', person.name);
-      fillNamed('contact_phone', person.phone);
-      fillNamed('contact_hours_from', hourFrom);
-      fillNamed('contact_hours_to', hourTo);
-      fillNamed('contact_email', person.email);
-      fillNamed('zipcode', addr.zip);
-      fillNamed('address', addr.addr);
-      fillNamed('address_detail', addr.detail);
-      fillNamed('manager_name', manager.name);
-      fillNamed('manager_phone', manager.phone);
-      fillNamed('manager_email', manager.email);
-      fillSizeRows(sizeRows);
-      fillCheck('rush_fee_enabled', rush);
-      fillCheck('schedule_premium_enabled', premium);
-      fillCheck('revision_enabled', revision);
-      for (i = 0; i < extKeys.length; i++) {
-        fillCheck(extKeys[i], extOn[extKeys[i]]);
-      }
+
+      var applyInputs = function () {
+        applyingDaytime = true;
+        fillNamed('title', title);
+        fillNamed('budget_min', String(min));
+        fillNamed('budget_max', String(max));
+        fillNamed('closes_at', closes);
+        fillNamed('description', desc);
+        fillNamed('contact_name', person.name);
+        fillNamed('contact_phone', person.phone);
+        fillNamed('contact_hours_from', hourFrom);
+        fillNamed('contact_hours_to', hourTo);
+        fillNamed('contact_email', person.email);
+        fillNamed('zipcode', addr.zip);
+        fillNamed('address', addr.addr);
+        fillNamed('address_detail', addr.detail);
+        fillNamed('manager_name', manager.name);
+        fillNamed('manager_phone', manager.phone);
+        fillNamed('manager_email', manager.email);
+        fillSizeRows(sizeRows);
+        applyingDaytime = false;
+      };
+
+      var applyChecks = function () {
+        fillCheck('rush_fee_enabled', rush);
+        fillCheck('schedule_premium_enabled', premium);
+        fillCheck('revision_enabled', revision);
+        fillCheck('ownership_requested', ownership);
+        syncCond('rush_fee_enabled', '.cmb-cond-rush');
+        syncCond('revision_enabled', '.cmb-cond-rev');
+        if (rush) {
+          fillNamed('rush_deadline', rushDate);
+        }
+        if (revision) {
+          fillNamed('revision_count', revCount);
+          fillNamed('revision_cost', revCost);
+        }
+        for (i = 0; i < extKeys.length; i++) {
+          fillCheck(extKeys[i], extOn[extKeys[i]]);
+        }
+        var day = daytimeBox();
+        if (day) {
+          var dayOn = isChecked(day);
+          if (dayOn !== daytime) {
+            firePointerClick(day);
+          }
+          if (day.type === 'checkbox') {
+            day.checked = daytime;
+          }
+        }
+        applyTypeFlags(type);
+      };
+
       var localMap = {
         'form.title': title,
         'form.type': type,
@@ -857,6 +1449,8 @@
         'form.budget_max': String(max),
         'form.closes_at': closes,
         'form.status': status,
+        'form.audience': audience,
+        'form.ownership_requested': ownership,
         'form.description': desc,
         'form.contact_name': person.name,
         'form.contact_phone': person.phone,
@@ -874,39 +1468,41 @@
         'form.revision_enabled': revision,
         'form.revision_count': revCount,
         'form.revision_cost': revCost,
-        'form.rush_deadline': rushDate
+        'form.rush_deadline': rushDate,
+        'form.sizes': JSON.stringify(sizeRows)
       };
       for (i = 0; i < extKeys.length; i++) {
         localMap['form.' + extKeys[i]] = extOn[extKeys[i]];
       }
       setLocal(localMap);
-      applyTypeFlags(type);
-      applyingDaytime = false;
-      var day = daytimeBox();
-      if (day) {
-        day.checked = daytime;
-      }
+      applyInputs();
+      applyChecks();
+      setG7Select('type', type, function () {
+        setG7Select('status', status, function () {
+          setG7Select('audience', audience, function () {
+            applyInputs();
+            applyChecks();
+            harvestNamedFields();
+            paintSelectTrigger('type', type, optionLabelFor('type', type));
+            paintSelectTrigger('status', status, optionLabelFor('status', status));
+            paintSelectTrigger('audience', audience, optionLabelFor('audience', audience));
+          });
+        });
+      });
       setTimeout(function () {
-        if (rush) {
-          fillNamed('rush_deadline', rushDate);
-          fillCheck('rush_fee_enabled', true);
-        }
-        if (revision) {
-          fillNamed('revision_count', revCount);
-          fillNamed('revision_cost', revCost);
-          fillCheck('revision_enabled', true);
-        }
-        fillNamed('manager_name', manager.name);
-        fillNamed('manager_phone', manager.phone);
-        fillNamed('manager_email', manager.email);
-        fillSizeRows(sizeRows);
-        for (i = 0; i < extKeys.length; i++) {
-          fillCheck(extKeys[i], extOn[extKeys[i]]);
-        }
-        if (day) {
-          day.checked = daytime;
-        }
-      }, 80);
+        applyInputs();
+        applyChecks();
+        setG7Select('type', type, function () {
+          setG7Select('status', status, function () {
+            setG7Select('audience', audience, function () {
+              harvestNamedFields();
+              paintSelectTrigger('type', type, optionLabelFor('type', type));
+              paintSelectTrigger('status', status, optionLabelFor('status', status));
+              paintSelectTrigger('audience', audience, optionLabelFor('audience', audience));
+            });
+          });
+        });
+      }, 220);
     });
   }
 
@@ -920,6 +1516,176 @@
         fillQaDummy();
       });
     }
+  }
+
+  var applyingProfileFill = false;
+  var PROFILE_FILL_FIELDS = ['name', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail'];
+
+  function profileFillBox() {
+    return document.querySelector('[data-cmb-profile-fill]');
+  }
+
+  function profileFillSeed(field) {
+    var box = profileFillBox();
+    if (!box) {
+      return '';
+    }
+    var attr = box.getAttribute('data-cmb-seed-' + field);
+    return attr ? String(attr).trim() : '';
+  }
+
+  function applyProfileFill() {
+    var i;
+    var field;
+    var seed;
+    var map = {};
+    var any = false;
+    applyingProfileFill = true;
+    for (i = 0; i < PROFILE_FILL_FIELDS.length; i++) {
+      field = PROFILE_FILL_FIELDS[i];
+      seed = profileFillSeed(field);
+      if (!seed) {
+        continue;
+      }
+      any = true;
+      fillNamed(field, seed);
+      map['company.' + field] = seed;
+    }
+    if (any) {
+      setLocal(map);
+    }
+    applyingProfileFill = false;
+  }
+
+  function bindProfileFill() {
+    var box = profileFillBox();
+    if (!box) {
+      return;
+    }
+    if (!box.getAttribute('data-cmb-bound')) {
+      box.setAttribute('data-cmb-bound', '1');
+      box.addEventListener('change', function () {
+        if (box.checked) {
+          applyProfileFill();
+        }
+      });
+    }
+    var i;
+    var field;
+    var input;
+    for (i = 0; i < PROFILE_FILL_FIELDS.length; i++) {
+      field = PROFILE_FILL_FIELDS[i];
+      input = document.querySelector('[name="' + field + '"]');
+      if (!input || input.getAttribute('data-cmb-profile-fill-bound')) {
+        continue;
+      }
+      input.setAttribute('data-cmb-profile-fill-bound', '1');
+      (function (f, el) {
+        var onManual = function () {
+          if (applyingProfileFill) {
+            return;
+          }
+          if (String(el.value || '').trim() !== profileFillSeed(f) && box.checked) {
+            box.checked = false;
+            try {
+              box.dispatchEvent(new Event('input', { bubbles: true }));
+              box.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (e) {}
+          }
+        };
+        el.addEventListener('input', onManual);
+        el.addEventListener('change', onManual);
+      })(field, input);
+    }
+  }
+
+  function syncCompanyJobTypes() {
+    var boxes = document.querySelectorAll('[data-cmb-job-type]');
+    var slugs = [];
+    var i;
+    for (i = 0; i < boxes.length; i++) {
+      if (boxes[i].checked) {
+        slugs.push(boxes[i].getAttribute('data-cmb-job-type'));
+      }
+    }
+    fillNamed('job_types', JSON.stringify(slugs));
+    setLocal({ 'company.job_types': slugs });
+  }
+
+  function renderCompanyJobTypes(host) {
+    var list = (typesCache && typesCache.length) ? typesCache : TYPE_FALLBACK;
+    var i;
+    var row;
+    var slug;
+    var label;
+    var box;
+    var span;
+    host.innerHTML = '';
+    host.setAttribute('data-cmb-job-types-ready', '1');
+    for (i = 0; i < list.length; i++) {
+      row = list[i];
+      slug = row.value || row.slug;
+      label = document.createElement('label');
+      label.className = 'cmb-order-check-label inline-flex items-center gap-2 text-sm cursor-pointer';
+      box = document.createElement('input');
+      box.type = 'checkbox';
+      box.className = 'cmb-order-check';
+      box.setAttribute('data-cmb-job-type', slug);
+      box.name = 'job_type_' + slug;
+      span = document.createElement('span');
+      span.className = 'cmb-order-check-text';
+      span.textContent = row.label || row.name || slug;
+      label.appendChild(box);
+      label.appendChild(span);
+      host.appendChild(label);
+      box.addEventListener('change', syncCompanyJobTypes);
+    }
+  }
+
+  function bindCompanyJobTypes() {
+    var host = document.querySelector('[data-cmb-job-types]');
+    if (!host) {
+      return;
+    }
+    if (host.getAttribute('data-cmb-job-types-ready')) {
+      return;
+    }
+    loadTypes(function () {
+      renderCompanyJobTypes(host);
+    });
+  }
+
+  function bindLogoLimit() {
+    var host = document.querySelector('[data-cmb-logo-uploader], #cmb_logo_uploader');
+    if (!host || host.getAttribute('data-cmb-logo-bound')) {
+      return;
+    }
+    host.setAttribute('data-cmb-logo-bound', '1');
+    host.addEventListener('change', function (e) {
+      var input = e.target;
+      if (!input || input.type !== 'file' || !input.files || !input.files[0]) {
+        return;
+      }
+      var file = input.files[0];
+      if (file.type && file.type.indexOf('image/') !== 0) {
+        dispatch('toast', { type: 'error', message: '이미지 파일만 올릴 수 있습니다.' });
+        input.value = '';
+        return;
+      }
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        if (img.width > 512 || img.height > 512) {
+          dispatch('toast', { type: 'error', message: '로고는 최대 512×512 픽셀입니다.' });
+          input.value = '';
+        }
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }, true);
   }
 
   function bind() {
@@ -936,9 +1702,14 @@
     bindDaytime();
     bindCondToggles();
     bindProfileName();
+    bindProfileFill();
     bindTypeSelect();
     bindSizes();
     bindQaFill();
+    bindFieldSync();
+    bindHarvest();
+    bindCompanyJobTypes();
+    bindLogoLimit();
   }
 
   bind();

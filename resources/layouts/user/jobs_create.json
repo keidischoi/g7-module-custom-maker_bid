@@ -22,6 +22,7 @@
       "rush_deadline": "",
       "schedule_premium_enabled": false,
       "status": "quote_request",
+      "audience": "all",
       "size_w": "",
       "size_d": "",
       "size_h": "",
@@ -36,6 +37,8 @@
       "ext_stp": false,
       "ext_gcode": false,
       "ext_fbx": false,
+      "ext_dwg": false,
+      "ownership_requested": false,
       "revision_enabled": false,
       "revision_count": "",
       "revision_cost": "",
@@ -116,7 +119,7 @@
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
                   { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
                   { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bid/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "업체 등록" }
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
                 ]
               }
             ]
@@ -149,7 +152,31 @@
                 "children": [
                   { "id": "sec_basic_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "01. 의뢰 정보" },
                   { "id": "title_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제목" },
-                  { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "예: PLA 피규어 15cm 출력", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  {
+                    "id": "title",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "title",
+                      "value": "{{_local.form.title}}",
+                      "placeholder": "예: PLA 피규어 15cm 출력",
+                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                      },
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                      }
+                    ]
+                  },
                   { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "유형" },
                   {
                     "id": "type_wrap",
@@ -187,14 +214,14 @@
                     "name": "Div",
                     "props": { "className": "flex items-center gap-2" },
                     "children": [
-                      { "id": "budget_min", "type": "basic", "name": "Input", "props": { "name": "budget_min", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                      { "id": "budget_min", "type": "basic", "name": "Input", "props": { "name": "budget_min", "value": "{{_local.form.budget_min}}", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.budget_min": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.budget_min": "{{$event.target.value}}" } }] },
                       { "id": "budget_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
-                      { "id": "budget_max", "type": "basic", "name": "Input", "props": { "name": "budget_max", "type": "number", "min": "0", "placeholder": "100000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                      { "id": "budget_max", "type": "basic", "name": "Input", "props": { "name": "budget_max", "value": "{{_local.form.budget_max}}", "type": "number", "min": "0", "placeholder": "100000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.budget_max": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.budget_max": "{{$event.target.value}}" } }] },
                       { "id": "budget_won", "type": "basic", "name": "Span", "props": { "className": "text-sm text-gray-500 dark:text-gray-400 shrink-0" }, "text": "원" }
                     ]
                   },
                   { "id": "closes_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "마감 시각" },
-                  { "id": "closes", "type": "basic", "name": "Input", "props": { "name": "closes_at", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  { "id": "closes", "type": "basic", "name": "Input", "props": { "name": "closes_at", "value": "{{_local.form.closes_at}}", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.closes_at": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.closes_at": "{{$event.target.value}}" } }] },
                   {
                     "id": "rush_row",
                     "type": "basic",
@@ -214,7 +241,7 @@
                             "name": "Label",
                             "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
                             "children": [
-                              { "id": "rush_fee_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "rush_fee_enabled" } },
+                              { "id": "rush_fee_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "rush_fee_enabled", "checked": "{{_local.form.rush_fee_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.rush_fee_enabled": "{{$event.target.checked}}" } }] },
                               { "id": "rush_fee_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 가능" }
                             ]
                           }
@@ -227,7 +254,7 @@
                         "props": { "className": "cmb-cond cmb-cond-rush space-y-1" },
                         "children": [
                           { "id": "rush_date_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "적용 조건 시각" },
-                          { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                          { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "value": "{{_local.form.rush_deadline}}", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.rush_deadline": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.rush_deadline": "{{$event.target.value}}" } }] }
                         ]
                       }
                     ]
@@ -245,7 +272,7 @@
                         "name": "Label",
                         "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
                         "children": [
-                          { "id": "schedule_premium_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "schedule_premium_enabled" } },
+                          { "id": "schedule_premium_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "schedule_premium_enabled", "checked": "{{_local.form.schedule_premium_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.schedule_premium_enabled": "{{$event.target.checked}}" } }] },
                           { "id": "schedule_premium_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 가능" }
                         ]
                       }
@@ -333,10 +360,30 @@
                       { "id": "ext_step_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_step", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_step" } }, { "id": "ext_step_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "STEP" } ] },
                       { "id": "ext_stp_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_stp", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_stp" } }, { "id": "ext_stp_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "STP" } ] },
                       { "id": "ext_gcode_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_gcode", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_gcode" } }, { "id": "ext_gcode_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "GCODE" } ] },
-                      { "id": "ext_fbx_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_fbx", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_fbx" } }, { "id": "ext_fbx_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "FBX" } ] }
+                      { "id": "ext_fbx_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_fbx", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_fbx" } }, { "id": "ext_fbx_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "FBX" } ] },
+                      { "id": "ext_dwg_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_dwg", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_dwg" } }, { "id": "ext_dwg_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "DWG" } ] }
                     ]
                   }
                   ] },
+                  {
+                    "id": "copyright_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-order-option flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3" },
+                    "children": [
+                      { "id": "ownership_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "소유권한 요청" },
+                      {
+                        "id": "ownership_requested_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "children": [
+                          { "id": "ownership_requested", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ownership_requested", "checked": "{{_local.form.ownership_requested}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.ownership_requested": "{{$event.target.checked}}" } }] },
+                          { "id": "ownership_requested_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "요청" }
+                        ]
+                      }
+                    ]
+                  },
                   {
                     "id": "rev_row",
                     "type": "basic",
@@ -356,7 +403,7 @@
                             "name": "Label",
                             "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
                             "children": [
-                              { "id": "revision_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "revision_enabled" } },
+                              { "id": "revision_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "revision_enabled", "checked": "{{_local.form.revision_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.revision_enabled": "{{$event.target.checked}}" } }] },
                               { "id": "revision_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 유무" }
                             ]
                           }
@@ -375,7 +422,7 @@
                             "props": { "className": "space-y-1" },
                             "children": [
                               { "id": "revision_count_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "최소 횟수" },
-                              { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "type": "number", "min": "0", "placeholder": "1", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                              { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "value": "{{_local.form.revision_count}}", "type": "number", "min": "0", "placeholder": "1", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.revision_count": "{{$event.target.value}}" } }] }
                             ]
                           },
                           {
@@ -385,7 +432,7 @@
                             "props": { "className": "space-y-1" },
                             "children": [
                               { "id": "revision_cost_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회당 / 최대 수정비용 (원)" },
-                              { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                              { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "value": "{{_local.form.revision_cost}}", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.revision_cost": "{{$event.target.value}}" } }] }
                             ]
                           }
                         ]
@@ -393,7 +440,7 @@
                     ]
                   },
                   { "id": "desc_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "설명" },
-                  { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "placeholder": "수량, 재질, 색상, 후가공, 참고 사항", "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "value": "{{_local.form.description}}", "placeholder": "수량, 재질, 색상, 후가공, 참고 사항", "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.description": "{{$event.target.value}}" } }] },
                   { "id": "img_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이미지" },
                   {
                     "id": "cmb_images_uploader",
@@ -503,9 +550,9 @@
                       }
                     ]
                   },
-                  { "id": "contact_name", "type": "basic", "name": "Input", "props": { "name": "contact_name", "placeholder": "이름 / 업체명", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  { "id": "contact_name", "type": "basic", "name": "Input", "props": { "name": "contact_name", "value": "{{_local.form.contact_name}}", "placeholder": "이름 / 업체명", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_name": "{{$event.target.value}}" } }] },
                   { "id": "cphone_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락처" },
-                  { "id": "contact_phone", "type": "basic", "name": "Input", "props": { "name": "contact_phone", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  { "id": "contact_phone", "type": "basic", "name": "Input", "props": { "name": "contact_phone", "value": "{{_local.form.contact_phone}}", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_phone": "{{$event.target.value}}" } }] },
                   {
                     "id": "chours_head",
                     "type": "basic",
@@ -531,13 +578,13 @@
                     "name": "Div",
                     "props": { "className": "flex items-center gap-2" },
                     "children": [
-                      { "id": "contact_hours_from", "type": "basic", "name": "Input", "props": { "name": "contact_hours_from", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                      { "id": "contact_hours_from", "type": "basic", "name": "Input", "props": { "name": "contact_hours_from", "value": "{{_local.form.contact_hours_from}}", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_hours_from": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.contact_hours_from": "{{$event.target.value}}" } }] },
                       { "id": "chours_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
-                      { "id": "contact_hours_to", "type": "basic", "name": "Input", "props": { "name": "contact_hours_to", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                      { "id": "contact_hours_to", "type": "basic", "name": "Input", "props": { "name": "contact_hours_to", "value": "{{_local.form.contact_hours_to}}", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_hours_to": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.contact_hours_to": "{{$event.target.value}}" } }] }
                     ]
                   },
                   { "id": "cemail_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이메일" },
-                  { "id": "contact_email", "type": "basic", "name": "Input", "props": { "name": "contact_email", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  { "id": "contact_email", "type": "basic", "name": "Input", "props": { "name": "contact_email", "value": "{{_local.form.contact_email}}", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_email": "{{$event.target.value}}" } }] },
                   {
                     "id": "addr_block",
                     "type": "basic",
@@ -552,7 +599,7 @@
                         "name": "Div",
                         "props": { "className": "flex items-center gap-2" },
                         "children": [
-                          { "id": "zipcode", "type": "basic", "name": "Input", "props": { "name": "zipcode", "placeholder": "우편번호", "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                          { "id": "zipcode", "type": "basic", "name": "Input", "props": { "name": "zipcode", "value": "{{_local.form.zipcode}}", "placeholder": "우편번호", "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.zipcode": "{{$event.target.value}}" } }] },
                           {
                             "id": "postcode_btn",
                             "type": "basic",
@@ -566,8 +613,8 @@
                           }
                         ]
                       },
-                      { "id": "address", "type": "basic", "name": "Input", "props": { "name": "address", "placeholder": "기본 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
-                      { "id": "address_detail", "type": "basic", "name": "Input", "props": { "name": "address_detail", "placeholder": "상세 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                      { "id": "address", "type": "basic", "name": "Input", "props": { "name": "address", "value": "{{_local.form.address}}", "placeholder": "기본 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.address": "{{$event.target.value}}" } }] },
+                      { "id": "address_detail", "type": "basic", "name": "Input", "props": { "name": "address_detail", "value": "{{_local.form.address_detail}}", "placeholder": "상세 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.address_detail": "{{$event.target.value}}" } }] }
                     ]
                   },
                   {
@@ -578,11 +625,54 @@
                     "children": [
                       { "id": "manager_box_h", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-800 dark:text-gray-200" }, "text": "담당자 정보" },
                       { "id": "manager_name_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 명" },
-                      { "id": "manager_name", "type": "basic", "name": "Input", "props": { "name": "manager_name", "placeholder": "담당자 이름", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                      { "id": "manager_name", "type": "basic", "name": "Input", "props": { "name": "manager_name", "value": "{{_local.form.manager_name}}", "placeholder": "담당자 이름", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_name": "{{$event.target.value}}" } }] },
                       { "id": "manager_phone_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 연락처" },
-                      { "id": "manager_phone", "type": "basic", "name": "Input", "props": { "name": "manager_phone", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                      { "id": "manager_phone", "type": "basic", "name": "Input", "props": { "name": "manager_phone", "value": "{{_local.form.manager_phone}}", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_phone": "{{$event.target.value}}" } }] },
                       { "id": "manager_email_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 이메일" },
-                      { "id": "manager_email", "type": "basic", "name": "Input", "props": { "name": "manager_email", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                      { "id": "manager_email", "type": "basic", "name": "Input", "props": { "name": "manager_email", "value": "{{_local.form.manager_email}}", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_email": "{{$event.target.value}}" } }] }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "sec_audience",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "space-y-4" },
+                "children": [
+                  { "id": "sec_audience_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "04. 공개 설정" },
+                  { "id": "audience_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "공개 설정" },
+                  { "id": "audience_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "누가 이 의뢰를 보고 입찰할 수 있는지 정합니다." },
+                  {
+                    "id": "audience_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "children": [
+                      {
+                        "id": "audience",
+                        "type": "basic",
+                        "name": "Select",
+                        "props": {
+                          "name": "audience",
+                          "value": "{{_local.form.audience}}",
+                          "disabled": false,
+                          "options": [
+                            { "value": "all", "label": "전체" },
+                            { "value": "company", "label": "업체만" },
+                            { "value": "individual", "label": "개인만" }
+                          ],
+                          "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": { "target": "local", "form.audience": "{{$event.target.value}}" }
+                          }
+                        ]
+                      }
                     ]
                   }
                 ]

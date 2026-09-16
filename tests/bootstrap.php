@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 
+if (! class_exists(\Illuminate\Database\Eloquent\Model::class)) {
+    eval(<<<'PHP'
+namespace Illuminate\Database\Eloquent {
+    #[\AllowDynamicProperties]
+    class Model {}
+}
+namespace Illuminate\Database\Eloquent\Relations {
+    class BelongsTo {}
+}
+PHP);
+}
+
 $root = dirname(__DIR__);
 
 spl_autoload_register(static function (string $class) use ($root): void {

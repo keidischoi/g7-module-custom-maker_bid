@@ -59,12 +59,12 @@
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
                   { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "입찰현황" },
                   { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bid/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "업체 등록" }
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
                 ]
               }
             ]
           },
-          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "열린 의뢰에 견적을 넣고, 열려 있는 동안 내 금액을 수정할 수 있습니다. 업체 회원이면 업체 등록에서 승인 상태를 확인하세요." },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "열린 의뢰에 견적을 넣고, 열려 있는 동안 내 금액을 수정할 수 있습니다. 입찰자면 입찰자 등록에서 승인 상태를 확인하세요." },
           { "id": "mh", "type": "basic", "name": "H2", "props": { "className": "text-lg font-medium text-gray-900 dark:text-white" }, "text": "내 입찰" },
           {
             "id": "mine_empty",

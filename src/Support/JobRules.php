@@ -19,6 +19,8 @@ class JobRules
 
     public const HIDDEN_PUBLIC_STATUSES = ['hold'];
 
+    public const AUDIENCES = ['all', 'company', 'individual'];
+
     public const TITLE_MAX = 200;
 
     public const SIZES_MAX = 20;
@@ -43,6 +45,7 @@ class JobRules
             'budget_max' => ['nullable', 'integer', 'min:0'],
             'closes_at' => ['nullable', 'date'],
             'status' => ['nullable', 'string', 'in:'.implode(',', self::LISTING_STATUSES)],
+            'audience' => ['nullable', 'string', 'in:'.implode(',', self::AUDIENCES)],
             'rush_fee_enabled' => ['nullable', 'boolean'],
             'rush_deadline' => ['nullable', 'date', 'required_if:rush_fee_enabled,1', 'required_if:rush_fee_enabled,true'],
             'schedule_premium_enabled' => ['nullable', 'boolean'],
@@ -52,6 +55,7 @@ class JobRules
             'sizes' => ['nullable'],
             'provided_extensions' => ['nullable', 'array'],
             'provided_extensions.*' => ['string', 'in:'.implode(',', UploadRules::PROVIDED_EXTENSIONS)],
+            'ownership_requested' => ['nullable', 'boolean'],
             'revision_enabled' => ['nullable', 'boolean'],
             'revision_count' => ['nullable', 'integer', 'min:0', 'max:99', 'required_if:revision_enabled,1', 'required_if:revision_enabled,true'],
             'revision_cost' => ['nullable', 'integer', 'min:0', 'required_if:revision_enabled,1', 'required_if:revision_enabled,true'],
@@ -75,6 +79,7 @@ class JobRules
             'ext_stp' => ['nullable', 'boolean'],
             'ext_gcode' => ['nullable', 'boolean'],
             'ext_fbx' => ['nullable', 'boolean'],
+            'ext_dwg' => ['nullable', 'boolean'],
         ];
     }
 
@@ -148,6 +153,99 @@ class JobRules
     public static function isBiddableStatus(string $status): bool
     {
         return in_array($status, self::BIDDABLE_STATUSES, true);
+    }
+
+    public static function normalizeAudience(mixed $raw): string
+    {
+        $value = strtolower(trim((string) $raw));
+        if (in_array($value, ['company', 'company_only', '업체만', '업체'], true)) {
+            return 'company';
+        }
+        if (in_array($value, ['individual', 'individual_only', '개인만', '개인', 'person'], true)) {
+            return 'individual';
+        }
+
+        return 'all';
+    }
+
+    public static function audienceLabel(?string $audience): string
+    {
+        return match (self::normalizeAudience($audience)) {
+            'company' => '업체만',
+            'individual' => '개인만',
+            default => '전체',
+        };
+    }
+
+    /**
+     * Viewer role for 공개 설정: guest / individual / company.
+     */
+    public static function viewerRole(bool $isMember, bool $hasApprovedCompany, mixed $companyKind = null): string
+    {
+        if ($hasApprovedCompany && CompanyRules::normalizeKind($companyKind) === 'company') {
+            return 'company';
+        }
+        if ($isMember) {
+            return 'individual';
+        }
+
+        return 'guest';
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function visibleAudiencesFor(bool $isMember, bool $hasApprovedCompany, mixed $companyKind = null): array
+    {
+        $role = self::viewerRole($isMember, $hasApprovedCompany, $companyKind);
+        if ($role === 'company') {
+            return ['all', 'company'];
+        }
+        if ($role === 'individual') {
+            return ['all', 'individual'];
+        }
+
+        return ['all'];
+    }
+
+    public static function canViewAudience(
+        mixed $audience,
+        bool $isOwner,
+        bool $isAdmin,
+        bool $isMember,
+        bool $hasApprovedCompany,
+        mixed $companyKind = null,
+    ): bool {
+        if ($isOwner || $isAdmin) {
+            return true;
+        }
+
+        return in_array(
+            self::normalizeAudience($audience),
+            self::visibleAudiencesFor($isMember, $hasApprovedCompany, $companyKind),
+            true,
+        );
+    }
+
+    public static function canBidAudience(
+        mixed $audience,
+        bool $isMember,
+        bool $hasApprovedCompany,
+        mixed $companyKind = null,
+    ): bool {
+        if (! BidRules::canBid($isMember, $hasApprovedCompany)) {
+            return false;
+        }
+        $role = self::viewerRole($isMember, $hasApprovedCompany, $companyKind);
+        $scope = self::normalizeAudience($audience);
+        if ($scope === 'company') {
+            return $role === 'company';
+        }
+        if ($scope === 'individual') {
+            return $role === 'individual';
+        }
+
+        return $isMember;
     }
 
     public static function isOpen(string $status, mixed $closesAt = null, ?DateTimeInterface $now = null): bool
@@ -402,6 +500,7 @@ class JobRules
             'ext_stp' => 'STP',
             'ext_gcode' => 'GCODE',
             'ext_fbx' => 'FBX',
+            'ext_dwg' => 'DWG',
         ];
         foreach ($map as $key => $ext) {
             if (! empty($payload[$key]) && ! in_array($ext, $fromArray, true)) {

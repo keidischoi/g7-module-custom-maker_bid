@@ -21,6 +21,7 @@ class UpdateOwnedJobRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $this->liftNestedFormFields(['form']);
         $this->nullBlankFields([
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
@@ -28,8 +29,8 @@ class UpdateOwnedJobRequest extends FormRequest
             'manager_name', 'manager_phone', 'manager_email',
         ]);
         $this->coerceBooleanFields([
-            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled',
-            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx',
+            'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',
+            'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg',
         ]);
         if ($this->exists('sizes')) {
             $this->merge(['sizes' => JobRules::decodeSizesInput($this->input('sizes'))]);

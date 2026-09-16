@@ -31,7 +31,14 @@ class JobTypeService
 
     public function findBySlug(string $slug): ?MakerJobType
     {
-        $slug = TypeCatalog::normalizeSlug($slug);
+        $raw = trim($slug);
+        if ($raw !== '' && ctype_digit($raw)) {
+            $byId = MakerJobType::query()->find((int) $raw);
+            if ($byId) {
+                return $byId;
+            }
+        }
+        $slug = TypeCatalog::normalizeSlug($raw);
 
         return MakerJobType::query()->where('slug', $slug)->first();
     }

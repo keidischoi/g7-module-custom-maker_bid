@@ -48,6 +48,10 @@ Route::get('jobs/{id}', [JobController::class, 'show'])
     ->middleware(['throttle:600,1'])
     ->name('jobs.show');
 
+Route::get('companies', [CompanyController::class, 'index'])
+    ->middleware(['throttle:600,1'])
+    ->name('companies.index');
+
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
     Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
@@ -75,6 +79,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         ->whereNumber('id')
         ->name('jobs.award');
 
+    Route::get('companies/form-defaults', [CompanyController::class, 'formDefaults'])->name('companies.form-defaults');
     Route::post('companies', [CompanyController::class, 'store'])->name('companies.apply');
     Route::get('companies/me', [CompanyController::class, 'me'])->name('companies.me');
 });
@@ -142,13 +147,25 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::get('companies', [CompanyAdminController::class, 'index'])
         ->middleware('permission:admin,custom-maker_bid.companies.read')
         ->name('admin.companies.index');
+    Route::get('companies/{id}', [CompanyAdminController::class, 'show'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.companies.read')
+        ->name('admin.companies.show');
     Route::post('companies', [CompanyAdminController::class, 'store'])
         ->middleware('permission:admin,custom-maker_bid.companies.create')
         ->name('admin.companies.store');
+    Route::patch('companies/{id}', [CompanyAdminController::class, 'update'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->name('admin.companies.update');
     Route::post('companies/{id}/approve', [CompanyAdminController::class, 'approve'])
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.companies.update')
         ->name('admin.companies.approve');
+    Route::post('companies/{id}/hold', [CompanyAdminController::class, 'hold'])
+        ->whereNumber('id')
+        ->middleware('permission:admin,custom-maker_bid.companies.update')
+        ->name('admin.companies.hold');
     Route::post('companies/{id}/reject', [CompanyAdminController::class, 'reject'])
         ->whereNumber('id')
         ->middleware('permission:admin,custom-maker_bid.companies.update')

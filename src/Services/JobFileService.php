@@ -23,9 +23,13 @@ class JobFileService
         ?string $token = null,
         ?int $jobId = null,
     ): MakerJobFile {
-        $collection = $collection === UploadRules::COLLECTION_ARCHIVES
-            ? UploadRules::COLLECTION_ARCHIVES
-            : UploadRules::COLLECTION_IMAGES;
+        if ($collection === UploadRules::COLLECTION_ARCHIVES) {
+            $collection = UploadRules::COLLECTION_ARCHIVES;
+        } elseif ($collection === UploadRules::COLLECTION_LOGOS) {
+            $collection = UploadRules::COLLECTION_LOGOS;
+        } else {
+            $collection = UploadRules::COLLECTION_IMAGES;
+        }
 
         $name = (string) $file->getClientOriginalName();
         if (! UploadRules::isAllowedExtension($collection, $name)) {
@@ -34,8 +38,14 @@ class JobFileService
                 : '이미지 파일만 올릴 수 있습니다.';
             throw new DomainException($hint, 422);
         }
+        if ($collection === UploadRules::COLLECTION_LOGOS) {
+            $this->assertLogoDimensions($file);
+        }
 
         $job = $this->resolveJob($userId, $token, $jobId);
+        if ($collection === UploadRules::COLLECTION_LOGOS) {
+            $this->replaceExistingLogos($userId, $token, $job?->id);
+        }
         $dir = $job
             ? 'custom-maker-bid/jobs/'.$job->id.'/'.$collection
             : 'custom-maker-bid/staging/'.($token ?: ('u'.$userId));
@@ -144,6 +154,37 @@ class JobFileService
         } while (MakerJobFile::query()->where('hash', $hash)->exists());
 
         return $hash;
+    }
+
+    private function assertLogoDimensions(UploadedFile $file): void
+    {
+        $path = $file->getRealPath() ?: $file->getPathname();
+        $info = is_string($path) && $path !== '' ? @getimagesize($path) : false;
+        if (! is_array($info) || ! isset($info[0], $info[1])) {
+            throw new DomainException('로고 이미지를 읽을 수 없습니다.', 422);
+        }
+        $width = (int) $info[0];
+        $height = (int) $info[1];
+        if (! UploadRules::isWithinLogoDimensions($width, $height)) {
+            throw new DomainException('로고는 최대 '.UploadRules::LOGO_MAX_PX.'×'.UploadRules::LOGO_MAX_PX.' 픽셀입니다.', 422);
+        }
+    }
+
+    private function replaceExistingLogos(int $userId, ?string $token, ?int $jobId): void
+    {
+        $q = MakerJobFile::query()
+            ->where('user_id', $userId)
+            ->where('collection', UploadRules::COLLECTION_LOGOS);
+        if ($jobId) {
+            $q->where('job_id', $jobId);
+        } elseif ($token) {
+            $q->where('upload_token', $token)->whereNull('job_id');
+        } else {
+            return;
+        }
+        foreach ($q->get() as $row) {
+            $this->deleteRow($row);
+        }
     }
 
     private function deleteRow(MakerJobFile $row): void

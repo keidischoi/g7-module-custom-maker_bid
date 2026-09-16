@@ -4,6 +4,29 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.6.0] - 2026-09-16
+
+### Fixed
+
+- `/maker-bid/new` FileUploader PNG·ZIP 업로드가 `attachment.upload_response_invalid` 로 실패하던 문제를 수정. G7 `api.post`가 본문을 한 겹 풀기 때문에 Attachment를 `{ success, data: attachment, ...attachment }` 로 감싸고 HTTP 200을 반환합니다.
+- 주문서 등록 시 「제목을 입력해 주세요」가 나오던 문제를 수정. 제목 Input을 `_local.form.title` 에 바인딩하고, 제출 직전에 `name` 필드를 harvest 하며 서버에서 nested `form` 을 펼칩니다.
+- **임의입력**이 유형 Select를 채우지 않던 문제를 수정. 로드된 유형 카탈로그의 실제 `value`/`id` 를 고르고, 옵션을 클릭해 Select 표시 라벨까지 맞춥니다. 상태·예산·마감·크기·체크(급행/수정)·연락처·담당자·공개 설정도 채우며 이미지·파일 업로드는 건너뜁니다.
+
+### Added
+
+- 의뢰서 하단 **공개 설정**: 전체 / 업체만 / 개인만. `audience` 컬럼에 저장하고 목록·상세·입찰 자격을 맞춥니다. 승인 업체(`kind=company`)만 업체만 의뢰를 보고 입찰합니다. 개인(승인 업체가 아니거나 개인 등록)은 개인만 의뢰를 봅니다. 작성자·관리자·기존 입찰자는 제한과 무관하게 열람합니다.
+- 제공 확장자에 **DWG** 추가. 모델링 포함 유형에서만 표시되는 기존 동작을 유지합니다.
+- 제공 확장자 옆에 **소유권한 요청** 체크 하나(`ownership_requested`). 「저작권 있음」 별도 항목은 없습니다.
+- **입찰자 등록** `/maker-bid/company`: 업체/개인, 주력유형, 로고(1장·최대 512×512), 소개, 홈페이지·포트폴리오 URL, 담당자, 다음 주소, 회원정보 자동입력. 관리자 보류/승인/거절·메모·평점·클레임·신고·추천·우선순위. 공개 업체·입찰 목록은 추천·우선순위 순.
+
+### Changed
+
+- 버전 **0.6.0**. nav/form.js·form.css 캐시 `?v=0.6.0`.
+
+### Notes
+
+- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다. `audience` / `ownership_requested` 및 입찰자 프로필 관리 컬럼이 없는 설치에는 additive 마이그레이션이 적용됩니다.
+
 ## [0.5.3] - 2026-09-16
 
 ### Fixed

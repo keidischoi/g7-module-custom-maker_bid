@@ -61,13 +61,14 @@
               { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bid", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
               { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bid/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
               { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bid/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-              { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "업체 등록" }
+              { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bid/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
             ]
           },
           { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "{{job.data.title}}" },
-          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.type_name || job.data.type}} · {{job.data.budget_label || '예산 미정'}} · {{job.data.status_label || job.data.status}} · 마감 {{job.data.closes_at || '없음'}}" },
+          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.type_name || job.data.type}} · {{job.data.budget_label || '예산 미정'}} · {{job.data.status_label || job.data.status}} · 공개 {{job.data.audience_label || '전체'}} · 마감 {{job.data.closes_at || '없음'}}" },
           { "id": "size", "type": "basic", "name": "P", "if": "{{job.data.size_label}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "최종 크기 {{job.data.size_label}}" },
           { "id": "exts", "type": "basic", "name": "P", "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "제공 확장자 {{job.data.provided_extensions}}" },
+          { "id": "ownership", "type": "basic", "name": "P", "if": "{{job.data.ownership_requested}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "소유권한 요청" },
           { "id": "flags", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.rush_fee_enabled ? ('급행비 적용 가능' + (job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : '')) : ''}} {{job.data.schedule_premium_enabled ? '· 스케줄 선점비 적용 가능' : ''}} {{job.data.revision_enabled ? ('· 수정 ' + (job.data.revision_count || '') + '회' + (job.data.revision_cost != null ? (' · 회당 ' + job.data.revision_cost + '원') : '')) : ''}}" },
           { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap text-gray-800 dark:text-gray-200" }, "text": "{{job.data.description ?? ''}}" },
           {
@@ -170,7 +171,7 @@
             "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
             "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid", "index_var": "idx" },
             "children": [
-              { "id": "bidtxt_{{idx}}", "type": "basic", "name": "P", "props": { "className": "text-gray-800 dark:text-gray-200" }, "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days ?? '-'}}일 · {{$bid.status}} · {{$bid.message ?? ''}}" },
+              { "id": "bidtxt_{{idx}}", "type": "basic", "name": "P", "props": { "className": "text-gray-800 dark:text-gray-200" }, "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days ?? '-'}}일 · {{$bid.status}} · {{$bid.company_name ? ($bid.company_name + ($bid.is_recommended ? ' · 추천' : '')) : ''}} · {{$bid.message ?? ''}}" },
               {
                 "id": "award_{{idx}}",
                 "type": "basic",

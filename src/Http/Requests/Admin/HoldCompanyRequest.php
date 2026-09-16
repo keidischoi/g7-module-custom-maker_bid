@@ -3,12 +3,14 @@
 namespace Modules\Custom\MakerBid\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Custom\MakerBid\Http\Concerns\FlattensValidationErrors;
 use Modules\Custom\MakerBid\Support\BlankToNull;
 use Modules\Custom\MakerBid\Support\CompanyRules;
 
-class RejectCompanyRequest extends FormRequest
+class HoldCompanyRequest extends FormRequest
 {
     use BlankToNull;
+    use FlattensValidationErrors;
 
     public function authorize(): bool
     {
@@ -17,7 +19,7 @@ class RejectCompanyRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->nullBlankFields(['note', 'rejected_reason', 'admin_memo']);
+        $this->nullBlankFields(['hold_reason', 'admin_memo', 'note']);
     }
 
     /**
@@ -25,6 +27,6 @@ class RejectCompanyRequest extends FormRequest
      */
     public function rules(): array
     {
-        return CompanyRules::rejectRules();
+        return CompanyRules::holdRules();
     }
 }
