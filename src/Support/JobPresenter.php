@@ -7,6 +7,23 @@ use Modules\Custom\MakerBids\Models\MakerJobFile;
 
 class JobPresenter
 {
+    public static function statusLabel(MakerJob $job): string
+    {
+        $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
+        $status = (string) $job->status;
+        if ($bidding === BiddingRules::CLOSED) {
+            return '입찰종료';
+        }
+        if (in_array($status, ['quote_request', 'open'], true)) {
+            return '입찰중';
+        }
+        if ($status === 'awarded') {
+            return '낙찰 · 입찰중';
+        }
+
+        return JobRules::statusLabel($status);
+    }
+
     public static function present(
         MakerJob $job,
         bool $canViewPersonal,
@@ -17,6 +34,7 @@ class JobPresenter
         $type = $job->relationLoaded('jobType') ? $job->jobType : null;
         $typeRow = $type ? $type->toOptionArray() : null;
         $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
+        $statusLabel = self::statusLabel($job);
 
         $images = [];
         $archives = [];
@@ -47,9 +65,9 @@ class JobPresenter
             'budget_max' => $job->budget_max ?? $job->budget,
             'budget_label' => JobRules::budgetLabel($job->budget_min, $job->budget_max, $job->budget),
             'status' => (string) $job->status,
-            'status_label' => JobRules::statusLabel((string) $job->status),
+            'status_label' => $statusLabel,
             'bidding_status' => $bidding,
-            'bidding_status_label' => $bidding === BiddingRules::CLOSED ? '입찰종료' : '입찰중',
+            'bidding_status_label' => $statusLabel,
             'bidding_closed_at' => optional($job->bidding_closed_at)?->format('Y-m-d H:i:s'),
             'audience' => JobRules::normalizeAudience($job->audience ?? 'all'),
             'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
