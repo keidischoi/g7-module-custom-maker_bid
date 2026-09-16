@@ -133,13 +133,17 @@ expectTrue('company apply profile fill helper', str_contains($company, 'data-cmb
 expectTrue('company apply job types host', str_contains($company, 'data-cmb-job-types'));
 expectTrue('company apply daum postcode', str_contains($company, 'data-cmb-postcode'));
 expectTrue('company apply designated is read-only copy', str_contains($company, '지정업체') && ! str_contains($company, '"name": "is_designated"'));
-expectTrue('company apply submit is 등록 top-right', str_contains($company, 'cmb-company-submit-top') && str_contains($company, '"text": "등록"') && str_contains($company, 'data-cmb-company-submit'));
-expectTrue('company apply submit sits in title row not form card', preg_match('/"id": "title_row"[\s\S]*"id": "submit"[\s\S]*"id": "tabs"[\s\S]*"id": "card"/', $company) === 1);
+expectTrue('company apply submit is 등록 on sub-nav', str_contains($company, 'cmb-company-submit-top') && str_contains($company, '"text": "등록"') && str_contains($company, 'data-cmb-company-submit'));
+expectTrue('company apply submit sits at end of sub-nav not title row', preg_match('/"id": "tabs"[\s\S]*"id": "t5"[\s\S]*"id": "submit"[\s\S]*"id": "card"/', $company) === 1);
+expectTrue('company apply submit is not beside the page title', preg_match('/"id": "title_row"[\s\S]*"id": "submit"[\s\S]*"id": "tabs"/', $company) !== 1);
 expectTrue('company apply has no bottom submit duplicate', ! str_contains($company, '"id": "submit_bottom"'));
 expectTrue('company apply submit posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bids/companies"') && str_contains($company, '"method": "POST"'));
 expectTrue('company apply submit requires auth', preg_match('/"id": "submit"[\s\S]*"auth_required": true/', $company) === 1);
-expectTrue('company apply title row forces horizontal layout', str_contains($company, 'cmb-company-title-row') && str_contains($css, '.cmb-company-title-row') && str_contains($css, 'flex-direction: row !important'));
+expectTrue('company apply head+nav stay one horizontal band', str_contains($company, 'cmb-company-title-row') && str_contains($company, 'cmb-company-nav-row') && str_contains($css, '.cmb-company-nav-row') && str_contains($css, 'flex-direction: row !important'));
 expectTrue('company apply 등록 button is not gated by G7 if', preg_match('/"id": "submit"[\s\S]{0,400}"if":/', $company) !== 1);
+expectTrue('company apply form is not gated by pending status if', preg_match('/"id": "card"[\s\S]{0,250}"if":/', $company) !== 1);
+expectTrue('company apply form has reveal marker', str_contains($company, 'cmb-company-form') && str_contains($company, 'data-cmb-company-form'));
+expectTrue('company apply sub-nav is marked for active sync', str_contains($company, 'data-cmb-subnav'));
 
 $adminJobs = (string) file_get_contents($root.'/resources/layouts/admin/jobs_index.json');
 expectTrue('admin jobs hold', str_contains($adminJobs, '/hold'));
@@ -173,11 +177,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.9.5', str_contains($nav, 'nav.js?v=0.9.5'));
-expectTrue('form.js cache bust 0.9.5', str_contains($nav, 'form.js?v=0.9.5'));
-expectTrue('form.css cache bust 0.9.5', str_contains($nav, 'form.css?v=0.9.5'));
-expectTrue('admin.css cache bust 0.9.5', str_contains($nav, 'admin.css?v=0.9.5'));
-expectTrue('admin.js cache bust 0.9.5', str_contains($nav, 'admin.js?v=0.9.5'));
+expectTrue('nav cache bust 0.9.6', str_contains($nav, 'nav.js?v=0.9.6'));
+expectTrue('form.js cache bust 0.9.6', str_contains($nav, 'form.js?v=0.9.6'));
+expectTrue('form.css cache bust 0.9.6', str_contains($nav, 'form.css?v=0.9.6'));
+expectTrue('admin.css cache bust 0.9.6', str_contains($nav, 'admin.css?v=0.9.6'));
+expectTrue('admin.js cache bust 0.9.6', str_contains($nav, 'admin.js?v=0.9.6'));
+expectTrue('cmb_maker_nav cache bust 0.9.6', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.9.6'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -214,12 +219,14 @@ expectTrue('form.css has temp QA fill button', str_contains($css, '.cmb-qa-fill'
 expectTrue('form.css styles size add/remove', str_contains($css, '.cmb-size-add') && str_contains($css, '.cmb-size-remove'));
 expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box'));
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
-expectTrue('form.css styles company submit top-right', str_contains($css, '.cmb-company-submit-top') && str_contains($css, 'white-space: nowrap'));
+expectTrue('form.css styles company submit on sub-nav', str_contains($css, '.cmb-company-submit-top') && str_contains($css, 'white-space: nowrap') && str_contains($css, '.cmb-company-nav-row'));
+expectTrue('form.css can collapse company form until 등록', str_contains($css, '.cmb-company-form.is-collapsed'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.5'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.6'));
 expectTrue('form.js company submit hides only when approved', str_contains($formJs, 'function syncCompanySubmit') && str_contains($formJs, "st === 'approved'") && str_contains($formJs, "querySelector('[data-cmb-company-submit]')"));
-expectTrue('form.js company submit stays visible for pending', str_contains($formJs, 'syncCompanySubmit') && ! str_contains($formJs, "st === 'pending'"));
+expectTrue('form.js 등록 reveals company form', str_contains($formJs, 'function revealCompanyForm') && str_contains($formJs, 'function bindCompanySubmit') && str_contains($formJs, 'data-cmb-form-revealed'));
+expectTrue('form.js pending collapses form until 등록 click', str_contains($formJs, "st === 'pending'") && str_contains($formJs, 'is-collapsed'));
 expectTrue('form.css locks approved company submit', str_contains($css, '.cmb-company-submit-top.is-locked') && str_contains($css, '.cmb-company-title-row'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
@@ -278,6 +285,10 @@ $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js fetches public settings', str_contains($navJs, '/api/modules/custom-maker_bids/settings'));
 expectTrue('nav.js applies notice html', str_contains($navJs, 'data-cmb-notice') && str_contains($navJs, 'innerHTML'));
 expectTrue('nav.js insert positions', str_contains($navJs, 'after_shop') && str_contains($navJs, 'after_home') && str_contains($navJs, 'prepend_row'));
+expectTrue('nav.js syncs header active to current route', str_contains($navJs, 'function syncHeaderNav') && str_contains($navJs, 'cmb-nav-current') && str_contains($navJs, 'pushState'));
+expectTrue('nav.js syncs sub-nav pills to current route', str_contains($navJs, 'function syncSubNav') && str_contains($navJs, 'cmb-tab-current') && str_contains($navJs, 'data-cmb-subnav'));
+expectTrue('nav.js clears sticky focus chrome', str_contains($navJs, ':not(.cmb-nav-current):focus') && str_contains($navJs, ':not(.cmb-tab-current):focus'));
+expectTrue('list/create/history sub-nav marked for sync', str_contains($list, 'data-cmb-subnav') && str_contains($create, 'data-cmb-subnav') && str_contains((string) file_get_contents($root.'/resources/layouts/user/jobs_history.json'), 'data-cmb-subnav'));
 
 $create = (string) file_get_contents($root.'/resources/layouts/user/jobs_create.json');
 expectTrue('create notice placeholder', str_contains($create, 'data-cmb-notice') && str_contains($create, '"create"'));
@@ -308,8 +319,8 @@ expectTrue('admin settings Selects sit in host wrappers', str_contains($adminSet
 expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($adminJobs, 'cmb-admin-select-host') && str_contains($adminJobsShow, 'cmb-admin-select-host cmb-admin-select-host-md') && str_contains($adminCos, 'cmb-admin-select-host cmb-admin-select-host-sm'));
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
 expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.5'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.5'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.6'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.6'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js does not use body:has', ! str_contains($adminJs, 'body:has'));

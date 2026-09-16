@@ -225,7 +225,8 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "flex items-center gap-1 ml-auto flex-wrap"
+                  "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap",
+                  "data-cmb-subnav": "1"
                 },
                 "children": [
                   {
