@@ -54,6 +54,8 @@ expectTrue('job store envelopes id for layout navigate', str_contains($jobContro
 $jobService = (string) file_get_contents($root.'/src/Services/JobService.php');
 expectTrue('findPublic maps missing id to domain 404', str_contains($jobService, 'function denyPublic') && str_contains($jobService, '->find($id)'));
 expectTrue('findPublic keeps same 404 copy for hidden jobs', str_contains($jobService, '의뢰를 찾을 수 없습니다.'));
+expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])"));
+expectTrue('listPublic uses listStatusFilter', str_contains($jobService, 'listStatusFilter'));
 expectTrue('bids mine route exists', str_contains($api, "Route::get('bids/mine', [BidController::class, 'mine'])"));
 expectTrue('admin job cancel route exists', str_contains($api, "Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])"));
 expectTrue('admin menus include 의뢰 목록', str_contains($modulePhp, '의뢰 목록'));

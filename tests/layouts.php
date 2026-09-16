@@ -105,6 +105,9 @@ expectTrue('create tab is 입찰자 등록', str_contains($create, '입찰자 �
 expectTrue('create 소유권한 요청 near extensions', str_contains($create, '소유권한 요청') && str_contains($create, 'ownership_requested') && ! str_contains($create, '저작권 있음'));
 expectTrue('create 공개 설정 전체/업체만/개인만', str_contains($create, '공개 설정') && str_contains($create, '"value": "all"') && str_contains($create, '업체만') && str_contains($create, '개인만'));
 expectTrue('create status options 보류', str_contains($create, '보류'));
+$qrOpt = strpos($create, '"value": "quote_request"');
+$holdOpt = strpos($create, '"value": "hold"');
+expectTrue('create status lists 견적요청 before 보류', $qrOpt !== false && $holdOpt !== false && $qrOpt < $holdOpt);
 expectTrue('create privacy block', str_contains($create, '주문자명 또는 업체명'));
 
 $list = (string) file_get_contents($root.'/resources/layouts/user/jobs_list.json');
@@ -113,6 +116,9 @@ expectTrue('list keeps 의뢰목록 tab', str_contains($list, '의뢰목록'));
 expectTrue('list uses catalog types filter', str_contains($list, 'job-types'));
 expectTrue('list notes 보류 hidden', str_contains($list, '보류'));
 expectTrue('list jobs fetch uses optional auth_mode', str_contains($list, '"auth_mode": "optional"') && preg_match('/"id": "jobs"[\s\S]*?"auth_mode": "optional"/', $list) === 1);
+expectTrue('list rows read data.data fallback', str_contains($list, 'jobs?.data?.data ?? jobs?.data'));
+expectTrue('list omits empty type query', str_contains($list, 'query.type ||'));
+expectTrue('history rows read data.data fallback', str_contains((string) file_get_contents($root.'/resources/layouts/user/jobs_history.json'), 'jobs?.data?.data ?? jobs?.data'));
 
 $company = (string) file_get_contents($root.'/resources/layouts/user/company_apply.json');
 expectTrue('company apply posts companies', str_contains($company, '"target": "/api/modules/custom-maker_bid/companies"'));

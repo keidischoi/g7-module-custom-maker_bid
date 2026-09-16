@@ -59,7 +59,7 @@
             "id": "empty",
             "type": "basic",
             "name": "P",
-            "if": "{{!(jobs.data && jobs.data.length)}}",
+            "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
             "props": { "className": "text-sm text-gray-500 dark:text-gray-400 py-10" },
             "text": "내 의뢰 이력이 없습니다. 로그인 후 의뢰서를 등록하면 여기에 표시됩니다."
           },
@@ -68,7 +68,7 @@
             "type": "basic",
             "name": "A",
             "props": { "href": "/maker-bid/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
-            "iteration": { "source": "{{jobs.data}}", "item_var": "$item" },
+            "iteration": { "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}", "item_var": "$item" },
             "text": "{{$item.title}}  |  {{$item.status_label || $item.status}}  |  {{$item.budget_label || '미정'}}  |  {{$item.updated_at}}"
           }
         ]

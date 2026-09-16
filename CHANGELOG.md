@@ -9,6 +9,7 @@
 ### Fixed
 
 - 의뢰 상세에서 작성자·로그인 회원이 「의뢰를 찾을 수 없습니다.」를 보던 문제를 수정. `GET /jobs`·`GET /jobs/{id}`에 `optional.sanctum`을 붙이고, 목록/상세 data_source는 `auth_mode: "optional"`로 세션 토큰을 실어 보류·업체만/개인만 의뢰도 소유자·해당 회원이 열 수 있습니다. 비회원에게는 기존과 같이 숨깁니다.
+- 공개 목록이 비어 보이던 문제를 수정. 로그인 작성자의 의뢰(보류 포함)는 목록·이력에 나오고, 다른 회원에게는 보류를 숨깁니다. `status=open`은 견적요청·의뢰·open을 모두 포함합니다. G7 배열 경로는 `jobs?.data?.data ?? jobs?.data`를 씁니다. 상태 Select 기본 옵션을 견적요청으로 둡니다.
 - 등록/수정 성공 후 `/maker-bid/undefined`로 가던 문제를 수정. 응답을 `{ data: job, ...job }`로 맞추고 `{{response.data.id || response.id}}`로 숫자 id에 이동합니다.
 - 없는 id는 `findOrFail` 대신 같은 404 문구의 `DomainException`을 씁니다. 권한 없는 이에게 존재 여부를 드러내지 않습니다.
 

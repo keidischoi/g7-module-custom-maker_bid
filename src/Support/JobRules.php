@@ -248,6 +248,42 @@ class JobRules
         return $isMember;
     }
 
+    /**
+     * Ignore empty / template-undefined type query params so the public list
+     * is not filtered to a slug that matches nothing.
+     */
+    public static function listTypeFilter(mixed $type): ?string
+    {
+        $raw = strtolower(trim((string) $type));
+        if ($raw === '' || in_array($raw, ['undefined', 'null', '*', 'all'], true)) {
+            return null;
+        }
+
+        return TypeCatalog::normalizeSlug((string) $type);
+    }
+
+    /**
+     * Status query for the public list. `open` means every biddable status
+     * (request / quote_request / open), not the legacy `open` column value.
+     *
+     * @return list<string>|null  null = no status constraint
+     */
+    public static function listStatusFilter(mixed $status): ?array
+    {
+        $raw = strtolower(trim((string) $status));
+        if ($raw === '' || in_array($raw, ['undefined', 'null', '*', 'all'], true)) {
+            return null;
+        }
+        if ($raw === 'open' || $raw === 'biddable') {
+            return self::BIDDABLE_STATUSES;
+        }
+        if (! self::isAllowedStatus($raw)) {
+            return [];
+        }
+
+        return [$raw];
+    }
+
     public static function isOpen(string $status, mixed $closesAt = null, ?DateTimeInterface $now = null): bool
     {
         if (! self::isBiddableStatus($status)) {
