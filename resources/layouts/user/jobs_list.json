@@ -56,7 +56,8 @@
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰목록" },
                   { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
                   { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰자 등록" },
+                  { "id": "t6", "type": "basic", "name": "A", "props": { "href": "/maker-bids/companies", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰자 목록" }
                 ]
               }
             ]
@@ -86,7 +87,7 @@
             "name": "P",
             "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
             "props": { "className": "text-sm text-gray-500 dark:text-gray-400 py-10" },
-            "text": "등록된 의뢰가 없습니다. 의뢰서 작성에서 첫 의뢰를 올려 보세요. 보류로 저장했다면 로그인 후 이력 탭에서도 확인할 수 있습니다."
+            "text": "등록된 의뢰가 없습니다."
           },
           {
             "id": "item",
@@ -94,7 +95,7 @@
             "name": "A",
             "props": { "href": "/maker-bids/{{$item.id}}", "className": "block py-4 border-b border-gray-200 dark:border-white/10 text-gray-900 dark:text-white" },
             "iteration": { "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}", "item_var": "$item" },
-            "text": "{{$item.title}}  |  {{$item.type_name || $item.type}}  |  {{$item.status_label || $item.status}}  |  공개 {{$item.audience_label || '전체'}}  |  예산 {{$item.budget_label || '미정'}}  |  견적 {{$item.bids_count ?? 0}}"
+            "text": "{{$item.title}}  |  {{$item.type_name || $item.type}}  |  {{$item.status_label || $item.status}}  |  예산 {{$item.budget_label || '미정'}}  |  견적 {{$item.bids_count ?? 0}}"
           }
         ]
       }
