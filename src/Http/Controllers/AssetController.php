@@ -17,6 +17,11 @@ class AssetController extends Controller
         return $this->asset('form.js', 'application/javascript; charset=UTF-8');
     }
 
+    public function page(): Response
+    {
+        return $this->asset('page.js', 'application/javascript; charset=UTF-8');
+    }
+
     public function formCss(): Response
     {
         return $this->asset('form.css', 'text/css; charset=UTF-8');
