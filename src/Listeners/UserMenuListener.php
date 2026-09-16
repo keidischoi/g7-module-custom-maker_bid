@@ -8,15 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.6';
-
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.6';
-
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.6';
-
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.6';
-
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.6';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.7';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.7';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.7';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.7';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.7';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.7';
 
     public static function getSubscribedHooks(): array
     {
@@ -57,7 +54,8 @@ class UserMenuListener implements HookListenerInterface
             }
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
-            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply'], true)) {
+            $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
+            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply', 'jobs_show'], true)) {
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
@@ -69,9 +67,6 @@ class UserMenuListener implements HookListenerInterface
         return $layout;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     private function menuSettings(): array
     {
         try {
@@ -86,10 +81,6 @@ class UserMenuListener implements HookListenerInterface
         return SettingsRules::defaults()['menu'];
     }
 
-    /**
-     * @param  array<string, mixed>  $node
-     * @return array<string, mixed>
-     */
     private function removeComponent(array $node, string $id): array
     {
         foreach (['children', 'injections', 'components'] as $key) {
@@ -132,16 +123,13 @@ class UserMenuListener implements HookListenerInterface
         return $node;
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $scripts
-     * @return list<array<string, mixed>>
-     */
     private function upsertScript(array $scripts, string $id, string $src): array
     {
         $found = false;
         $needles = [
             'cmb_maker_nav' => 'custom-maker_bids/assets/nav.js',
             'cmb_maker_form' => 'custom-maker_bids/assets/form.js',
+            'cmb_maker_page' => 'custom-maker_bids/assets/page.js',
             'cmb_maker_admin_js' => 'custom-maker_bids/assets/admin.js',
         ];
         $needle = $needles[$id] ?? $id;
@@ -166,10 +154,6 @@ class UserMenuListener implements HookListenerInterface
         return $scripts;
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $styles
-     * @return list<array<string, mixed>>
-     */
     private function upsertStyle(array $styles, string $id, string $href): array
     {
         $found = false;
@@ -197,4 +181,3 @@ class UserMenuListener implements HookListenerInterface
         return $styles;
     }
 }
-
