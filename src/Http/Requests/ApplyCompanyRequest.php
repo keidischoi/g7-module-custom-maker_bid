@@ -20,6 +20,11 @@ class ApplyCompanyRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['company', 'form']);
+        $this->coerceSlugFields([
+            'name', 'kind', 'type', 'bio', 'note', 'business_no',
+            'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email',
+            'zipcode', 'address', 'address_detail',
+        ]);
         $this->nullBlankFields([
             'type', 'note', 'bio', 'business_no', 'homepage_url', 'portfolio_url',
             'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
@@ -33,17 +38,11 @@ class ApplyCompanyRequest extends FormRequest
         $this->offsetUnset('designated');
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return CompanyRules::applyRules();
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return CompanyRules::messages();
