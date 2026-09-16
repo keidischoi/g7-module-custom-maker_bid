@@ -14,75 +14,63 @@ use Modules\Custom\MakerBids\Http\Controllers\JobFileController;
 use Modules\Custom\MakerBids\Http\Controllers\JobTypeController;
 use Modules\Custom\MakerBids\Http\Controllers\SettingsController;
 
-Route::get('assets/nav.js', [AssetController::class, 'nav'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.nav');
-Route::get('assets/form.js', [AssetController::class, 'form'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.form');
-Route::get('assets/page.js', [AssetController::class, 'page'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.page');
-Route::get('assets/form.css', [AssetController::class, 'formCss'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.form.css');
-Route::get('assets/admin.css', [AssetController::class, 'adminCss'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.admin.css');
-Route::get('assets/admin.js', [AssetController::class, 'adminJs'])
-    ->middleware(['throttle:600,1'])
-    ->name('assets.admin.js');
+Route::get('assets/nav.js', [AssetController::class, 'nav'])->middleware(['throttle:600,1'])->name('assets.nav');
+Route::get('assets/form.js', [AssetController::class, 'form'])->middleware(['throttle:600,1'])->name('assets.form');
+Route::get('assets/page.js', [AssetController::class, 'page'])->middleware(['throttle:600,1'])->name('assets.page');
+Route::get('assets/form.css', [AssetController::class, 'formCss'])->middleware(['throttle:600,1'])->name('assets.form.css');
+Route::get('assets/admin.css', [AssetController::class, 'adminCss'])->middleware(['throttle:600,1'])->name('assets.admin.css');
+Route::get('assets/admin.js', [AssetController::class, 'adminJs'])->middleware(['throttle:600,1'])->name('assets.admin.js');
 
-Route::get('job-types', [JobTypeController::class, 'index'])
-    ->middleware(['throttle:600,1'])
-    ->name('job-types.index');
-Route::get('files/{hash}', [JobFileController::class, 'download'])
-    ->middleware(['throttle:600,1'])
-    ->name('files.download');
-
-Route::get('jobs', [JobController::class, 'index'])
-    ->middleware(['optional.sanctum', 'throttle:600,1'])
-    ->name('jobs.index');
-Route::get('jobs/{id}', [JobController::class, 'show'])
-    ->whereNumber('id')
-    ->middleware(['optional.sanctum', 'throttle:600,1'])
-    ->name('jobs.show');
-
-Route::get('companies', [CompanyController::class, 'index'])
-    ->middleware(['throttle:600,1'])
-    ->name('companies.index');
-Route::get('settings', [SettingsController::class, 'show'])
-    ->middleware(['throttle:600,1'])
-    ->name('settings.show');
+Route::get('job-types', [JobTypeController::class, 'index'])->middleware(['throttle:600,1'])->name('job-types.index');
+Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware(['throttle:600,1'])->name('files.download');
+Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
+Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
+Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
+Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
     Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
-    Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])
-        ->whereNumber('id')
-        ->name('jobs.viewer');
+    Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->name('jobs.viewer');
     Route::post('jobs', [JobController::class, 'store'])->name('jobs.store');
-    Route::patch('jobs/{id}', [JobController::class, 'update'])
-        ->whereNumber('id')
-        ->name('jobs.update');
+    Route::patch('jobs/{id}', [JobController::class, 'update'])->whereNumber('id')->name('jobs.update');
     Route::post('uploads', [JobFileController::class, 'store'])->name('uploads.store');
-    Route::post('jobs/{id}/files', [JobFileController::class, 'store'])
-        ->whereNumber('id')
-        ->name('jobs.files.store');
+    Route::post('jobs/{id}/files', [JobFileController::class, 'store'])->whereNumber('id')->name('jobs.files.store');
     Route::delete('uploads/{hash}', [JobFileController::class, 'destroy'])->name('uploads.destroy');
     Route::get('bids/mine', [BidController::class, 'mine'])->name('bids.mine');
-    Route::post('jobs/{id}/bids', [BidController::class, 'store'])
-        ->whereNumber('id')
-        ->name('jobs.bids.store');
-    Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])
-        ->whereNumber('id')
-        ->whereNumber('bidId')
-        ->name('jobs.bids.update');
-    Route::post('jobs/{id}/award', [JobController::class, 'award'])
-        ->whereNumber('id')
-        ->name('jobs.award');
-
+    Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->name('jobs.bids.store');
+    Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->name('jobs.bids.update');
+    Route::post('jobs/{id}/award', [JobController::class, 'award'])->whereNumber('id')->name('jobs.award');
     Route::get('companies/form-defaults', [CompanyController::class, 'formDefaults'])->name('companies.form-defaults');
     Route::post('companies', [CompanyController::class, 'store'])->name('companies.apply');
     Route::get('companies/me', [CompanyController::class, 'me'])->name('companies.me');
+});
+
+Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(function () {
+    Route::get('jobs', [JobAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.jobs.index');
+    Route::get('jobs/{id}', [JobAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.jobs.show');
+    Route::patch('jobs/{id}', [JobAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.update');
+    Route::post('jobs/{id}/hold', [JobAdminController::class, 'hold'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.hold');
+    Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.cancel');
+    Route::delete('jobs/{id}', [JobAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.delete')->name('admin.jobs.destroy');
+    Route::get('job-types', [JobTypeAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.job-types.index');
+    Route::post('job-types', [JobTypeAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.store');
+    Route::patch('job-types/{id}', [JobTypeAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.update');
+    Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.move');
+    Route::delete('job-types/{id}', [JobTypeAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.destroy');
+    Route::get('bids', [BidAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.index');
+    Route::get('bids/{id}', [BidAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.show');
+    Route::patch('bids/{id}', [BidAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.update')->name('admin.bids.update');
+    Route::delete('bids/{id}', [BidAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.delete')->name('admin.bids.destroy');
+    Route::get('companies', [CompanyAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.companies.read')->name('admin.companies.index');
+    Route::get('companies/{id}', [CompanyAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.read')->name('admin.companies.show');
+    Route::post('companies', [CompanyAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.companies.create')->name('admin.companies.store');
+    Route::patch('companies/{id}', [CompanyAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.update');
+    Route::post('companies/{id}/approve', [CompanyAdminController::class, 'approve'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.approve');
+    Route::post('companies/{id}/hold', [CompanyAdminController::class, 'hold'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.hold');
+    Route::post('companies/{id}/reject', [CompanyAdminController::class, 'reject'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.reject');
+    Route::delete('companies/{id}', [CompanyAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.delete')->name('admin.companies.destroy');
+    Route::get('settings', [SettingsAdminController::class, 'show'])->middleware('permission:admin,custom-maker_bids.settings.read')->name('admin.settings.show');
+    Route::put('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.update');
+    Route::patch('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.patch');
 });
