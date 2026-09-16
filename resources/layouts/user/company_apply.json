@@ -1,1 +1,264 @@
-see-artifacts
+{
+  "version": "1.0.0",
+  "layout_name": "company_apply",
+  "extends": "_user_base",
+  "meta": { "title": "입찰자 등록" },
+  "errorHandling": {
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+  },
+  "state": {
+    "company": {
+      "kind": "company",
+      "name": "",
+      "business_no": "",
+      "job_types": [],
+      "bio": "",
+      "homepage_url": "",
+      "portfolio_url": "",
+      "manager_name": "",
+      "phone": "",
+      "email": "",
+      "zipcode": "",
+      "address": "",
+      "address_detail": "",
+      "upload_token": "",
+      "logo_count": 0
+    }
+  },
+  "data_sources": [
+    {
+      "id": "types",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/job-types",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "fallback": { "data": [] }
+    },
+    {
+      "id": "defaults",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/companies/form-defaults",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true,
+      "fallback": { "data": { "types": [], "upload_token": "", "name": "", "profile_name": "", "manager_name": "", "phone": "", "email": "", "zipcode": "", "address": "", "address_detail": "" } },
+      "onSuccess": [
+        { "handler": "setState", "params": { "target": "local", "company.upload_token": "{{response.data.upload_token || _local.company.upload_token}}" } }
+      ]
+    },
+    {
+      "id": "me",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/companies/me",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true,
+      "errorHandling": { "401": { "handler": "suppress" } },
+      "fallback": { "data": null }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "max-w-5xl mx-auto px-4 py-8 space-y-6" },
+        "children": [
+          {
+            "id": "head",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "cmb-company-head flex flex-row flex-wrap items-center justify-between gap-4 w-full" },
+            "children": [
+              { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "입찰자 등록" },
+              {
+                "id": "tabs",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap justify-end", "data-cmb-subnav": "1" },
+                "children": [
+                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
+                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
+                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
+                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "입찰자 등록" },
+                  { "id": "t6", "type": "basic", "name": "A", "props": { "href": "/maker-bids/companies", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰자 목록" }
+                ]
+              }
+            ]
+          },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "업체 또는 개인으로 등록할 수 있습니다. 관리자 승인 후 입찰에 업체 정보가 붙습니다. 거절된 경우에만 다시 신청할 수 있습니다." },
+          {
+            "id": "card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-order-card cmb-company-form max-w-2xl mx-auto rounded-2xl border border-gray-200 dark:border-gray-700 bg-card dark:bg-gray-800 px-6 sm:px-10 py-10 space-y-6",
+              "dataKey": "company",
+              "trackChanges": true,
+              "data-cmb-company-form": "1"
+            },
+            "children": [
+              { "id": "card_title", "type": "basic", "name": "H2", "props": { "className": "text-xl font-semibold text-center text-gray-900 dark:text-white" }, "text": "입찰자 등록" },
+              { "id": "card_sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-center text-gray-500 dark:text-gray-400" }, "text": "업체 또는 개인 정보를 입력합니다. 관리자가 보류/승인합니다." },
+              {
+                "id": "profile_row",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "flex items-center justify-between gap-3" },
+                "children": [
+                  { "id": "profile_hint", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-600 dark:text-gray-300" }, "text": "회원 프로필이 있으면 이름·연락처·이메일·주소를 채울 수 있습니다." },
+                  {
+                    "id": "profile_fill_wrap",
+                    "type": "basic",
+                    "name": "Label",
+                    "props": { "className": "inline-flex items-center gap-2 text-sm cursor-pointer" },
+                    "children": [
+                      {
+                        "id": "profile_fill",
+                        "type": "basic",
+                        "name": "Checkbox",
+                        "props": {
+                          "className": "cmb-order-check",
+                          "data-cmb-profile-fill": "1",
+                          "data-cmb-seed-name": "{{defaults.data.profile_name || defaults.data.name || ''}}",
+                          "data-cmb-seed-manager_name": "{{defaults.data.manager_name || defaults.data.profile_name || defaults.data.name || ''}}",
+                          "data-cmb-seed-phone": "{{defaults.data.phone || ''}}",
+                          "data-cmb-seed-email": "{{defaults.data.email || ''}}",
+                          "data-cmb-seed-zipcode": "{{defaults.data.zipcode || ''}}",
+                          "data-cmb-seed-address": "{{defaults.data.address || ''}}",
+                          "data-cmb-seed-address_detail": "{{defaults.data.address_detail || ''}}"
+                        }
+                      },
+                      { "id": "profile_fill_txt", "type": "basic", "name": "Span", "text": "회원정보 자동입력 사용" }
+                    ]
+                  }
+                ]
+              },
+              { "id": "kind_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "등록유형" },
+              {
+                "id": "kind",
+                "type": "basic",
+                "name": "Select",
+                "props": {
+                  "name": "kind",
+                  "value": "{{_local.company.kind}}",
+                  "options": [
+                    { "value": "company", "label": "업체" },
+                    { "value": "individual", "label": "개인" }
+                  ],
+                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                },
+                "actions": [
+                  { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "company.kind": "{{$event.target.value}}" } }
+                ]
+              },
+              { "id": "name_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "업체/개인 이름" },
+              { "id": "name", "type": "basic", "name": "Input", "props": { "name": "name", "value": "{{_local.company.name}}", "placeholder": "이름", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "biz_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "사업자 번호 (선택)" },
+              { "id": "business_no", "type": "basic", "name": "Input", "props": { "name": "business_no", "placeholder": "000-00-00000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "job_types_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "주력유형" },
+              { "id": "job_types_host", "type": "basic", "name": "Div", "props": { "className": "flex flex-wrap gap-2", "data-cmb-job-types": "1" } },
+              { "id": "job_types_hidden", "type": "basic", "name": "Input", "props": { "type": "hidden", "name": "job_types", "value": "{{_local.company.job_types}}" } },
+              { "id": "logo_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "표시할 로고 또는 이미지 (1장, 최대 512×512)" },
+              {
+                "id": "cmb_logo_uploader",
+                "type": "composite",
+                "name": "FileUploader",
+                "props": {
+                  "collection": "logos",
+                  "maxFiles": 1,
+                  "maxSize": 10,
+                  "maxWidth": 512,
+                  "maxHeight": 512,
+                  "accept": ".jpg,.jpeg,.png,.gif,.webp",
+                  "autoUpload": false,
+                  "className": "cmb-order-uploader mt-1",
+                  "data-cmb-logo-uploader": "1",
+                  "uploadTriggerEvent": "upload:maker_bids_logo",
+                  "apiEndpoints": {
+                    "upload": "/api/modules/custom-maker_bids/uploads",
+                    "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                    "reorder": ""
+                  },
+                  "uploadParams": {
+                    "collection": "logos",
+                    "token": "{{_local.company.upload_token || defaults.data.upload_token}}",
+                    "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
+                  }
+                }
+              },
+              { "id": "bio_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "소개 및 경력" },
+              { "id": "bio", "type": "basic", "name": "Textarea", "props": { "name": "bio", "placeholder": "장비, 경력, 소개", "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "home_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "운영 홈페이지 URL" },
+              { "id": "homepage_url", "type": "basic", "name": "Input", "props": { "name": "homepage_url", "placeholder": "https://", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "port_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "참고/포트폴리오 URL" },
+              { "id": "portfolio_url", "type": "basic", "name": "Input", "props": { "name": "portfolio_url", "placeholder": "https://", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "manager_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "담당자" },
+              { "id": "manager_name", "type": "basic", "name": "Input", "props": { "name": "manager_name", "placeholder": "담당자 이름", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "phone_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "연락처" },
+              { "id": "phone", "type": "basic", "name": "Input", "props": { "name": "phone", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "email_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "이메일" },
+              { "id": "email", "type": "basic", "name": "Input", "props": { "name": "email", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "addr_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium" }, "text": "주소" },
+              {
+                "id": "zip_row",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "flex items-center gap-2" },
+                "children": [
+                  { "id": "zipcode", "type": "basic", "name": "Input", "props": { "name": "zipcode", "placeholder": "우편번호", "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+                  { "id": "postcode_btn", "type": "basic", "name": "Button", "text": "주소 검색", "props": { "type": "button", "data-cmb-postcode": "1", "className": "shrink-0 px-3 py-2.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600" } }
+                ]
+              },
+              { "id": "address", "type": "basic", "name": "Input", "props": { "name": "address", "placeholder": "기본 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              { "id": "address_detail", "type": "basic", "name": "Input", "props": { "name": "address_detail", "placeholder": "상세 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm" } },
+              {
+                "id": "submit",
+                "type": "basic",
+                "name": "Button",
+                "text": "등록",
+                "props": {
+                  "type": "button",
+                  "data-cmb-company-submit": "1",
+                  "className": "cmb-order-submit w-full mt-4 px-5 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold"
+                },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "sequence",
+                    "params": {
+                      "actions": [
+                        { "handler": "emitEvent", "params": { "event": "upload:maker_bids_logo" } },
+                        {
+                          "handler": "apiCall",
+                          "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/companies",
+                          "params": { "method": "POST", "body": "{{_local.company}}" },
+                          "onSuccess": [
+                            { "handler": "toast", "params": { "type": "success", "message": "입찰자 신청을 보냈습니다." } },
+                            { "handler": "refetchDataSource", "params": { "dataSourceId": "me" } }
+                          ],
+                          "onError": [
+                            { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
