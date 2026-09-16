@@ -14,6 +14,7 @@
       "title": "",
       "type": "",
       "requires_address": "1",
+      "includes_modeling": "0",
       "budget_min": "",
       "budget_max": "",
       "closes_at": "",
@@ -70,7 +71,7 @@
       "auto_fetch": true,
       "refetchOnMount": true,
       "auth_required": true,
-      "fallback": { "data": { "types": [], "upload_token": "", "contact_name": "", "contact_phone": "", "contact_email": "", "zipcode": "", "address": "", "address_detail": "", "contact_hours_from": "09:00", "contact_hours_to": "18:00", "manager_name": "", "manager_phone": "", "manager_email": "" } },
+      "fallback": { "data": { "types": [], "upload_token": "", "contact_name": "", "profile_contact_name": "", "company_name": "", "contact_phone": "", "contact_email": "", "zipcode": "", "address": "", "address_detail": "", "contact_hours_from": "09:00", "contact_hours_to": "18:00", "manager_name": "", "manager_phone": "", "manager_email": "" } },
       "onSuccess": [
         {
           "handler": "setState",
@@ -150,7 +151,35 @@
                   { "id": "title_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제목" },
                   { "id": "title", "type": "basic", "name": "Input", "props": { "name": "title", "placeholder": "예: PLA 피규어 15cm 출력", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
                   { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "유형" },
-                  { "id": "type", "type": "basic", "name": "Select", "props": { "name": "type", "placeholder": "유형을 선택하세요", "options": "{{defaults.data.types || types.data || []}}", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
+                  {
+                    "id": "type_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "children": [
+                      {
+                        "id": "type",
+                        "type": "basic",
+                        "name": "Select",
+                        "props": {
+                          "name": "type",
+                          "value": "{{_local.form.type}}",
+                          "placeholder": "유형을 선택하세요",
+                          "disabled": false,
+                          "options": "{{defaults.data?.types?.length ? defaults.data.types : (types.data?.length ? types.data : [{value:'modeling_3d',label:'3D 모델링'},{value:'print_3d',label:'3D 출력 대행'},{value:'full_package',label:'풀 패키지 제작 (모델링 + 출력 + 후가공)'},{value:'character_figure',label:'캐릭터·피규어 커미션'},{value:'design_mockup',label:'디자인 목업(Mock-up) 및 시제품'},{value:'working_prototype',label:'워킹 프로토타입(기능성 시제품)'}])}}",
+                          "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": { "target": "local", "form.type": "{{$event.target.value}}" }
+                          }
+                        ]
+                      }
+                    ]
+                  },
                   { "id": "budget_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "예산 (원)" },
                   {
                     "id": "budget_row",
@@ -195,11 +224,10 @@
                         "id": "rush_date_wrap",
                         "type": "basic",
                         "name": "Div",
-                        "if": "{{_local.form.rush_fee_enabled}}",
-                        "props": { "className": "space-y-1" },
+                        "props": { "className": "cmb-cond cmb-cond-rush space-y-1" },
                         "children": [
                           { "id": "rush_date_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "적용 조건 시각" },
-                          { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "type": "datetime-local", "disabled": "{{!_local.form.rush_fee_enabled}}", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                          { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
                         ]
                       }
                     ]
@@ -225,18 +253,36 @@
                   },
                   { "id": "status_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "상태" },
                   {
-                    "id": "status",
+                    "id": "status_wrap",
                     "type": "basic",
-                    "name": "Select",
-                    "props": {
-                      "name": "status",
-                      "options": [
-                        { "value": "hold", "label": "보류" },
-                        { "value": "request", "label": "의뢰" },
-                        { "value": "quote_request", "label": "견적요청" }
-                      ],
-                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    "name": "Div",
+                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "children": [
+                      {
+                        "id": "status",
+                        "type": "basic",
+                        "name": "Select",
+                        "props": {
+                          "name": "status",
+                          "value": "{{_local.form.status}}",
+                          "disabled": false,
+                          "options": [
+                            { "value": "hold", "label": "보류" },
+                            { "value": "request", "label": "의뢰" },
+                            { "value": "quote_request", "label": "견적요청" }
+                          ],
+                          "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": { "target": "local", "form.status": "{{$event.target.value}}" }
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               },
@@ -273,6 +319,7 @@
                       { "id": "size_h", "type": "basic", "name": "Input", "props": { "name": "size_h", "type": "hidden" } }
                     ]
                   },
+                  { "id": "ext_block", "type": "basic", "name": "Div", "props": { "className": "cmb-cond cmb-cond-ext space-y-2", "data-cmb-ext": "1" }, "children": [
                   { "id": "ext_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제공 확장자" },
                   {
                     "id": "ext_row",
@@ -288,7 +335,8 @@
                       { "id": "ext_gcode_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_gcode", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_gcode" } }, { "id": "ext_gcode_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "GCODE" } ] },
                       { "id": "ext_fbx_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_fbx", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_fbx" } }, { "id": "ext_fbx_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "FBX" } ] }
                     ]
-                  },
+                  }
+                  ] },
                   {
                     "id": "rev_row",
                     "type": "basic",
@@ -318,27 +366,26 @@
                         "id": "rev_fields",
                         "type": "basic",
                         "name": "Div",
-                        "if": "{{_local.form.revision_enabled}}",
-                        "props": { "className": "grid grid-cols-2 gap-3" },
+                        "props": { "className": "cmb-cond cmb-cond-rev grid grid-cols-2 gap-3" },
                         "children": [
-                          {
-                            "id": "revision_cost_wrap",
-                            "type": "basic",
-                            "name": "Div",
-                            "props": { "className": "space-y-1" },
-                            "children": [
-                              { "id": "revision_cost_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "최소 비용 (원)" },
-                              { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "type": "number", "min": "0", "placeholder": "10000", "disabled": "{{!_local.form.revision_enabled}}", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
-                            ]
-                          },
                           {
                             "id": "revision_count_wrap",
                             "type": "basic",
                             "name": "Div",
                             "props": { "className": "space-y-1" },
                             "children": [
-                              { "id": "revision_count_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "몇 회 수정 가능" },
-                              { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "type": "number", "min": "0", "placeholder": "2", "disabled": "{{!_local.form.revision_enabled}}", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                              { "id": "revision_count_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "최소 횟수" },
+                              { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "type": "number", "min": "0", "placeholder": "1", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
+                            ]
+                          },
+                          {
+                            "id": "revision_cost_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": { "className": "space-y-1" },
+                            "children": [
+                              { "id": "revision_cost_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회당 / 최대 수정비용 (원)" },
+                              { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } }
                             ]
                           }
                         ]
@@ -437,7 +484,25 @@
                 "children": [
                   { "id": "sec_privacy_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "03. 개인정보" },
                   { "id": "sec_privacy_note", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회원 프로필 값을 기본으로 채웁니다. 제작 의뢰가 확정되기 전까지 상대에게는 가려집니다." },
-                  { "id": "cname_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주문자명 또는 업체명" },
+                  {
+                    "id": "cname_head",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": { "className": "flex items-center justify-between gap-3" },
+                    "children": [
+                      { "id": "cname_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주문자명 또는 업체명" },
+                      {
+                        "id": "contact_name_profile_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "children": [
+                          { "id": "contact_name_profile", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "data-cmb-profile-name": "1", "data-cmb-profile-name-seed": "{{defaults.data.profile_contact_name || defaults.data.company_name || defaults.data.contact_name || ''}}" } },
+                          { "id": "contact_name_profile_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text whitespace-nowrap" }, "text": "회원정보 사용" }
+                        ]
+                      }
+                    ]
+                  },
                   { "id": "contact_name", "type": "basic", "name": "Input", "props": { "name": "contact_name", "placeholder": "이름 / 업체명", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },
                   { "id": "cphone_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락처" },
                   { "id": "contact_phone", "type": "basic", "name": "Input", "props": { "name": "contact_phone", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" } },

@@ -79,13 +79,19 @@ expectTrue('create archive accept zip', str_contains($create, '.zip,.tar,.gz'));
 expectTrue('create daum postcode button', str_contains($create, 'data-cmb-postcode'));
 expectTrue('create budget range', str_contains($create, 'budget_min') && str_contains($create, 'budget_max'));
 expectTrue('create rush checkbox', str_contains($create, 'rush_fee_enabled'));
-expectTrue('create rush calendar under checkbox', str_contains($create, '"type": "datetime-local"') && str_contains($create, '적용 조건 시각') && str_contains($create, 'rush_date_wrap'));
+expectTrue('create rush calendar under checkbox', str_contains($create, '"type": "datetime-local"') && str_contains($create, '적용 조건 시각') && str_contains($create, 'rush_date_wrap') && str_contains($create, 'cmb-cond-rush'));
 expectTrue('create rush calendar nested in rush_row', preg_match('/"id": "rush_row"[\s\S]*"id": "rush_date_wrap"[\s\S]*"id": "premium_row"/', $create) === 1);
+expectTrue('create rush calendar not gated only by if', ! str_contains($create, '"id": "rush_date_wrap"') || ! preg_match('/"id": "rush_date_wrap"[\s\S]{0,200}"if": "{{_local.form.rush_fee_enabled}}"/', $create));
+expectTrue('create Select is value-controlled', str_contains($create, '"value": "{{_local.form.type}}"') && str_contains($create, '"value": "{{_local.form.status}}"') && str_contains($create, 'form.type') && str_contains($create, 'cmb-order-select'));
+expectTrue('create Select options use length fallback', str_contains($create, 'defaults.data?.types?.length') || str_contains($create, 'types.data?.length'));
 expectTrue('create extension checkbox labels are explicit text', str_contains($create, '"text": "STL"') && str_contains($create, '"text": "3MF"') && str_contains($create, '"text": "GCODE"') && str_contains($create, '"text": "FBX"'));
 expectTrue('create checkbox labels use contrast classes', str_contains($create, 'cmb-order-check-label') && str_contains($create, 'cmb-order-check-text') && str_contains($create, 'dark:text-gray-100'));
 expectTrue('create rush/premium/revision checkbox labels', str_contains($create, '"text": "적용 가능"') && str_contains($create, '"text": "적용 유무"'));
 expectTrue('create daytime helper 주간만', str_contains($create, '주간만') && str_contains($create, 'data-cmb-daytime'));
-expectTrue('create revision min cost and max count under checkbox', str_contains($create, '최소 비용 (원)') && str_contains($create, '몇 회 수정 가능') && preg_match('/"id": "rev_row"[\s\S]*"id": "rev_fields"[\s\S]*"id": "desc_label"/', $create) === 1);
+expectTrue('create revision min count and cost per revision under checkbox', str_contains($create, '최소 횟수') && str_contains($create, '회당 / 최대 수정비용') && preg_match('/"id": "rev_row"[\s\S]*"id": "rev_fields"[\s\S]*"id": "desc_label"/', $create) === 1);
+expectTrue('create revision fields not gated only by if', str_contains($create, 'cmb-cond-rev'));
+expectTrue('create profile name helper 회원정보 사용', str_contains($create, '회원정보 사용') && str_contains($create, 'data-cmb-profile-name'));
+expectTrue('create extensions hidden unless modeling', str_contains($create, 'cmb-cond-ext') && str_contains($create, 'data-cmb-ext') && str_contains($create, 'includes_modeling'));
 expectTrue('create size rows add and delete', str_contains($create, 'data-cmb-size-add') && str_contains($create, '"text": "추가"') && str_contains($create, 'data-cmb-sizes-list') && str_contains($create, 'data-cmb-sizes'));
 expectTrue('create manager info card', str_contains($create, '담당자 정보') && str_contains($create, '담당자 명') && str_contains($create, '담당자 연락처') && str_contains($create, '담당자 이메일') && str_contains($create, 'cmb-manager-box') && str_contains($create, 'manager_name'));
 expectTrue('create temp QA fill button', str_contains($create, 'data-cmb-qa-fill') && str_contains($create, '임의입력') && str_contains($create, 'cmb-qa-fill'));
@@ -117,9 +123,9 @@ expectTrue('admin company reject', str_contains($adminCos, '/reject'));
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.5.2', str_contains($nav, 'nav.js?v=0.5.2'));
-expectTrue('form.js cache bust 0.5.2', str_contains($nav, 'form.js?v=0.5.2'));
-expectTrue('form.css cache bust 0.5.2', str_contains($nav, 'form.css?v=0.5.2'));
+expectTrue('nav cache bust 0.5.3', str_contains($nav, 'nav.js?v=0.5.3'));
+expectTrue('form.js cache bust 0.5.3', str_contains($nav, 'form.js?v=0.5.3'));
+expectTrue('form.css cache bust 0.5.3', str_contains($nav, 'form.css?v=0.5.3'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
@@ -128,8 +134,11 @@ expectTrue('edit card uses theme surface', str_contains($edit, 'cmb-order-card')
 expectTrue('edit does not use zinc paper card', ! str_contains($edit, 'zinc-900') && ! str_contains($edit, 'zinc-950'));
 expectTrue('edit extension checkbox labels are explicit text', str_contains($edit, '"text": "STL"') && str_contains($edit, 'cmb-order-check-label'));
 expectTrue('edit daytime helper 주간만', str_contains($edit, '주간만') && str_contains($edit, 'data-cmb-daytime'));
-expectTrue('edit rush calendar is datetime-local', str_contains($edit, '"type": "datetime-local"') && str_contains($edit, '적용 조건 시각'));
-expectTrue('edit revision min cost and max count', str_contains($edit, '최소 비용 (원)') && str_contains($edit, '몇 회 수정 가능'));
+expectTrue('edit rush calendar is datetime-local', str_contains($edit, '"type": "datetime-local"') && str_contains($edit, '적용 조건 시각') && str_contains($edit, 'cmb-cond-rush'));
+expectTrue('edit revision min count and cost per revision', str_contains($edit, '최소 횟수') && str_contains($edit, '회당 / 최대 수정비용') && str_contains($edit, 'cmb-cond-rev'));
+expectTrue('edit Select is value-controlled', str_contains($edit, '"value": "{{_local.form.type}}"') && str_contains($edit, 'cmb-order-select'));
+expectTrue('edit profile name helper 회원정보 사용', str_contains($edit, '회원정보 사용') && str_contains($edit, 'data-cmb-profile-name'));
+expectTrue('edit extensions hidden unless modeling', str_contains($edit, 'cmb-cond-ext') && str_contains($edit, 'data-cmb-ext'));
 expectTrue('edit size rows add and delete', str_contains($edit, 'data-cmb-size-add') && str_contains($edit, '"text": "추가"') && str_contains($edit, 'data-cmb-sizes-list'));
 expectTrue('edit manager info card', str_contains($edit, '담당자 정보') && str_contains($edit, 'manager_name') && str_contains($edit, 'cmb-manager-box'));
 expectTrue('edit has no QA fill button', ! str_contains($edit, 'data-cmb-qa-fill'));
@@ -141,9 +150,10 @@ expectTrue('form.css forces checkbox label contrast', str_contains($css, '--cmb-
 expectTrue('form.css has temp QA fill button', str_contains($css, '.cmb-qa-fill') && str_contains($css, '모듈 완성 후 삭제 예정'));
 expectTrue('form.css styles size add/remove', str_contains($css, '.cmb-size-add') && str_contains($css, '.cmb-size-remove'));
 expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box'));
+expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.2'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.3'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
 expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
 expectTrue('form.js QA fill does not emit upload events', ! str_contains($formJs, 'upload:maker_bid'));
@@ -151,9 +161,13 @@ expectTrue('form.js dummy fills rush datetime', str_contains($formJs, 'rush_dead
 expectTrue('form.js dummy fills revision fields', str_contains($formJs, 'revision_count') && str_contains($formJs, 'revision_cost'));
 expectTrue('form.js size rows add/delete max 20', str_contains($formJs, 'SIZE_MAX = 20') && str_contains($formJs, 'data-cmb-size-add') && str_contains($formJs, 'data-cmb-size-remove') && str_contains($formJs, 'fillSizeRows') && str_contains($formJs, '>삭제</button>'));
 expectTrue('form.js dummy fills manager fields', str_contains($formJs, 'manager_name') && str_contains($formJs, 'manager_phone') && str_contains($formJs, 'manager_email'));
+expectTrue('form.js profile name helper', str_contains($formJs, 'data-cmb-profile-name') && str_contains($formJs, 'bindProfileName'));
+expectTrue('form.js toggles modeling extensions', str_contains($formJs, 'includes_modeling') && str_contains($formJs, 'syncExtVisibility') && str_contains($formJs, 'cmb-cond-ext'));
+expectTrue('form.js cond toggles rush/revision', str_contains($formJs, 'bindCondToggles') && str_contains($formJs, 'cmb-cond-rush'));
 expectTrue('rush deadline ensure migration', is_file($root.'/database/migrations/2026_09_16_000006_ensure_rush_deadline.php'));
 expectTrue('revision fields ensure migration', is_file($root.'/database/migrations/2026_09_16_000007_ensure_revision_fields.php'));
 expectTrue('sizes and manager ensure migration', is_file($root.'/database/migrations/2026_09_16_000008_ensure_sizes_and_manager_fields.php'));
+expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrations/2026_09_16_000009_ensure_includes_modeling.php'));
 
 $asset = (string) file_get_contents($root.'/src/Http/Controllers/AssetController.php');
 expectTrue('asset controller serves form.css', str_contains($asset, 'formCss') && str_contains($asset, 'form.css'));
@@ -165,6 +179,7 @@ $adminTypes = (string) file_get_contents($root.'/resources/layouts/admin/types_i
 expectTrue('admin types create', str_contains($adminTypes, '/admin/job-types'));
 expectTrue('admin types move', str_contains($adminTypes, '/move'));
 expectTrue('admin types delete', str_contains($adminTypes, '"method": "DELETE"'));
+expectTrue('admin types includes_modeling checkbox', str_contains($adminTypes, 'includes_modeling') && str_contains($adminTypes, '모델링 포함 (제공 확장자)'));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

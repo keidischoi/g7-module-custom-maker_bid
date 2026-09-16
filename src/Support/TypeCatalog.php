@@ -13,6 +13,7 @@ class TypeCatalog
      *     description: string,
      *     requires_address: bool,
      *     is_design_only: bool,
+     *     includes_modeling: bool,
      *     sort_order: int
      * }>
      */
@@ -25,6 +26,7 @@ class TypeCatalog
                 'description' => '3D 모델링 의뢰',
                 'requires_address' => false,
                 'is_design_only' => true,
+                'includes_modeling' => true,
                 'sort_order' => 10,
             ],
             [
@@ -33,6 +35,7 @@ class TypeCatalog
                 'description' => '3D 출력 대행 의뢰',
                 'requires_address' => true,
                 'is_design_only' => false,
+                'includes_modeling' => false,
                 'sort_order' => 20,
             ],
             [
@@ -41,6 +44,7 @@ class TypeCatalog
                 'description' => '모델링, 출력, 후가공을 포함한 풀 패키지',
                 'requires_address' => true,
                 'is_design_only' => false,
+                'includes_modeling' => true,
                 'sort_order' => 30,
             ],
             [
@@ -49,6 +53,7 @@ class TypeCatalog
                 'description' => '캐릭터 및 피규어 커미션',
                 'requires_address' => true,
                 'is_design_only' => false,
+                'includes_modeling' => true,
                 'sort_order' => 40,
             ],
             [
@@ -57,6 +62,7 @@ class TypeCatalog
                 'description' => '디자인 목업 및 시제품 (순수 디자인류)',
                 'requires_address' => false,
                 'is_design_only' => true,
+                'includes_modeling' => false,
                 'sort_order' => 50,
             ],
             [
@@ -65,6 +71,7 @@ class TypeCatalog
                 'description' => '기능성 워킹 프로토타입',
                 'requires_address' => true,
                 'is_design_only' => false,
+                'includes_modeling' => true,
                 'sort_order' => 60,
             ],
         ];
@@ -125,6 +132,51 @@ class TypeCatalog
         }
 
         return true;
+    }
+
+    /**
+     * Whether the type includes 3D modeling (so 제공 확장자 is shown).
+     *
+     * Prefers the DB `includes_modeling` flag. If missing, uses seeded slugs
+     * then name/slug heuristics (모델링 / 풀 패키지 / 커미션 / 워킹 프로토타입).
+     *
+     * @param  array{includes_modeling?: mixed, is_design_only?: bool, requires_address?: bool, slug?: string, value?: string, name?: string, label?: string}|null  $type
+     */
+    public static function includesModeling(?array $type, ?string $slug = null): bool
+    {
+        if (is_array($type) && array_key_exists('includes_modeling', $type) && $type['includes_modeling'] !== null && $type['includes_modeling'] !== '') {
+            return self::truthy($type['includes_modeling']);
+        }
+
+        $slug = self::normalizeSlug((string) ($type['slug'] ?? $type['value'] ?? $slug ?? ''));
+        $name = (string) ($type['name'] ?? $type['label'] ?? '');
+        foreach (self::defaults() as $row) {
+            if ($row['slug'] === $slug) {
+                return (bool) $row['includes_modeling'];
+            }
+        }
+
+        $hay = $slug.' '.$name;
+        if (preg_match('/print_3d|출력\s*대행|design_mockup|목업/u', $hay)) {
+            return false;
+        }
+
+        return (bool) preg_match('/modeling|모델링|full_package|풀\s*패키지|character_figure|커미션|working_prototype|워킹\s*프로토타입/u', $hay);
+    }
+
+    private static function truthy(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (int) $value === 1;
+        }
+        if (! is_string($value)) {
+            return false;
+        }
+
+        return in_array(strtolower(trim($value)), ['1', 'true', 'on', 'yes'], true);
     }
 
     public static function isValidSlugFormat(string $slug): bool

@@ -42,6 +42,7 @@ class JobPresenter
             'type_id' => $job->type_id !== null ? (int) $job->type_id : null,
             'type_name' => $typeRow['name'] ?? (string) $job->type,
             'type_requires_address' => TypeCatalog::requiresAddress($typeRow, (string) $job->type),
+            'type_includes_modeling' => TypeCatalog::includesModeling($typeRow, (string) $job->type),
             'title' => (string) $job->title,
             'description' => $job->description,
             'budget' => $job->budget_max ?? $job->budget,

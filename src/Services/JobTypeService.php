@@ -66,6 +66,9 @@ class JobTypeService
                 ? (bool) $payload['requires_address']
                 : ! (bool) ($payload['is_design_only'] ?? false),
             'is_design_only' => (bool) ($payload['is_design_only'] ?? false),
+            'includes_modeling' => array_key_exists('includes_modeling', $payload)
+                ? (bool) $payload['includes_modeling']
+                : TypeCatalog::includesModeling($payload, $slug),
             'is_enabled' => array_key_exists('is_enabled', $payload) ? (bool) $payload['is_enabled'] : true,
             'sort_order' => $sort,
             'is_seeded' => false,

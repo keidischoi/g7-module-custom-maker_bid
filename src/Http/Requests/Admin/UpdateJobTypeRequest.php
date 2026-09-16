@@ -22,7 +22,7 @@ class UpdateJobTypeRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->nullBlankFields(['description']);
-        $this->coerceBooleanFields(['requires_address', 'is_design_only', 'is_enabled']);
+        $this->coerceBooleanFields(['requires_address', 'is_design_only', 'includes_modeling', 'is_enabled']);
     }
 
     /**

@@ -9,6 +9,7 @@ use Modules\Custom\MakerBid\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBid\Http\Requests\AwardJobRequest;
 use Modules\Custom\MakerBid\Http\Requests\StoreJobRequest;
 use Modules\Custom\MakerBid\Http\Requests\UpdateOwnedJobRequest;
+use Modules\Custom\MakerBid\Models\MakerCompany;
 use Modules\Custom\MakerBid\Services\AwardService;
 use Modules\Custom\MakerBid\Services\JobFileService;
 use Modules\Custom\MakerBid\Services\JobService;
@@ -49,11 +50,24 @@ class JobController extends Controller
     {
         $user = $request->user();
         $token = $this->files->newUploadToken();
+        $memberName = (string) ($user->name ?? '');
+        $companyName = '';
+        try {
+            $companyName = (string) (MakerCompany::query()
+                ->where('user_id', (int) $user->id)
+                ->where('status', 'approved')
+                ->value('name') ?? '');
+        } catch (\Throwable) {
+            $companyName = '';
+        }
+        $profileName = $companyName !== '' ? $companyName : $memberName;
 
         return response()->json([
             'data' => [
                 'upload_token' => $token,
-                'contact_name' => (string) ($user->name ?? ''),
+                'contact_name' => $profileName,
+                'profile_contact_name' => $profileName,
+                'company_name' => $companyName,
                 'contact_phone' => (string) ($user->mobile ?? $user->phone ?? ''),
                 'contact_hours' => '',
                 'contact_hours_from' => '09:00',

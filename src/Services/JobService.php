@@ -296,6 +296,20 @@ class JobService
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return list<string>
+     */
+    private function extensionsForType(array $payload, string $typeSlug): array
+    {
+        $typeRow = $this->types->findBySlug($typeSlug)?->toOptionArray();
+        if (! TypeCatalog::includesModeling($typeRow, $typeSlug)) {
+            return [];
+        }
+
+        return JobRules::collectProvidedExtensions($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function jobAttributes(array $payload, mixed $typeId, string $typeSlug, bool $creating = true): array
@@ -330,7 +344,7 @@ class JobService
             'size_w' => null,
             'size_d' => null,
             'size_h' => null,
-            'provided_extensions' => JobRules::collectProvidedExtensions($payload),
+            'provided_extensions' => $this->extensionsForType($payload, $typeSlug),
             'revision_enabled' => $revision,
             'revision_count' => $revision ? $this->nullableInt($payload['revision_count'] ?? null) : null,
             'revision_cost' => $revision ? $this->nullableInt($payload['revision_cost'] ?? null) : null,
@@ -366,6 +380,7 @@ class JobService
                 if (in_array($key, ['rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'provided_extensions'], true)) {
                     return array_key_exists($key, $payload)
                         || array_key_exists('ext_stl', $payload)
+                        || array_key_exists('type', $payload)
                         || ($key === 'rush_fee_enabled' && array_key_exists('rush_fee_enabled', $payload))
                         || ($key === 'revision_enabled' && array_key_exists('revision_enabled', $payload))
                         || ($key === 'schedule_premium_enabled' && array_key_exists('schedule_premium_enabled', $payload));
