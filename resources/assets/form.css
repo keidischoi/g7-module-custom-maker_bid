@@ -76,10 +76,28 @@ html.dark .cmb-order-card,
   color: var(--cmb-card-fg);
 }
 
+/* Checkbox labels: do not trust --color-card-foreground (often still light-theme
+   dark text). Hardcode contrast so STL/3MF/… and 적용 가능 stay readable. */
+.cmb-order-card {
+  --cmb-check-fg: rgb(17 24 39);
+}
+
+html.dark .cmb-order-card,
+.dark .cmb-order-card {
+  --cmb-check-fg: rgb(243 244 246);
+}
+
+.cmb-order-card .cmb-order-check-label,
+.cmb-order-card .cmb-order-check-text,
 .cmb-order-card label,
 .cmb-order-card .cmb-order-check + span,
-.cmb-order-card .cmb-order-check + label {
-  color: var(--cmb-card-fg);
+.cmb-order-card .cmb-order-check + label,
+.cmb-order-card input[type="checkbox"] + span,
+.cmb-order-card input[type="checkbox"] ~ span,
+.cmb-order-card input[type="checkbox"] + label,
+.cmb-order-card input[type="checkbox"] ~ label,
+.cmb-order-card label:has(input[type="checkbox"]) {
+  color: var(--cmb-check-fg) !important;
 }
 
 .cmb-order-card .cmb-order-uploader,
@@ -116,4 +134,55 @@ html.dark .cmb-order-card .cmb-order-submit,
 .cmb-order-card .cmb-order-submit {
   background-color: rgb(17 24 39);
   color: rgb(255 255 255);
+}
+
+.cmb-order-card .cmb-size-name {
+  flex: 1 1 7rem;
+  min-width: 6rem;
+}
+
+.cmb-order-card .cmb-size-dim {
+  width: 5.5rem;
+  flex: 0 0 5.5rem;
+}
+
+.cmb-order-card .cmb-size-remove,
+.cmb-order-card .cmb-size-add {
+  background-color: transparent;
+  color: var(--cmb-card-fg);
+  border-color: var(--cmb-border);
+}
+
+.cmb-order-card .cmb-size-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cmb-order-card .cmb-manager-box {
+  background-color: color-mix(in srgb, var(--cmb-muted) 55%, transparent);
+  border-color: var(--cmb-border);
+}
+
+/* TEMP: 모듈 완성 후 삭제 예정 — QA 임의입력 사이드 버튼 */
+.cmb-qa-fill {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 9999px;
+  border: 1px dashed rgb(251 191 36);
+  background: rgb(120 53 15 / 0.92);
+  color: rgb(254 243 199);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+}
+
+html.dark .cmb-qa-fill,
+.dark .cmb-qa-fill {
+  background: rgb(146 64 14 / 0.95);
+  color: rgb(255 237 213);
 }

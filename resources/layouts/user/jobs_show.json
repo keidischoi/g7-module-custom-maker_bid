@@ -68,7 +68,7 @@
           { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.type_name || job.data.type}} · {{job.data.budget_label || '예산 미정'}} · {{job.data.status_label || job.data.status}} · 마감 {{job.data.closes_at || '없음'}}" },
           { "id": "size", "type": "basic", "name": "P", "if": "{{job.data.size_label}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "최종 크기 {{job.data.size_label}}" },
           { "id": "exts", "type": "basic", "name": "P", "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "제공 확장자 {{job.data.provided_extensions}}" },
-          { "id": "flags", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.rush_fee_enabled ? '급행비 적용 가능' : ''}} {{job.data.schedule_premium_enabled ? '· 스케줄 선점비 적용 가능' : ''}} {{job.data.revision_enabled ? ('· 수정 ' + (job.data.revision_count || '') + '회') : ''}}" },
+          { "id": "flags", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.rush_fee_enabled ? ('급행비 적용 가능' + (job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : '')) : ''}} {{job.data.schedule_premium_enabled ? '· 스케줄 선점비 적용 가능' : ''}} {{job.data.revision_enabled ? ('· 수정 ' + (job.data.revision_count || '') + '회' + (job.data.revision_cost != null ? (' · 최소 ' + job.data.revision_cost + '원') : '')) : ''}}" },
           { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap text-gray-800 dark:text-gray-200" }, "text": "{{job.data.description ?? ''}}" },
           {
             "id": "imgs",
@@ -97,7 +97,19 @@
               { "id": "pn", "type": "basic", "name": "P", "text": "{{job.data.contact_name || viewer.data.privacy.contact_name}}" },
               { "id": "pp", "type": "basic", "name": "P", "text": "{{job.data.contact_phone || viewer.data.privacy.contact_phone}} · {{job.data.contact_hours || viewer.data.privacy.contact_hours || ''}}" },
               { "id": "pe", "type": "basic", "name": "P", "text": "{{job.data.contact_email || viewer.data.privacy.contact_email}}" },
-              { "id": "pa", "type": "basic", "name": "P", "text": "{{job.data.zipcode || viewer.data.privacy.zipcode || ''}} {{job.data.address || viewer.data.privacy.address || ''}} {{job.data.address_detail || viewer.data.privacy.address_detail || ''}}" }
+              { "id": "pa", "type": "basic", "name": "P", "text": "{{job.data.zipcode || viewer.data.privacy.zipcode || ''}} {{job.data.address || viewer.data.privacy.address || ''}} {{job.data.address_detail || viewer.data.privacy.address_detail || ''}}" },
+              {
+                "id": "manager_box",
+                "type": "basic",
+                "name": "Div",
+                "if": "{{job.data.manager_name || job.data.manager_phone || job.data.manager_email || viewer.data.privacy.manager_name || viewer.data.privacy.manager_phone || viewer.data.privacy.manager_email}}",
+                "props": { "className": "mt-2 pt-2 border-t border-gray-200 dark:border-white/10 space-y-1" },
+                "children": [
+                  { "id": "mh", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "담당자 정보" },
+                  { "id": "mn", "type": "basic", "name": "P", "text": "{{job.data.manager_name || viewer.data.privacy.manager_name || ''}}" },
+                  { "id": "mp", "type": "basic", "name": "P", "text": "{{job.data.manager_phone || viewer.data.privacy.manager_phone || ''}} · {{job.data.manager_email || viewer.data.privacy.manager_email || ''}}" }
+                ]
+              }
             ]
           },
           {

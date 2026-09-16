@@ -62,6 +62,9 @@ class JobController extends Controller
                 'zipcode' => (string) ($user->zipcode ?? ''),
                 'address' => (string) ($user->address ?? ''),
                 'address_detail' => (string) ($user->address_detail ?? ''),
+                'manager_name' => '',
+                'manager_phone' => '',
+                'manager_email' => '',
                 'types' => $this->types->listPublic()->map->toOptionArray()->values()->all(),
             ],
         ]);

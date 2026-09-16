@@ -326,9 +326,10 @@ class JobService
             'rush_fee_enabled' => $rush,
             'rush_deadline' => $rush ? ($payload['rush_deadline'] ?? null) : null,
             'schedule_premium_enabled' => ! empty($payload['schedule_premium_enabled']),
-            'size_w' => $this->nullableInt($payload['size_w'] ?? null),
-            'size_d' => $this->nullableInt($payload['size_d'] ?? null),
-            'size_h' => $this->nullableInt($payload['size_h'] ?? null),
+            'sizes' => JobRules::normalizeSizes($payload),
+            'size_w' => null,
+            'size_d' => null,
+            'size_h' => null,
             'provided_extensions' => JobRules::collectProvidedExtensions($payload),
             'revision_enabled' => $revision,
             'revision_count' => $revision ? $this->nullableInt($payload['revision_count'] ?? null) : null,
@@ -340,8 +341,19 @@ class JobService
             'zipcode' => $payload['zipcode'] ?? null,
             'address' => $payload['address'] ?? null,
             'address_detail' => $payload['address_detail'] ?? null,
+            'manager_name' => $payload['manager_name'] ?? null,
+            'manager_phone' => $payload['manager_phone'] ?? null,
+            'manager_email' => $payload['manager_email'] ?? null,
             'upload_token' => $payload['upload_token'] ?? null,
         ];
+
+        $first = $attrs['sizes'][0] ?? null;
+        $attrs['size_w'] = $first['w'] ?? $this->nullableInt($payload['size_w'] ?? null);
+        $attrs['size_d'] = $first['d'] ?? $this->nullableInt($payload['size_d'] ?? null);
+        $attrs['size_h'] = $first['h'] ?? $this->nullableInt($payload['size_h'] ?? null);
+        if ($attrs['sizes'] === []) {
+            $attrs['sizes'] = null;
+        }
 
         if (isset($payload['status']) && $payload['status'] !== '') {
             $attrs['status'] = $payload['status'] === 'open' ? 'quote_request' : $payload['status'];
@@ -375,6 +387,12 @@ class JobService
                 if ($key === 'revision_count' || $key === 'revision_cost') {
                     return array_key_exists('revision_enabled', $payload) || array_key_exists($key, $payload);
                 }
+                if ($key === 'sizes' || $key === 'size_w' || $key === 'size_d' || $key === 'size_h') {
+                    return array_key_exists('sizes', $payload)
+                        || array_key_exists('size_w', $payload)
+                        || array_key_exists('size_d', $payload)
+                        || array_key_exists('size_h', $payload);
+                }
 
                 $map = [
                     'title' => 'title',
@@ -382,15 +400,15 @@ class JobService
                     'budget_min' => 'budget_min',
                     'budget_max' => 'budget_max',
                     'closes_at' => 'closes_at',
-                    'size_w' => 'size_w',
-                    'size_d' => 'size_d',
-                    'size_h' => 'size_h',
                     'contact_name' => 'contact_name',
                     'contact_phone' => 'contact_phone',
                     'contact_email' => 'contact_email',
                     'zipcode' => 'zipcode',
                     'address' => 'address',
                     'address_detail' => 'address_detail',
+                    'manager_name' => 'manager_name',
+                    'manager_phone' => 'manager_phone',
+                    'manager_email' => 'manager_email',
                     'upload_token' => 'upload_token',
                     'status' => 'status',
                 ];

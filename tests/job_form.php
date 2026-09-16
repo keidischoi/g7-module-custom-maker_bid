@@ -39,8 +39,31 @@ expect('request label', JobRules::statusLabel('request'), '의뢰');
 expect('quote_request label', JobRules::statusLabel('quote_request'), '견적요청');
 expect('open alias label', JobRules::statusLabel('open'), '견적요청');
 expect('size label', JobRules::sizeLabel(300, 200, 50), '300 x 200 x 50 mm');
+expect('named sizes label', JobRules::sizesLabel([
+    ['name' => '본체', 'w' => 300, 'd' => 200, 'h' => 50],
+    ['name' => '뚜껑', 'w' => 120, 'd' => 80, 'h' => 20],
+]), '본체 300 x 200 x 50 mm · 뚜껑 120 x 80 x 20 mm');
+expectTrue('sizes max is 20', JobRules::SIZES_MAX === 20);
+$normalized = JobRules::normalizeSizes([
+    'sizes' => json_encode([
+        ['name' => '본체', 'w' => 300, 'd' => 200, 'h' => 50],
+        ['name' => '', 'w' => '', 'd' => '', 'h' => ''],
+        ['name' => '뚜껑', 'w' => 80, 'd' => 40, 'h' => 10],
+    ], JSON_UNESCAPED_UNICODE),
+]);
+expect('normalize drops empty size rows', count($normalized), 2);
+expect('normalize keeps first name', $normalized[0]['name'], '본체');
+$fromLegacy = JobRules::normalizeSizes(['size_w' => 10, 'size_d' => 20, 'size_h' => 30]);
+expect('legacy size_w/d/h becomes one row', $fromLegacy[0]['w'] ?? null, 10);
+$capped = JobRules::normalizeSizes([
+    'sizes' => array_fill(0, 25, ['name' => 'x', 'w' => 1, 'd' => 1, 'h' => 1]),
+]);
+expect('normalize caps at 20', count($capped), 20);
 expect('budget range label', JobRules::budgetLabel(10000, 100000, null), '10,000~100,000원');
 expect('contact hours combine', JobRules::contactHours('00:00', '05:00', null), '00:00 ~ 05:00');
+expect('datetime-local from date', JobRules::datetimeLocal('2026-09-20'), '2026-09-20T00:00');
+expect('datetime-local label', JobRules::datetimeLabel('2026-09-20T18:30'), '2026-09-20 18:30');
+expectTrue('rush_deadline required_if when enabled', in_array('required_if:rush_fee_enabled,true', JobRules::createRules()['rush_deadline'], true));
 
 $create = JobRules::createRules();
 expectTrue('create requires type', in_array('required', $create['type'], true));
@@ -49,6 +72,10 @@ expectTrue('create requires contact_name', in_array('required', $create['contact
 expectTrue('create requires contact_phone', in_array('required', $create['contact_phone'], true));
 expectTrue('create requires contact_email', in_array('required', $create['contact_email'], true));
 expectTrue('create budget_min nullable', in_array('nullable', $create['budget_min'], true));
+expectTrue('create sizes optional', in_array('nullable', $create['sizes'], true));
+expectTrue('create manager_name optional', in_array('nullable', $create['manager_name'], true));
+expectTrue('create manager_phone optional', in_array('nullable', $create['manager_phone'], true));
+expectTrue('create manager_email optional', in_array('nullable', $create['manager_email'], true));
 expectTrue('listing status includes hold', in_array('hold', JobRules::LISTING_STATUSES, true));
 
 $exts = JobRules::collectProvidedExtensions(['ext_stl' => true, 'ext_obj' => 1, 'provided_extensions' => ['FBX']]);
@@ -56,6 +83,7 @@ expectTrue('stl collected', in_array('STL', $exts, true));
 expectTrue('obj collected', in_array('OBJ', $exts, true));
 expectTrue('fbx collected', in_array('FBX', $exts, true));
 
+expectTrue('personal keys include manager fields', in_array('manager_name', PrivacyRules::personalKeys(), true) && in_array('manager_phone', PrivacyRules::personalKeys(), true) && in_array('manager_email', PrivacyRules::personalKeys(), true));
 expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_request', null, false));
 expectTrue('admin sees personal', PrivacyRules::canViewPersonal(1, 9, 'quote_request', null, true));
 expectFalse('stranger masked before award', PrivacyRules::canViewPersonal(3, 9, 'quote_request', null, false));
