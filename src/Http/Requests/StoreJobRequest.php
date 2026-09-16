@@ -25,11 +25,15 @@ class StoreJobRequest extends FormRequest
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
             'zipcode', 'address', 'address_detail', 'upload_token',
+            'manager_name', 'manager_phone', 'manager_email',
         ]);
         $this->coerceBooleanFields([
             'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled',
             'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx',
         ]);
+        if ($this->exists('sizes')) {
+            $this->merge(['sizes' => JobRules::decodeSizesInput($this->input('sizes'))]);
+        }
     }
 
     /**

@@ -21,6 +21,8 @@ class JobRules
 
     public const TITLE_MAX = 200;
 
+    public const SIZES_MAX = 20;
+
     /**
      * @param  list<string>|null  $allowedTypeSlugs
      * @return array<string, list<string>>
@@ -47,6 +49,7 @@ class JobRules
             'size_w' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'size_d' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'size_h' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'sizes' => ['nullable'],
             'provided_extensions' => ['nullable', 'array'],
             'provided_extensions.*' => ['string', 'in:'.implode(',', UploadRules::PROVIDED_EXTENSIONS)],
             'revision_enabled' => ['nullable', 'boolean'],
@@ -58,6 +61,9 @@ class JobRules
             'contact_hours_from' => ['nullable', 'string', 'max:8'],
             'contact_hours_to' => ['nullable', 'string', 'max:8'],
             'contact_email' => ['required', 'email', 'max:120'],
+            'manager_name' => ['nullable', 'string', 'max:120'],
+            'manager_phone' => ['nullable', 'string', 'max:40'],
+            'manager_email' => ['nullable', 'email', 'max:120'],
             'zipcode' => ['nullable', 'string', 'max:12'],
             'address' => ['nullable', 'string', 'max:255'],
             'address_detail' => ['nullable', 'string', 'max:255'],
@@ -112,8 +118,9 @@ class JobRules
             'contact_email.required' => '이메일을 입력해 주세요.',
             'contact_email.email' => '이메일 형식이 올바르지 않습니다.',
             'rush_deadline.required_if' => '급행비를 적용하면 적용 조건 시각을 선택해 주세요.',
-            'revision_count.required_if' => '수정 횟수를 입력해 주세요.',
-            'revision_cost.required_if' => '수정 비용을 입력해 주세요.',
+            'revision_count.required_if' => '몇 회 수정 가능한지 입력해 주세요.',
+            'revision_cost.required_if' => '최소 수정 비용을 입력해 주세요.',
+            'manager_email.email' => '담당자 이메일 형식이 올바르지 않습니다.',
             'budget_max.gte' => '예산 최댓값은 최솟값보다 크거나 같아야 합니다.',
         ];
     }
@@ -183,6 +190,140 @@ class JobRules
         }
 
         return trim((string) ($w ?? '-')).' x '.trim((string) ($d ?? '-')).' x '.trim((string) ($h ?? '-')).' mm';
+    }
+
+    /**
+     * Decode a JSON string or pass through an array of size rows.
+     */
+    public static function decodeSizesInput(mixed $sizes): mixed
+    {
+        if (is_string($sizes)) {
+            $raw = trim($sizes);
+            if ($raw === '') {
+                return [];
+            }
+            $decoded = json_decode($raw, true);
+
+            return is_array($decoded) ? $decoded : $sizes;
+        }
+
+        return $sizes;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return list<array{name: string, w: ?int, d: ?int, h: ?int}>
+     */
+    public static function normalizeSizes(array $payload): array
+    {
+        $raw = self::decodeSizesInput($payload['sizes'] ?? null);
+        $rows = [];
+        if (is_array($raw)) {
+            foreach ($raw as $item) {
+                if (count($rows) >= self::SIZES_MAX) {
+                    break;
+                }
+                if (! is_array($item)) {
+                    continue;
+                }
+                $row = self::normalizeSizeRow($item);
+                if ($row !== null) {
+                    $rows[] = $row;
+                }
+            }
+        }
+        if ($rows === []) {
+            $fallback = self::normalizeSizeRow([
+                'name' => $payload['size_name'] ?? '',
+                'w' => $payload['size_w'] ?? null,
+                'd' => $payload['size_d'] ?? null,
+                'h' => $payload['size_h'] ?? null,
+            ]);
+            if ($fallback !== null) {
+                $rows[] = $fallback;
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  list<array{name?: mixed, w?: mixed, d?: mixed, h?: mixed}>|mixed  $sizes
+     */
+    public static function sizesLabel(mixed $sizes, mixed $w = null, mixed $d = null, mixed $h = null): ?string
+    {
+        $parts = [];
+        if (is_array($sizes)) {
+            foreach ($sizes as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                $name = trim((string) ($row['name'] ?? ''));
+                $dims = self::sizeLabel($row['w'] ?? null, $row['d'] ?? null, $row['h'] ?? null);
+                if ($name !== '' && $dims !== null) {
+                    $parts[] = $name.' '.$dims;
+                } elseif ($name !== '') {
+                    $parts[] = $name;
+                } elseif ($dims !== null) {
+                    $parts[] = $dims;
+                }
+            }
+        }
+        if ($parts === []) {
+            return self::sizeLabel($w, $d, $h);
+        }
+
+        return implode(' · ', $parts);
+    }
+
+    public static function sizesJson(array $sizes): string
+    {
+        if ($sizes === []) {
+            return '';
+        }
+
+        return (string) json_encode($sizes, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @return array{name: string, w: ?int, d: ?int, h: ?int}|null
+     */
+    private static function normalizeSizeRow(array $item): ?array
+    {
+        $name = trim((string) ($item['name'] ?? ''));
+        if (function_exists('mb_strlen') && mb_strlen($name) > 80) {
+            $name = function_exists('mb_substr') ? mb_substr($name, 0, 80) : substr($name, 0, 80);
+        } elseif (strlen($name) > 80) {
+            $name = substr($name, 0, 80);
+        }
+        $w = self::nullableDim($item['w'] ?? $item['size_w'] ?? null);
+        $d = self::nullableDim($item['d'] ?? $item['size_d'] ?? null);
+        $h = self::nullableDim($item['h'] ?? $item['size_h'] ?? null);
+        if ($name === '' && $w === null && $d === null && $h === null) {
+            return null;
+        }
+
+        return ['name' => $name, 'w' => $w, 'd' => $d, 'h' => $h];
+    }
+
+    private static function nullableDim(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (! is_numeric($value)) {
+            return null;
+        }
+        $n = (int) $value;
+        if ($n < 0) {
+            return 0;
+        }
+        if ($n > 100000) {
+            return 100000;
+        }
+
+        return $n;
     }
 
     public static function budgetLabel(mixed $min, mixed $max, mixed $legacy = null): ?string

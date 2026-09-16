@@ -214,6 +214,241 @@
     }
   }
 
+  var SIZE_MAX = 20;
+  var sizesTouched = false;
+  var lastSizeSeed = '';
+
+  function emptySizeRow() {
+    return { name: '', w: '', d: '', h: '' };
+  }
+
+  function sizeFieldClass() {
+    return 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white';
+  }
+
+  function parseSizes(raw) {
+    if (Array.isArray(raw)) {
+      return raw.map(normalizeSizeRowJs);
+    }
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      try {
+        var decoded = JSON.parse(raw);
+        if (Array.isArray(decoded)) {
+          return decoded.map(normalizeSizeRowJs);
+        }
+      } catch (e) {}
+    }
+    return [];
+  }
+
+  function normalizeSizeRowJs(item) {
+    if (!item || typeof item !== 'object') {
+      return emptySizeRow();
+    }
+    return {
+      name: String(item.name || ''),
+      w: item.w != null && item.w !== '' ? String(item.w) : '',
+      d: item.d != null && item.d !== '' ? String(item.d) : '',
+      h: item.h != null && item.h !== '' ? String(item.h) : ''
+    };
+  }
+
+  function serializeSizes(rows) {
+    var out = [];
+    var i;
+    var row;
+    for (i = 0; i < rows.length && i < SIZE_MAX; i++) {
+      row = rows[i] || emptySizeRow();
+      out.push({
+        name: String(row.name || '').trim(),
+        w: row.w === '' || row.w == null ? null : Number(row.w),
+        d: row.d === '' || row.d == null ? null : Number(row.d),
+        h: row.h === '' || row.h == null ? null : Number(row.h)
+      });
+    }
+    return out;
+  }
+
+  function readSizeSeed() {
+    var seedEl = document.querySelector('[data-cmb-sizes-seed]');
+    var fromAttr = parseSizes(seedEl && seedEl.getAttribute('data-cmb-sizes-seed'));
+    if (fromAttr.length) {
+      return fromAttr;
+    }
+    var hidden = document.querySelector('[name="sizes"]');
+    var fromHidden = parseSizes(hidden && hidden.value);
+    if (fromHidden.length) {
+      return fromHidden;
+    }
+    var w = document.querySelector('[name="size_w"]');
+    var d = document.querySelector('[name="size_d"]');
+    var h = document.querySelector('[name="size_h"]');
+    if (w && d && h && (String(w.value || '') || String(d.value || '') || String(h.value || ''))) {
+      return [{ name: '', w: w.value || '', d: d.value || '', h: h.value || '' }];
+    }
+    return [emptySizeRow()];
+  }
+
+  function rowsFromDom(list) {
+    var nodes = list.querySelectorAll('[data-cmb-size-row]');
+    var rows = [];
+    var i;
+    var node;
+    for (i = 0; i < nodes.length; i++) {
+      node = nodes[i];
+      rows.push({
+        name: (node.querySelector('[data-cmb-size-name]') || {}).value || '',
+        w: (node.querySelector('[data-cmb-size-w]') || {}).value || '',
+        d: (node.querySelector('[data-cmb-size-d]') || {}).value || '',
+        h: (node.querySelector('[data-cmb-size-h]') || {}).value || ''
+      });
+    }
+    return rows;
+  }
+
+  function buildSizeRow(row, canRemove) {
+    var wrap = document.createElement('div');
+    wrap.setAttribute('data-cmb-size-row', '1');
+    wrap.className = 'cmb-size-row flex flex-wrap items-center gap-2';
+    wrap.innerHTML =
+      '<input data-cmb-size-name type="text" maxlength="80" placeholder="이름" class="' +
+      sizeFieldClass() +
+      ' cmb-size-name">' +
+      '<input data-cmb-size-w type="number" min="0" placeholder="W" class="' +
+      sizeFieldClass() +
+      ' cmb-size-dim">' +
+      '<span class="text-gray-400">×</span>' +
+      '<input data-cmb-size-d type="number" min="0" placeholder="D" class="' +
+      sizeFieldClass() +
+      ' cmb-size-dim">' +
+      '<span class="text-gray-400">×</span>' +
+      '<input data-cmb-size-h type="number" min="0" placeholder="H" class="' +
+      sizeFieldClass() +
+      ' cmb-size-dim">' +
+      '<button type="button" data-cmb-size-remove class="cmb-size-remove shrink-0 px-2.5 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200">삭제</button>';
+    wrap.querySelector('[data-cmb-size-name]').value = row.name || '';
+    wrap.querySelector('[data-cmb-size-w]').value = row.w || '';
+    wrap.querySelector('[data-cmb-size-d]').value = row.d || '';
+    wrap.querySelector('[data-cmb-size-h]').value = row.h || '';
+    var del = wrap.querySelector('[data-cmb-size-remove]');
+    if (!canRemove) {
+      del.hidden = true;
+    }
+    return wrap;
+  }
+
+  function renderSizeRows(list, rows) {
+    if (!rows.length) {
+      rows = [emptySizeRow()];
+    }
+    if (rows.length > SIZE_MAX) {
+      rows = rows.slice(0, SIZE_MAX);
+    }
+    list.innerHTML = '';
+    var i;
+    for (i = 0; i < rows.length; i++) {
+      list.appendChild(buildSizeRow(rows[i], rows.length > 1));
+    }
+    var add = document.querySelector('[data-cmb-size-add]');
+    if (add) {
+      add.disabled = rows.length >= SIZE_MAX;
+    }
+  }
+
+  function syncSizes(list) {
+    var rows = rowsFromDom(list);
+    if (!rows.length) {
+      rows = [emptySizeRow()];
+    }
+    var first = rows[0];
+    var json = JSON.stringify(serializeSizes(rows));
+    fillNamed('sizes', json);
+    fillNamed('size_w', first.w || '');
+    fillNamed('size_d', first.d || '');
+    fillNamed('size_h', first.h || '');
+    setLocal({
+      'form.sizes': json,
+      'form.size_w': first.w || '',
+      'form.size_d': first.d || '',
+      'form.size_h': first.h || ''
+    });
+    lastSizeSeed = json;
+  }
+
+  function fillSizeRows(rows) {
+    var list = document.querySelector('[data-cmb-sizes-list]');
+    if (!list) {
+      return;
+    }
+    sizesTouched = true;
+    renderSizeRows(list, rows);
+    syncSizes(list);
+  }
+
+  function bindSizes() {
+    var root = document.querySelector('[data-cmb-sizes]');
+    var list = document.querySelector('[data-cmb-sizes-list]');
+    var add = document.querySelector('[data-cmb-size-add]');
+    if (!root || !list) {
+      return;
+    }
+    if (!root.getAttribute('data-cmb-bound')) {
+      root.setAttribute('data-cmb-bound', '1');
+      list.addEventListener('input', function () {
+        sizesTouched = true;
+        syncSizes(list);
+      });
+      list.addEventListener('change', function () {
+        sizesTouched = true;
+        syncSizes(list);
+      });
+      list.addEventListener('click', function (e) {
+        var btn = e.target.closest ? e.target.closest('[data-cmb-size-remove]') : null;
+        if (!btn) {
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        var rows = rowsFromDom(list);
+        if (rows.length <= 1) {
+          return;
+        }
+        var rowEl = btn.closest('[data-cmb-size-row]');
+        var nodes = list.querySelectorAll('[data-cmb-size-row]');
+        var idx = Array.prototype.indexOf.call(nodes, rowEl);
+        if (idx < 0) {
+          return;
+        }
+        rows.splice(idx, 1);
+        sizesTouched = true;
+        renderSizeRows(list, rows);
+        syncSizes(list);
+      });
+      if (add) {
+        add.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var rows = rowsFromDom(list);
+          if (rows.length >= SIZE_MAX) {
+            return;
+          }
+          rows.push(emptySizeRow());
+          sizesTouched = true;
+          renderSizeRows(list, rows);
+          syncSizes(list);
+        });
+      }
+    }
+    if (!sizesTouched) {
+      var seed = readSizeSeed();
+      var seedJson = JSON.stringify(serializeSizes(seed));
+      if (!list.querySelector('[data-cmb-size-row]') || seedJson !== lastSizeSeed) {
+        renderSizeRows(list, seed);
+        lastSizeSeed = seedJson;
+      }
+    }
+  }
+
   // TEMP: 모듈 완성 후 삭제 예정 — QA 임의입력 (data-cmb-qa-fill)
   // 이미지·파일 FileUploader 는 절대 채우지 않는다.
   function randInt(min, max) {
@@ -278,9 +513,12 @@
         : pick([['10:00', '15:00'], ['13:00', '19:00'], ['18:00', '22:00'], ['20:00', '23:00']]);
       var hourFrom = hourPair[0];
       var hourTo = hourPair[1];
-      var sizeW = String(randInt(40, 300));
-      var sizeD = String(randInt(40, 220));
-      var sizeH = String(randInt(20, 180));
+      var sizeSamples = [
+        { name: '본체', w: String(randInt(80, 300)), d: String(randInt(60, 220)), h: String(randInt(20, 180)) },
+        { name: '뚜껑', w: String(randInt(40, 160)), d: String(randInt(40, 140)), h: String(randInt(10, 40)) },
+        { name: '받침대', w: String(randInt(50, 200)), d: String(randInt(50, 180)), h: String(randInt(8, 30)) }
+      ];
+      var sizeRows = sizeSamples.slice(0, randInt(1, 3));
       var rushDate = rush ? futureStamp(randInt(2, 5), pick([10, 12, 15, 18]), pick([0, 30]), false) : '';
       var revCount = revision ? String(randInt(1, 4)) : '';
       var revCost = revision ? String(randInt(1, 5) * 5000) : '';
@@ -302,6 +540,11 @@
         { name: '김민준', phone: '010-2222-3333', email: 'minjun@example.com' },
         { name: '이서연', phone: '010-5555-7777', email: 'seoyeon@example.com' }
       ]);
+      var manager = pick([
+        { name: '박지훈', phone: '010-8888-1111', email: 'jihun.park@example.com' },
+        { name: '최수아', phone: '010-7777-2222', email: 'sua.choi@example.com' },
+        { name: '정하늘', phone: '010-3333-4444', email: 'haneul.jung@example.com' }
+      ]);
       var addr = pick([
         { zip: '06236', addr: '서울 강남구 테헤란로 123', detail: '3층' },
         { zip: '48058', addr: '부산 해운대구 센텀중앙로 79', detail: '101호' },
@@ -319,9 +562,6 @@
       fillNamed('budget_max', String(max));
       fillNamed('closes_at', closes);
       fillNamed('status', status);
-      fillNamed('size_w', sizeW);
-      fillNamed('size_d', sizeD);
-      fillNamed('size_h', sizeH);
       fillNamed('description', desc);
       fillNamed('contact_name', person.name);
       fillNamed('contact_phone', person.phone);
@@ -331,6 +571,10 @@
       fillNamed('zipcode', addr.zip);
       fillNamed('address', addr.addr);
       fillNamed('address_detail', addr.detail);
+      fillNamed('manager_name', manager.name);
+      fillNamed('manager_phone', manager.phone);
+      fillNamed('manager_email', manager.email);
+      fillSizeRows(sizeRows);
       fillCheck('rush_fee_enabled', rush);
       fillCheck('schedule_premium_enabled', premium);
       fillCheck('revision_enabled', revision);
@@ -344,9 +588,6 @@
         'form.budget_max': String(max),
         'form.closes_at': closes,
         'form.status': status,
-        'form.size_w': sizeW,
-        'form.size_d': sizeD,
-        'form.size_h': sizeH,
         'form.description': desc,
         'form.contact_name': person.name,
         'form.contact_phone': person.phone,
@@ -356,6 +597,9 @@
         'form.zipcode': addr.zip,
         'form.address': addr.addr,
         'form.address_detail': addr.detail,
+        'form.manager_name': manager.name,
+        'form.manager_phone': manager.phone,
+        'form.manager_email': manager.email,
         'form.rush_fee_enabled': rush,
         'form.schedule_premium_enabled': premium,
         'form.revision_enabled': revision,
@@ -383,6 +627,10 @@
           fillNamed('revision_cost', revCost);
           fillCheck('revision_enabled', true);
         }
+        fillNamed('manager_name', manager.name);
+        fillNamed('manager_phone', manager.phone);
+        fillNamed('manager_email', manager.email);
+        fillSizeRows(sizeRows);
         for (i = 0; i < extKeys.length; i++) {
           fillCheck(extKeys[i], extOn[extKeys[i]]);
         }
@@ -431,6 +679,7 @@
       }
     }
     bindDaytime();
+    bindSizes();
     bindQaFill();
   }
 

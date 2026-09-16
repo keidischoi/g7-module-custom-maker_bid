@@ -60,6 +60,9 @@ class PrivacyRules
             'zipcode',
             'address',
             'address_detail',
+            'manager_name',
+            'manager_phone',
+            'manager_email',
         ];
     }
 }

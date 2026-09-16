@@ -11,7 +11,7 @@ Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의�
 
 ## 설치 / 업그레이드 (0.5.2)
 
-0.5.1에서 올라올 때 additive 마이그레이션이 있습니다(`rush_deadline` 컬럼이 없으면 추가). 체크박스 레이블 대비·주간만·급행 조건 달력·임시 임의입력이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
+0.5.1에서 올라올 때 additive 마이그레이션이 있습니다(`rush_deadline`, `revision_*`, JSON `sizes`, `manager_*` 컬럼이 없으면 추가). 체크박스 레이블 대비·주간만·급행 조건 달력·크기 행 추가/삭제·담당자 정보·임시 임의입력이 포함됩니다. 레이아웃·CSS 반영은 모듈 업데이트 후 **캐시를 비우고 브라우저를 하드 리프레시**하세요.
 
 ```bash
 php artisan extension:update-autoload
@@ -77,6 +77,10 @@ Prefix: `/api/modules/custom-maker_bid`
   "rush_fee_enabled": true,
   "rush_deadline": "2026-09-20T18:00",
   "schedule_premium_enabled": false,
+  "sizes": [
+    { "name": "본체", "w": 300, "d": 200, "h": 50 },
+    { "name": "뚜껑", "w": 120, "d": 80, "h": 20 }
+  ],
   "size_w": 300,
   "size_d": 200,
   "size_h": 50,
@@ -89,6 +93,9 @@ Prefix: `/api/modules/custom-maker_bid`
   "contact_phone": "010-0000-0000",
   "contact_hours": "09:00 ~ 18:00",
   "contact_email": "user@example.com",
+  "manager_name": "박지훈",
+  "manager_phone": "010-8888-1111",
+  "manager_email": "jihun.park@example.com",
   "zipcode": "06234",
   "address": "서울특별시 강남구 테헤란로 1",
   "upload_token": "…"

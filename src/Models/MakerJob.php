@@ -14,9 +14,10 @@ class MakerJob extends Model
     protected $fillable = [
         'user_id', 'type_id', 'type', 'title', 'description', 'budget', 'budget_min', 'budget_max',
         'status', 'awarded_bid_id', 'closes_at', 'rush_fee_enabled', 'rush_deadline',
-        'schedule_premium_enabled', 'size_w', 'size_d', 'size_h', 'provided_extensions',
+        'schedule_premium_enabled', 'size_w', 'size_d', 'size_h', 'sizes', 'provided_extensions',
         'revision_enabled', 'revision_count', 'revision_cost', 'contact_name', 'contact_phone',
-        'contact_hours', 'contact_email', 'zipcode', 'address', 'address_detail', 'upload_token',
+        'contact_hours', 'contact_email', 'zipcode', 'address', 'address_detail',
+        'manager_name', 'manager_phone', 'manager_email', 'upload_token',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class MakerJob extends Model
         'size_w' => 'integer',
         'size_d' => 'integer',
         'size_h' => 'integer',
+        'sizes' => 'array',
         'provided_extensions' => 'array',
         'revision_enabled' => 'boolean',
         'revision_count' => 'integer',

@@ -136,6 +136,33 @@ html.dark .cmb-order-card .cmb-order-submit,
   color: rgb(255 255 255);
 }
 
+.cmb-order-card .cmb-size-name {
+  flex: 1 1 7rem;
+  min-width: 6rem;
+}
+
+.cmb-order-card .cmb-size-dim {
+  width: 5.5rem;
+  flex: 0 0 5.5rem;
+}
+
+.cmb-order-card .cmb-size-remove,
+.cmb-order-card .cmb-size-add {
+  background-color: transparent;
+  color: var(--cmb-card-fg);
+  border-color: var(--cmb-border);
+}
+
+.cmb-order-card .cmb-size-add:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cmb-order-card .cmb-manager-box {
+  background-color: color-mix(in srgb, var(--cmb-muted) 55%, transparent);
+  border-color: var(--cmb-border);
+}
+
 /* TEMP: 모듈 완성 후 삭제 예정 — QA 임의입력 사이드 버튼 */
 .cmb-qa-fill {
   position: fixed;
