@@ -41,6 +41,9 @@ expect('open alias label', JobRules::statusLabel('open'), '견적요청');
 expect('size label', JobRules::sizeLabel(300, 200, 50), '300 x 200 x 50 mm');
 expect('budget range label', JobRules::budgetLabel(10000, 100000, null), '10,000~100,000원');
 expect('contact hours combine', JobRules::contactHours('00:00', '05:00', null), '00:00 ~ 05:00');
+expect('datetime-local from date', JobRules::datetimeLocal('2026-09-20'), '2026-09-20T00:00');
+expect('datetime-local label', JobRules::datetimeLabel('2026-09-20T18:30'), '2026-09-20 18:30');
+expectTrue('rush_deadline required_if when enabled', in_array('required_if:rush_fee_enabled,true', JobRules::createRules()['rush_deadline'], true));
 
 $create = JobRules::createRules();
 expectTrue('create requires type', in_array('required', $create['type'], true));

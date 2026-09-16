@@ -57,7 +57,7 @@ expectTrue('detail mutate uses auth_required', str_contains($show, '"auth_requir
 expectTrue('detail toasts errors', str_contains($show, '"handler": "toast"') && str_contains($show, '{{error.message}}'));
 expectTrue('detail empty bids copy', str_contains($show, '아직 들어온 견적이 없습니다.'));
 expectTrue('detail privacy blocked copy', str_contains($show, '제작 의뢰가 확정'));
-expectTrue('detail owner edit link', str_contains($show, '/maker-bid/{{route.id}}/edit'));
+expectTrue('detail rush deadline label', str_contains($show, 'rush_deadline_label'));
 
 $create = (string) file_get_contents($root.'/resources/layouts/user/jobs_create.json');
 expectTrue('create posts jobs', str_contains($create, '"target": "/api/modules/custom-maker_bid/jobs"'));
@@ -78,6 +78,13 @@ expectTrue('create archive accept zip', str_contains($create, '.zip,.tar,.gz'));
 expectTrue('create daum postcode button', str_contains($create, 'data-cmb-postcode'));
 expectTrue('create budget range', str_contains($create, 'budget_min') && str_contains($create, 'budget_max'));
 expectTrue('create rush checkbox', str_contains($create, 'rush_fee_enabled'));
+expectTrue('create rush calendar under checkbox', str_contains($create, '"type": "datetime-local"') && str_contains($create, '적용 조건 시각') && str_contains($create, 'rush_date_wrap'));
+expectTrue('create rush calendar nested in rush_row', preg_match('/"id": "rush_row"[\s\S]*"id": "rush_date_wrap"[\s\S]*"id": "premium_row"/', $create) === 1);
+expectTrue('create extension checkbox labels are explicit text', str_contains($create, '"text": "STL"') && str_contains($create, '"text": "3MF"') && str_contains($create, '"text": "GCODE"') && str_contains($create, '"text": "FBX"'));
+expectTrue('create checkbox labels use contrast classes', str_contains($create, 'cmb-order-check-label') && str_contains($create, 'cmb-order-check-text') && str_contains($create, 'dark:text-gray-100'));
+expectTrue('create rush/premium/revision checkbox labels', str_contains($create, '"text": "적용 가능"') && str_contains($create, '"text": "적용 유무"'));
+expectTrue('create daytime helper 주간만', str_contains($create, '주간만') && str_contains($create, 'data-cmb-daytime'));
+expectTrue('create temp QA fill button', str_contains($create, 'data-cmb-qa-fill') && str_contains($create, '임의입력') && str_contains($create, 'cmb-qa-fill'));
 expectTrue('create status options 보류', str_contains($create, '보류'));
 expectTrue('create privacy block', str_contains($create, '주문자명 또는 업체명'));
 
@@ -106,22 +113,33 @@ expectTrue('admin company reject', str_contains($adminCos, '/reject'));
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.5.1', str_contains($nav, 'nav.js?v=0.5.1'));
-expectTrue('form.js cache bust 0.5.1', str_contains($nav, 'form.js?v=0.5.1'));
-expectTrue('form.css cache bust 0.5.1', str_contains($nav, 'form.css?v=0.5.1'));
+expectTrue('nav cache bust 0.5.2', str_contains($nav, 'nav.js?v=0.5.2'));
+expectTrue('form.js cache bust 0.5.2', str_contains($nav, 'form.js?v=0.5.2'));
+expectTrue('form.css cache bust 0.5.2', str_contains($nav, 'form.css?v=0.5.2'));
 
 $edit = (string) file_get_contents($root.'/resources/layouts/user/jobs_edit.json');
 expectTrue('edit patches job', str_contains($edit, '/jobs/{{route.id}}'));
 expectTrue('edit FileUploader present', str_contains($edit, 'FileUploader'));
 expectTrue('edit card uses theme surface', str_contains($edit, 'cmb-order-card') && str_contains($edit, 'dark:bg-gray-800'));
 expectTrue('edit does not use zinc paper card', ! str_contains($edit, 'zinc-900') && ! str_contains($edit, 'zinc-950'));
+expectTrue('edit extension checkbox labels are explicit text', str_contains($edit, '"text": "STL"') && str_contains($edit, 'cmb-order-check-label'));
+expectTrue('edit daytime helper 주간만', str_contains($edit, '주간만') && str_contains($edit, 'data-cmb-daytime'));
+expectTrue('edit rush calendar is datetime-local', str_contains($edit, '"type": "datetime-local"') && str_contains($edit, '적용 조건 시각'));
+expectTrue('edit has no QA fill button', ! str_contains($edit, 'data-cmb-qa-fill'));
 
 $css = (string) file_get_contents($root.'/resources/assets/form.css');
 expectTrue('form.css themes dark card', str_contains($css, 'color-scheme: dark') && str_contains($css, '--cmb-card'));
 expectTrue('form.css styles fields and uploader', str_contains($css, '.cmb-order-field') && str_contains($css, '.cmb-order-uploader'));
+expectTrue('form.css forces checkbox label contrast', str_contains($css, '--cmb-check-fg') && str_contains($css, '.cmb-order-check-label') && str_contains($css, '.cmb-order-check-text'));
+expectTrue('form.css has temp QA fill button', str_contains($css, '.cmb-qa-fill') && str_contains($css, '모듈 완성 후 삭제 예정'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.1'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.5.2'));
+expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
+expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
+expectTrue('form.js QA fill does not emit upload events', ! str_contains($formJs, 'upload:maker_bid'));
+expectTrue('form.js dummy fills rush datetime', str_contains($formJs, 'rush_deadline') && str_contains($formJs, 'futureStamp'));
+expectTrue('rush deadline ensure migration', is_file($root.'/database/migrations/2026_09_16_000006_ensure_rush_deadline.php'));
 
 $asset = (string) file_get_contents($root.'/src/Http/Controllers/AssetController.php');
 expectTrue('asset controller serves form.css', str_contains($asset, 'formCss') && str_contains($asset, 'form.css'));

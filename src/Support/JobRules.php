@@ -111,7 +111,7 @@ class JobRules
             'contact_phone.required' => '연락처를 입력해 주세요.',
             'contact_email.required' => '이메일을 입력해 주세요.',
             'contact_email.email' => '이메일 형식이 올바르지 않습니다.',
-            'rush_deadline.required_if' => '급행비를 적용하면 급행비 조건 날짜를 선택해 주세요.',
+            'rush_deadline.required_if' => '급행비를 적용하면 적용 조건 시각을 선택해 주세요.',
             'revision_count.required_if' => '수정 횟수를 입력해 주세요.',
             'revision_cost.required_if' => '수정 비용을 입력해 주세요.',
             'budget_max.gte' => '예산 최댓값은 최솟값보다 크거나 같아야 합니다.',
@@ -217,6 +217,33 @@ class JobRules
         }
 
         return $from.' ~ '.$to;
+    }
+
+    public static function datetimeLocal(mixed $value): ?string
+    {
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('Y-m-d\TH:i');
+        }
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return null;
+        }
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw) === 1) {
+            return $raw.'T00:00';
+        }
+        $raw = str_replace(' ', 'T', $raw);
+
+        return substr($raw, 0, 16);
+    }
+
+    public static function datetimeLabel(mixed $value): ?string
+    {
+        $local = self::datetimeLocal($value);
+        if ($local === null) {
+            return null;
+        }
+
+        return str_replace('T', ' ', $local);
     }
 
     /**

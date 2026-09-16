@@ -436,58 +436,86 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-order-option flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3"
+                      "className": "cmb-order-option rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3"
                     },
                     "children": [
                       {
-                        "id": "rush_label",
+                        "id": "rush_head",
                         "type": "basic",
-                        "name": "P",
+                        "name": "Div",
                         "props": {
-                          "className": "text-sm text-gray-800 dark:text-gray-200"
+                          "className": "flex items-center justify-between gap-3"
                         },
-                        "text": "급행비 / 조기 마감 비용"
+                        "children": [
+                          {
+                            "id": "rush_label",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "text-sm text-gray-800 dark:text-gray-200"
+                            },
+                            "text": "급행비 / 조기 마감 비용"
+                          },
+                          {
+                            "id": "rush_fee_enabled_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                            },
+                            "children": [
+                              {
+                                "id": "rush_fee_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "rush_fee_enabled"
+                                }
+                              },
+                              {
+                                "id": "rush_fee_enabled_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "적용 가능"
+                              }
+                            ]
+                          }
+                        ]
                       },
                       {
-                        "id": "rush_fee_enabled",
+                        "id": "rush_date_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Div",
+                        "if": "{{_local.form.rush_fee_enabled}}",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "rush_fee_enabled",
-                          "label": "적용 가능"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "rush_date_wrap",
-                    "type": "basic",
-                    "name": "Div",
-                    "if": "{{_local.form.rush_fee_enabled}}",
-                    "props": {
-                      "className": "space-y-2"
-                    },
-                    "children": [
-                      {
-                        "id": "rush_date_label",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                          "className": "space-y-1"
                         },
-                        "text": "급행비 조건 날짜"
-                      },
-                      {
-                        "id": "rush_deadline",
-                        "type": "basic",
-                        "name": "Input",
-                        "props": {
-                          "name": "rush_deadline",
-                          "type": "date",
-                          "disabled": "{{!_local.form.rush_fee_enabled}}",
-                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        "children": [
+                          {
+                            "id": "rush_date_hint",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "text-xs text-gray-500 dark:text-gray-400"
+                            },
+                            "text": "적용 조건 시각"
+                          },
+                          {
+                            "id": "rush_deadline",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "rush_deadline",
+                              "type": "datetime-local",
+                              "disabled": "{{!_local.form.rush_fee_enabled}}",
+                              "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                            }
+                          }
+                        ]
                       }
                     ]
                   },
@@ -509,14 +537,32 @@
                         "text": "스케줄 선점비 / 프리미엄"
                       },
                       {
-                        "id": "schedule_premium_enabled",
+                        "id": "schedule_premium_enabled_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "schedule_premium_enabled",
-                          "label": "적용 가능"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "schedule_premium_enabled",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "schedule_premium_enabled"
+                            }
+                          },
+                          {
+                            "id": "schedule_premium_enabled_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "적용 가능"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -662,74 +708,200 @@
                     },
                     "children": [
                       {
-                        "id": "ext_stl",
+                        "id": "ext_stl_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_stl",
-                          "label": "STL"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_stl",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_stl"
+                            }
+                          },
+                          {
+                            "id": "ext_stl_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "STL"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_3mf",
+                        "id": "ext_3mf_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_3mf",
-                          "label": "3MF"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_3mf",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_3mf"
+                            }
+                          },
+                          {
+                            "id": "ext_3mf_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "3MF"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_obj",
+                        "id": "ext_obj_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_obj",
-                          "label": "OBJ"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_obj",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_obj"
+                            }
+                          },
+                          {
+                            "id": "ext_obj_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "OBJ"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_step",
+                        "id": "ext_step_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_step",
-                          "label": "STEP"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_step",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_step"
+                            }
+                          },
+                          {
+                            "id": "ext_step_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "STEP"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_stp",
+                        "id": "ext_stp_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_stp",
-                          "label": "STP"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_stp",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_stp"
+                            }
+                          },
+                          {
+                            "id": "ext_stp_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "STP"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_gcode",
+                        "id": "ext_gcode_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_gcode",
-                          "label": "GCODE"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_gcode",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_gcode"
+                            }
+                          },
+                          {
+                            "id": "ext_gcode_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "GCODE"
+                          }
+                        ]
                       },
                       {
-                        "id": "ext_fbx",
+                        "id": "ext_fbx_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "ext_fbx",
-                          "label": "FBX"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_fbx",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ext_fbx"
+                            }
+                          },
+                          {
+                            "id": "ext_fbx_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "FBX"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -751,14 +923,32 @@
                         "text": "수정 횟수 및 비용"
                       },
                       {
-                        "id": "revision_enabled",
+                        "id": "revision_enabled_wrap",
                         "type": "basic",
-                        "name": "Checkbox",
+                        "name": "Label",
                         "props": {
-                          "className": "cmb-order-check",
-                          "name": "revision_enabled",
-                          "label": "적용 유무"
-                        }
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                        },
+                        "children": [
+                          {
+                            "id": "revision_enabled",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "revision_enabled"
+                            }
+                          },
+                          {
+                            "id": "revision_enabled_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "적용 유무"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -987,13 +1177,51 @@
                     }
                   },
                   {
-                    "id": "chours_label",
+                    "id": "chours_head",
                     "type": "basic",
-                    "name": "P",
+                    "name": "Div",
                     "props": {
-                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                      "className": "flex items-center justify-between gap-3"
                     },
-                    "text": "연락 가능시간"
+                    "children": [
+                      {
+                        "id": "chours_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "연락 가능시간"
+                      },
+                      {
+                        "id": "contact_hours_daytime_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                        },
+                        "children": [
+                          {
+                            "id": "contact_hours_daytime",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "data-cmb-daytime": "1"
+                            }
+                          },
+                          {
+                            "id": "contact_hours_daytime_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text whitespace-nowrap"
+                            },
+                            "text": "주간만"
+                          }
+                        ]
+                      }
+                    ]
                   },
                   {
                     "id": "chours_row",

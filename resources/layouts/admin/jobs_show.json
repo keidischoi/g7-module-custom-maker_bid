@@ -43,7 +43,7 @@
               { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bid/activity" }, "text": "회원 활동" }
             ]
           },
-          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "#{{job.data.id}} {{job.data.type_name || job.data.type}} · {{job.data.status_label || job.data.status}} · 회원 {{job.data.user_id}} · {{job.data.budget_label || '예산 미정'}} · 마감 {{job.data.closes_at ?? '없음'}}" },
+          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-secondary text-sm" }, "text": "#{{job.data.id}} {{job.data.type_name || job.data.type}} · {{job.data.status_label || job.data.status}} · 회원 {{job.data.user_id}} · {{job.data.budget_label || '예산 미정'}} · 마감 {{job.data.closes_at ?? '없음'}}{{job.data.rush_fee_enabled ? (' · 급행 조건 ' + (job.data.rush_deadline_label || job.data.rush_deadline || '')) : ''}}" },
           { "id": "privacy", "type": "basic", "name": "P", "props": { "className": "text-sm" }, "text": "{{job.data.contact_name}} · {{job.data.contact_phone}} · {{job.data.contact_email}} · {{job.data.address}}" },
           { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap" }, "text": "{{job.data.description ?? ''}}" },
           {

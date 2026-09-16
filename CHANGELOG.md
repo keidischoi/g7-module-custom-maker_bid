@@ -4,6 +4,26 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.5.2] - 2026-09-16
+
+### Fixed
+
+- `/maker-bid/new` · `/maker-bid/:id/edit` 다크 주문서에서 **제공 확장자**(STL/3MF/OBJ/STEP/STP/GCODE/FBX) 체크박스 레이블이 보이지 않던 대비 문제를 수정. 레이블을 `Label`+`Span`으로 명시하고 `form.css`에서 다크 텍스트 색을 강제합니다. 급행비·선점비·수정 횟수 체크박스(적용 가능/적용 유무)도 동일하게 맞춥니다. 테마는 유지하고 대비만 고칩니다.
+
+### Added
+
+- 연락 가능시간 옆 **주간만** 체크박스. 체크 시 `09:00 ~ 17:00` 자동 입력, 시각을 직접 바꾸면 체크 해제. UX 헬퍼이며 별도 DB 플래그는 없습니다.
+- 급행비 체크박스 **바로 아래**에 적용 조건 `datetime-local` 달력. 체크 시에만 표시. 기존 `rush_deadline` 컬럼에 저장(없을 때만 마이그레이션 추가). 상세·관리자 화면에 조건 시각을 표시합니다.
+- **(임시)** `/maker-bid/new` 사이드 **임의입력** 버튼. 클릭 시 이미지·파일 업로드를 제외한 주문서 필드를 무작위 더미로 채웁니다(급행 켜면 조건 시각 포함). **모듈 완성 후 삭제 예정.**
+
+### Changed
+
+- 버전 **0.5.2**. nav/form.js·form.css 캐시 `?v=0.5.2`.
+
+### Notes
+
+- 레이아웃·CSS 반영은 `php artisan module:update custom-maker_bid` 후 **캐시 삭제와 하드 리프레시**가 필요합니다.
+
 ## [0.5.1] - 2026-09-16
 
 ### Changed
