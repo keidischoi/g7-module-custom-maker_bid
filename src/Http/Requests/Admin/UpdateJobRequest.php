@@ -22,6 +22,7 @@ class UpdateJobRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['form', 'edit']);
+        $this->coerceSlugFields(['type', 'status', 'audience']);
         $this->nullBlankFields([
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
@@ -40,17 +41,11 @@ class UpdateJobRequest extends FormRequest
         }
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return JobRules::adminUpdateRules();
     }
 
-    /**
-     * @return array<string, string>
-     */
     public function messages(): array
     {
         return JobRules::messages();
