@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.5';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.6';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
@@ -244,24 +244,120 @@
     }
   }
 
-  function companyMeStatus() {
+  function companyMeRecord() {
     var me = g7Get('me.data') || g7Get('me');
     if (me && me.data && typeof me.data === 'object' && (me.data.status || me.data.id)) {
       me = me.data;
     }
     if (!me || typeof me !== 'object') {
+      return null;
+    }
+    return me;
+  }
+
+  function companyMeStatus() {
+    var me = companyMeRecord();
+    if (!me) {
       return '';
     }
     return String(me.status || '');
   }
 
+  function companyFormEl() {
+    return document.querySelector('[data-cmb-company-form], .cmb-company-form');
+  }
+
+  function companyFormIsVisible(el) {
+    el = el || companyFormEl();
+    if (!el) {
+      return false;
+    }
+    if (el.classList.contains('is-collapsed') || el.hasAttribute('hidden')) {
+      return false;
+    }
+    try {
+      var st = window.getComputedStyle(el);
+      if (st.display === 'none' || st.visibility === 'hidden') {
+        return false;
+      }
+    } catch (e) {}
+    return true;
+  }
+
+  function prefillCompanyFromMe() {
+    var me = companyMeRecord();
+    if (!me || !me.status) {
+      return;
+    }
+    var fields = ['kind', 'name', 'business_no', 'bio', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail'];
+    var map = {};
+    var i;
+    var field;
+    var value;
+    for (i = 0; i < fields.length; i++) {
+      field = fields[i];
+      value = me[field];
+      if (value == null || String(value).trim() === '') {
+        continue;
+      }
+      fillNamed(field, String(value));
+      map['company.' + field] = value;
+    }
+    if (Object.keys(map).length) {
+      setLocal(map);
+    }
+    if (me.kind) {
+      paintSelectTrigger('kind', me.kind, optionLabelFor('kind', me.kind));
+    }
+  }
+
+  function revealCompanyForm() {
+    var el = companyFormEl();
+    if (!el) {
+      return false;
+    }
+    el.classList.remove('is-collapsed');
+    el.removeAttribute('hidden');
+    el.style.removeProperty('display');
+    el.setAttribute('data-cmb-form-revealed', '1');
+    prefillCompanyFromMe();
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      try {
+        el.scrollIntoView();
+      } catch (e2) {}
+    }
+    var field = el.querySelector('input:not([type="hidden"]):not([type="checkbox"]), select, textarea, [role="combobox"]');
+    if (field && typeof field.focus === 'function') {
+      try {
+        field.focus();
+      } catch (e3) {}
+    }
+    bindCompanyJobTypes();
+    bindProfileFill();
+    bindFieldSync();
+    return true;
+  }
+
   function syncCompanySubmit() {
     var btn = document.querySelector('[data-cmb-company-submit]');
+    var form = companyFormEl();
+    var st = companyMeStatus();
+    var revealed = !!(form && form.getAttribute('data-cmb-form-revealed') === '1');
+    var lock = st === 'approved';
+    if (form) {
+      if (lock) {
+        form.classList.add('is-collapsed');
+      } else if (st === 'pending' && !revealed) {
+        form.classList.add('is-collapsed');
+      } else {
+        form.classList.remove('is-collapsed');
+      }
+    }
     if (!btn) {
       return;
     }
-    var st = companyMeStatus();
-    var lock = st === 'approved';
     btn.classList.toggle('is-locked', lock);
     if (lock) {
       btn.setAttribute('hidden', 'hidden');
@@ -271,6 +367,41 @@
       btn.removeAttribute('aria-hidden');
       btn.style.setProperty('display', 'inline-flex', 'important');
     }
+  }
+
+  function bindCompanySubmit() {
+    var btn = document.querySelector('[data-cmb-company-submit]');
+    if (!btn || btn.getAttribute('data-cmb-reveal-bound')) {
+      return;
+    }
+    btn.setAttribute('data-cmb-reveal-bound', '1');
+    btn.addEventListener(
+      'click',
+      function (e) {
+        var st = companyMeStatus();
+        var form = companyFormEl();
+        var visible = companyFormIsVisible(form);
+        if (st === 'approved') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
+        if (!form || !visible) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          revealCompanyForm();
+          return;
+        }
+        if (st === 'pending') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          revealCompanyForm();
+          return;
+        }
+        harvestNamedFields();
+      },
+      true
+    );
   }
 
   function pushTypeList(out, seen, list) {
@@ -1736,6 +1867,7 @@
     bindSizes();
     bindQaFill();
     bindFieldSync();
+    bindCompanySubmit();
     bindHarvest();
     syncCompanySubmit();
     bindCompanyJobTypes();

@@ -54,7 +54,7 @@
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "flex items-center gap-1 ml-auto flex-wrap" },
+                "props": { "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap", "data-cmb-subnav": "1" },
                 "children": [
                   { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },

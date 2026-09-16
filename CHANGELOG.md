@@ -4,6 +4,19 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.6] - 2026-09-16
+
+### Fixed
+
+- 회원 **입찰자 등록** (`/maker-bids/company`) **등록** 버튼을 제목 줄이 아니라 서브 내비 줄 오른쪽 끝으로 옮깁니다. `의뢰서 작성 / 의뢰목록 / 입찰현황 / 이력 / 입찰자 등록 / 등록` 이 한 가로 밴드입니다. 0.9.5의 `cmb-company-title-row` 제목 옆 배치는 서브 내비 위에 흰 버튼이 떠 빈 간격이 생겼습니다.
+- **등록** 클릭이 상태 카드(보류 목록)만 남기던 문제를 고칩니다. 입력 카드는 G7 `if`(상태 없음·거절만)로 pending에서 DOM에서 빠졌고, 버튼은 바로 POST 했습니다. 이제는 카드를 항상 두고, 보류는 접었다가 **등록**에서 업체/개인 입력 폼을 열고 포커스합니다. 처음 신청·거절은 폼이 보이며 **등록**이 제출합니다. 승인은 이전처럼 버튼·폼을 숨깁니다.
+- 메인 **의뢰/입찰** 과 서브 내비 알약의 흰 활성 배경이 다른 메뉴로 이동한 뒤에도 남는 문제를 고칩니다. `nav.js`가 현재 경로만 `cmb-nav-current` / `cmb-tab-current` 로 맞추고, SPA `pushState`·클릭 후 포커스/`:active` 크롬을 지웁니다.
+
+### Changed
+
+- 버전 **0.9.6**. nav/form.js·form.css·admin.css·admin.js 캐시 `?v=0.9.6`.
+- identifier·권한·API prefix `custom-maker_bids`, namespace `Modules\Custom\MakerBids` 는 변경하지 않습니다.
+
 ## [0.9.5] - 2026-09-16
 
 ### Fixed
