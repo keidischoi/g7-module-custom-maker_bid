@@ -10,6 +10,8 @@ use Modules\Custom\MakerBids\Http\Requests\StoreBidRequest;
 use Modules\Custom\MakerBids\Http\Requests\UpdateBidRequest;
 use Modules\Custom\MakerBids\Services\BidService;
 use Modules\Custom\MakerBids\Services\JobService;
+use Modules\Custom\MakerBids\Support\ArrayPaginator;
+use Modules\Custom\MakerBids\Support\CompanyPresenter;
 use Modules\Custom\MakerBids\Support\DomainException;
 
 class BidController extends Controller
@@ -23,7 +25,20 @@ class BidController extends Controller
 
     public function mine(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->bids->listMine((int) $request->user()->id)]);
+        $items = $this->bids->listMine((int) $request->user()->id);
+        $list = [];
+        foreach ($items as $bid) {
+            $row = CompanyPresenter::presentBid($bid);
+            $job = $bid->relationLoaded('job') ? $bid->job : null;
+            $row['job'] = $job ? [
+                'id' => (int) $job->id,
+                'title' => (string) $job->title,
+                'status' => (string) $job->status,
+            ] : null;
+            $list[] = $row;
+        }
+
+        return response()->json(ArrayPaginator::paginate($list, $request, 'page', 10));
     }
 
     public function store(StoreBidRequest $request, int $id): JsonResponse

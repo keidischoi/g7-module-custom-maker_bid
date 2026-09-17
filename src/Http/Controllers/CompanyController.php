@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBids\Http\Requests\ApplyCompanyRequest;
 use Modules\Custom\MakerBids\Services\CompanyService;
+use Modules\Custom\MakerBids\Support\ArrayPaginator;
 use Modules\Custom\MakerBids\Support\DomainException;
 
 class CompanyController extends Controller
@@ -18,9 +19,9 @@ class CompanyController extends Controller
         private readonly CompanyService $companies,
     ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->companies->listPublic()]);
+        return response()->json(ArrayPaginator::paginate($this->companies->listPublic(), $request, 'page', 12));
     }
 
     public function formDefaults(Request $request): JsonResponse

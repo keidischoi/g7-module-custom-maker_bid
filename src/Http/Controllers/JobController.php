@@ -15,6 +15,7 @@ use Modules\Custom\MakerBids\Services\JobFileService;
 use Modules\Custom\MakerBids\Services\JobService;
 use Modules\Custom\MakerBids\Services\JobTypeService;
 use Modules\Custom\MakerBids\Services\MarketplaceService;
+use Modules\Custom\MakerBids\Support\ArrayPaginator;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobPresenter;
 
@@ -40,12 +41,7 @@ class JobController extends Controller
                 return str_contains($hay, strtolower($q));
             }));
         }
-        $page = max(1, (int) $request->query('page', 1));
-        $per = min(50, max(5, (int) $request->query('per_page', 20)));
-        $total = count($data);
-        $slice = array_slice($data, ($page - 1) * $per, $per);
-
-        return response()->json(['data' => $slice, 'meta' => ['total' => $total, 'page' => $page, 'per_page' => $per]]);
+        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));
     }
 
     public function show(Request $request, int $id): JsonResponse
@@ -60,7 +56,9 @@ class JobController extends Controller
 
     public function mine(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->jobs->listMine((int) $request->user()->id)]);
+        $items = $this->jobs->listMine((int) $request->user()->id);
+
+        return response()->json(ArrayPaginator::paginate($items, $request, 'page', 10));
     }
 
     public function formDefaults(Request $request): JsonResponse

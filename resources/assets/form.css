@@ -669,15 +669,34 @@ html.dark .cmb-page,
   flex-wrap: wrap;
 }
 
-.cmb-maker-subnav {
-  display: flex;
-  align-items: center;
+.cmb-maker-subnav,
+[data-cmb-subnav] {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
   gap: 0.25rem;
-  flex-wrap: wrap;
+  margin-left: auto !important;
+  min-height: 2.25rem;
+  width: max-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
 }
 
-.cmb-maker-subnav a {
+/* Standalone tab row (show/workspace): full-width so flex-end pins pills right */
+.cmb-page > .cmb-maker-subnav,
+.cmb-page > [data-cmb-subnav] {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+
+.cmb-maker-subnav a,
+[data-cmb-subnav] a {
   text-decoration: none;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .cmb-filters {
@@ -1054,4 +1073,67 @@ html.dark .cmb-bid-form input,
   .cmb-bid-card {
     padding: 0.9rem 1rem;
   }
+}
+
+.cmb-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  min-height: 2.25rem;
+}
+.cmb-pager[hidden],
+.cmb-pager.is-empty {
+  display: none !important;
+}
+.cmb-pager-btn,
+.cmb-pager a,
+.cmb-pager button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  height: 2.1rem;
+  padding: 0 0.55rem;
+  border-radius: 0.55rem;
+  border: 1px solid var(--cmb-border, rgb(229 231 235));
+  background: var(--cmb-card, rgb(255 255 255));
+  color: var(--cmb-card-fg, rgb(17 24 39));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.cmb-pager-btn:hover,
+.cmb-pager a:hover,
+.cmb-pager button:hover {
+  background: color-mix(in srgb, var(--cmb-muted, rgb(249 250 251)) 70%, transparent);
+}
+.cmb-pager-btn.is-active,
+.cmb-pager a.is-active {
+  background: rgb(17 24 39);
+  color: rgb(255 255 255);
+  border-color: transparent;
+}
+html.dark .cmb-pager-btn.is-active,
+.dark .cmb-pager-btn.is-active,
+html.dark .cmb-pager a.is-active,
+.dark .cmb-pager a.is-active {
+  background: rgb(243 244 246);
+  color: rgb(17 24 39);
+}
+.cmb-pager-btn.is-disabled,
+.cmb-pager a.is-disabled,
+.cmb-pager button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.cmb-pager-meta {
+  font-size: 0.75rem;
+  color: var(--cmb-muted-fg, rgb(107 114 128));
+  margin: 0 0.35rem;
+  white-space: nowrap;
 }
