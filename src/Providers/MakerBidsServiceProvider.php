@@ -4,6 +4,7 @@ namespace Modules\Custom\MakerBids\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Modules\Custom\MakerBids\Console\Commands\RunMarketplaceScheduleCommand;
+use Modules\Custom\MakerBids\Console\Commands\SeedDummyBidsCommand;
 
 class MakerBidsServiceProvider extends ServiceProvider
 {
@@ -17,6 +18,7 @@ class MakerBidsServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 RunMarketplaceScheduleCommand::class,
+                SeedDummyBidsCommand::class,
             ]);
         }
     }

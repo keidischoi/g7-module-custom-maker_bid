@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.5] - 2026-09-17
+
+### Added
+- Artisan **`maker-bids:seed-dummy-bids {jobId=5}`** — NAS/데모용 한국어 더미 입찰 시드 (필요 시 `[더미]` 업체 생성). `--fresh` 로 이전 시드 입찰 제거 후 재시드. `php82 artisan maker-bids:seed-dummy-bids 5`.
+
+### Changed
+- 버전·캐시 버스트 **0.10.5**.
+
 ## [0.10.4] - 2026-09-17
 
 ### Added
