@@ -9,7 +9,7 @@
     "ko": "3D 출력, 디자인, 상품 제작 의뢰와 입찰",
     "en": "Commission and bidding"
   },
-  "version": "0.10.8",
+  "version": "0.10.9",
   "g7_version": ">=7.0.0",
   "license": "MIT",
   "github_url": "https://github.com/keidischoi/g7-module-custom-maker_bids",
