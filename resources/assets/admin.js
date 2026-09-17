@@ -376,33 +376,44 @@
     if (document.getElementById('cmb-admin-dark-css')) return;
     var s = document.createElement('style');
     s.id = 'cmb-admin-dark-css';
+    /* Unconditional on admin pages — also kill host bg-white/bg-card utilities. */
     s.textContent =
-      'html.cmb-admin-dark .cmb-admin{color:#e5e7eb;' +
+      '.cmb-admin,html.cmb-admin-dark .cmb-admin,html.cmb-admin-ui .cmb-admin{color:#e5e7eb;' +
       '--cmb-admin-fg:#e5e7eb;--cmb-admin-muted:#9ca3af;' +
       '--cmb-admin-border:rgba(255,255,255,0.12);--cmb-admin-row-border:rgba(255,255,255,0.12);' +
       '--cmb-admin-card:rgba(255,255,255,0.08);--cmb-admin-row:rgba(255,255,255,0.06);' +
       '--cmb-admin-control:rgba(255,255,255,0.06);--cmb-admin-check:#e5e7eb}' +
+      '.cmb-admin-card,.cmb-admin-nav,.cmb-admin-row,.cmb-admin-list-item,' +
+      '.cmb-admin .cmb-section-card,.cmb-admin .cmb-list-item,' +
+      '.cmb-admin-card.cmb-admin-filter,' +
       'html.cmb-admin-dark .cmb-admin-card,html.cmb-admin-dark .cmb-admin-nav,' +
       'html.cmb-admin-dark .cmb-admin-row,html.cmb-admin-dark .cmb-admin-list-item,' +
       'html.cmb-admin-dark .cmb-admin .cmb-section-card,html.cmb-admin-dark .cmb-admin .cmb-list-item,' +
-      'html.cmb-admin-dark .cmb-admin-card.cmb-admin-filter{' +
-      'background:rgba(255,255,255,0.06)!important;' +
+      'html.cmb-admin-dark .cmb-admin-card.cmb-admin-filter,' +
+      'html.cmb-admin-ui .cmb-admin-card,html.cmb-admin-ui .cmb-admin-nav,' +
+      'html.cmb-admin-ui .cmb-admin-row,html.cmb-admin-ui .cmb-admin-list-item{' +
+      'background:rgba(255,255,255,0.06)!important;background-color:rgba(255,255,255,0.06)!important;' +
       'border:1px solid rgba(255,255,255,0.12)!important;' +
-      'border-radius:1rem;color:#e5e7eb}' +
+      'border-radius:1rem;color:#e5e7eb!important}' +
+      '.cmb-admin-card,.cmb-admin-nav,.cmb-admin-card.cmb-admin-filter,' +
       'html.cmb-admin-dark .cmb-admin-card,html.cmb-admin-dark .cmb-admin-nav,' +
-      'html.cmb-admin-dark .cmb-admin-card.cmb-admin-filter{background:rgba(255,255,255,0.08)!important}';
+      'html.cmb-admin-dark .cmb-admin-card.cmb-admin-filter,' +
+      'html.cmb-admin-ui .cmb-admin-card,html.cmb-admin-ui .cmb-admin-nav{' +
+      'background:rgba(255,255,255,0.08)!important;background-color:rgba(255,255,255,0.08)!important}' +
+      '.cmb-admin-card.bg-white,.cmb-admin-card.bg-card,.cmb-admin-card.bg-background,' +
+      '.cmb-admin-row.bg-white,.cmb-admin-row.bg-card,.cmb-admin-row.bg-background,' +
+      '.cmb-admin-nav.bg-white,.cmb-admin-nav.bg-card,.cmb-admin-nav.bg-background,' +
+      '.cmb-admin .cmb-section-card.bg-white,.cmb-admin .cmb-list-item.bg-white{' +
+      'background:rgba(255,255,255,0.06)!important;background-color:rgba(255,255,255,0.06)!important}';
     (document.head || document.documentElement).appendChild(s);
   }
 
   function syncAdminDark() {
     var html = document.documentElement;
     if (!html) return;
-    if (isAdminDarkChrome()) {
-      html.classList.add('cmb-admin-dark');
-      injectAdminDarkCss();
-    } else {
-      html.classList.remove('cmb-admin-dark');
-    }
+    /* Admin maker-bids always uses dark translucent cards (shop chrome). */
+    html.classList.add('cmb-admin-dark');
+    injectAdminDarkCss();
   }
 
   function start() {

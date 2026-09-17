@@ -308,11 +308,11 @@ html.dark .cmb-notice,
    List/filter layout of record lives in admin.css; keep these fallbacks
    so form.css alone still stretches lists and does not cap the page. */
 .cmb-admin {
-  --cmb-admin-fg: rgb(17 24 39);
-  --cmb-admin-muted: rgb(107 114 128);
-  --cmb-admin-border: rgb(209 213 219);
-  --cmb-admin-card: rgb(255 255 255);
-  --cmb-admin-check: rgb(17 24 39);
+  --cmb-admin-fg: #e5e7eb;
+  --cmb-admin-muted: rgb(156 163 175);
+  --cmb-admin-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-card: rgba(255, 255, 255, 0.08);
+  --cmb-admin-check: #e5e7eb;
   width: 100%;
   max-width: none;
   color: var(--cmb-admin-fg);
@@ -365,10 +365,12 @@ html.dark .cmb-admin-nav a:hover,
 }
 
 .cmb-admin-card {
-  border: 1px solid var(--cmb-admin-border);
+  border: 1px solid var(--cmb-admin-border) !important;
   border-radius: 1rem;
-  background: var(--cmb-admin-card);
+  background: var(--cmb-admin-card) !important;
+  background-color: var(--cmb-admin-card) !important;
   padding: 1rem 1.1rem;
+  color: var(--cmb-admin-fg);
 }
 
 .cmb-admin-card-title {
@@ -818,6 +820,44 @@ html.cmb-dark-boot .cmb-page .cmb-job-card {
   border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   color: var(--cmb-card-fg, #e5e7eb);
+}
+
+/* 0.10.8: admin surfaces always translucent (no html.dark gate — host bg-white loses) */
+.cmb-admin .cmb-admin-card,
+.cmb-admin .cmb-admin-row,
+.cmb-admin .cmb-admin-nav,
+.cmb-admin .cmb-admin-list-item,
+.cmb-admin .cmb-list-item,
+.cmb-admin .cmb-section-card,
+.cmb-admin-card,
+.cmb-admin-row,
+.cmb-admin-nav {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
+}
+.cmb-admin .cmb-admin-card,
+.cmb-admin .cmb-admin-nav,
+.cmb-admin-card,
+.cmb-admin-nav,
+.cmb-admin-card.cmb-admin-filter {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Public: when cmb-dark-boot is on (nav early boot), kill white section cards even without html.dark */
+html.cmb-dark-boot .cmb-section-card,
+html.cmb-dark-boot .cmb-list-item,
+html.cmb-dark-boot .cmb-job-card,
+html.cmb-dark-boot .cmb-company-card,
+html.cmb-dark-boot .cmb-bid-card,
+html.cmb-dark-boot .cmb-page .cmb-section-card,
+html.cmb-dark-boot .cmb-page .cmb-list-item {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
 }
 
 a.cmb-job-card:hover,

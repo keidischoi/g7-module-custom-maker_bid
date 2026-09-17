@@ -4,14 +4,15 @@
    content-sized triggers), not reliably native input/select. */
 
 .cmb-admin {
-  --cmb-admin-fg: rgb(17 24 39);
-  --cmb-admin-muted: rgb(107 114 128);
-  --cmb-admin-border: rgb(209 213 219);
-  --cmb-admin-row-border: rgb(156 163 175);
-  --cmb-admin-card: rgb(255 255 255);
-  --cmb-admin-row: rgb(255 255 255);
-  --cmb-admin-check: rgb(17 24 39);
-  --cmb-admin-control: rgb(255 255 255);
+  /* Admin chrome always matches public dark translucent cards — never solid #fff. */
+  --cmb-admin-fg: #e5e7eb;
+  --cmb-admin-muted: rgb(156 163 175);
+  --cmb-admin-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-row-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-card: rgba(255, 255, 255, 0.08);
+  --cmb-admin-row: rgba(255, 255, 255, 0.06);
+  --cmb-admin-check: #e5e7eb;
+  --cmb-admin-control: rgba(255, 255, 255, 0.06);
   box-sizing: border-box;
   display: flex !important;
   flex-direction: column !important;
@@ -56,8 +57,9 @@ html.cmb-admin-dark .cmb-admin {
   gap: 0.25rem;
   padding: 0.35rem;
   border-radius: 0.75rem;
-  border: 1px solid var(--cmb-admin-border);
-  background: var(--cmb-admin-card);
+  border: 1px solid var(--cmb-admin-border) !important;
+  background: var(--cmb-admin-card) !important;
+  background-color: var(--cmb-admin-card) !important;
 }
 
 .cmb-admin-nav a {
@@ -89,12 +91,14 @@ html.cmb-admin-dark .cmb-admin-nav a:hover {
 }
 
 .cmb-admin-card {
-  border: 1px solid var(--cmb-admin-border);
+  border: 1px solid var(--cmb-admin-border) !important;
   border-radius: 1rem;
-  background: var(--cmb-admin-card);
+  background: var(--cmb-admin-card) !important;
+  background-color: var(--cmb-admin-card) !important;
   padding: 1rem 1.1rem;
   width: 100% !important;
   max-width: none !important;
+  color: var(--cmb-admin-fg);
 }
 
 html.dark .cmb-admin-card,
@@ -398,12 +402,14 @@ html.cmb-admin-dark .cmb-admin-check-text {
   justify-content: space-between !important;
   gap: 0.75rem 1.15rem;
   padding: 1rem 1.15rem;
-  border: 1px solid var(--cmb-admin-row-border);
+  border: 1px solid var(--cmb-admin-row-border) !important;
   border-radius: 1rem;
-  background: var(--cmb-admin-row);
+  background: var(--cmb-admin-row) !important;
+  background-color: var(--cmb-admin-row) !important;
   width: 100% !important;
   max-width: none !important;
   align-self: stretch !important;
+  color: var(--cmb-admin-fg);
 }
 
 html.dark .cmb-admin-row,
@@ -797,4 +803,93 @@ html.cmb-admin-dark .cmb-btn-reject {
   .cmb-admin-filter {
     flex-wrap: wrap !important;
   }
+}
+
+/* ===== 0.10.8: force dark translucent surfaces (host/Tailwind bg-white loses) =====
+   Admin pages sit on dark shop chrome. Do NOT gate on html.dark — host often
+   injects bg-white / bg-card / bg-background on Div wrappers. */
+.cmb-admin-card,
+.cmb-admin-nav,
+.cmb-admin-row,
+.cmb-admin-list-item,
+.cmb-admin .cmb-list-item,
+.cmb-admin .cmb-section-card,
+.cmb-admin-card.cmb-admin-filter,
+html.cmb-admin-ui .cmb-admin-card,
+html.cmb-admin-ui .cmb-admin-nav,
+html.cmb-admin-ui .cmb-admin-row,
+html.cmb-admin-ui .cmb-admin-list-item,
+html.cmb-admin-ui .cmb-admin .cmb-list-item,
+html.cmb-admin-ui .cmb-admin .cmb-section-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.cmb-admin-card,
+.cmb-admin-nav,
+.cmb-admin-card.cmb-admin-filter,
+html.cmb-admin-ui .cmb-admin-card,
+html.cmb-admin-ui .cmb-admin-nav,
+html.cmb-admin-ui .cmb-admin-card.cmb-admin-filter {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Host utilities that paint solid white on our cards/rows */
+.cmb-admin-card.bg-white,
+.cmb-admin-card.bg-card,
+.cmb-admin-card.bg-background,
+.cmb-admin-card.bg-gray-50,
+.cmb-admin-card.bg-gray-100,
+.cmb-admin-row.bg-white,
+.cmb-admin-row.bg-card,
+.cmb-admin-row.bg-background,
+.cmb-admin-row.bg-gray-50,
+.cmb-admin-row.bg-gray-100,
+.cmb-admin-nav.bg-white,
+.cmb-admin-nav.bg-card,
+.cmb-admin-nav.bg-background,
+.cmb-admin .cmb-section-card.bg-white,
+.cmb-admin .cmb-section-card.bg-card,
+.cmb-admin .cmb-section-card.bg-background,
+.cmb-admin .cmb-list-item.bg-white,
+.cmb-admin .cmb-list-item.bg-card,
+.cmb-admin .cmb-list-item.bg-background,
+.cmb-admin-list-item.bg-white,
+.cmb-admin-list-item.bg-card,
+.cmb-admin-list-item.bg-background,
+.cmb-admin .bg-white.cmb-admin-card,
+.cmb-admin .bg-white.cmb-admin-row,
+.cmb-admin .bg-card.cmb-admin-card,
+.cmb-admin .bg-card.cmb-admin-row,
+.cmb-admin .bg-background.cmb-admin-card,
+.cmb-admin .bg-background.cmb-admin-row {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.cmb-admin-card.bg-white,
+.cmb-admin-card.bg-card,
+.cmb-admin-card.bg-background,
+.cmb-admin-nav.bg-white,
+.cmb-admin-nav.bg-card,
+.cmb-admin-nav.bg-background,
+.cmb-admin-card.cmb-admin-filter.bg-white,
+.cmb-admin-card.cmb-admin-filter.bg-card,
+.cmb-admin-card.cmb-admin-filter.bg-background {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Check chips + muted hover stay translucent, not gray-50 paper */
+.cmb-admin-check-label {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
+}
+.cmb-admin-nav a:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
 }

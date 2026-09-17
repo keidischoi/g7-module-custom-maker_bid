@@ -4,6 +4,15 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.8] - 2026-09-17
+
+### Fixed
+- **관리자 흰 박스 강제 제거**: `.cmb-admin-card` / `.cmb-admin-row` / `.cmb-admin-nav` / filter·settings·ops 패널이 호스트 `bg-white`/`bg-card`/`bg-background`에 밀려 다시 흰색이 되던 문제를 수정. `html.dark` 감지에 의존하지 않고 관리자 표면을 항상 `rgba(255,255,255,0.06~0.08)` + `border rgba(…,0.12)` + 밝은 텍스트로 `!important` 강제. `admin.js`는 `.cmb-admin` 존재 시 `cmb-admin-dark`를 무조건 켜고 런타임 CSS로 호스트 유틸을 덮어씀.
+- 공개 페이지도 `html.cmb-dark-boot`에서 `.cmb-section-card`/`.cmb-list-item` 흰 폴백을 반투명 카드로 덮음.
+
+### Changed
+- 버전·캐시 버스트 **0.10.8**.
+
 ## [0.10.7] - 2026-09-17
 
 ### Fixed
