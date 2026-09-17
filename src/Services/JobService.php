@@ -180,6 +180,22 @@ class JobService
     }
 
     /**
+     * Owner-only payload for the public edit form (not admin).
+     *
+     * @return array<string, mixed>
+     */
+    public function findForEdit(int $userId, int $id): array
+    {
+        $job = $this->findOwned($userId, $id);
+        if (! JobRules::isListingStatus((string) $job->status)) {
+            throw new DomainException('이 상태의 의뢰는 수정할 수 없습니다.', 422);
+        }
+        $job = MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->findOrFail($job->id);
+
+        return $this->present($job, $this->ownerContext($userId), true, true);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      */
     public function create(int $userId, array $payload): array
@@ -214,6 +230,7 @@ class JobService
             throw new DomainException('이 상태의 의뢰는 목록 상태를 바꿀 수 없습니다.', 422);
         }
 
+        $payload = $this->resolveTypePayload($payload, $job);
         if (isset($payload['type'])) {
             $type = $this->types->requireEnabled((string) $payload['type']);
             $payload['type_id'] = $type->id;
@@ -274,6 +291,7 @@ class JobService
     public function updateAdmin(int $id, array $payload): array
     {
         $job = MakerJob::query()->findOrFail($id);
+        $payload = $this->resolveTypePayload($payload, $job);
         if (isset($payload['type'])) {
             $type = $this->types->requireEnabled((string) $payload['type']);
             $payload['type_id'] = $type->id;
@@ -312,6 +330,35 @@ class JobService
             $this->files->destroyAdmin((string) $file->hash);
         }
         $job->delete();
+    }
+
+
+    /**
+     * Blank type from G7 Select harvest must not wipe/revalidate; prefer type_id.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resolveTypePayload(array $payload, MakerJob $job): array
+    {
+        if (array_key_exists('type', $payload)) {
+            $raw = $payload['type'];
+            if ($raw === null || (is_string($raw) && trim($raw) === '') || $raw === []) {
+                unset($payload['type']);
+            }
+        }
+        if (! isset($payload['type']) && isset($payload['type_id']) && $payload['type_id'] !== '' && $payload['type_id'] !== null) {
+            $row = $this->types->findBySlug((string) $payload['type_id']);
+            if ($row) {
+                $payload['type'] = $row->slug;
+                $payload['type_id'] = $row->id;
+            }
+        }
+        if (! isset($payload['type']) && $job->type) {
+            // keep existing type via jobAttributes fallback
+        }
+
+        return $payload;
     }
 
     public function assertOpen(MakerJob $job): void

@@ -195,15 +195,147 @@
     (document.head || document.documentElement).appendChild(s);
   }
 
+
+  function dispatch(handler, params) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: handler, params: params || {} });
+    }
+  }
+  function setLocal(map) {
+    var params = { target: 'local' };
+    var key;
+    for (key in map) {
+      if (Object.prototype.hasOwnProperty.call(map, key)) params[key] = map[key];
+    }
+    dispatch('setState', params);
+  }
+  function g7Get(path) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        return window.G7Core.state.get(path);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function ensureListBoxes() {
+    document.querySelectorAll('.cmb-admin-list > .cmb-admin-row, .cmb-admin-list .cmb-admin-row').forEach(function (row) {
+      row.classList.add('cmb-list-item', 'cmb-admin-list-item');
+    });
+  }
+
+  function harvestNamedInto(prefix) {
+    var root = document.querySelector('.cmb-admin');
+    if (!root) return {};
+    var map = {};
+    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
+    root.querySelectorAll('[name]').forEach(function (el) {
+      var name = el.getAttribute('name');
+      if (!name || el.type === 'file') return;
+      if (el.type === 'checkbox') {
+        map[prefix + '.' + name] = !!el.checked;
+        return;
+      }
+      var tag = (el.tagName || '').toUpperCase();
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
+      var val = el.value;
+      if (selectKeys[name] && String(val || '').trim() === '') return;
+      map[prefix + '.' + name] = val;
+    });
+    return map;
+  }
+
+  function paintSettingsControls() {
+    var form = g7Get('_local.form') || g7Get('form') || {};
+    if (!form || typeof form !== 'object') return;
+    Object.keys(form).forEach(function (k) {
+      var el = document.querySelector('.cmb-admin [name="' + k + '"]');
+      if (!el) return;
+      if (el.type === 'checkbox') {
+        el.checked = !!(form[k] === true || form[k] === 1 || form[k] === '1' || form[k] === 'true');
+      } else if ((el.tagName || '').toUpperCase() === 'TEXTAREA' || ((el.tagName || '').toUpperCase() === 'INPUT' && el.type !== 'checkbox')) {
+        if (document.activeElement === el) return;
+        el.value = form[k] == null ? '' : String(form[k]);
+      }
+    });
+  }
+
+  function bindSettingsHarvest() {
+    if (document.documentElement.getAttribute('data-cmb-settings-bound')) return;
+    if (!/\/admin\/maker-bids\/settings/.test(location.pathname || '')) return;
+    document.documentElement.setAttribute('data-cmb-settings-bound', '1');
+    document.addEventListener(
+      'click',
+      function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+        if (!btn) return;
+        var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+        if (label.indexOf('설정 저장') === -1) return;
+        var map = harvestNamedInto('form');
+        // Keep select values already in local state when harvest skipped empties.
+        var cur = g7Get('_local.form') || {};
+        ['nav_insert', 'default_job_status', 'bid_allow', 'nav_label'].forEach(function (k) {
+          if ((map['form.' + k] == null || map['form.' + k] === '') && cur[k] != null && cur[k] !== '') {
+            map['form.' + k] = cur[k];
+          }
+        });
+        if (Object.keys(map).length) setLocal(map);
+      },
+      true
+    );
+    document.addEventListener(
+      'change',
+      function (e) {
+        var el = e.target;
+        if (!el || !el.getAttribute) return;
+        if (!el.closest || !el.closest('.cmb-admin')) return;
+        var name = el.getAttribute('name');
+        if (!name) return;
+        var map = {};
+        if (el.type === 'checkbox') map['form.' + name] = !!el.checked;
+        else map['form.' + name] = el.value;
+        setLocal(map);
+      },
+      true
+    );
+    paintSettingsControls();
+  }
+
+  function bindCompanyHarvest() {
+    if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
+    if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
+    document.documentElement.setAttribute('data-cmb-co-harvest', '1');
+    document.addEventListener(
+      'click',
+      function (e) {
+        var btn = e.target && e.target.closest ? e.target.closest('button') : null;
+        if (!btn) return;
+        var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+        if (label.indexOf('선택 업체 저장') === -1) return;
+        var map = harvestNamedInto('edit');
+        if (Object.keys(map).length) setLocal(map);
+      },
+      true
+    );
+  }
+
   function start() {
     if (!document.querySelector('.cmb-admin')) return;
     document.documentElement.classList.add('cmb-admin-ui');
     injectPortalCss();
     enhanceSizes();
     paintStatusButtons();
+    ensureCompanyEditButtons();
+    ensureListBoxes();
+    bindSettingsHarvest();
+    bindCompanyHarvest();
+    paintSettingsControls();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
   setTimeout(start, 400);
   setTimeout(paintStatusButtons, 1200);
+  setTimeout(ensureListBoxes, 800);
+  setTimeout(paintSettingsControls, 900);
+  setTimeout(ensureCompanyEditButtons, 600);
 })();

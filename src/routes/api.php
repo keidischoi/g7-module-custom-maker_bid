@@ -36,6 +36,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
     Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
     Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->name('jobs.viewer');
+    Route::get('jobs/{id}/edit', [JobController::class, 'editData'])->whereNumber('id')->name('jobs.edit');
     Route::post('jobs', [JobController::class, 'store'])->name('jobs.store');
     Route::patch('jobs/{id}', [JobController::class, 'update'])->whereNumber('id')->name('jobs.update');
     Route::post('uploads', [JobFileController::class, 'store'])->name('uploads.store');

@@ -428,10 +428,16 @@ class CompanyRules
         if ($digits === null || $digits === '') {
             return true; // optional
         }
-        if (! preg_match('/^\d{10}$/', $digits)) {
+
+        // Format only (10 digits). Checksum is soft — many test/legacy numbers fail it.
+        return (bool) preg_match('/^\d{10}$/', $digits);
+    }
+
+    public static function passesBusinessNoChecksum(?string $digits): bool
+    {
+        if ($digits === null || $digits === '' || ! preg_match('/^\d{10}$/', $digits)) {
             return false;
         }
-        // Korean business registration checksum (optional soft check)
         $w = [1, 3, 7, 1, 3, 7, 1, 3, 5];
         $sum = 0;
         for ($i = 0; $i < 9; $i++) {

@@ -106,6 +106,15 @@ class JobController extends Controller
         }
     }
 
+    public function editData(Request $request, int $id): JsonResponse
+    {
+        try {
+            return response()->json(['data' => $this->jobs->findForEdit((int) $request->user()->id, $id)]);
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+    }
+
     public function store(StoreJobRequest $request): JsonResponse
     {
         $isDraft = ($request->input('status') === 'draft');

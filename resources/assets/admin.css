@@ -25,11 +25,11 @@ html.dark .cmb-admin,
 .dark .cmb-admin {
   --cmb-admin-fg: rgb(243 244 246);
   --cmb-admin-muted: rgb(156 163 175);
-  /* gray-500 chrome / gray-400 rows — readable on navy, not slate-on-slate. */
-  --cmb-admin-border: rgb(107 114 128);
-  --cmb-admin-row-border: rgb(156 163 175);
+  /* Visible boxes on dark admin chrome (same idea as public cmb-list-item). */
+  --cmb-admin-border: rgb(148 163 184);
+  --cmb-admin-row-border: rgba(255, 255, 255, 0.16);
   --cmb-admin-card: rgb(30 41 59);
-  --cmb-admin-row: rgb(15 23 42);
+  --cmb-admin-row: rgba(255, 255, 255, 0.06);
   --cmb-admin-check: rgb(243 244 246);
   --cmb-admin-control: rgb(15 23 42);
 }
@@ -384,9 +384,12 @@ html.dark .cmb-admin-check-text,
 }
 
 html.dark .cmb-admin-row,
-.dark .cmb-admin-row {
-  border-color: rgb(156 163 175);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+.dark .cmb-admin-row,
+html.dark .cmb-admin-list-item,
+.dark .cmb-admin-list-item {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
 .cmb-admin-row > * {
@@ -607,4 +610,11 @@ html.cmb-admin-ui [data-slot="select-item"],
   overflow-wrap: normal !important;
   width: auto !important;
   min-width: 100% !important;
+}
+
+
+/* Explicit list card class (admin.js adds cmb-list-item / cmb-admin-list-item). */
+.cmb-admin-list-item.cmb-admin-row,
+.cmb-admin-row.cmb-list-item {
+  border-radius: 0.75rem;
 }

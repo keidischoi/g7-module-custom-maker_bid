@@ -87,7 +87,7 @@
     {
       "id": "job",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/edit",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -147,6 +147,13 @@
         },
         "401": {
           "handler": "suppress"
+        },
+        "403": {
+          "handler": "toast",
+          "params": {
+            "type": "error",
+            "message": "{{error.message || \"본인 의뢰만 수정할 수 있습니다.\"}}"
+          }
         }
       }
     },

@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.1';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.3';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
@@ -178,11 +178,13 @@
   function harvestNamedFields() {
     var prefix = localFormKey();
     var map = {};
-    var nodes = document.querySelectorAll('.cmb-order-card [name]');
+    var nodes = document.querySelectorAll('.cmb-order-card [name], [data-cmb-company-form] [name], .cmb-company-form [name]');
     var i;
     var el;
     var name;
     var tag;
+    var val;
+    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
     for (i = 0; i < nodes.length; i++) {
       el = nodes[i];
       name = el.getAttribute('name');
@@ -195,9 +197,21 @@
         continue;
       }
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-        map[prefix + '.' + name] = el.value;
+        val = el.value;
+        // G7 Select wrappers often leave an empty hidden/input — do not clobber local slug.
+        if (selectKeys[name] && String(val || '').trim() === '') {
+          continue;
+        }
+        map[prefix + '.' + name] = val;
       }
     }
+    // Prefer live select value / G7 state for critical slugs.
+    ['type', 'status', 'audience', 'kind'].forEach(function (k) {
+      var live = readNamedValue(k);
+      if (live && String(live).trim() !== '') {
+        map[prefix + '.' + k] = live;
+      }
+    });
     if (Object.keys(map).length) {
       setLocal(map);
     }
@@ -345,12 +359,16 @@
     var form = companyFormEl();
     var st = companyMeStatus();
     var revealed = !!(form && form.getAttribute('data-cmb-form-revealed') === '1');
-    var lock = st === 'approved';
+    // Approved companies may update profile (status stays approved server-side).
+    var lock = false;
     if (form) {
-      if (lock) {
+      if (st === 'pending' && !revealed && !companyFormIsVisible(form)) {
         form.classList.add('is-collapsed');
-      } else if (st === 'pending' && !revealed) {
-        form.classList.add('is-collapsed');
+      } else if (st === 'approved' || st === 'rejected' || revealed || st === '') {
+        form.classList.remove('is-collapsed');
+        if (st === 'approved' || st === 'rejected') {
+          prefillCompanyFromMe();
+        }
       } else {
         form.classList.remove('is-collapsed');
       }
@@ -359,13 +377,11 @@
       return;
     }
     btn.classList.toggle('is-locked', lock);
-    if (lock) {
-      btn.setAttribute('hidden', 'hidden');
-      btn.setAttribute('aria-hidden', 'true');
-    } else {
-      btn.removeAttribute('hidden');
-      btn.removeAttribute('aria-hidden');
-      btn.style.setProperty('display', 'inline-flex', 'important');
+    btn.removeAttribute('hidden');
+    btn.removeAttribute('aria-hidden');
+    btn.style.setProperty('display', 'inline-flex', 'important');
+    if (st === 'approved') {
+      btn.textContent = btn.getAttribute('data-cmb-label-edit') || '업체 정보 수정';
     }
   }
 

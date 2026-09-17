@@ -142,7 +142,8 @@ expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_req
 expectTrue('admin sees personal', PrivacyRules::canViewPersonal(1, 9, 'quote_request', null, true));
 expectFalse('stranger masked before award', PrivacyRules::canViewPersonal(3, 9, 'quote_request', null, false));
 expectFalse('bidder masked before award', PrivacyRules::canViewPersonal(4, 9, 'quote_request', 4, false));
-expectFalse('awarded bidder does not see personal (owner/admin only)', PrivacyRules::canViewPersonal(4, 9, 'awarded', 4, false));
+expectTrue('awarded bidder sees personal when done', PrivacyRules::canViewPersonal(4, 9, 'done', 4, false));
+expectTrue('awarded bidder sees personal after award', PrivacyRules::canViewPersonal(4, 9, 'awarded', 4, false));
 expectFalse('other bidder still masked after award', PrivacyRules::canViewPersonal(5, 9, 'awarded', 4, false));
 expectTrue('awarded maker can view archives/delivery', PrivacyRules::canViewArchives(4, 9, 'awarded', 4, false));
 expectTrue('done maker can view archives', PrivacyRules::canViewArchives(4, 9, 'done', 4, false));

@@ -49,7 +49,8 @@ expectTrue('admin bid patch route', str_contains($api, "Route::patch('bids/{id}'
 expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}', [JobAdminController::class, 'update'])"));
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
-expectTrue('module version is 0.10.1', ($moduleMeta['version'] ?? null) === '0.10.1');
+expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
+expectTrue('module version is 0.10.3', ($moduleMeta['version'] ?? null) === '0.10.3');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(

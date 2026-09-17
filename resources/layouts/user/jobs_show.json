@@ -346,12 +346,141 @@
                     "id": "work_link",
                     "type": "basic",
                     "name": "A",
-                    "if": "{{viewer.data?.can_workspace || job.data.status === 'awarded' || job.data.status === 'done'}}",
+                    "if": "{{viewer.data?.can_workspace}}",
                     "props": {
                       "href": "/maker-bids/{{route.id}}/work",
                       "className": "cmb-btn cmb-btn-primary"
                     },
                     "text": "작업실"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "spec_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card space-y-3"
+            },
+            "children": [
+              {
+                "id": "spec_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "의뢰 명세"
+              },
+              {
+                "id": "spec_guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide text-sm"
+                },
+                "text": "의뢰서와 동일한 공개 항목입니다. 연락처·배송지 등 개인정보는 본인·관리자·낙찰자에게만 표시됩니다."
+              },
+              {
+                "id": "spec_grid",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-spec grid gap-2 sm:grid-cols-2 text-sm"
+                },
+                "children": [
+                  {
+                    "id": "s_type",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "유형 · {{job.data.type_name || job.data.type || '-'}}"
+                  },
+                  {
+                    "id": "s_status",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "상태 · {{job.data.status_label || job.data.status || '-'}}"
+                  },
+                  {
+                    "id": "s_budget",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "예산 · {{job.data.budget_label || '미정'}}"
+                  },
+                  {
+                    "id": "s_closes",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "마감 · {{job.data.closes_at || '없음'}}"
+                  },
+                  {
+                    "id": "s_audience",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "공개 · {{job.data.audience_label || '전체'}}"
+                  },
+                  {
+                    "id": "s_bidding",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.bidding_status_label}}",
+                    "text": "입찰 · {{job.data.bidding_status_label}}"
+                  },
+                  {
+                    "id": "s_size",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.size_label}}",
+                    "text": "최종 크기 · {{job.data.size_label}}"
+                  },
+                  {
+                    "id": "s_ext",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}",
+                    "text": "제공 확장자 · {{job.data.provided_extensions}}"
+                  },
+                  {
+                    "id": "s_rush",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.rush_fee_enabled}}",
+                    "text": "급행비 · 적용 가능{{job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : ''}}"
+                  },
+                  {
+                    "id": "s_sched",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.schedule_premium_enabled}}",
+                    "text": "스케줄 선점비 · 적용 가능"
+                  },
+                  {
+                    "id": "s_rev",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.revision_enabled}}",
+                    "text": "수정 · {{job.data.revision_count || '-'}}회{{job.data.revision_cost != null ? (' · 회당 ' + job.data.revision_cost + '원') : ''}}"
+                  },
+                  {
+                    "id": "s_own",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.ownership_requested}}",
+                    "text": "소유권한 · 요청함"
+                  },
+                  {
+                    "id": "s_created",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "등록 · {{job.data.created_at || '-'}}"
+                  },
+                  {
+                    "id": "s_bids",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "입찰 수 · {{job.data.bids_count ?? 0}}"
                   }
                 ]
               }
@@ -495,7 +624,7 @@
             "props": {
               "className": "cmb-hint"
             },
-            "text": "주문자 연락처·주소는 제작 의뢰가 확정(낙찰)된 뒤에 상대에게 공개됩니다."
+            "text": "연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다."
           },
           {
             "id": "archives",

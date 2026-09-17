@@ -38,6 +38,7 @@ class UpdateJobRequest extends FormRequest
             'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',
             'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg',
         ]);
+        $this->dropBlankKeys(['type', 'status', 'audience']);
         if ($this->exists('sizes_json') && ! $this->exists('sizes')) {
             $this->merge(['sizes' => JobRules::decodeSizesInput($this->input('sizes_json'))]);
         }

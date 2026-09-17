@@ -5,7 +5,7 @@ namespace Modules\Custom\MakerBids\Support;
 class PrivacyRules
 {
     /**
-     * Contact/address are visible only to the job owner and admins.
+     * Contact/address visible to job owner, admins, and awarded bidder after award/done.
      */
     public static function canViewPersonal(
         int $viewerId,
@@ -17,11 +17,20 @@ class PrivacyRules
         if ($isAdmin) {
             return true;
         }
+        if ($viewerId < 1) {
+            return false;
+        }
+        if ($ownerId !== null && $ownerId !== '' && (int) $ownerId === $viewerId) {
+            return true;
+        }
+        if ($awardedBidderUserId === null || $awardedBidderUserId === '') {
+            return false;
+        }
+        if ((int) $awardedBidderUserId !== $viewerId) {
+            return false;
+        }
 
-        return $viewerId > 0
-            && $ownerId !== null
-            && $ownerId !== ''
-            && (int) $ownerId === $viewerId;
+        return in_array($jobStatus, ['awarded', 'done'], true);
     }
 
     /**
