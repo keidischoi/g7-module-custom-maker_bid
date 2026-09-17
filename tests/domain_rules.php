@@ -135,6 +135,10 @@ $mod = (string) file_get_contents($root.'/module.php');
 expectTrue('getSchedules registers maker-bids:run-schedule', str_contains($mod, 'function getSchedules') && str_contains($mod, 'maker-bids:run-schedule'));
 expectTrue('schedule command file exists', is_file($root.'/src/Console/Commands/RunMarketplaceScheduleCommand.php'));
 expectTrue('service provider registers command', is_file($root.'/src/Providers/MakerBidsServiceProvider.php'));
+expectTrue('seed-dummy-bids command file exists', is_file($root.'/src/Console/Commands/SeedDummyBidsCommand.php'));
+$providerSrc = (string) file_get_contents($root.'/src/Providers/MakerBidsServiceProvider.php');
+expectTrue('provider registers seed-dummy-bids', str_contains($providerSrc, 'SeedDummyBidsCommand'));
+
 
 $api = (string) file_get_contents($root.'/src/routes/api.php');
 expectTrue('reviews route', str_contains($api, "jobs/{id}/reviews"));
