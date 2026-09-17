@@ -202,12 +202,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.10.9', str_contains($nav, 'nav.js?v=0.10.9'));
-expectTrue('form.js cache bust 0.10.9', str_contains($nav, 'form.js?v=0.10.9'));
-expectTrue('form.css cache bust 0.10.9', str_contains($nav, 'form.css?v=0.10.9'));
-expectTrue('admin.css cache bust 0.10.9', str_contains($nav, 'admin.css?v=0.10.9'));
-expectTrue('admin.js cache bust 0.10.9', str_contains($nav, 'admin.js?v=0.10.9'));
-expectTrue('cmb_maker_nav cache bust 0.10.9', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.9'));
+expectTrue('nav cache bust 0.10.10', str_contains($nav, 'nav.js?v=0.10.10'));
+expectTrue('form.js cache bust 0.10.10', str_contains($nav, 'form.js?v=0.10.10'));
+expectTrue('form.css cache bust 0.10.10', str_contains($nav, 'form.css?v=0.10.10'));
+expectTrue('admin.css cache bust 0.10.10', str_contains($nav, 'admin.css?v=0.10.10'));
+expectTrue('admin.js cache bust 0.10.10', str_contains($nav, 'admin.js?v=0.10.10'));
+expectTrue('cmb_maker_nav cache bust 0.10.10', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.10'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -230,6 +230,19 @@ expectTrue('edit has no QA fill button', ! str_contains($edit, 'data-cmb-qa-fill
 expectTrue('edit 소유권한 요청 near extensions', str_contains($edit, '소유권한 요청') && str_contains($edit, 'ownership_requested') && ! str_contains($edit, '저작권 있음'));
 expectTrue('edit DWG extension', str_contains($edit, '"text": "DWG"') && str_contains($edit, 'ext_dwg'));
 expectTrue('edit 공개 설정 전체/업체만/개인만', str_contains($edit, '공개 설정') && str_contains($edit, '"value": "all"') && str_contains($edit, '업체만') && str_contains($edit, '개인만'));
+expectTrue('settings has bid_audience_mode', str_contains((string) file_get_contents($root.'/resources/layouts/admin/settings_index.json'), 'bid_audience_mode') && str_contains((string) file_get_contents($root.'/resources/layouts/admin/settings_index.json'), '관리자만'));
+expectTrue('jobs form audience section marker', str_contains($edit, 'data-cmb-audience-section'));
+$list = (string) file_get_contents($root.'/resources/layouts/user/jobs_list.json');
+expectTrue('list search binds search.q', str_contains($list, 'search.q') && str_contains($list, 'data-cmb-search-input'));
+expectTrue('list search soft refetch', str_contains($list, 'refetchDataSource') && str_contains($list, 'jobs'));
+expectTrue('page.js soft search', str_contains($pageJs, 'cmb-list-search') && str_contains($pageJs, 'runSearch'));
+expectTrue('list sort UI', str_contains($list, 'sort') && str_contains($list, '최신순') && str_contains($list, '등록순') && str_contains($list, '조회순'));
+expectTrue('page.js sort soft', str_contains($pageJs, 'cmb-list-sort') && str_contains($pageJs, 'applySort'));
+expectTrue('page.js open bid form', str_contains($pageJs, 'cmb-open-bid-form') && str_contains($pageJs, '/bids'));
+$bidsLayout = (string) file_get_contents($root.'/resources/layouts/user/jobs_bids.json');
+expectTrue('bids inline 견적 form', str_contains($bidsLayout, 'data-cmb-open-bid-panel') && str_contains($bidsLayout, '견적 제출') && str_contains($bidsLayout, 'data-cmb-bid-amount'));
+
+
 
 $show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json');
 expectTrue('show 소유권한 요청', str_contains($pageJs, "label: '소유권한'") && str_contains($pageJs, 'ownership_requested') && ! str_contains($show, '저작권 있음'));
@@ -257,7 +270,8 @@ expectTrue('form.css styles company submit on sub-nav', str_contains($css, '.cmb
 expectTrue('form.css can collapse company form until 등록', str_contains($css, '.cmb-company-form.is-collapsed'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.9'));
+expectTrue('form.js syncAudienceSection', str_contains($formJs, 'syncAudienceSection') && str_contains($formJs, 'admin_only'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.10'));
 
 $history = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
 expectTrue('jobs_history notices section card', str_contains($history, 'notices_card') && str_contains($history, 'cmb-section-card'));
@@ -290,7 +304,7 @@ expectTrue('form.css pager styles', str_contains($formCss, '.cmb-pager') && str_
 expectTrue('subnav right aligned in css', str_contains($formCss, '.cmb-maker-subnav') && str_contains($formCss, 'justify-content: flex-end !important'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
-expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.9'));
+expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.10'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
 expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
@@ -323,6 +337,7 @@ expectTrue('revision fields ensure migration', is_file($root.'/database/migratio
 expectTrue('sizes and manager ensure migration', is_file($root.'/database/migrations/2026_09_16_000008_ensure_sizes_and_manager_fields.php'));
 expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrations/2026_09_16_000009_ensure_includes_modeling.php'));
 expectTrue('company profile admin fields migration', is_file($root.'/database/migrations/2026_09_16_000010_ensure_company_profile_admin_fields.php'));
+expectTrue('job view_count migration', is_file($root.'/database/migrations/2026_09_17_000017_ensure_job_view_count.php'));
 expectTrue('job audience and ownership migration', is_file($root.'/database/migrations/2026_09_16_000011_ensure_job_audience_and_copyright.php'));
 expectTrue('module settings migration', is_file($root.'/database/migrations/2026_09_16_000012_create_maker_module_settings_table.php'));
 expectTrue('company is_designated migration', is_file($root.'/database/migrations/2026_09_16_000013_ensure_company_is_designated.php'));
@@ -398,14 +413,14 @@ expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, 'rgba(255, 255, 255, 0.06)') && (str_contains($adminCss, 'rgba(255, 255, 255, 0.14)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.12)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.16)')));
 expectTrue('admin.css dark covers data-theme and cmb-admin-dark', str_contains($adminCss, 'html[data-theme="dark"]') && str_contains($adminCss, 'html.cmb-admin-dark') && str_contains($adminCss, 'html.cmb-dark-boot'));
 expectTrue('admin.css dark chrome border is translucent', str_contains($adminCss, '--cmb-admin-border: rgba(255, 255, 255, 0.12)') || str_contains($adminCss, '--cmb-admin-border: rgb(148 163 184)') || str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.9'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.9'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.10'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.10'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js syncs cmb-admin-dark', str_contains($adminJs, 'syncAdminDark') && str_contains($adminJs, 'cmb-admin-dark-css'));
 expectTrue('admin.js always forces cmb-admin-dark', str_contains($adminJs, 'Admin maker-bids always uses dark translucent') || str_contains($adminJs, "html.classList.add('cmb-admin-dark')"));
-expectTrue('admin.css forces host bg-white kill', str_contains($adminCss, '.cmb-admin-card.bg-white') && str_contains($adminCss, '0.10.9: force dark translucent') && str_contains($adminCss, 'background-color: rgba(255, 255, 255, 0.06) !important'));
-expectTrue('form.css forces admin surfaces without dark gate', str_contains($formCss, '0.10.9: admin surfaces always translucent'));
+expectTrue('admin.css forces host bg-white kill', str_contains($adminCss, '.cmb-admin-card.bg-white') && str_contains($adminCss, '0.10.10: force dark translucent') && str_contains($adminCss, 'background-color: rgba(255, 255, 255, 0.06) !important'));
+expectTrue('form.css forces admin surfaces without dark gate', str_contains($formCss, '0.10.10: admin surfaces always translucent'));
 expectTrue('admin.js does not use body:has', ! str_contains($adminJs, 'body:has'));
 $adminBidsLayout = (string) file_get_contents($root.'/resources/layouts/admin/bids_index.json');
 expectTrue('admin bids list is full width', str_contains($adminBidsLayout, 'cmb-admin-list w-full') && str_contains($adminBidsLayout, 'cmb-admin-row w-full') && str_contains($adminBidsLayout, 'cmb-admin-filter-id'));

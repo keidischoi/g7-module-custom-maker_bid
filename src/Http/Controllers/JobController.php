@@ -14,7 +14,9 @@ use Modules\Custom\MakerBids\Services\AwardService;
 use Modules\Custom\MakerBids\Services\JobFileService;
 use Modules\Custom\MakerBids\Services\JobService;
 use Modules\Custom\MakerBids\Services\JobTypeService;
+use Modules\Custom\MakerBids\Services\MakerBidSettingsService;
 use Modules\Custom\MakerBids\Services\MarketplaceService;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 use Modules\Custom\MakerBids\Support\ArrayPaginator;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobPresenter;
@@ -28,21 +30,15 @@ class JobController extends Controller
         private readonly AwardService $awards,
         private readonly JobTypeService $types,
         private readonly JobFileService $files,
+        private readonly MakerBidSettingsService $settings,
     ) {}
 
     public function index(Request $request): JsonResponse
     {
         try { app(MarketplaceService::class)->closeExpired(); } catch (\Throwable) {}
-        $data = $this->jobs->listPublic($request);
-        $q = trim((string) $request->query('q', ''));
-        if ($q !== '') {
-            $data = array_values(array_filter($data, static function ($row) use ($q) {
-                $hay = strtolower(($row['title'] ?? '').' '.($row['description'] ?? '').' '.($row['type'] ?? ''));
-                return str_contains($hay, strtolower($q));
-            }));
-        }
-        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));
-    }
+$data = $this->jobs->listPublic($request);
+
+        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));    }
 
     public function show(Request $request, int $id): JsonResponse
     {
@@ -74,6 +70,10 @@ class JobController extends Controller
         }
         $profileName = $companyName !== '' ? $companyName : $memberName;
 
+        $audienceMode = SettingsRules::normalizeAudienceMode(
+            $this->settings->getSetting('general.bid_audience_mode', SettingsRules::AUDIENCE_MODE_PUBLIC),
+        );
+
         return response()->json(['data' => [
             'upload_token' => $token,
             'contact_name' => $profileName,
@@ -91,6 +91,8 @@ class JobController extends Controller
             'manager_phone' => '',
             'manager_email' => '',
             'types' => $this->types->listPublic()->map->toOptionArray()->values()->all(),
+            'bid_audience_mode' => $audienceMode,
+            'audience_selectable' => SettingsRules::isAudienceSelectable($audienceMode),
         ]]);
     }
 

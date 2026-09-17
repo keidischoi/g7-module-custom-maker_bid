@@ -107,6 +107,9 @@ expectFalse('create has no has_copyright field', isset($create['has_copyright'])
 expect('audience 업체만', JobRules::normalizeAudience('업체만'), 'company');
 expect('audience 개인만', JobRules::normalizeAudience('개인만'), 'individual');
 expect('audience default all', JobRules::normalizeAudience(''), 'all');
+expect('list sort 최신순', JobRules::normalizeListSort('최신순'), 'latest');
+expect('list sort 등록순', JobRules::normalizeListSort('등록순'), 'created');
+expect('list sort 조회순', JobRules::normalizeListSort('조회순'), 'views');
 expect('audience label company', JobRules::audienceLabel('company'), '업체만');
 expectTrue('company viewer sees company jobs', JobRules::canViewAudience('company', false, false, true, true, 'company'));
 expectFalse('individual cannot see company-only', JobRules::canViewAudience('company', false, false, true, false, null));

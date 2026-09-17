@@ -81,6 +81,10 @@
       "image_count": 0,
       "archive_count": 0,
       "terms_agreed": false
+    },
+    "ui": {
+      "audience_selectable": true,
+      "bid_audience_mode": "public"
     }
   },
   "data_sources": [
@@ -192,7 +196,9 @@
           "contact_hours_to": "18:00",
           "manager_name": "",
           "manager_phone": "",
-          "manager_email": ""
+          "manager_email": "",
+          "bid_audience_mode": "public",
+          "audience_selectable": true
         }
       },
       "onSuccess": [
@@ -208,7 +214,9 @@
             "form.address": "{{_local.form.address || response.data.address || ''}}",
             "form.address_detail": "{{_local.form.address_detail || response.data.address_detail || ''}}",
             "form.contact_hours_from": "{{_local.form.contact_hours_from || response.data.contact_hours_from || '09:00'}}",
-            "form.contact_hours_to": "{{_local.form.contact_hours_to || response.data.contact_hours_to || '18:00'}}"
+            "form.contact_hours_to": "{{_local.form.contact_hours_to || response.data.contact_hours_to || '18:00'}}",
+            "ui.audience_selectable": "{{response.data.audience_selectable ?? true}}",
+            "ui.bid_audience_mode": "{{response.data.bid_audience_mode || 'public'}}"
           }
         }
       ]
@@ -2192,7 +2200,8 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "space-y-4"
+                  "className": "space-y-4 cmb-audience-section",
+                  "data-cmb-audience-section": "1"
                 },
                 "children": [
                   {

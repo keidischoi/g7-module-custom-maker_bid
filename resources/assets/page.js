@@ -888,15 +888,353 @@
   }
 })();
 
+
+/* cmb-list-search: soft search without full page refresh */
+(function () {
+  function dispatch(handler, params) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: handler, params: params || {} });
+      return true;
+    }
+    return false;
+  }
+
+  function searchInput() {
+    return document.querySelector('[data-cmb-search-input], .cmb-search-input, .cmb-search-bar input[name="q"]');
+  }
+
+  function currentQ() {
+    var el = searchInput();
+    if (el && el.value != null) {
+      return String(el.value).trim();
+    }
+    try {
+      return String(new URLSearchParams(location.search).get('q') || '').trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function softPath(q) {
+    var u;
+    try { u = new URL(location.href); } catch (e) { return null; }
+    if (q) {
+      u.searchParams.set('q', q);
+    } else {
+      u.searchParams.delete('q');
+    }
+    u.searchParams.delete('page');
+    // preserve sort
+    return u.pathname + (u.search || '');
+  }
+
+  function runSearch(e) {
+    if (e) {
+      try { e.preventDefault(); } catch (err) {}
+      try { e.stopPropagation(); } catch (err2) {}
+      try { e.stopImmediatePropagation && e.stopImmediatePropagation(); } catch (err3) {}
+    }
+    if (!document.querySelector('[data-cmb-search-bar], .cmb-search-bar')) {
+      return false;
+    }
+    var q = currentQ();
+    dispatch('setState', { target: 'local', 'search.q': q, 'search.page': 1 });
+    var path = softPath(q);
+    if (path) {
+      try {
+        if (window.history && typeof window.history.replaceState === 'function') {
+          window.history.replaceState({}, '', path);
+        }
+      } catch (err4) {}
+      // Soft SPA navigate when available (same pattern as pager) — still avoid hard reload.
+      if (window.G7Core && typeof window.G7Core.navigate === 'function') {
+        try { window.G7Core.navigate(path); } catch (err5) {}
+      } else {
+        dispatch('navigate', { path: path });
+      }
+    }
+    dispatch('refetchDataSource', { dataSourceId: 'jobs' });
+    return false;
+  }
+
+  function syncInputFromUrl() {
+    var el = searchInput();
+    if (!el) return;
+    var q = '';
+    try { q = String(new URLSearchParams(location.search).get('q') || ''); } catch (e) {}
+    if (q && !String(el.value || '').trim()) {
+      el.value = q;
+      dispatch('setState', { target: 'local', 'search.q': q });
+    }
+  }
+
+  function bind() {
+    syncInputFromUrl();
+    var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
+    if (!bar || bar.getAttribute('data-cmb-search-bound')) {
+      return;
+    }
+    bar.setAttribute('data-cmb-search-bound', '1');
+    bar.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t) return;
+      var go = t.closest ? t.closest('[data-cmb-search-go], .cmb-search-go, button') : null;
+      if (!go || !bar.contains(go)) return;
+      if (go.matches && !go.matches('[data-cmb-search-go], .cmb-search-go') && go.tagName !== 'BUTTON') return;
+      if (go.classList.contains('cmb-search-go') || go.getAttribute('data-cmb-search-go') || (go.textContent || '').indexOf('검색') >= 0) {
+        runSearch(e);
+      }
+    }, true);
+    bar.addEventListener('keydown', function (e) {
+      if (!e || e.key !== 'Enter') return;
+      var t = e.target;
+      if (!t) return;
+      if (t.matches && (t.matches('[data-cmb-search-input], .cmb-search-input, input[name="q"]') || t.tagName === 'INPUT')) {
+        runSearch(e);
+      }
+    }, true);
+    var form = bar.closest('form');
+    if (form && !form.getAttribute('data-cmb-search-submit-bound')) {
+      form.setAttribute('data-cmb-search-submit-bound', '1');
+      form.addEventListener('submit', function (e) {
+        if (bar.contains(e.target) || form.contains(searchInput())) {
+          runSearch(e);
+        }
+      }, true);
+    }
+  }
+
+  bind();
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 200);
+  setTimeout(bind, 800);
+  setTimeout(bind, 1600);
+  if (!window.__cmbSearchObs) {
+    window.__cmbSearchObs = new MutationObserver(function () { bind(); });
+    try { window.__cmbSearchObs.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  }
+})();
+
+
+/* cmb-list-sort: soft sort without full page refresh */
+(function () {
+  function dispatch(handler, params) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: handler, params: params || {} });
+      return true;
+    }
+    return false;
+  }
+  function softPath(updates) {
+    var u;
+    try { u = new URL(location.href); } catch (e) { return null; }
+    Object.keys(updates || {}).forEach(function (k) {
+      var v = updates[k];
+      if (v == null || v === '') u.searchParams.delete(k);
+      else u.searchParams.set(k, String(v));
+    });
+    return u.pathname + (u.search || '');
+  }
+  function applySort(sort) {
+    sort = String(sort || 'latest');
+    dispatch('setState', { target: 'local', 'search.sort': sort, 'search.page': 1 });
+    var path = softPath({ sort: sort === 'latest' ? null : sort, page: null });
+    if (path) {
+      try { window.history.replaceState({}, '', path); } catch (e) {}
+      if (window.G7Core && typeof window.G7Core.navigate === 'function') {
+        try { window.G7Core.navigate(path); } catch (e2) {}
+      } else {
+        dispatch('navigate', { path: path });
+      }
+    }
+    dispatch('refetchDataSource', { dataSourceId: 'jobs' });
+  }
+  function bind() {
+    var sel = document.querySelector('[data-cmb-sort-select], .cmb-search-sort-select, select[name="sort"]');
+    if (!sel || sel.getAttribute('data-cmb-sort-bound')) return;
+    sel.setAttribute('data-cmb-sort-bound', '1');
+    // sync from URL
+    try {
+      var cur = new URLSearchParams(location.search).get('sort');
+      if (cur && sel.value !== cur) sel.value = cur;
+    } catch (e) {}
+    sel.addEventListener('change', function (e) {
+      try { e.preventDefault(); e.stopPropagation(); } catch (err) {}
+      applySort(sel.value || 'latest');
+    }, true);
+  }
+  bind();
+  document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(bind, 300);
+  setTimeout(bind, 1200);
+  if (!window.__cmbSortObs) {
+    window.__cmbSortObs = new MutationObserver(function () { bind(); });
+    try { window.__cmbSortObs.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  }
+})();
+
+/* cmb-open-bid-form: inline 견적 넣기 on 입찰현황 */
+(function () {
+  function toast(type, message) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: 'toast', params: { type: type, message: message } });
+    }
+  }
+  function dispatch(handler, params) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: handler, params: params || {} });
+    }
+  }
+  function csrf() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    if (m && m.content) return m.content;
+    try {
+      var match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+      if (match) return decodeURIComponent(match[1]);
+    } catch (e) {}
+    return '';
+  }
+  function showPanel(panel, show) {
+    if (!panel) return;
+    if (show) {
+      panel.hidden = false;
+      panel.removeAttribute('hidden');
+      panel.style.display = 'block';
+      panel.classList.add('is-open');
+    } else {
+      panel.hidden = true;
+      panel.setAttribute('hidden', 'hidden');
+      panel.style.display = 'none';
+      panel.classList.remove('is-open');
+    }
+  }
+  function closeAll() {
+    document.querySelectorAll('[data-cmb-open-bid-panel], .cmb-open-bid-panel').forEach(function (p) {
+      showPanel(p, false);
+    });
+  }
+  function panelFor(el) {
+    var card = el.closest('[data-cmb-open-bid-card], .cmb-open-bid-card');
+    if (!card) return el.closest('[data-cmb-open-bid-panel], .cmb-open-bid-panel');
+    return card.querySelector('[data-cmb-open-bid-panel], .cmb-open-bid-panel');
+  }
+  function field(panel, sels) {
+    var i, el;
+    for (i = 0; i < sels.length; i++) {
+      el = panel.querySelector(sels[i]);
+      if (el) return String(el.value || '').trim();
+    }
+    return '';
+  }
+  function submitBid(btn) {
+    var panel = panelFor(btn);
+    var jobId = (btn.getAttribute('data-job-id') || (panel && panel.getAttribute('data-job-id')) || '').trim();
+    if (!jobId || !panel) {
+      toast('error', '의뢰를 찾을 수 없습니다.');
+      return;
+    }
+    var amountRaw = field(panel, ['[data-cmb-bid-amount]', '.cmb-open-bid-amount', 'input[name="amount"]']);
+    var daysRaw = field(panel, ['[data-cmb-bid-days]', '.cmb-open-bid-days', 'input[name="days"]']);
+    var message = field(panel, ['[data-cmb-bid-message]', '.cmb-open-bid-message', 'textarea[name="message"]', 'input[name="message"]']);
+    var amountNum = parseInt(String(amountRaw).replace(/[^\d]/g, ''), 10);
+    if (!amountNum || amountNum < 1) {
+      toast('error', '견적 금액을 입력해 주세요.');
+      return;
+    }
+    var body = { amount: amountNum };
+    if (daysRaw !== '') {
+      var daysNum = parseInt(String(daysRaw).replace(/[^\d]/g, ''), 10);
+      if (!daysNum || daysNum < 1) {
+        toast('error', '제작 일수를 확인해 주세요.');
+        return;
+      }
+      body.days = daysNum;
+    }
+    if (message) body.message = message;
+    btn.disabled = true;
+    var headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    var token = csrf();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    fetch('/api/modules/custom-maker_bids/jobs/' + encodeURIComponent(jobId) + '/bids', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: headers,
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (json) {
+        return { ok: res.ok, status: res.status, json: json };
+      });
+    }).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        var msg = (r.json && (r.json.message || (r.json.error && r.json.error.message))) || '견적 등록에 실패했습니다.';
+        if (r.status === 401) msg = '로그인이 필요합니다.';
+        toast('error', msg);
+        return;
+      }
+      toast('success', '견적을 등록했습니다.');
+      showPanel(panel, false);
+      dispatch('refetchDataSource', { dataSourceId: 'jobs' });
+      dispatch('refetchDataSource', { dataSourceId: 'mine' });
+    }).catch(function () {
+      btn.disabled = false;
+      toast('error', '견적 등록에 실패했습니다.');
+    });
+  }
+  function onClick(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var toggle = t.closest('[data-cmb-open-bid-toggle], .cmb-open-bid-toggle');
+    if (toggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      var panel = panelFor(toggle);
+      if (!panel) return;
+      var wasOpen = panel.classList.contains('is-open');
+      closeAll();
+      if (!wasOpen) {
+        showPanel(panel, true);
+        var amount = panel.querySelector('[data-cmb-bid-amount], input[name="amount"]');
+        if (amount) try { amount.focus(); } catch (err) {}
+      }
+      return;
+    }
+    if (t.closest('[data-cmb-open-bid-cancel], .cmb-open-bid-cancel')) {
+      e.preventDefault();
+      e.stopPropagation();
+      showPanel(panelFor(t), false);
+      return;
+    }
+    var submit = t.closest('[data-cmb-open-bid-submit], .cmb-open-bid-submit');
+    if (submit) {
+      e.preventDefault();
+      e.stopPropagation();
+      submitBid(submit);
+    }
+  }
+  if (!document.documentElement.getAttribute('data-cmb-open-bid-bound')) {
+    document.documentElement.setAttribute('data-cmb-open-bid-bound', '1');
+    document.addEventListener('click', onClick, true);
+  }
+})();
+
+
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.9';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.10';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.9') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.10') < 0) {
         existing.href = FORM_CSS;
       }
       return;

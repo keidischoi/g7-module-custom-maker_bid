@@ -29,7 +29,7 @@ class JobService
      */
     public function listPublic(Request $request): array
     {
-        $q = MakerJob::query()->with(['jobType'])->withCount('bids')->latest();
+        $q = MakerJob::query()->with(['jobType'])->withCount('bids');
         $ctx = $this->viewerFromRequest($request);
 
         if (! $ctx['isAdmin'] && ! $ctx['isMember'] && ! $this->settingBool('general.guests_see_list', true)) {
@@ -66,7 +66,13 @@ class JobService
             });
         }
 
-        return $q->limit(100)->get()->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
+        $this->applyListSearch($q, (string) $request->query('q', ''));
+        $this->applyListSort($q, $request->query('sort'));
+
+        $jobs = $q->limit(100)->get();
+        $this->attachOwnerSearchMeta($jobs);
+
+        return $jobs->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
     }
 
     /**
@@ -167,6 +173,8 @@ class JobService
             $this->denyPublic();
         }
 
+        $this->incrementViewCount($job);
+
         return $this->present($job, $ctx, true, true);
     }
 
@@ -203,6 +211,7 @@ class JobService
     {
         $type = $this->types->requireEnabled((string) $payload['type']);
         $this->assertAddress($type->toOptionArray(), $payload);
+        $payload = $this->applyMemberAudiencePolicy($payload, true);
 
         $attrs = $this->jobAttributes($payload, $type->id, (string) $type->slug);
         $attrs['user_id'] = $userId;
@@ -240,6 +249,7 @@ class JobService
         } elseif ($job->jobType) {
             $this->assertAddress($job->jobType->toOptionArray(), array_merge($job->toArray(), $payload));
         }
+        $payload = $this->applyMemberAudiencePolicy($payload, false);
 
         $attrs = $this->jobAttributes($payload, $payload['type_id'] ?? $job->type_id, (string) ($payload['type'] ?? $job->type), false);
         $job->fill($attrs);
@@ -406,6 +416,185 @@ class JobService
     public function isAdminActor(mixed $user): bool
     {
         return $this->isAdminUser($user);
+    }
+
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<\Modules\Custom\MakerBids\Models\MakerJob>  $q
+     */
+    private function applyListSearch($q, string $term): void
+    {
+        $term = trim($term);
+        if ($term === '' || in_array(strtolower($term), ['undefined', 'null', '*'], true)) {
+            return;
+        }
+        $like = '%'.$term.'%';
+        $userIds = $this->searchOwnerUserIds($term);
+        $q->where(function ($w) use ($like, $term, $userIds) {
+            $w->where('title', 'like', $like)
+                ->orWhere('description', 'like', $like)
+                ->orWhere('type', 'like', $like)
+                ->orWhere('contact_name', 'like', $like)
+                ->orWhere('manager_name', 'like', $like);
+            if (ctype_digit($term)) {
+                $w->orWhere('user_id', (int) $term)
+                    ->orWhere('id', (int) $term);
+            }
+            try {
+                $w->orWhereIn('user_id', function ($sub) use ($like) {
+                    $sub->select('user_id')
+                        ->from('maker_companies')
+                        ->where('name', 'like', $like);
+                });
+            } catch (\Throwable) {
+            }
+            if ($userIds !== []) {
+                $w->orWhereIn('user_id', $userIds);
+            }
+        });
+    }
+
+    /**
+     * @param  \Illuminate\Database\Eloquent\Builder<\Modules\Custom\MakerBids\Models\MakerJob>  $q
+     */
+    private function applyListSort($q, mixed $sortRaw): void
+    {
+        $sort = JobRules::normalizeListSort($sortRaw);
+        if ($sort === JobRules::LIST_SORT_CREATED) {
+            $q->orderBy('created_at')->orderBy('id');
+
+            return;
+        }
+        if ($sort === JobRules::LIST_SORT_VIEWS) {
+            $q->orderByDesc('view_count')->orderByDesc('id');
+
+            return;
+        }
+        $q->orderByDesc('id');
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function searchOwnerUserIds(string $term): array
+    {
+        $ids = [];
+        try {
+            if (! class_exists(\App\Models\User::class)) {
+                return [];
+            }
+            $table = (new \App\Models\User)->getTable();
+            $cols = [];
+            if (class_exists(\Illuminate\Support\Facades\Schema::class)) {
+                foreach (['name', 'userid', 'user_id', 'login', 'login_id', 'username', 'email', 'nickname'] as $col) {
+                    try {
+                        if (\Illuminate\Support\Facades\Schema::hasColumn($table, $col)) {
+                            $cols[] = $col;
+                        }
+                    } catch (\Throwable) {
+                    }
+                }
+            } else {
+                $cols = ['name', 'email'];
+            }
+            if ($cols === [] && ! ctype_digit($term)) {
+                return [];
+            }
+            $like = '%'.$term.'%';
+            $query = \App\Models\User::query()->where(function ($w) use ($cols, $like, $term) {
+                foreach ($cols as $col) {
+                    $w->orWhere($col, 'like', $like);
+                }
+                if (ctype_digit($term)) {
+                    $w->orWhere('id', (int) $term);
+                }
+            });
+            $ids = $query->limit(50)->pluck('id')->map(static fn ($id) => (int) $id)->all();
+        } catch (\Throwable) {
+            $ids = [];
+        }
+
+        return array_values(array_unique(array_filter($ids)));
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection<int, MakerJob>|iterable<MakerJob>  $jobs
+     */
+    private function attachOwnerSearchMeta($jobs): void
+    {
+        $list = is_array($jobs) ? $jobs : (method_exists($jobs, 'all') ? $jobs->all() : iterator_to_array($jobs));
+        if ($list === []) {
+            return;
+        }
+        $userIds = [];
+        foreach ($list as $job) {
+            if ($job->user_id) {
+                $userIds[] = (int) $job->user_id;
+            }
+        }
+        $userIds = array_values(array_unique($userIds));
+        if ($userIds === []) {
+            return;
+        }
+        $companies = [];
+        try {
+            foreach (MakerCompany::query()->whereIn('user_id', $userIds)->get(['user_id', 'name']) as $row) {
+                $companies[(int) $row->user_id] = $row;
+            }
+        } catch (\Throwable) {
+            $companies = [];
+        }
+        $users = [];
+        try {
+            if (class_exists(\App\Models\User::class)) {
+                foreach (\App\Models\User::query()->whereIn('id', $userIds)->get() as $row) {
+                    $users[(int) $row->id] = $row;
+                }
+            }
+        } catch (\Throwable) {
+            $users = [];
+        }
+        foreach ($list as $job) {
+            $uid = (int) ($job->user_id ?? 0);
+            $co = $companies[$uid] ?? null;
+            $job->owner_company_name = $co ? (string) ($co->name ?? '') : null;
+            $user = $users[$uid] ?? null;
+            if (is_object($user)) {
+                $job->owner_name = (string) ($user->name ?? $user->nickname ?? '');
+                $job->owner_login = (string) ($user->userid ?? $user->login ?? $user->login_id ?? $user->username ?? $user->email ?? '');
+            }
+        }
+    }
+
+    private function incrementViewCount(MakerJob $job): void
+    {
+        try {
+            MakerJob::query()->where('id', $job->id)->increment('view_count');
+            $job->view_count = (int) ($job->view_count ?? 0) + 1;
+        } catch (\Throwable) {
+        }
+    }
+
+    /**
+     * When bid_audience_mode=admin_only, members cannot choose audience.
+     * Create forces 전체(all); update ignores client audience.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function applyMemberAudiencePolicy(array $payload, bool $creating): array
+    {
+        $mode = $this->setting('general.bid_audience_mode', SettingsRules::AUDIENCE_MODE_PUBLIC);
+        if (SettingsRules::isAudienceSelectable($mode)) {
+            return $payload;
+        }
+        if ($creating) {
+            $payload['audience'] = 'all';
+        } else {
+            unset($payload['audience']);
+        }
+
+        return $payload;
     }
 
     public function bidAllowMode(): string

@@ -244,7 +244,7 @@
     var root = document.querySelector('.cmb-admin');
     if (!root) return {};
     var map = {};
-    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
+    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, bid_audience_mode: 1, default_job_status: 1 };
     root.querySelectorAll('[name]').forEach(function (el) {
       var name = el.getAttribute('name');
       if (!name || el.type === 'file') return;
@@ -290,7 +290,7 @@
         var map = harvestNamedInto('form');
         // Keep select values already in local state when harvest skipped empties.
         var cur = g7Get('_local.form') || {};
-        ['nav_insert', 'default_job_status', 'bid_allow', 'nav_label'].forEach(function (k) {
+        ['nav_insert', 'default_job_status', 'bid_allow', 'bid_audience_mode', 'nav_label'].forEach(function (k) {
           if ((map['form.' + k] == null || map['form.' + k] === '') && cur[k] != null && cur[k] !== '') {
             map['form.' + k] = cur[k];
           }

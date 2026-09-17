@@ -400,10 +400,12 @@
                   {
                     "id": "item",
                     "type": "basic",
-                    "name": "A",
+                    "name": "Div",
                     "props": {
-                      "href": "/maker-bids/{{$item.id}}",
-                      "className": "cmb-job-card cmb-list-item"
+                      "className": "cmb-job-card cmb-list-item cmb-open-bid-card",
+                      "data-cmb-open-bid-card": "1",
+                      "data-job-id": "{{$item.id}}",
+                      "data-job-title": "{{$item.title}}"
                     },
                     "iteration": {
                       "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
@@ -421,8 +423,9 @@
                           {
                             "id": "otitle",
                             "type": "basic",
-                            "name": "P",
+                            "name": "A",
                             "props": {
+                              "href": "/maker-bids/{{$item.id}}",
                               "className": "cmb-job-card-title"
                             },
                             "text": "{{$item.title}}"
@@ -463,11 +466,127 @@
                       {
                         "id": "oact",
                         "type": "basic",
-                        "name": "P",
+                        "name": "Div",
                         "props": {
-                          "className": "cmb-job-card-budget text-sm font-medium"
+                          "className": "cmb-job-card-actions"
                         },
-                        "text": "견적 넣기 →"
+                        "children": [
+                          {
+                            "id": "obid_btn",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "견적 넣기",
+                            "props": {
+                              "type": "button",
+                              "className": "cmb-btn cmb-btn-primary cmb-open-bid-toggle",
+                              "data-cmb-open-bid-toggle": "1",
+                              "data-job-id": "{{$item.id}}"
+                            }
+                          },
+                          {
+                            "id": "odetail",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "/maker-bids/{{$item.id}}",
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "text": "상세"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "obid_panel",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-section-card cmb-form-stack cmb-bid-form cmb-open-bid-panel mt-3 space-y-3",
+                          "data-cmb-open-bid-panel": "1",
+                          "data-job-id": "{{$item.id}}",
+                          "hidden": true,
+                          "style": "display:none"
+                        },
+                        "children": [
+                          {
+                            "id": "obid_h",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-section-title text-sm font-semibold"
+                            },
+                            "text": "견적 입력"
+                          },
+                          {
+                            "id": "obid_amount",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "amount",
+                              "type": "number",
+                              "min": "1",
+                              "placeholder": "견적 금액(원)",
+                              "className": "cmb-order-field cmb-open-bid-amount",
+                              "data-cmb-bid-amount": "1"
+                            }
+                          },
+                          {
+                            "id": "obid_days",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "days",
+                              "type": "number",
+                              "min": "1",
+                              "placeholder": "제작 일수",
+                              "className": "cmb-order-field cmb-open-bid-days",
+                              "data-cmb-bid-days": "1"
+                            }
+                          },
+                          {
+                            "id": "obid_msg",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "message",
+                              "placeholder": "메시지(선택)",
+                              "className": "cmb-order-field cmb-open-bid-message min-h-[72px]",
+                              "data-cmb-bid-message": "1"
+                            }
+                          },
+                          {
+                            "id": "obid_actions",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": {
+                              "className": "flex flex-wrap gap-2"
+                            },
+                            "children": [
+                              {
+                                "id": "obid_submit",
+                                "type": "basic",
+                                "name": "Button",
+                                "text": "견적 제출",
+                                "props": {
+                                  "type": "button",
+                                  "className": "cmb-btn cmb-btn-primary cmb-open-bid-submit",
+                                  "data-cmb-open-bid-submit": "1",
+                                  "data-job-id": "{{$item.id}}"
+                                }
+                              },
+                              {
+                                "id": "obid_cancel",
+                                "type": "basic",
+                                "name": "Button",
+                                "text": "취소",
+                                "props": {
+                                  "type": "button",
+                                  "className": "cmb-btn cmb-btn-secondary cmb-open-bid-cancel",
+                                  "data-cmb-open-bid-cancel": "1"
+                                }
+                              }
+                            ]
+                          }
+                        ]
                       }
                     ]
                   },

@@ -61,7 +61,8 @@
       "edit_body": "",
       "default_job_status": "quote_request",
       "guests_see_list": true,
-      "bid_allow": "all"
+      "bid_allow": "all",
+      "bid_audience_mode": "public"
     }
   },
   "data_sources": [
@@ -97,7 +98,8 @@
           "edit_body": "",
           "default_job_status": "quote_request",
           "guests_see_list": true,
-          "bid_allow": "all"
+          "bid_allow": "all",
+          "bid_audience_mode": "public"
         }
       },
       "onSuccess": [
@@ -126,7 +128,8 @@
             "form.edit_body": "{{response.data.edit_body || settings.data.edit_body || ''}}",
             "form.default_job_status": "{{response.data.default_job_status || settings.data.default_job_status || 'quote_request'}}",
             "form.guests_see_list": "{{response.data.guests_see_list ?? settings.data.guests_see_list}}",
-            "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}"
+            "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}",
+            "form.bid_audience_mode": "{{response.data.bid_audience_mode || settings.data.bid_audience_mode || 'public'}}"
           }
         }
       ]
@@ -620,6 +623,65 @@
                           "className": "cmb-admin-muted"
                         },
                         "text": "사이트 전체 기본입니다. 비회원(게스트)은 입찰할 수 없어 「모두」는 로그인 회원 전체입니다. 「일반회원」은 업체/개인 입찰자 등록이 없는 로그인 회원입니다. 의뢰 공개 설정(전체/업체만/개인만)과 함께 적용됩니다. 지정업체는 회사 목록에서 관리자가 표시한 승인 업체만 해당합니다. 관리자 입찰 수정(관리자 API)은 이 제한을 타지 않습니다."
+                      },
+                      {
+                        "id": "bid_audience_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "기본 입찰 공개 설정"
+                      },
+                      {
+                        "id": "bid_audience_mode_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-md"
+                        },
+                        "children": [
+                          {
+                            "id": "bid_audience_mode",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "bid_audience_mode",
+                              "value": "{{_local.form.bid_audience_mode}}",
+                              "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "admin_only",
+                                  "label": "관리자만"
+                                },
+                                {
+                                  "value": "public",
+                                  "label": "공개"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.bid_audience_mode": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "bid_audience_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "「공개」이면 의뢰 작성/수정 화면에 공개 설정(전체·업체만·개인만) 선택이 보입니다. 「관리자만」이면 해당 선택을 숨기고, 회원 의뢰는 전체(업체+개인)로 저장되며 관리자만 공개 대상을 바꿀 수 있습니다."
                       }
                     ]
                   }

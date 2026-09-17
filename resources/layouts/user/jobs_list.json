@@ -50,15 +50,17 @@
     {
       "id": "jobs",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/jobs?q={{route.query.q || _local.search.q || \"\"}}&page={{route.query.page || 1}}&per_page={{route.query.per_page || 10}}",
+      "endpoint": "/api/modules/custom-maker_bids/jobs?q={{route.query.q || _local.search.q || ''}}&sort={{route.query.sort || _local.search.sort || 'latest'}}&type={{route.query.type || query.type || ''}}&page={{route.query.page || 1}}&per_page={{route.query.per_page || 10}}",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
       "auth_mode": "optional",
       "params": {
-        "type": "{{query.type || ''}}",
-        "page": "{{query.page || 1}}",
-        "per_page": "{{query.per_page || 10}}"
+        "q": "{{route.query.q || _local.search.q || ''}}",
+        "sort": "{{route.query.sort || _local.search.sort || 'latest'}}",
+        "type": "{{route.query.type || query.type || ''}}",
+        "page": "{{route.query.page || 1}}",
+        "per_page": "{{route.query.per_page || 10}}"
       },
       "fallback": {
         "data": []
@@ -170,9 +172,10 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-section-card cmb-search-bar mb-3",
+              "className": "cmb-section-card cmb-search-bar mb-3 flex flex-wrap items-center gap-2",
               "dataKey": "search",
-              "trackChanges": true
+              "trackChanges": true,
+              "data-cmb-search-bar": "1"
             },
             "children": [
               {
@@ -182,8 +185,78 @@
                 "props": {
                   "name": "q",
                   "placeholder": "검색어",
-                  "className": "cmb-order-field cmb-search-input rounded-lg border px-3 py-2 text-sm"
-                }
+                  "className": "cmb-order-field cmb-search-input rounded-lg border px-3 py-2 text-sm",
+                  "value": "{{_local.search.q || route.query.q || ''}}",
+                  "data-cmb-search-input": "1"
+                },
+                "actions": [
+                  {
+                    "type": "change",
+                    "event": "change",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "search.q": "{{$event.target.value}}"
+                    }
+                  },
+                  {
+                    "type": "input",
+                    "event": "input",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "search.q": "{{$event.target.value}}"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "sort_wrap",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-search-sort cmb-order-select-wrap",
+                  "data-cmb-sort-wrap": "1"
+                },
+                "children": [
+                  {
+                    "id": "sort_select",
+                    "type": "basic",
+                    "name": "Select",
+                    "props": {
+                      "name": "sort",
+                      "value": "{{_local.search.sort || route.query.sort || 'latest'}}",
+                      "className": "cmb-order-field cmb-search-sort-select rounded-lg border px-3 py-2 text-sm",
+                      "data-cmb-sort-select": "1",
+                      "options": [
+                        {
+                          "value": "latest",
+                          "label": "최신순"
+                        },
+                        {
+                          "value": "created",
+                          "label": "등록순"
+                        },
+                        {
+                          "value": "views",
+                          "label": "조회순"
+                        }
+                      ]
+                    },
+                    "actions": [
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "search.sort": "{{$event.target.value}}",
+                          "search.page": 1
+                        }
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "search_btn",
@@ -191,14 +264,25 @@
                 "name": "Button",
                 "text": "검색",
                 "props": {
-                  "className": "cmb-btn cmb-btn-primary cmb-search-go"
+                  "className": "cmb-btn cmb-btn-primary cmb-search-go",
+                  "type": "button",
+                  "data-cmb-search-go": "1"
                 },
                 "actions": [
                   {
                     "type": "click",
-                    "handler": "navigate",
+                    "handler": "setState",
                     "params": {
-                      "path": "/maker-bids?q={{_local.search.q || ''}}"
+                      "target": "local",
+                      "search.q": "{{_local.search.q || ''}}",
+                      "search.page": 1
+                    }
+                  },
+                  {
+                    "type": "click",
+                    "handler": "refetchDataSource",
+                    "params": {
+                      "dataSourceId": "jobs"
                     }
                   }
                 ]
@@ -433,7 +517,9 @@
   },
   "state": {
     "search": {
-      "q": ""
+      "q": "",
+      "page": 1,
+      "sort": "latest"
     }
   }
 }

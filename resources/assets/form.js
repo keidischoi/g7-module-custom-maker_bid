@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.9';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.10';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
@@ -184,7 +184,7 @@
     var name;
     var tag;
     var val;
-    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
+    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, bid_audience_mode: 1, default_job_status: 1 };
     for (i = 0; i < nodes.length; i++) {
       el = nodes[i];
       name = el.getAttribute('name');
@@ -1018,6 +1018,47 @@
     }
   }
 
+  function audienceModeFromState() {
+    var paths = [
+      '_data.defaults.data.bid_audience_mode',
+      'defaults.data.bid_audience_mode',
+      '_local.ui.bid_audience_mode',
+      'ui.bid_audience_mode'
+    ];
+    var i, v;
+    for (i = 0; i < paths.length; i++) {
+      v = g7Get(paths[i]);
+      if (v != null && String(v).trim() !== '') {
+        return String(v).trim().toLowerCase();
+      }
+    }
+    var selectable = g7Get('_data.defaults.data.audience_selectable');
+    if (selectable === false || selectable === 0 || selectable === '0' || selectable === 'false') {
+      return 'admin_only';
+    }
+    return 'public';
+  }
+
+  function syncAudienceSection() {
+    var sec = document.querySelector('[data-cmb-audience-section], .cmb-audience-section, #sec_audience');
+    if (!sec) {
+      return;
+    }
+    var show = audienceModeFromState() !== 'admin_only';
+    if (show) {
+      sec.removeAttribute('hidden');
+      sec.style.removeProperty('display');
+      sec.classList.remove('is-collapsed');
+    } else {
+      sec.setAttribute('hidden', 'hidden');
+      sec.style.display = 'none';
+      sec.classList.add('is-collapsed');
+      var map = {};
+      map[localFormKey() + '.audience'] = 'all';
+      setLocal(map);
+    }
+  }
+
   function bindCondToggles() {
     syncCond('rush_fee_enabled', '.cmb-cond-rush');
     syncCond('revision_enabled', '.cmb-cond-rev');
@@ -1614,6 +1655,7 @@
     }
     bindDaytime();
     bindCondToggles();
+    syncAudienceSection();
     bindProfileName();
     bindProfileFill();
     bindTypeSelect();
@@ -1631,5 +1673,8 @@
   setTimeout(bind, 300);
   setTimeout(bind, 1000);
   setTimeout(bind, 2500);
+  setTimeout(syncAudienceSection, 400);
+  setTimeout(syncAudienceSection, 1200);
+  setTimeout(syncAudienceSection, 2500);
 })();
 
