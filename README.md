@@ -2,7 +2,7 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.9.15**. 의뢰 작성·수정은 공유 `jobs_form` 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
+버전 **0.10.1**. 의뢰 작성·수정은 공유 `jobs_form` 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용)이 포함됩니다.
 
 - 관리자: `/admin/maker-bids` `/admin/maker-bids/types` `/admin/maker-bids/jobs/{id}` `/admin/maker-bids/bids` `/admin/maker-bids/bids/{id}` `/admin/maker-bids/companies` `/admin/maker-bids/ops` `/admin/maker-bids/activity` `/admin/maker-bids/settings`
 - 회원: `/maker-bids` `/maker-bids/new` `/maker-bids/bids` `/maker-bids/history` `/maker-bids/company` `/maker-bids/companies` `/maker-bids/{id}` `/maker-bids/{id}/edit` `/maker-bids/{id}/work`
@@ -186,4 +186,4 @@ php tests/run.php
 | vendor | `custom` |
 | namespace | `Modules\\Custom\\MakerBids` |
 | github_url | `https://github.com/keidischoi/g7-module-custom-maker_bids` |
-| version | `0.9.15` |
+| version | `0.10.1` |

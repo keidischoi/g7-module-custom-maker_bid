@@ -11,6 +11,7 @@ use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerJobFile;
 use Modules\Custom\MakerBids\Services\JobFileService;
 use Modules\Custom\MakerBids\Services\JobService;
+use Modules\Custom\MakerBids\Services\MarketplaceService;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobRules;
 use Modules\Custom\MakerBids\Support\PrivacyRules;
@@ -24,6 +25,7 @@ class JobFileController extends Controller
     public function __construct(
         private readonly JobFileService $files,
         private readonly JobService $jobs,
+        private readonly MarketplaceService $market,
     ) {}
 
     public function store(Request $request, ?int $jobId = null): JsonResponse
@@ -71,10 +73,22 @@ class JobFileController extends Controller
         try {
             $row = $this->files->findByHash($hash);
             $this->assertCanDownload($request, $row);
+            if ($row->isExpired()) {
+                $ctx = $this->jobs->viewerFromRequest($request);
+                if (! $ctx['isAdmin']) {
+                    throw new DomainException('만료된 파일입니다. 다운로드할 수 없습니다.', 410);
+                }
+            }
             $path = $this->files->absolutePath($row);
             if ($path === null) {
                 throw new DomainException('파일을 찾을 수 없습니다.', 404);
             }
+            $this->market->logDownload(
+                $request->user()?->id ? (int) $request->user()->id : null,
+                (string) $row->hash,
+                $row->job_id ? (int) $row->job_id : null,
+                $request->ip()
+            );
         } catch (DomainException $e) {
             return $this->domainError($e);
         }
@@ -96,7 +110,7 @@ class JobFileController extends Controller
             }
         }
 
-        if ($row->collection !== UploadRules::COLLECTION_ARCHIVES) {
+        if (! UploadRules::isProtectedCollection((string) $row->collection)) {
             return;
         }
 

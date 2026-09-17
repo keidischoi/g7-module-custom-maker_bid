@@ -120,6 +120,18 @@ class Module extends AbstractModule
         }
     }
 
+
+    public function getSchedules(): array
+    {
+        return [
+            [
+                'command' => 'maker-bids:run-schedule',
+                'schedule' => 'hourly',
+                'description' => 'Close expired maker_bids and notify deadline soon',
+            ],
+        ];
+    }
+
     public function getHookListeners(): array
     {
         return [UserMenuListener::class];

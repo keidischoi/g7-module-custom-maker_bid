@@ -77,6 +77,44 @@
           "my_bid": null
         }
       }
+    },
+    {
+      "id": "compare",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/compare",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "403": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      }
+    },
+    {
+      "id": "reviews",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/reviews",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_mode": "optional",
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "404": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      }
     }
   ],
   "slots": {
@@ -308,12 +346,141 @@
                     "id": "work_link",
                     "type": "basic",
                     "name": "A",
-                    "if": "{{viewer.data?.can_workspace || job.data.status === 'awarded' || job.data.status === 'done'}}",
+                    "if": "{{viewer.data?.can_workspace}}",
                     "props": {
                       "href": "/maker-bids/{{route.id}}/work",
                       "className": "cmb-btn cmb-btn-primary"
                     },
                     "text": "작업실"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "spec_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card space-y-3"
+            },
+            "children": [
+              {
+                "id": "spec_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "의뢰 명세"
+              },
+              {
+                "id": "spec_guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide text-sm"
+                },
+                "text": "의뢰서와 동일한 공개 항목입니다. 연락처·배송지 등 개인정보는 본인·관리자·낙찰자에게만 표시됩니다."
+              },
+              {
+                "id": "spec_grid",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-spec grid gap-2 sm:grid-cols-2 text-sm"
+                },
+                "children": [
+                  {
+                    "id": "s_type",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "유형 · {{job.data.type_name || job.data.type || '-'}}"
+                  },
+                  {
+                    "id": "s_status",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "상태 · {{job.data.status_label || job.data.status || '-'}}"
+                  },
+                  {
+                    "id": "s_budget",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "예산 · {{job.data.budget_label || '미정'}}"
+                  },
+                  {
+                    "id": "s_closes",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "마감 · {{job.data.closes_at || '없음'}}"
+                  },
+                  {
+                    "id": "s_audience",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "공개 · {{job.data.audience_label || '전체'}}"
+                  },
+                  {
+                    "id": "s_bidding",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.bidding_status_label}}",
+                    "text": "입찰 · {{job.data.bidding_status_label}}"
+                  },
+                  {
+                    "id": "s_size",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.size_label}}",
+                    "text": "최종 크기 · {{job.data.size_label}}"
+                  },
+                  {
+                    "id": "s_ext",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}",
+                    "text": "제공 확장자 · {{job.data.provided_extensions}}"
+                  },
+                  {
+                    "id": "s_rush",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.rush_fee_enabled}}",
+                    "text": "급행비 · 적용 가능{{job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : ''}}"
+                  },
+                  {
+                    "id": "s_sched",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.schedule_premium_enabled}}",
+                    "text": "스케줄 선점비 · 적용 가능"
+                  },
+                  {
+                    "id": "s_rev",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.revision_enabled}}",
+                    "text": "수정 · {{job.data.revision_count || '-'}}회{{job.data.revision_cost != null ? (' · 회당 ' + job.data.revision_cost + '원') : ''}}"
+                  },
+                  {
+                    "id": "s_own",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.ownership_requested}}",
+                    "text": "소유권한 · 요청함"
+                  },
+                  {
+                    "id": "s_created",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "등록 · {{job.data.created_at || '-'}}"
+                  },
+                  {
+                    "id": "s_bids",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "입찰 수 · {{job.data.bids_count ?? 0}}"
                   }
                 ]
               }
@@ -457,7 +624,7 @@
             "props": {
               "className": "cmb-hint"
             },
-            "text": "주문자 연락처·주소는 제작 의뢰가 확정(낙찰)된 뒤에 상대에게 공개됩니다."
+            "text": "연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다."
           },
           {
             "id": "archives",
@@ -656,6 +823,199 @@
               "className": "cmb-hint cmb-hint-warn"
             },
             "text": "이 의뢰는 열려 있지 않아 견적·낙찰을 할 수 없습니다."
+          },
+          {
+            "id": "compare_card",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{viewer.data?.is_owner || viewer.data?.can_award}}",
+            "props": {
+              "className": "cmb-section-card mt-4"
+            },
+            "children": [
+              {
+                "id": "cmp_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "입찰 비교"
+              },
+              {
+                "id": "cmp_guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide mt-1"
+                },
+                "text": "금액·기간·메모를 비교한 뒤 낙찰 또는 거절하세요."
+              },
+              {
+                "id": "cmp_empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(compare?.data?.data ?? compare?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-empty mt-2"
+                },
+                "text": "비교할 입찰이 없습니다."
+              },
+              {
+                "id": "cmp_table",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list mt-3"
+                },
+                "children": [
+                  {
+                    "id": "cmp_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-bid-card cmb-list-item"
+                    },
+                    "iteration": {
+                      "source": "{{compare?.data?.data ?? compare?.data ?? []}}",
+                      "item_var": "$bid"
+                    },
+                    "children": [
+                      {
+                        "id": "cmp_amt",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-job-card-title"
+                        },
+                        "text": "{{$bid.amount}}원 · {{$bid.days ?? '-'}}일 · {{$bid.status}}"
+                      },
+                      {
+                        "id": "cmp_msg",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide mt-1"
+                        },
+                        "text": "{{$bid.message || '메모 없음'}}"
+                      },
+                      {
+                        "id": "cmp_actions",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-actions mt-2 flex gap-2"
+                        },
+                        "children": [
+                          {
+                            "id": "cmp_award",
+                            "type": "basic",
+                            "name": "Button",
+                            "if": "{{viewer.data?.can_award && $bid.status !== 'accepted' && $bid.status !== 'rejected'}}",
+                            "text": "낙찰",
+                            "props": {
+                              "className": "cmb-btn cmb-btn-primary"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {
+                                    "bid_id": "{{$bid.id}}"
+                                  }
+                                },
+                                "confirm": "이 입찰로 낙찰할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "낙찰되었습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "navigate",
+                                    "params": {
+                                      "path": "/maker-bids/{{route.id}}/work"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "cmp_reject",
+                            "type": "basic",
+                            "name": "Button",
+                            "if": "{{viewer.data?.is_owner && $bid.status !== 'accepted' && $bid.status !== 'rejected'}}",
+                            "text": "거절",
+                            "props": {
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{$bid.id}}/reject",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {}
+                                },
+                                "confirm": "이 입찰을 거절할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "거절했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "compare"
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "job"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
           {
             "id": "bidform",
@@ -881,6 +1241,77 @@
               "className": "cmb-btn cmb-btn-ghost"
             },
             "text": "업체로 등록하기"
+          },
+          {
+            "id": "reviews_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card mt-4"
+            },
+            "children": [
+              {
+                "id": "rev_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "후기"
+              },
+              {
+                "id": "rev_empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(reviews?.data?.data ?? reviews?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-page-guide mt-2"
+                },
+                "text": "아직 후기가 없습니다."
+              },
+              {
+                "id": "rev_list",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list mt-2"
+                },
+                "children": [
+                  {
+                    "id": "rev_row",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-list-item"
+                    },
+                    "iteration": {
+                      "source": "{{reviews?.data?.data ?? reviews?.data ?? []}}",
+                      "item_var": "$r"
+                    },
+                    "children": [
+                      {
+                        "id": "rev_s",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-job-card-title"
+                        },
+                        "text": "★ {{$r.score}}"
+                      },
+                      {
+                        "id": "rev_c",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide"
+                        },
+                        "text": "{{$r.comment || ''}}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       }

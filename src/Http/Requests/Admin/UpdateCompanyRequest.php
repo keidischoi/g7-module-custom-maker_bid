@@ -22,7 +22,17 @@ class UpdateCompanyRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['company', 'edit', 'form']);
-        $this->nullBlankFields(['type', 'note', 'status', 'kind', 'bio', 'admin_memo', 'hold_reason', 'rejected_reason']);
+        $this->coerceSlugFields([
+            'name', 'kind', 'type', 'bio', 'note', 'business_no',
+            'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email',
+            'zipcode', 'address', 'address_detail', 'admin_memo', 'hold_reason', 'rejected_reason', 'status',
+        ]);
+        // Partial admin update: blank strings mean "unchanged", not "clear".
+        $this->dropBlankKeys([
+            'name', 'kind', 'status', 'type', 'business_no', 'phone', 'email', 'bio', 'note',
+            'homepage_url', 'portfolio_url', 'manager_name', 'zipcode', 'address', 'address_detail',
+            'admin_memo', 'hold_reason', 'rejected_reason',
+        ]);
         $this->coerceBooleanFields(['is_recommended', 'is_designated']);
         if ($this->exists('kind')) {
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);

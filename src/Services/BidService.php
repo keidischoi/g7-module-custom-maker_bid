@@ -56,6 +56,19 @@ class BidService
             'status' => 'pending',
         ]);
 
+        try {
+            $market = app(MarketplaceService::class);
+            $market->notify(
+                (int) $job->user_id,
+                'new_bid',
+                '새 입찰이 등록되었습니다.',
+                (string) $job->title.' · '.(int) $bid->amount.'원',
+                (int) $job->id
+            );
+            $market->audit($userId, 'bid.create', 'bid', (int) $bid->id, ['job_id' => (int) $job->id]);
+        } catch (\Throwable) {
+        }
+
         return ['bid' => $bid, 'created' => true];
     }
 

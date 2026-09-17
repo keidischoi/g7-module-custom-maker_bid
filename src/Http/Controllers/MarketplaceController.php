@@ -117,13 +117,43 @@ class MarketplaceController extends Controller
         return response()->json(['data' => $data], 201);
     }
 
-    public function export(int $id): JsonResponse
+    public function export(Request $request, int $id)
     {
-        return response()->json(['data' => $this->market->exportJob($id)]);
+        $doc = (string) $request->query('doc', 'all');
+        if (! in_array($doc, ['all', 'request', 'quote'], true)) {
+            $doc = 'all';
+        }
+        if ((string) $request->query('format', 'json') === 'html') {
+            $html = $this->market->exportHtml($id, $doc);
+            $filename = $doc === 'quote' ? 'quote-'.$id.'.html' : ($doc === 'request' ? 'request-'.$id.'.html' : 'job-'.$id.'-forms.html');
+
+            return response($html, 200, [
+                'Content-Type' => 'text/html; charset=UTF-8',
+                'Content-Disposition' => 'inline; filename="'.$filename.'"',
+            ]);
+        }
+
+        return response()->json(['data' => $this->market->exportJob($id, $doc)]);
     }
 
     public function closeExpired(): JsonResponse
     {
         return response()->json(['data' => ['closed' => $this->market->closeExpired()]]);
     }
+
+    public function runSchedule(): JsonResponse
+    {
+        return response()->json(['data' => $this->market->runSchedule()]);
+    }
+
+    public function reviews(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->market->reviewsForJob($id)]);
+    }
+
+    public function companyReviews(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->market->reviewsForCompany($id)]);
+    }
 }
+

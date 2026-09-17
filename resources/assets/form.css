@@ -1210,3 +1210,40 @@ html.dark .cmb-pager a.is-active,
   margin: 0 0.35rem;
   white-space: nowrap;
 }
+
+/* ===== Workspace 1:1 message thread ===== */
+.cmb-msg-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  max-height: 28rem;
+  overflow-y: auto;
+  padding: 0.35rem 0.15rem;
+}
+.cmb-msg-bubble {
+  max-width: min(92%, 36rem);
+  border-radius: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--cmb-border);
+  background: rgba(255,255,255,0.04);
+}
+.cmb-msg-bubble[data-cmb-mine="1"] {
+  align-self: flex-end;
+  background: rgba(59, 130, 246, 0.18);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+.cmb-msg-bubble[data-cmb-mine="0"] {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.06);
+}
+.cmb-msg-meta {
+  font-size: 0.75rem;
+  color: var(--cmb-muted-fg);
+  margin: 0 0 0.25rem;
+}
+.cmb-msg-body {
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--cmb-card-fg);
+  line-height: 1.45;
+}

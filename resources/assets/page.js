@@ -258,13 +258,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.15';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.3';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.9.15') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.3') < 0) {
         existing.href = FORM_CSS;
       }
       return;
@@ -313,5 +313,63 @@
     try {
       window.__cmbListCardObs.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
+  }
+})();
+
+/* cmb-export: printable 의뢰서/견적서 HTML → print-to-PDF */
+(function () {
+  function jobIdFromWorkPath() {
+    var m = String(location.pathname || '').match(/\/maker-bids\/(\d+)(?:\/work)?\/?$/);
+    return m ? m[1] : '';
+  }
+  function openHtml(html) {
+    var w = window.open('', '_blank');
+    if (!w) {
+      if (window.G7Core && window.G7Core.dispatch) {
+        window.G7Core.dispatch({ handler: 'toast', params: { type: 'warning', message: '팝업이 차단되었습니다. 팝업을 허용해 주세요.' } });
+      }
+      return;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+  function fetchExport(doc) {
+    var id = jobIdFromWorkPath();
+    if (!id) return;
+    var url = '/api/modules/custom-maker_bids/jobs/' + id + '/export?doc=' + encodeURIComponent(doc || 'all');
+    function handlePayload(payload) {
+      var d = payload && payload.data !== undefined ? payload.data : payload;
+      if (!d) return;
+      if (d.html) {
+        openHtml(d.html);
+        return;
+      }
+      if (d.documents && d.documents[0] && d.documents[0].html) {
+        openHtml(d.documents[0].html);
+      }
+    }
+    if (window.G7Core && window.G7Core.api && typeof window.G7Core.api.get === 'function') {
+      window.G7Core.api.get(url).then(handlePayload).catch(function () {
+        if (window.G7Core && window.G7Core.dispatch) {
+          window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: '문서를 불러오지 못했습니다.' } });
+        }
+      });
+      return;
+    }
+    fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(handlePayload)
+      .catch(function () {});
+  }
+  function onClick(e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-cmb-export]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    fetchExport(btn.getAttribute('data-cmb-export') || 'all');
+  }
+  if (!window.__cmbExportBound) {
+    window.__cmbExportBound = true;
+    document.addEventListener('click', onClick, true);
   }
 })();

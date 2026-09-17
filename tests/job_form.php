@@ -142,14 +142,20 @@ expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_req
 expectTrue('admin sees personal', PrivacyRules::canViewPersonal(1, 9, 'quote_request', null, true));
 expectFalse('stranger masked before award', PrivacyRules::canViewPersonal(3, 9, 'quote_request', null, false));
 expectFalse('bidder masked before award', PrivacyRules::canViewPersonal(4, 9, 'quote_request', 4, false));
-expectFalse('awarded bidder does not see personal (owner/admin only)', PrivacyRules::canViewPersonal(4, 9, 'awarded', 4, false));
+expectTrue('awarded bidder sees personal when done', PrivacyRules::canViewPersonal(4, 9, 'done', 4, false));
+expectTrue('awarded bidder sees personal after award', PrivacyRules::canViewPersonal(4, 9, 'awarded', 4, false));
 expectFalse('other bidder still masked after award', PrivacyRules::canViewPersonal(5, 9, 'awarded', 4, false));
-expectFalse('archives follow personal rule (owner/admin only)', PrivacyRules::canViewArchives(4, 9, 'awarded', 4, false));
+expectTrue('awarded maker can view archives/delivery', PrivacyRules::canViewArchives(4, 9, 'awarded', 4, false));
+expectTrue('done maker can view archives', PrivacyRules::canViewArchives(4, 9, 'done', 4, false));
+expectFalse('other bidder still no archives', PrivacyRules::canViewArchives(5, 9, 'awarded', 4, false));
 expectFalse('archives hidden before award', PrivacyRules::canViewArchives(4, 9, 'quote_request', 4, false));
 
 expectTrue('zip allowed archive', UploadRules::isAllowedExtension('archives', 'refs.zip'));
 expectTrue('tar.gz allowed', UploadRules::isAllowedExtension('archives', 'model.tar.gz'));
 expectFalse('stl not archive', UploadRules::isAllowedExtension('archives', 'a.stl'));
+expectTrue('stl delivery', UploadRules::isAllowedExtension('delivery', 'a.stl'));
+expectTrue('pdf delivery', UploadRules::isAllowedExtension('delivery', 'a.pdf'));
+expectTrue('delivery ttl days', UploadRules::DELIVERY_TTL_DAYS === 30);
 expectTrue('png image', UploadRules::isAllowedExtension('images', 'a.png'));
 expectTrue('zip archive', UploadRules::isAllowedExtension('archives', 'a.zip'));
 expectTrue('png logo collection', UploadRules::isAllowedExtension('logos', 'keidis.png'));

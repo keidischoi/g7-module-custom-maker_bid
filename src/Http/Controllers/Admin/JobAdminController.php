@@ -9,6 +9,7 @@ use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateJobRequest;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Services\JobService;
+use Modules\Custom\MakerBids\Services\MarketplaceService;
 use Modules\Custom\MakerBids\Support\DomainException;
 
 class JobAdminController extends Controller
@@ -44,6 +45,12 @@ class JobAdminController extends Controller
             $job = MakerJob::query()->findOrFail($id);
             $job->status = 'quote_request';
             $job->save();
+            try {
+                $market = app(MarketplaceService::class);
+                $market->notify((int) $job->user_id, 'approved', '의뢰가 승인되었습니다.', (string) $job->title, (int) $job->id);
+                $market->audit(auth()->id() ? (int) auth()->id() : null, 'job.approve', 'job', (int) $job->id);
+            } catch (\Throwable) {
+            }
 
             return response()->json(['data' => $this->jobs->findAdmin($id)]);
         } catch (DomainException $e) {
@@ -53,7 +60,18 @@ class JobAdminController extends Controller
 
     public function hold(int $id): JsonResponse
     {
-        return response()->json(['data' => $this->jobs->hold($id)]);
+        $data = $this->jobs->hold($id);
+        try {
+            $job = MakerJob::query()->find($id);
+            if ($job) {
+                $market = app(MarketplaceService::class);
+                $market->notify((int) $job->user_id, 'hold', '의뢰가 보류되었습니다.', (string) $job->title, (int) $job->id);
+                $market->audit(auth()->id() ? (int) auth()->id() : null, 'job.hold', 'job', (int) $job->id);
+            }
+        } catch (\Throwable) {
+        }
+
+        return response()->json(['data' => $data]);
     }
 
     public function cancel(int $id): JsonResponse

@@ -106,16 +106,27 @@ class JobController extends Controller
         }
     }
 
+    public function editData(Request $request, int $id): JsonResponse
+    {
+        try {
+            return response()->json(['data' => $this->jobs->findForEdit((int) $request->user()->id, $id)]);
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+    }
+
     public function store(StoreJobRequest $request): JsonResponse
     {
-        if ($request->exists('terms_agreed') && ! $request->boolean('terms_agreed')) {
+        $isDraft = ($request->input('status') === 'draft');
+        if (! $isDraft && ! $request->boolean('terms_agreed')) {
             return response()->json(['message' => '약관과 개인정보 처리에 동의해야 합니다.'], 422);
         }
         try {
             $payload = $request->validated();
-            if (($payload['status'] ?? '') === 'draft') {
+            if ($isDraft) {
                 $payload['status'] = 'draft';
             }
+            $payload['terms_agreed'] = $isDraft ? (bool) $request->boolean('terms_agreed') : true;
             $job = $this->jobs->create((int) $request->user()->id, $payload);
         } catch (DomainException $e) {
             return $this->domainError($e);

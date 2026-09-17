@@ -218,8 +218,20 @@
                             "type": "basic",
                             "name": "Checkbox",
                             "props": {
-                              "name": "nav_js_enabled"
-                            }
+                              "name": "nav_js_enabled",
+                              "checked": "{{_local.form.nav_js_enabled}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.nav_js_enabled": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
                           },
                           {
                             "id": "nav_js_txt",
@@ -306,8 +318,20 @@
                         "props": {
                           "name": "nav_label",
                           "placeholder": "의뢰/입찰",
-                          "className": "cmb-admin-w-md"
-                        }
+                          "className": "cmb-admin-w-md",
+                          "value": "{{_local.form.nav_label}}"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.nav_label": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "ext_checks",
@@ -330,8 +354,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "extension_user_base"
-                                }
+                                  "name": "extension_user_base",
+                                  "checked": "{{_local.form.extension_user_base}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.extension_user_base": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "ext_user_txt",
@@ -357,8 +393,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "extension_home"
-                                }
+                                  "name": "extension_home",
+                                  "checked": "{{_local.form.extension_home}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.extension_home": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "ext_home_txt",
@@ -459,8 +507,20 @@
                             "type": "basic",
                             "name": "Checkbox",
                             "props": {
-                              "name": "guests_see_list"
-                            }
+                              "name": "guests_see_list",
+                              "checked": "{{_local.form.guests_see_list}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.guests_see_list": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
                           },
                           {
                             "id": "guests_txt",
@@ -620,8 +680,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "list_enabled"
-                                }
+                                  "name": "list_enabled",
+                                  "checked": "{{_local.form.list_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.list_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_list_en_txt",
@@ -641,8 +713,20 @@
                             "props": {
                               "name": "list_body",
                               "placeholder": "의뢰목록 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.list_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.list_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -667,8 +751,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "create_enabled"
-                                }
+                                  "name": "create_enabled",
+                                  "checked": "{{_local.form.create_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.create_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_create_en_txt",
@@ -688,8 +784,20 @@
                             "props": {
                               "name": "create_body",
                               "placeholder": "의뢰서 작성 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.create_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.create_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -714,8 +822,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "bids_enabled"
-                                }
+                                  "name": "bids_enabled",
+                                  "checked": "{{_local.form.bids_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.bids_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_bids_en_txt",
@@ -735,8 +855,20 @@
                             "props": {
                               "name": "bids_body",
                               "placeholder": "입찰현황 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.bids_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.bids_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -761,8 +893,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "history_enabled"
-                                }
+                                  "name": "history_enabled",
+                                  "checked": "{{_local.form.history_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.history_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_hist_en_txt",
@@ -782,8 +926,20 @@
                             "props": {
                               "name": "history_body",
                               "placeholder": "이력 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.history_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.history_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -808,8 +964,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "company_enabled"
-                                }
+                                  "name": "company_enabled",
+                                  "checked": "{{_local.form.company_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.company_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_co_en_txt",
@@ -829,8 +997,20 @@
                             "props": {
                               "name": "company_body",
                               "placeholder": "입찰자 등록 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.company_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.company_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -855,8 +1035,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "show_enabled"
-                                }
+                                  "name": "show_enabled",
+                                  "checked": "{{_local.form.show_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.show_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_show_en_txt",
@@ -876,8 +1068,20 @@
                             "props": {
                               "name": "show_body",
                               "placeholder": "의뢰 상세 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.show_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.show_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -902,8 +1106,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "edit_enabled"
-                                }
+                                  "name": "edit_enabled",
+                                  "checked": "{{_local.form.edit_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.edit_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "n_edit_en_txt",
@@ -923,8 +1139,20 @@
                             "props": {
                               "name": "edit_body",
                               "placeholder": "의뢰서 수정 안내문",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.edit_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.edit_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       }

@@ -22,4 +22,16 @@ class MarketplaceAdminController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+    public function resolveReport(Request $request, int $id): JsonResponse
+    {
+        $this->market->resolveReport(
+            $id,
+            (string) $request->input('status', 'closed'),
+            $request->user() ? (int) $request->user()->id : null
+        );
+
+        return response()->json(['ok' => true]);
+    }
 }
+

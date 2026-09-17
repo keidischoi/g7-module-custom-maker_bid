@@ -10,7 +10,18 @@ class UploadRules
 
     public const COLLECTION_LOGOS = 'logos';
 
-    public const COLLECTIONS = [self::COLLECTION_IMAGES, self::COLLECTION_ARCHIVES, self::COLLECTION_LOGOS];
+    /** Post-award delivery payloads (result files). */
+    public const COLLECTION_DELIVERY = 'delivery';
+
+    public const COLLECTIONS = [
+        self::COLLECTION_IMAGES,
+        self::COLLECTION_ARCHIVES,
+        self::COLLECTION_LOGOS,
+        self::COLLECTION_DELIVERY,
+    ];
+
+    /** Default TTL for delivery files (days). */
+    public const DELIVERY_TTL_DAYS = 30;
 
     public const LOGO_MAX_PX = 512;
 
@@ -20,13 +31,23 @@ class UploadRules
 
     public const ARCHIVE_EXTENSIONS = ['zip', 'tar', 'gz', 'tgz', '7z', 'rar', 'bz2', 'xz'];
 
+    public const DELIVERY_EXTENSIONS = [
+        'zip', 'tar', 'gz', 'tgz', '7z', 'rar', 'bz2', 'xz',
+        'stl', '3mf', 'obj', 'pdf', 'png', 'jpg', 'jpeg', 'webp',
+        'step', 'stp', 'gcode', 'fbx', 'dwg',
+    ];
+
     public const IMAGE_ACCEPT = '.jpg,.jpeg,.png,.gif,.webp';
 
     public const ARCHIVE_ACCEPT = '.zip,.tar,.gz,.tgz,.7z,.rar,.bz2,.xz';
 
+    public const DELIVERY_ACCEPT = '.zip,.stl,.3mf,.obj,.pdf,.png,.jpg,.jpeg,.webp,.tar,.gz,.7z,.step,.stp';
+
     public const IMAGE_MAX_MB = 10;
 
     public const ARCHIVE_MAX_MB = 50;
+
+    public const DELIVERY_MAX_MB = 50;
 
     public const PROVIDED_EXTENSIONS = ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX', 'DWG'];
 
@@ -35,10 +56,23 @@ class UploadRules
         return in_array($collection, self::COLLECTIONS, true);
     }
 
+    public static function isDeliveryCollection(string $collection): bool
+    {
+        return $collection === self::COLLECTION_DELIVERY;
+    }
+
+    public static function isProtectedCollection(string $collection): bool
+    {
+        return $collection === self::COLLECTION_ARCHIVES || $collection === self::COLLECTION_DELIVERY;
+    }
+
     public static function extensionsFor(string $collection): array
     {
         if ($collection === self::COLLECTION_ARCHIVES) {
             return self::ARCHIVE_EXTENSIONS;
+        }
+        if ($collection === self::COLLECTION_DELIVERY) {
+            return self::DELIVERY_EXTENSIONS;
         }
 
         return self::IMAGE_EXTENSIONS;
@@ -51,9 +85,11 @@ class UploadRules
 
     public static function maxKilobytes(string $collection): int
     {
-        $mb = $collection === self::COLLECTION_ARCHIVES ? self::ARCHIVE_MAX_MB : self::IMAGE_MAX_MB;
+        if ($collection === self::COLLECTION_ARCHIVES || $collection === self::COLLECTION_DELIVERY) {
+            return self::ARCHIVE_MAX_MB * 1024;
+        }
 
-        return $mb * 1024;
+        return self::IMAGE_MAX_MB * 1024;
     }
 
     public static function isWithinLogoDimensions(int $width, int $height): bool
@@ -68,7 +104,8 @@ class UploadRules
             return false;
         }
 
-        if ($collection === self::COLLECTION_ARCHIVES && str_ends_with(strtolower($filename), '.tar.gz')) {
+        if (in_array($collection, [self::COLLECTION_ARCHIVES, self::COLLECTION_DELIVERY], true)
+            && str_ends_with(strtolower($filename), '.tar.gz')) {
             return true;
         }
 
@@ -104,5 +141,14 @@ class UploadRules
         }
 
         return $items;
+    }
+
+    public static function deliveryExpiresAt(?\DateTimeInterface $from = null): \DateTimeInterface
+    {
+        $base = $from
+            ? \DateTimeImmutable::createFromInterface($from)
+            : new \DateTimeImmutable('now');
+
+        return $base->modify('+'.self::DELIVERY_TTL_DAYS.' days');
     }
 }

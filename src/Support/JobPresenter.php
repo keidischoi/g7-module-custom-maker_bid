@@ -39,10 +39,22 @@ class JobPresenter
 
         $images = [];
         $archives = [];
+        $deliveries = [];
         foreach ($files as $file) {
+            if ($file instanceof MakerJobFile && $file->isExpired()) {
+                continue; // hide expired delivery/archives from payload
+            }
             $row = $file instanceof MakerJobFile ? $file->toAttachmentArray() : $file;
+            if (! empty($row['is_expired'])) {
+                continue;
+            }
             $collection = (string) ($row['collection'] ?? '');
-            if ($collection === UploadRules::COLLECTION_ARCHIVES) {
+            if ($collection === UploadRules::COLLECTION_DELIVERY) {
+                if ($canViewArchives) {
+                    $deliveries[] = $row;
+                    $archives[] = $row;
+                }
+            } elseif ($collection === UploadRules::COLLECTION_ARCHIVES) {
                 if ($canViewArchives) {
                     $archives[] = $row;
                 }
@@ -115,6 +127,7 @@ class JobPresenter
             'bids_count' => (int) ($job->bids_count ?? 0),
             'images' => $images,
             'archives' => $archives,
+            'deliveries' => $deliveries,
             'privacy_visible' => $canViewPersonal,
             'created_at' => optional($job->created_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('created_at'),
             'updated_at' => optional($job->updated_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('updated_at'),

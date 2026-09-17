@@ -5,8 +5,7 @@ namespace Modules\Custom\MakerBids\Support;
 class PrivacyRules
 {
     /**
-     * Contact/address (and archives that follow this rule) are visible
-     * only to the job owner and admins.
+     * Contact/address visible to job owner, admins, and awarded bidder after award/done.
      */
     public static function canViewPersonal(
         int $viewerId,
@@ -18,13 +17,25 @@ class PrivacyRules
         if ($isAdmin) {
             return true;
         }
+        if ($viewerId < 1) {
+            return false;
+        }
+        if ($ownerId !== null && $ownerId !== '' && (int) $ownerId === $viewerId) {
+            return true;
+        }
+        if ($awardedBidderUserId === null || $awardedBidderUserId === '') {
+            return false;
+        }
+        if ((int) $awardedBidderUserId !== $viewerId) {
+            return false;
+        }
 
-        return $viewerId > 0
-            && $ownerId !== null
-            && $ownerId !== ''
-            && (int) $ownerId === $viewerId;
+        return in_array($jobStatus, ['awarded', 'done'], true);
     }
 
+    /**
+     * Archives / delivery files: owner, admin, and awarded maker after award/done.
+     */
     public static function canViewArchives(
         int $viewerId,
         mixed $ownerId,
@@ -32,7 +43,20 @@ class PrivacyRules
         mixed $awardedBidderUserId,
         bool $isAdmin = false,
     ): bool {
-        return self::canViewPersonal($viewerId, $ownerId, $jobStatus, $awardedBidderUserId, $isAdmin);
+        if (self::canViewPersonal($viewerId, $ownerId, $jobStatus, $awardedBidderUserId, $isAdmin)) {
+            return true;
+        }
+        if ($isAdmin) {
+            return true;
+        }
+        if ($viewerId < 1 || $awardedBidderUserId === null || $awardedBidderUserId === '') {
+            return false;
+        }
+        if ((int) $awardedBidderUserId !== $viewerId) {
+            return false;
+        }
+
+        return in_array($jobStatus, ['awarded', 'done'], true);
     }
 
     /**

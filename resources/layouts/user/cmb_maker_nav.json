@@ -1,16 +1,17 @@
 {
   "version": "0.6.0",
   "layout_name": "cmb_maker_nav",
-  "meta": { "title": " " },
+  "meta": {
+    "title": " "
+  },
   "failOnError": false,
   "scripts": [
     {
-      "src": "/api/modules/custom-maker_bids/assets/nav.js?v=0.9.15",
-      "async": true,
+      "src": "/api/modules/custom-maker_bids/assets/nav.js?v=0.10.3",
+      "async": false,
       "optional": true,
       "required": false,
       "failOnError": false
     }
   ]
 }
-

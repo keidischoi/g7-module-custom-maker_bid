@@ -7,6 +7,21 @@ trait BlankToNull
     /**
      * @param  list<string>  $keys
      */
+
+    /**
+     * Remove empty-string keys so partial updates skip them (isset/array_key_exists false).
+     *
+     * @param  list<string>  $keys
+     */
+    protected function dropBlankKeys(array $keys): void
+    {
+        foreach ($keys as $key) {
+            if ($this->exists($key) && $this->input($key) === '') {
+                $this->offsetUnset($key);
+            }
+        }
+    }
+
     protected function nullBlankFields(array $keys): void
     {
         $merge = [];

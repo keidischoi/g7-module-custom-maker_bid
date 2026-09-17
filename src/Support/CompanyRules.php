@@ -412,10 +412,47 @@ class CompanyRules
     /**
      * @return array<string, list<string>>
      */
+
+    public static function normalizeBusinessNo(mixed $raw): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $raw);
+        if ($digits === null || $digits === '') {
+            return null;
+        }
+
+        return $digits;
+    }
+
+    public static function isValidBusinessNo(?string $digits): bool
+    {
+        if ($digits === null || $digits === '') {
+            return true; // optional
+        }
+
+        // Format only (10 digits). Checksum is soft — many test/legacy numbers fail it.
+        return (bool) preg_match('/^\d{10}$/', $digits);
+    }
+
+    public static function passesBusinessNoChecksum(?string $digits): bool
+    {
+        if ($digits === null || $digits === '' || ! preg_match('/^\d{10}$/', $digits)) {
+            return false;
+        }
+        $w = [1, 3, 7, 1, 3, 7, 1, 3, 5];
+        $sum = 0;
+        for ($i = 0; $i < 9; $i++) {
+            $sum += (int) $digits[$i] * $w[$i];
+        }
+        $sum += intdiv((int) $digits[8] * 5, 10);
+        $check = (10 - ($sum % 10)) % 10;
+
+        return $check === (int) $digits[9];
+    }
+
     public static function profileFieldRules(): array
     {
         return [
-            'business_no' => ['nullable', 'string', 'max:32'],
+            'business_no' => ['nullable', 'string', 'max:32', 'regex:/^[0-9\-]{10,12}$/'],
             'homepage_url' => ['nullable', 'string', 'max:500'],
             'portfolio_url' => ['nullable', 'string', 'max:500'],
             'manager_name' => ['nullable', 'string', 'max:120'],

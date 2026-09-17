@@ -79,14 +79,15 @@
       "address_detail": "",
       "upload_token": "",
       "image_count": 0,
-      "archive_count": 0
+      "archive_count": 0,
+      "terms_agreed": false
     }
   },
   "data_sources": [
     {
       "id": "job",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/edit",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -146,6 +147,13 @@
         },
         "401": {
           "handler": "suppress"
+        },
+        "403": {
+          "handler": "toast",
+          "params": {
+            "type": "error",
+            "message": "{{error.message || \"본인 의뢰만 수정할 수 있습니다.\"}}"
+          }
         }
       }
     },
@@ -2257,6 +2265,106 @@
                             }
                           }
                         ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "terms_block",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-order-field-wrap mt-4 space-y-2"
+                },
+                "children": [
+                  {
+                    "id": "terms_row",
+                    "type": "basic",
+                    "name": "Label",
+                    "props": {
+                      "className": "flex items-start gap-2 text-sm cursor-pointer"
+                    },
+                    "children": [
+                      {
+                        "id": "terms_agreed",
+                        "type": "basic",
+                        "name": "Checkbox",
+                        "props": {
+                          "name": "terms_agreed",
+                          "checked": "{{_local.form.terms_agreed}}"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.terms_agreed": "{{$event.target.checked}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "terms_txt",
+                        "type": "basic",
+                        "name": "Span",
+                        "text": "이용약관 및 개인정보 처리에 동의합니다 (등록 시 필수)"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "draft_btn",
+                "type": "basic",
+                "name": "Button",
+                "text": "임시저장",
+                "if": "{{!route.id}}",
+                "props": {
+                  "className": "cmb-btn cmb-btn-secondary"
+                },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "form.status": "draft"
+                    }
+                  },
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bids/jobs",
+                    "params": {
+                      "method": "POST",
+                      "body": "{{_local.form}}"
+                    },
+                    "onSuccess": [
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "임시저장했습니다."
+                        }
+                      },
+                      {
+                        "handler": "navigate",
+                        "params": {
+                          "path": "/maker-bids/{{response.data.id || response.id}}/edit"
+                        }
+                      }
+                    ],
+                    "onError": [
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message}}"
+                        }
                       }
                     ]
                   }

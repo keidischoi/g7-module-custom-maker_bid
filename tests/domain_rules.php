@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Custom\MakerBids\Support\AwardRules;
 use Modules\Custom\MakerBids\Support\BidRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 use Modules\Custom\MakerBids\Support\JobRules;
 
 require __DIR__.'/bootstrap.php';
@@ -111,6 +112,57 @@ expectTrue('can reject pending', CompanyRules::canReject('pending'));
 expectFalse('cannot reject already rejected', CompanyRules::canReject('rejected'));
 expectTrue('can approve pending', CompanyRules::canApprove('pending'));
 expectFalse('cannot approve already approved', CompanyRules::canApprove('approved'));
+
+// --- 0.10.1 marketplace must-haves ---
+$marketSrc = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
+expectTrue('closeExpired notifies owner', str_contains($marketSrc, 'deadline_closed') && str_contains($marketSrc, 'function closeExpired'));
+expectTrue('notifyDeadlineSoon exists', str_contains($marketSrc, 'function notifyDeadlineSoon'));
+expectTrue('runSchedule closes and notices', str_contains($marketSrc, 'function runSchedule') && str_contains($marketSrc, 'notifyDeadlineSoon'));
+expectTrue('notify tries email and memo', str_contains($marketSrc, 'trySendEmail') && str_contains($marketSrc, 'trySendMemo'));
+expectTrue('work statuses include printing', str_contains($marketSrc, "'printing'") && str_contains($marketSrc, "'shipping'"));
+expectTrue('shipping requires tracking', str_contains($marketSrc, '발송 상태에는 송장번호가 필요합니다'));
+expectTrue('reviewsForJob API helper', str_contains($marketSrc, 'function reviewsForJob'));
+expectTrue('resolveReport helper', str_contains($marketSrc, 'function resolveReport'));
+
+$bidSrc = (string) file_get_contents($root.'/src/Services/BidService.php');
+expectTrue('new bid notifies owner', str_contains($bidSrc, 'new_bid') && str_contains($bidSrc, 'MarketplaceService'));
+
+$adminJob = (string) file_get_contents($root.'/src/Http/Controllers/Admin/JobAdminController.php');
+expectTrue('approve notifies', str_contains($adminJob, "'approved'"));
+expectTrue('hold notifies', str_contains($adminJob, "'hold'"));
+
+$mod = (string) file_get_contents($root.'/module.php');
+expectTrue('getSchedules registers maker-bids:run-schedule', str_contains($mod, 'function getSchedules') && str_contains($mod, 'maker-bids:run-schedule'));
+expectTrue('schedule command file exists', is_file($root.'/src/Console/Commands/RunMarketplaceScheduleCommand.php'));
+expectTrue('service provider registers command', is_file($root.'/src/Providers/MakerBidsServiceProvider.php'));
+
+$api = (string) file_get_contents($root.'/src/routes/api.php');
+expectTrue('reviews route', str_contains($api, "jobs/{id}/reviews"));
+expectTrue('company reviews route', str_contains($api, "companies/{id}/reviews"));
+expectTrue('run-schedule route', str_contains($api, 'jobs/run-schedule'));
+expectTrue('admin resolve report route', str_contains($api, "reports/{id}"));
+
+expectTrue('draft is listing status', in_array('draft', JobRules::LISTING_STATUSES, true));
+expectTrue('draft hidden from public', in_array('draft', JobRules::HIDDEN_PUBLIC_STATUSES, true));
+expectTrue('terms_agreed in create rules', array_key_exists('terms_agreed', JobRules::createRules()));
+
+expectTrue('business_no normalize helper', method_exists(CompanyRules::class, 'normalizeBusinessNo'));
+expectTrue('business_no rejects short', CompanyRules::isValidBusinessNo('123') === false);
+expectTrue('business_no normalize strips dashes', CompanyRules::normalizeBusinessNo('123-45-67890') === '1234567890');
+expectTrue('empty business_no allowed', CompanyRules::isValidBusinessNo(null) && CompanyRules::isValidBusinessNo(''));
+
+
+// --- 0.10.1 follow-ups ---
+expectTrue('export builds html forms', str_contains($marketSrc, 'buildRequestFormHtml') && str_contains($marketSrc, 'buildQuoteFormHtml'));
+expectTrue('exportHtml helper', str_contains($marketSrc, 'function exportHtml'));
+expectTrue('messages enrich author_label', str_contains($marketSrc, 'author_label') && str_contains($marketSrc, 'is_mine'));
+expectTrue('runSchedule purges files', str_contains($marketSrc, 'files_purged') && str_contains($marketSrc, 'purgeExpired'));
+$filesSrc = (string) file_get_contents($root.'/src/Services/JobFileService.php');
+expectTrue('job files purgeExpired', str_contains($filesSrc, 'function purgeExpired'));
+expectTrue('delivery collection supported', str_contains($filesSrc, 'COLLECTION_DELIVERY') || str_contains((string) file_get_contents($root.'/src/Support/UploadRules.php'), "COLLECTION_DELIVERY"));
+expectTrue('delivery ttl constant', UploadRules::DELIVERY_TTL_DAYS >= 1);
+$privacy = (string) file_get_contents($root.'/src/Support/PrivacyRules.php');
+expectTrue('archives allow awarded maker', str_contains($privacy, "'awarded', 'done'"));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);
