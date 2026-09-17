@@ -2,14 +2,48 @@
   "version": "1.0.0",
   "layout_name": "jobs_workspace",
   "extends": "_user_base",
-  "meta": { "title": "낙찰 작업실" },
+  "meta": {
+    "title": "낙찰 작업실"
+  },
+  "errorHandling": {
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
+  },
   "data_sources": [
     {
       "id": "job",
       "type": "api",
       "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
       "method": "GET",
-      "auto_fetch": true
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true
     },
     {
       "id": "msgs",
@@ -17,7 +51,18 @@
       "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/messages",
       "method": "GET",
       "auto_fetch": true,
-      "auth_required": true
+      "auth_required": true,
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "403": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      }
     },
     {
       "id": "cmp",
@@ -25,7 +70,18 @@
       "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/compare",
       "method": "GET",
       "auto_fetch": true,
-      "auth_required": true
+      "auth_required": true,
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "403": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      }
     }
   ],
   "slots": {
@@ -34,33 +90,409 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "cmb-page space-y-4" },
+        "props": {
+          "className": "cmb-page"
+        },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "text": "작업실 #{{route.id}} {{job.data.title}}" },
-          { "id": "st", "type": "basic", "name": "P", "text": "진행 {{job.data.work_status || '-'}} · 송장 {{job.data.carrier || '-'}} {{job.data.tracking_no || ''}}" },
           {
-            "id": "work",
+            "id": "tabs",
             "type": "basic",
-            "name": "Button",
-            "text": "제작중",
-            "actions": [{ "type": "click", "handler": "apiCall", "auth_required": true, "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/work", "params": { "method": "POST", "body": { "work_status": "producing" } }, "onSuccess": [{ "handler": "refetchDataSource", "params": { "dataSourceId": "job" } }] }]
+            "name": "Div",
+            "props": {
+              "className": "cmb-maker-subnav flex items-center gap-1 flex-wrap",
+              "data-cmb-subnav": "1"
+            },
+            "children": [
+              {
+                "id": "t1",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/new",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "의뢰서 작성"
+              },
+              {
+                "id": "t2",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "의뢰목록"
+              },
+              {
+                "id": "t3",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/bids",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰현황"
+              },
+              {
+                "id": "t4",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/history",
+                  "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                },
+                "text": "이력"
+              },
+              {
+                "id": "t5",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/company",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰자 등록"
+              },
+              {
+                "id": "t6",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/companies",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰자 목록"
+              }
+            ]
           },
           {
-            "id": "ship",
+            "id": "hero",
             "type": "basic",
-            "name": "Button",
-            "text": "배송",
-            "actions": [{ "type": "click", "handler": "apiCall", "auth_required": true, "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/work", "params": { "method": "POST", "body": { "work_status": "shipping" } }, "onSuccess": [{ "handler": "refetchDataSource", "params": { "dataSourceId": "job" } }] }]
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card cmb-show-hero"
+            },
+            "children": [
+              {
+                "id": "h",
+                "type": "basic",
+                "name": "H1",
+                "props": {
+                  "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
+                },
+                "text": "작업실 · {{job.data.title}}"
+              },
+              {
+                "id": "meta",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-meta-row"
+                },
+                "children": [
+                  {
+                    "id": "b1",
+                    "type": "basic",
+                    "name": "Span",
+                    "props": {
+                      "className": "cmb-badge cmb-badge-{{job.data.status}}"
+                    },
+                    "text": "{{job.data.status_label || job.data.status}}"
+                  },
+                  {
+                    "id": "b2",
+                    "type": "basic",
+                    "name": "Span",
+                    "props": {
+                      "className": "cmb-badge"
+                    },
+                    "text": "진행 {{job.data.work_status || '-'}}"
+                  }
+                ]
+              },
+              {
+                "id": "ship",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "송장 {{job.data.carrier || '-'}} {{job.data.tracking_no || ''}}"
+              },
+              {
+                "id": "navrow",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-job-card-actions"
+                },
+                "children": [
+                  {
+                    "id": "back",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/{{route.id}}",
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "text": "의뢰 상세"
+                  }
+                ]
+              }
+            ]
           },
           {
-            "id": "done",
+            "id": "actions_card",
             "type": "basic",
-            "name": "Button",
-            "text": "완료+후기",
-            "actions": [{ "type": "click", "handler": "apiCall", "auth_required": true, "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/complete", "params": { "method": "POST", "body": { "score": 5, "comment": "좋은 거래였습니다." } }, "onSuccess": [{ "handler": "toast", "params": { "type": "success", "message": "완료했습니다." } }] }]
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card"
+            },
+            "children": [
+              {
+                "id": "ah",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "작업 상태"
+              },
+              {
+                "id": "workspace_actions",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-workspace-actions mt-3"
+                },
+                "children": [
+                  {
+                    "id": "work",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "제작중",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/work",
+                        "params": {
+                          "method": "POST",
+                          "body": {
+                            "work_status": "producing"
+                          }
+                        },
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "제작중으로 표시했습니다."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "job"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ship_btn",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "배송",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/work",
+                        "params": {
+                          "method": "POST",
+                          "body": {
+                            "work_status": "shipping"
+                          }
+                        },
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "배송으로 표시했습니다."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "job"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "done",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "완료+후기",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-primary"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/complete",
+                        "params": {
+                          "method": "POST",
+                          "body": {
+                            "score": 5,
+                            "comment": "좋은 거래였습니다."
+                          }
+                        },
+                        "confirm": "완료 처리하고 기본 후기(5점)를 남길까요?",
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "완료했습니다."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "job"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "hint",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide mt-3"
+                },
+                "text": "메시지 작성·클레임·상세 후기는 이후 업데이트에서 연결됩니다."
+              }
+            ]
           },
-          { "id": "cmpH", "type": "basic", "name": "H2", "text": "입찰 비교" },
-          { "id": "cmpL", "type": "basic", "name": "P", "text": "#{{$item.id}} {{$item.amount}}원 / {{$item.days}}일 / {{$item.status}} {{$item.message}}", "iteration": { "source": "{{cmp.data}}", "item_var": "$item" } }
+          {
+            "id": "cmp_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card"
+            },
+            "children": [
+              {
+                "id": "cmpH",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "입찰 비교"
+              },
+              {
+                "id": "cmp_empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(cmp?.data?.data ?? cmp?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-page-guide mt-2"
+                },
+                "text": "비교할 입찰이 없습니다."
+              },
+              {
+                "id": "cmp_list",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list mt-3"
+                },
+                "children": [
+                  {
+                    "id": "cmpL",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-bid-card"
+                    },
+                    "iteration": {
+                      "source": "{{cmp?.data?.data ?? cmp?.data ?? []}}",
+                      "item_var": "$item"
+                    },
+                    "children": [
+                      {
+                        "id": "ct",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-job-card-title"
+                        },
+                        "text": "#{{$item.id}} {{$item.amount}}원 / {{$item.days}}일"
+                      },
+                      {
+                        "id": "cm",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide mt-1"
+                        },
+                        "text": "{{$item.status}} {{$item.message || ''}}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
         ]
       }
     ]

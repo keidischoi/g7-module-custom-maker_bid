@@ -102,7 +102,7 @@ expectTrue('create title is value-controlled', str_contains($create, '"value": "
 expectTrue('create budget/closes are value-controlled', str_contains($create, '"value": "{{_local.form.budget_min}}"') && str_contains($create, '"value": "{{_local.form.closes_at}}"'));
 expectTrue('create contact/manager are value-controlled', str_contains($create, '"value": "{{_local.form.contact_name}}"') && str_contains($create, '"value": "{{_local.form.manager_name}}"'));
 expectTrue('create rush/revision checkboxes bind local state', str_contains($create, '"checked": "{{_local.form.rush_fee_enabled}}"') && str_contains($create, '"checked": "{{_local.form.revision_enabled}}"'));
-expectTrue('create temp QA fill button', str_contains($create, 'data-cmb-qa-fill') && str_contains($create, '임의입력') && str_contains($create, 'cmb-qa-fill'));
+expectTrue('create has no QA fill button', ! str_contains($create, 'data-cmb-qa-fill') && ! str_contains($create, '임의입력') && ! str_contains($create, 'cmb-qa-fill'));
 expectTrue('create tab is 입찰자 등록', str_contains($create, '입찰자 등록'));
 expectTrue('create 소유권한 요청 near extensions', str_contains($create, '소유권한 요청') && str_contains($create, 'ownership_requested') && ! str_contains($create, '저작권 있음'));
 expectTrue('create 공개 설정 전체/업체만/개인만', str_contains($create, '공개 설정') && str_contains($create, '"value": "all"') && str_contains($create, '업체만') && str_contains($create, '개인만'));
@@ -177,12 +177,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.9.6', str_contains($nav, 'nav.js?v=0.9.6'));
-expectTrue('form.js cache bust 0.9.6', str_contains($nav, 'form.js?v=0.9.6'));
-expectTrue('form.css cache bust 0.9.6', str_contains($nav, 'form.css?v=0.9.6'));
-expectTrue('admin.css cache bust 0.9.6', str_contains($nav, 'admin.css?v=0.9.6'));
-expectTrue('admin.js cache bust 0.9.6', str_contains($nav, 'admin.js?v=0.9.6'));
-expectTrue('cmb_maker_nav cache bust 0.9.6', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.9.6'));
+expectTrue('nav cache bust 0.9.8', str_contains($nav, 'nav.js?v=0.9.8'));
+expectTrue('form.js cache bust 0.9.8', str_contains($nav, 'form.js?v=0.9.8'));
+expectTrue('form.css cache bust 0.9.8', str_contains($nav, 'form.css?v=0.9.8'));
+expectTrue('admin.css cache bust 0.9.8', str_contains($nav, 'admin.css?v=0.9.8'));
+expectTrue('admin.js cache bust 0.9.8', str_contains($nav, 'admin.js?v=0.9.8'));
+expectTrue('cmb_maker_nav cache bust 0.9.8', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.9.8'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -211,11 +211,20 @@ expectTrue('show 소유권한 요청', str_contains($show, '소유권한 요청'
 expectTrue('show audience label', str_contains($show, 'audience_label'));
 expectTrue('list audience label', str_contains($list, 'audience_label'));
 
+expectTrue('show gates closed hint on job.is_open', str_contains($show, 'job.data.is_open') && ! str_contains($show, "status === 'open'") && ! str_contains($show, "status !== 'open'"));
+expectTrue('show links workspace after award', str_contains($show, '/maker-bids/{{route.id}}/work') && str_contains($show, 'can_workspace'));
+expectTrue('list uses card layout', str_contains($list, 'cmb-job-card') && str_contains($list, 'cmb-badge'));
+$companies = (string) file_get_contents($root.'/resources/layouts/user/company_list.json');
+expectTrue('companies page uses public directory API', str_contains($companies, '/api/modules/custom-maker_bids/companies') && str_contains($companies, 'companies/me'));
+expectTrue('companies page card layout', str_contains($companies, 'cmb-company-card'));
+
+
 $css = (string) file_get_contents($root.'/resources/assets/form.css');
 expectTrue('form.css themes dark card', str_contains($css, 'color-scheme: dark') && str_contains($css, '--cmb-card'));
 expectTrue('form.css styles fields and uploader', str_contains($css, '.cmb-order-field') && str_contains($css, '.cmb-order-uploader'));
 expectTrue('form.css forces checkbox label contrast', str_contains($css, '--cmb-check-fg') && str_contains($css, '.cmb-order-check-label') && str_contains($css, '.cmb-order-check-text'));
-expectTrue('form.css has temp QA fill button', str_contains($css, '.cmb-qa-fill') && str_contains($css, '모듈 완성 후 삭제 예정'));
+expectTrue('form.css has no QA fill button', ! str_contains($css, '.cmb-qa-fill') && ! str_contains($css, '임의입력'));
+expectTrue('form.css has public card tokens', str_contains($css, '.cmb-job-card') && str_contains($css, '.cmb-badge') && str_contains($css, '.cmb-page'));
 expectTrue('form.css styles size add/remove', str_contains($css, '.cmb-size-add') && str_contains($css, '.cmb-size-remove'));
 expectTrue('form.css styles manager box', str_contains($css, '.cmb-manager-box'));
 expectTrue('form.css conditional rush/rev/ext', str_contains($css, '.cmb-cond-rush') && str_contains($css, '.cmb-cond-rev') && str_contains($css, '.cmb-cond-ext') && str_contains($css, 'pointer-events: auto'));
@@ -223,20 +232,20 @@ expectTrue('form.css styles company submit on sub-nav', str_contains($css, '.cmb
 expectTrue('form.css can collapse company form until 등록', str_contains($css, '.cmb-company-form.is-collapsed'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.6'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.8'));
 expectTrue('form.js company submit hides only when approved', str_contains($formJs, 'function syncCompanySubmit') && str_contains($formJs, "st === 'approved'") && str_contains($formJs, "querySelector('[data-cmb-company-submit]')"));
 expectTrue('form.js 등록 reveals company form', str_contains($formJs, 'function revealCompanyForm') && str_contains($formJs, 'function bindCompanySubmit') && str_contains($formJs, 'data-cmb-form-revealed'));
 expectTrue('form.js pending collapses form until 등록 click', str_contains($formJs, "st === 'pending'") && str_contains($formJs, 'is-collapsed'));
 expectTrue('form.css locks approved company submit', str_contains($css, '.cmb-company-submit-top.is-locked') && str_contains($css, '.cmb-company-title-row'));
 expectTrue('form.js daytime helper 09:00-17:00', str_contains($formJs, '09:00') && str_contains($formJs, '17:00') && str_contains($formJs, 'data-cmb-daytime'));
-expectTrue('form.js temp QA fill skips FileUploader', str_contains($formJs, 'fillQaDummy') && str_contains($formJs, '모듈 완성 후 삭제 예정') && str_contains($formJs, 'FileUploader'));
-expectTrue('form.js QA type picks catalog then clicks Select', str_contains($formJs, 'pickQaType') && str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
-expectTrue('form.js dummy fills audience and ownership', str_contains($formJs, 'form.audience') && str_contains($formJs, 'ownership_requested') && str_contains($formJs, 'ext_dwg'));
-expectTrue('form.js QA fill does not emit upload events', ! str_contains($formJs, 'upload:maker_bids'));
-expectTrue('form.js dummy fills rush datetime', str_contains($formJs, 'rush_deadline') && str_contains($formJs, 'futureStamp'));
-expectTrue('form.js dummy fills revision fields', str_contains($formJs, 'revision_count') && str_contains($formJs, 'revision_cost'));
-expectTrue('form.js size rows add/delete max 20', str_contains($formJs, 'SIZE_MAX = 20') && str_contains($formJs, 'data-cmb-size-add') && str_contains($formJs, 'data-cmb-size-remove') && str_contains($formJs, 'fillSizeRows') && str_contains($formJs, '>삭제</button>'));
-expectTrue('form.js dummy fills manager fields', str_contains($formJs, 'manager_name') && str_contains($formJs, 'manager_phone') && str_contains($formJs, 'manager_email'));
+expectTrue('form.js QA fill removed', ! str_contains($formJs, 'fillQaDummy') && ! str_contains($formJs, 'bindQaFill') && ! str_contains($formJs, 'data-cmb-qa-fill'));
+expectTrue('form.js select helpers remain', str_contains($formJs, 'catalogTypes') && str_contains($formJs, 'setG7Select') && str_contains($formJs, 'paintSelectTrigger') && str_contains($formJs, 'openSelectMenu'));
+expectTrue('form.js keeps ownership/ext helpers', str_contains($formJs, 'ownership_requested') && str_contains($formJs, 'ext_dwg'));
+expectTrue('form.js does not emit upload events', ! str_contains($formJs, 'upload:maker_bids'));
+expectTrue('form.js rush deadline helpers', str_contains($formJs, 'rush_deadline'));
+expectTrue('form.js revision field helpers', str_contains($formJs, 'revision_count') && str_contains($formJs, 'revision_cost'));
+expectTrue('form.js size rows add/delete max 20', str_contains($formJs, 'SIZE_MAX = 20') && str_contains($formJs, 'data-cmb-size-add') && str_contains($formJs, 'data-cmb-size-remove') && str_contains($formJs, '>삭제</button>'));
+expectTrue('form.js manager field helpers', str_contains($formJs, 'manager_name') && str_contains($formJs, 'manager_phone') && str_contains($formJs, 'manager_email'));
 expectTrue('form.js profile name helper', str_contains($formJs, 'data-cmb-profile-name') && str_contains($formJs, 'bindProfileName'));
 expectTrue('form.js toggles modeling extensions', str_contains($formJs, 'includes_modeling') && str_contains($formJs, 'syncExtVisibility') && str_contains($formJs, 'cmb-cond-ext'));
 expectTrue('form.js cond toggles rush/revision', str_contains($formJs, 'bindCondToggles') && str_contains($formJs, 'cmb-cond-rush'));
@@ -319,8 +328,8 @@ expectTrue('admin settings Selects sit in host wrappers', str_contains($adminSet
 expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($adminJobs, 'cmb-admin-select-host') && str_contains($adminJobsShow, 'cmb-admin-select-host cmb-admin-select-host-md') && str_contains($adminCos, 'cmb-admin-select-host cmb-admin-select-host-sm'));
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
 expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.6'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.6'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.8'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.8'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js does not use body:has', ! str_contains($adminJs, 'body:has'));

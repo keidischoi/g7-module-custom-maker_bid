@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.15';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.15';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.15';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.15';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.15';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.15';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.8';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.8';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.8';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.8';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.8';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.8';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
@@ -69,10 +69,16 @@ class UserMenuListener implements HookListenerInterface
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
-            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply', 'jobs_show'], true)) {
-                $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
+            $publicLayouts = [
+                'jobs_create', 'jobs_edit', 'jobs_list', 'jobs_show', 'jobs_bids', 'jobs_history',
+                'jobs_workspace', 'company_apply', 'company_list',
+            ];
+            if (in_array($name, $publicLayouts, true)) {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+            }
+            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply', 'jobs_show'], true)) {
+                $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
             }
             $layout['scripts'] = $scripts;
         } catch (\Throwable) {}

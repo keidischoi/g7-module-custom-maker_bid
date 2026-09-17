@@ -4,6 +4,25 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.8] - 2026-09-17
+
+### Fixed
+
+- **의뢰 상세** 상태 게이트가 `status === 'open'` 만 보던 문제를 고칩니다. 도메인 기본값(`quote_request` / `request`)에서도 잘못된 「열려 있지 않아」 배너가 뜨지 않도록 `job.is_open` / `viewer` 플래그를 사용합니다.
+- **입찰자 목록**이 `/companies/me` 만 쓰던 문제를 고칩니다. 공개 `GET /companies` 디렉터리 + 내 등록 상태 카드로 분리합니다.
+- 낙찰 후 **작업실**(`/maker-bids/{id}/work`) 링크를 상세·이력·입찰현황·낙찰 성공 네비에 연결합니다. `JobPresenter`에 `work_status` / `tracking_no` / `carrier` / `is_open` 을 노출합니다.
+
+### Changed
+
+- 공개 페이지(목록·상세·입찰·이력·입찰자·작업실)를 카드/배지/필터 칩 레이아웃으로 통일합니다. `form.css`의 `--cmb-*` 토큰을 확장한 `.cmb-page` / `.cmb-job-card` / `.cmb-badge` 를 사용합니다.
+- 작성 화면 TEMP **임의입력** QA 버튼·스크립트·CSS를 제거합니다.
+- 버전·캐시 버스트를 **0.9.8** 로 맞춥니다 (`module.json`, README, CHANGELOG, `UserMenuListener`, `form.js`, `cmb_maker_nav`).
+- 공개 레이아웃 전반에 form.css를 주입하고, 서브 내비에 **입찰자 목록**을 공통으로 둡니다.
+
+### Left for later (admin / P1)
+
+- 관리자 ops 메뉴·resolve UI, create/edit 레이아웃 통합, 작업실 메시지 작성·클레임 UI, marketplace extras `getDynamicTables` / hasTable 가드.
+
 ## [0.9.6] - 2026-09-16
 
 ### Fixed

@@ -2,12 +2,38 @@
   "version": "1.0.0",
   "layout_name": "jobs_create",
   "extends": "_user_base",
-  "meta": { "title": "의뢰서 작성" },
+  "meta": {
+    "title": "의뢰서 작성"
+  },
   "errorHandling": {
-    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message || error.data.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message || error.data.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message || error.data.message}}"
+      }
+    }
   },
   "state": {
     "form": {
@@ -64,7 +90,9 @@
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
-      "fallback": { "data": [] }
+      "fallback": {
+        "data": []
+      }
     },
     {
       "id": "defaults",
@@ -74,7 +102,25 @@
       "auto_fetch": true,
       "refetchOnMount": true,
       "auth_required": true,
-      "fallback": { "data": { "types": [], "upload_token": "", "contact_name": "", "profile_contact_name": "", "company_name": "", "contact_phone": "", "contact_email": "", "zipcode": "", "address": "", "address_detail": "", "contact_hours_from": "09:00", "contact_hours_to": "18:00", "manager_name": "", "manager_phone": "", "manager_email": "" } },
+      "fallback": {
+        "data": {
+          "types": [],
+          "upload_token": "",
+          "contact_name": "",
+          "profile_contact_name": "",
+          "company_name": "",
+          "contact_phone": "",
+          "contact_email": "",
+          "zipcode": "",
+          "address": "",
+          "address_detail": "",
+          "contact_hours_from": "09:00",
+          "contact_hours_to": "18:00",
+          "manager_name": "",
+          "manager_phone": "",
+          "manager_email": ""
+        }
+      },
       "onSuccess": [
         {
           "handler": "setState",
@@ -100,31 +146,109 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "max-w-5xl mx-auto px-4 py-8 space-y-6" },
+        "props": {
+          "className": "cmb-page max-w-5xl mx-auto px-4 py-8 space-y-6"
+        },
         "children": [
           {
             "id": "head",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "flex items-center justify-between gap-4 flex-wrap" },
+            "props": {
+              "className": "flex items-center justify-between gap-4 flex-wrap"
+            },
             "children": [
-              { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰서 작성" },
+              {
+                "id": "h",
+                "type": "basic",
+                "name": "H1",
+                "props": {
+                  "className": "text-2xl font-semibold text-gray-900 dark:text-white"
+                },
+                "text": "의뢰서 작성"
+              },
               {
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap", "data-cmb-subnav": "1" },
+                "props": {
+                  "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap",
+                  "data-cmb-subnav": "1"
+                },
                 "children": [
-                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰서 작성" },
-                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
-                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
-                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
+                  {
+                    "id": "t1",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/new",
+                      "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                    },
+                    "text": "의뢰서 작성"
+                  },
+                  {
+                    "id": "t2",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "의뢰목록"
+                  },
+                  {
+                    "id": "t3",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰현황"
+                  },
+                  {
+                    "id": "t4",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/history",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "이력"
+                  },
+                  {
+                    "id": "t5",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/company",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "입찰자 등록"
+                  },
+                  {
+                    "id": "t6",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/companies",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 목록"
+                  }
                 ]
               }
             ]
           },
-          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "create" } },
+          {
+            "id": "cmb_notice",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "create"
+            }
+          },
           {
             "id": "card",
             "type": "basic",
@@ -139,20 +263,56 @@
                 "id": "card_head",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "text-center space-y-2 pb-2 border-b border-gray-200 dark:border-gray-700" },
+                "props": {
+                  "className": "text-center space-y-2 pb-2 border-b border-gray-200 dark:border-gray-700"
+                },
                 "children": [
-                  { "id": "card_title", "type": "basic", "name": "H2", "props": { "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white" }, "text": "제작 주문서" },
-                  { "id": "card_sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "의뢰·견적 요청서를 작성합니다. 보류로 저장하면 공개 목록에 나오지 않습니다." }
+                  {
+                    "id": "card_title",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white"
+                    },
+                    "text": "제작 주문서"
+                  },
+                  {
+                    "id": "card_sub",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "의뢰·견적 요청서를 작성합니다. 보류로 저장하면 공개 목록에 나오지 않습니다."
+                  }
                 ]
               },
               {
                 "id": "sec_basic",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "space-y-4" },
+                "props": {
+                  "className": "space-y-4"
+                },
                 "children": [
-                  { "id": "sec_basic_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "01. 의뢰 정보" },
-                  { "id": "title_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제목" },
+                  {
+                    "id": "sec_basic_h",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "01. 의뢰 정보"
+                  },
+                  {
+                    "id": "title_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "제목"
+                  },
                   {
                     "id": "title",
                     "type": "basic",
@@ -168,22 +328,38 @@
                         "type": "input",
                         "event": "input",
                         "handler": "setState",
-                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                        "params": {
+                          "target": "local",
+                          "form.title": "{{$event.target.value}}"
+                        }
                       },
                       {
                         "type": "change",
                         "event": "change",
                         "handler": "setState",
-                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                        "params": {
+                          "target": "local",
+                          "form.title": "{{$event.target.value}}"
+                        }
                       }
                     ]
                   },
-                  { "id": "type_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "유형" },
+                  {
+                    "id": "type_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "유형"
+                  },
                   {
                     "id": "type_wrap",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "props": {
+                      "className": "cmb-order-select-wrap relative z-20 overflow-visible"
+                    },
                     "children": [
                       {
                         "id": "type",
@@ -202,48 +378,221 @@
                             "type": "change",
                             "event": "change",
                             "handler": "setState",
-                            "params": { "target": "local", "form.type": "{{$event.target.value}}" }
+                            "params": {
+                              "target": "local",
+                              "form.type": "{{$event.target.value}}"
+                            }
                           }
                         ]
                       }
                     ]
                   },
-                  { "id": "budget_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "예산 (원)" },
+                  {
+                    "id": "budget_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "예산 (원)"
+                  },
                   {
                     "id": "budget_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "flex items-center gap-2" },
+                    "props": {
+                      "className": "flex items-center gap-2"
+                    },
                     "children": [
-                      { "id": "budget_min", "type": "basic", "name": "Input", "props": { "name": "budget_min", "value": "{{_local.form.budget_min}}", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.budget_min": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.budget_min": "{{$event.target.value}}" } }] },
-                      { "id": "budget_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
-                      { "id": "budget_max", "type": "basic", "name": "Input", "props": { "name": "budget_max", "value": "{{_local.form.budget_max}}", "type": "number", "min": "0", "placeholder": "100000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.budget_max": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.budget_max": "{{$event.target.value}}" } }] },
-                      { "id": "budget_won", "type": "basic", "name": "Span", "props": { "className": "text-sm text-gray-500 dark:text-gray-400 shrink-0" }, "text": "원" }
+                      {
+                        "id": "budget_min",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "budget_min",
+                          "value": "{{_local.form.budget_min}}",
+                          "type": "number",
+                          "min": "0",
+                          "placeholder": "10000",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_min": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_min": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "budget_tilde",
+                        "type": "basic",
+                        "name": "Span",
+                        "props": {
+                          "className": "text-gray-400 shrink-0"
+                        },
+                        "text": "~"
+                      },
+                      {
+                        "id": "budget_max",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "budget_max",
+                          "value": "{{_local.form.budget_max}}",
+                          "type": "number",
+                          "min": "0",
+                          "placeholder": "100000",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_max": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_max": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "budget_won",
+                        "type": "basic",
+                        "name": "Span",
+                        "props": {
+                          "className": "text-sm text-gray-500 dark:text-gray-400 shrink-0"
+                        },
+                        "text": "원"
+                      }
                     ]
                   },
-                  { "id": "closes_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "마감 시각" },
-                  { "id": "closes", "type": "basic", "name": "Input", "props": { "name": "closes_at", "value": "{{_local.form.closes_at}}", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.closes_at": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.closes_at": "{{$event.target.value}}" } }] },
+                  {
+                    "id": "closes_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "마감 시각"
+                  },
+                  {
+                    "id": "closes",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "closes_at",
+                      "value": "{{_local.form.closes_at}}",
+                      "type": "datetime-local",
+                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.closes_at": "{{$event.target.value}}"
+                        }
+                      },
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.closes_at": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
                   {
                     "id": "rush_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-option rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3" },
+                    "props": {
+                      "className": "cmb-order-option rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3"
+                    },
                     "children": [
                       {
                         "id": "rush_head",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "flex items-center justify-between gap-3" },
+                        "props": {
+                          "className": "flex items-center justify-between gap-3"
+                        },
                         "children": [
-                          { "id": "rush_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "급행비 / 조기 마감 비용" },
+                          {
+                            "id": "rush_label",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "text-sm text-gray-800 dark:text-gray-200"
+                            },
+                            "text": "급행비 / 조기 마감 비용"
+                          },
                           {
                             "id": "rush_fee_enabled_wrap",
                             "type": "basic",
                             "name": "Label",
-                            "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                            },
                             "children": [
-                              { "id": "rush_fee_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "rush_fee_enabled", "checked": "{{_local.form.rush_fee_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.rush_fee_enabled": "{{$event.target.checked}}" } }] },
-                              { "id": "rush_fee_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 가능" }
+                              {
+                                "id": "rush_fee_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "rush_fee_enabled",
+                                  "checked": "{{_local.form.rush_fee_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.rush_fee_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "rush_fee_enabled_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "적용 가능"
+                              }
                             ]
                           }
                         ]
@@ -252,10 +601,50 @@
                         "id": "rush_date_wrap",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-cond cmb-cond-rush space-y-1" },
+                        "props": {
+                          "className": "cmb-cond cmb-cond-rush space-y-1"
+                        },
                         "children": [
-                          { "id": "rush_date_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "적용 조건 시각" },
-                          { "id": "rush_deadline", "type": "basic", "name": "Input", "props": { "name": "rush_deadline", "value": "{{_local.form.rush_deadline}}", "type": "datetime-local", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.rush_deadline": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.rush_deadline": "{{$event.target.value}}" } }] }
+                          {
+                            "id": "rush_date_hint",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "text-xs text-gray-500 dark:text-gray-400"
+                            },
+                            "text": "적용 조건 시각"
+                          },
+                          {
+                            "id": "rush_deadline",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "rush_deadline",
+                              "value": "{{_local.form.rush_deadline}}",
+                              "type": "datetime-local",
+                              "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.rush_deadline": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.rush_deadline": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
                         ]
                       }
                     ]
@@ -264,27 +653,77 @@
                     "id": "premium_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-option flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3" },
+                    "props": {
+                      "className": "cmb-order-option flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3"
+                    },
                     "children": [
-                      { "id": "premium_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "스케줄 선점비 / 프리미엄" },
+                      {
+                        "id": "premium_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm text-gray-800 dark:text-gray-200"
+                        },
+                        "text": "스케줄 선점비 / 프리미엄"
+                      },
                       {
                         "id": "schedule_premium_enabled_wrap",
                         "type": "basic",
                         "name": "Label",
-                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "props": {
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                        },
                         "children": [
-                          { "id": "schedule_premium_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "schedule_premium_enabled", "checked": "{{_local.form.schedule_premium_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.schedule_premium_enabled": "{{$event.target.checked}}" } }] },
-                          { "id": "schedule_premium_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 가능" }
+                          {
+                            "id": "schedule_premium_enabled",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "schedule_premium_enabled",
+                              "checked": "{{_local.form.schedule_premium_enabled}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.schedule_premium_enabled": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "schedule_premium_enabled_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "적용 가능"
+                          }
                         ]
                       }
                     ]
                   },
-                  { "id": "status_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "상태" },
+                  {
+                    "id": "status_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "상태"
+                  },
                   {
                     "id": "status_wrap",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "props": {
+                      "className": "cmb-order-select-wrap relative z-20 overflow-visible"
+                    },
                     "children": [
                       {
                         "id": "status",
@@ -295,9 +734,18 @@
                           "value": "{{_local.form.status}}",
                           "disabled": false,
                           "options": [
-                            { "value": "quote_request", "label": "견적요청" },
-                            { "value": "request", "label": "의뢰" },
-                            { "value": "hold", "label": "보류" }
+                            {
+                              "value": "quote_request",
+                              "label": "견적요청"
+                            },
+                            {
+                              "value": "request",
+                              "label": "의뢰"
+                            },
+                            {
+                              "value": "hold",
+                              "label": "보류"
+                            }
                           ],
                           "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
                         },
@@ -306,7 +754,10 @@
                             "type": "change",
                             "event": "change",
                             "handler": "setState",
-                            "params": { "target": "local", "form.status": "{{$event.target.value}}" }
+                            "params": {
+                              "target": "local",
+                              "form.status": "{{$event.target.value}}"
+                            }
                           }
                         ]
                       }
@@ -318,18 +769,55 @@
                 "id": "sec_spec",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "space-y-4" },
+                "props": {
+                  "className": "space-y-4"
+                },
                 "children": [
-                  { "id": "sec_spec_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "02. 제작 사양" },
-                  { "id": "size_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "최종 크기 (W × D × H, mm)" },
+                  {
+                    "id": "sec_spec_h",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "02. 제작 사양"
+                  },
+                  {
+                    "id": "size_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "최종 크기 (W × D × H, mm)"
+                  },
                   {
                     "id": "size_block",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-sizes space-y-2", "data-cmb-sizes": "1" },
+                    "props": {
+                      "className": "cmb-sizes space-y-2",
+                      "data-cmb-sizes": "1"
+                    },
                     "children": [
-                      { "id": "size_seed", "type": "basic", "name": "Span", "props": { "className": "hidden", "data-cmb-sizes-seed": "{{_local.form.sizes || ''}}" } },
-                      { "id": "size_list", "type": "basic", "name": "Div", "props": { "className": "cmb-sizes-list space-y-2", "data-cmb-sizes-list": "1" } },
+                      {
+                        "id": "size_seed",
+                        "type": "basic",
+                        "name": "Span",
+                        "props": {
+                          "className": "hidden",
+                          "data-cmb-sizes-seed": "{{_local.form.sizes || ''}}"
+                        }
+                      },
+                      {
+                        "id": "size_list",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-sizes-list space-y-2",
+                          "data-cmb-sizes-list": "1"
+                        }
+                      },
                       {
                         "id": "size_add",
                         "type": "basic",
@@ -341,46 +829,353 @@
                           "className": "cmb-size-add inline-flex items-center px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200"
                         }
                       },
-                      { "id": "sizes", "type": "basic", "name": "Input", "props": { "name": "sizes", "type": "hidden" } },
-                      { "id": "size_w", "type": "basic", "name": "Input", "props": { "name": "size_w", "type": "hidden" } },
-                      { "id": "size_d", "type": "basic", "name": "Input", "props": { "name": "size_d", "type": "hidden" } },
-                      { "id": "size_h", "type": "basic", "name": "Input", "props": { "name": "size_h", "type": "hidden" } }
+                      {
+                        "id": "sizes",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "sizes",
+                          "type": "hidden"
+                        }
+                      },
+                      {
+                        "id": "size_w",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "size_w",
+                          "type": "hidden"
+                        }
+                      },
+                      {
+                        "id": "size_d",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "size_d",
+                          "type": "hidden"
+                        }
+                      },
+                      {
+                        "id": "size_h",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "size_h",
+                          "type": "hidden"
+                        }
+                      }
                     ]
                   },
-                  { "id": "ext_block", "type": "basic", "name": "Div", "props": { "className": "cmb-cond cmb-cond-ext space-y-2", "data-cmb-ext": "1" }, "children": [
-                  { "id": "ext_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "제공 확장자" },
                   {
-                    "id": "ext_row",
+                    "id": "ext_block",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "flex flex-wrap gap-x-4 gap-y-2" },
+                    "props": {
+                      "className": "cmb-cond cmb-cond-ext space-y-2",
+                      "data-cmb-ext": "1"
+                    },
                     "children": [
-                      { "id": "ext_stl_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_stl", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_stl" } }, { "id": "ext_stl_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "STL" } ] },
-                      { "id": "ext_3mf_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_3mf", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_3mf" } }, { "id": "ext_3mf_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "3MF" } ] },
-                      { "id": "ext_obj_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_obj", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_obj" } }, { "id": "ext_obj_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "OBJ" } ] },
-                      { "id": "ext_step_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_step", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_step" } }, { "id": "ext_step_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "STEP" } ] },
-                      { "id": "ext_stp_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_stp", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_stp" } }, { "id": "ext_stp_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "STP" } ] },
-                      { "id": "ext_gcode_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_gcode", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_gcode" } }, { "id": "ext_gcode_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "GCODE" } ] },
-                      { "id": "ext_fbx_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_fbx", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_fbx" } }, { "id": "ext_fbx_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "FBX" } ] },
-                      { "id": "ext_dwg_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer" }, "children": [ { "id": "ext_dwg", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ext_dwg" } }, { "id": "ext_dwg_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "DWG" } ] }
+                      {
+                        "id": "ext_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "제공 확장자"
+                      },
+                      {
+                        "id": "ext_row",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "flex flex-wrap gap-x-4 gap-y-2"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_stl_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_stl",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_stl"
+                                }
+                              },
+                              {
+                                "id": "ext_stl_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "STL"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_3mf_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_3mf",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_3mf"
+                                }
+                              },
+                              {
+                                "id": "ext_3mf_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "3MF"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_obj_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_obj",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_obj"
+                                }
+                              },
+                              {
+                                "id": "ext_obj_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "OBJ"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_step_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_step",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_step"
+                                }
+                              },
+                              {
+                                "id": "ext_step_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "STEP"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_stp_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_stp",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_stp"
+                                }
+                              },
+                              {
+                                "id": "ext_stp_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "STP"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_gcode_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_gcode",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_gcode"
+                                }
+                              },
+                              {
+                                "id": "ext_gcode_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "GCODE"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_fbx_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_fbx",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_fbx"
+                                }
+                              },
+                              {
+                                "id": "ext_fbx_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "FBX"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_dwg_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                            },
+                            "children": [
+                              {
+                                "id": "ext_dwg",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "ext_dwg"
+                                }
+                              },
+                              {
+                                "id": "ext_dwg_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "DWG"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     ]
-                  }
-                  ] },
+                  },
                   {
                     "id": "copyright_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-option flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3" },
+                    "props": {
+                      "className": "cmb-order-option flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3"
+                    },
                     "children": [
-                      { "id": "ownership_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "소유권한 요청" },
+                      {
+                        "id": "ownership_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm text-gray-800 dark:text-gray-200"
+                        },
+                        "text": "소유권한 요청"
+                      },
                       {
                         "id": "ownership_requested_wrap",
                         "type": "basic",
                         "name": "Label",
-                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "props": {
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                        },
                         "children": [
-                          { "id": "ownership_requested", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "ownership_requested", "checked": "{{_local.form.ownership_requested}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.ownership_requested": "{{$event.target.checked}}" } }] },
-                          { "id": "ownership_requested_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "요청" }
+                          {
+                            "id": "ownership_requested",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "name": "ownership_requested",
+                              "checked": "{{_local.form.ownership_requested}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.ownership_requested": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ownership_requested_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text"
+                            },
+                            "text": "요청"
+                          }
                         ]
                       }
                     ]
@@ -389,23 +1184,65 @@
                     "id": "rev_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-option rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3" },
+                    "props": {
+                      "className": "cmb-order-option rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3"
+                    },
                     "children": [
                       {
                         "id": "rev_head",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "flex items-center justify-between gap-3" },
+                        "props": {
+                          "className": "flex items-center justify-between gap-3"
+                        },
                         "children": [
-                          { "id": "rev_label", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-800 dark:text-gray-200" }, "text": "수정 횟수 및 비용" },
+                          {
+                            "id": "rev_label",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "text-sm text-gray-800 dark:text-gray-200"
+                            },
+                            "text": "수정 횟수 및 비용"
+                          },
                           {
                             "id": "revision_enabled_wrap",
                             "type": "basic",
                             "name": "Label",
-                            "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                            "props": {
+                              "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                            },
                             "children": [
-                              { "id": "revision_enabled", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "name": "revision_enabled", "checked": "{{_local.form.revision_enabled}}" }, "actions": [{ "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.revision_enabled": "{{$event.target.checked}}" } }] },
-                              { "id": "revision_enabled_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text" }, "text": "적용 유무" }
+                              {
+                                "id": "revision_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "className": "cmb-order-check",
+                                  "name": "revision_enabled",
+                                  "checked": "{{_local.form.revision_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "revision_enabled_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-order-check-text"
+                                },
+                                "text": "적용 유무"
+                              }
                             ]
                           }
                         ]
@@ -414,35 +1251,140 @@
                         "id": "rev_fields",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-cond cmb-cond-rev grid grid-cols-2 gap-3" },
+                        "props": {
+                          "className": "cmb-cond cmb-cond-rev grid grid-cols-2 gap-3"
+                        },
                         "children": [
                           {
                             "id": "revision_count_wrap",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "space-y-1" },
+                            "props": {
+                              "className": "space-y-1"
+                            },
                             "children": [
-                              { "id": "revision_count_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "최소 횟수" },
-                              { "id": "revision_count", "type": "basic", "name": "Input", "props": { "name": "revision_count", "value": "{{_local.form.revision_count}}", "type": "number", "min": "0", "placeholder": "1", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.revision_count": "{{$event.target.value}}" } }] }
+                              {
+                                "id": "revision_count_hint",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "text-xs text-gray-500 dark:text-gray-400"
+                                },
+                                "text": "최소 횟수"
+                              },
+                              {
+                                "id": "revision_count",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "revision_count",
+                                  "value": "{{_local.form.revision_count}}",
+                                  "type": "number",
+                                  "min": "0",
+                                  "placeholder": "1",
+                                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_count": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
                             ]
                           },
                           {
                             "id": "revision_cost_wrap",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "space-y-1" },
+                            "props": {
+                              "className": "space-y-1"
+                            },
                             "children": [
-                              { "id": "revision_cost_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회당 / 최대 수정비용 (원)" },
-                              { "id": "revision_cost", "type": "basic", "name": "Input", "props": { "name": "revision_cost", "value": "{{_local.form.revision_cost}}", "type": "number", "min": "0", "placeholder": "10000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.revision_cost": "{{$event.target.value}}" } }] }
+                              {
+                                "id": "revision_cost_hint",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "text-xs text-gray-500 dark:text-gray-400"
+                                },
+                                "text": "회당 / 최대 수정비용 (원)"
+                              },
+                              {
+                                "id": "revision_cost",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "revision_cost",
+                                  "value": "{{_local.form.revision_cost}}",
+                                  "type": "number",
+                                  "min": "0",
+                                  "placeholder": "10000",
+                                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_cost": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
                             ]
                           }
                         ]
                       }
                     ]
                   },
-                  { "id": "desc_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "설명" },
-                  { "id": "desc", "type": "basic", "name": "Textarea", "props": { "name": "description", "value": "{{_local.form.description}}", "placeholder": "수량, 재질, 색상, 후가공, 참고 사항", "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.description": "{{$event.target.value}}" } }] },
-                  { "id": "img_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이미지" },
+                  {
+                    "id": "desc_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "설명"
+                  },
+                  {
+                    "id": "desc",
+                    "type": "basic",
+                    "name": "Textarea",
+                    "props": {
+                      "name": "description",
+                      "value": "{{_local.form.description}}",
+                      "placeholder": "수량, 재질, 색상, 후가공, 참고 사항",
+                      "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.description": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "img_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "이미지"
+                  },
                   {
                     "id": "cmb_images_uploader",
                     "type": "composite",
@@ -478,11 +1420,22 @@
                       {
                         "event": "onUploadError",
                         "handler": "toast",
-                        "params": { "type": "error", "message": "{{$args[0]}}" }
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
                       }
                     ]
                   },
-                  { "id": "file_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "파일 (압축 파일만)" },
+                  {
+                    "id": "file_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "파일 (압축 파일만)"
+                  },
                   {
                     "id": "cmb_archives_uploader",
                     "type": "composite",
@@ -518,7 +1471,10 @@
                       {
                         "event": "onUploadError",
                         "handler": "toast",
-                        "params": { "type": "error", "message": "{{$args[0]}}" }
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
                       }
                     ]
                   }
@@ -528,47 +1484,172 @@
                 "id": "sec_privacy",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "space-y-4" },
+                "props": {
+                  "className": "space-y-4"
+                },
                 "children": [
-                  { "id": "sec_privacy_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "03. 개인정보" },
-                  { "id": "sec_privacy_note", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "회원 프로필 값을 기본으로 채웁니다. 제작 의뢰가 확정되기 전까지 상대에게는 가려집니다." },
+                  {
+                    "id": "sec_privacy_h",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "03. 개인정보"
+                  },
+                  {
+                    "id": "sec_privacy_note",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "회원 프로필 값을 기본으로 채웁니다. 제작 의뢰가 확정되기 전까지 상대에게는 가려집니다."
+                  },
                   {
                     "id": "cname_head",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "flex items-center justify-between gap-3" },
+                    "props": {
+                      "className": "flex items-center justify-between gap-3"
+                    },
                     "children": [
-                      { "id": "cname_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주문자명 또는 업체명" },
+                      {
+                        "id": "cname_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "주문자명 또는 업체명"
+                      },
                       {
                         "id": "contact_name_profile_wrap",
                         "type": "basic",
                         "name": "Label",
-                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "props": {
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                        },
                         "children": [
-                          { "id": "contact_name_profile", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "data-cmb-profile-name": "1", "data-cmb-profile-name-seed": "{{defaults.data.profile_contact_name || defaults.data.company_name || defaults.data.contact_name || ''}}" } },
-                          { "id": "contact_name_profile_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text whitespace-nowrap" }, "text": "회원정보 사용" }
+                          {
+                            "id": "contact_name_profile",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "data-cmb-profile-name": "1",
+                              "data-cmb-profile-name-seed": "{{defaults.data.profile_contact_name || defaults.data.company_name || defaults.data.contact_name || ''}}"
+                            }
+                          },
+                          {
+                            "id": "contact_name_profile_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text whitespace-nowrap"
+                            },
+                            "text": "회원정보 사용"
+                          }
                         ]
                       }
                     ]
                   },
-                  { "id": "contact_name", "type": "basic", "name": "Input", "props": { "name": "contact_name", "value": "{{_local.form.contact_name}}", "placeholder": "이름 / 업체명", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_name": "{{$event.target.value}}" } }] },
-                  { "id": "cphone_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락처" },
-                  { "id": "contact_phone", "type": "basic", "name": "Input", "props": { "name": "contact_phone", "value": "{{_local.form.contact_phone}}", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_phone": "{{$event.target.value}}" } }] },
+                  {
+                    "id": "contact_name",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "contact_name",
+                      "value": "{{_local.form.contact_name}}",
+                      "placeholder": "이름 / 업체명",
+                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_name": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "cphone_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "연락처"
+                  },
+                  {
+                    "id": "contact_phone",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "contact_phone",
+                      "value": "{{_local.form.contact_phone}}",
+                      "placeholder": "010-0000-0000",
+                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_phone": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
                   {
                     "id": "chours_head",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "flex items-center justify-between gap-3" },
+                    "props": {
+                      "className": "flex items-center justify-between gap-3"
+                    },
                     "children": [
-                      { "id": "chours_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "연락 가능시간" },
+                      {
+                        "id": "chours_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "연락 가능시간"
+                      },
                       {
                         "id": "contact_hours_daytime_wrap",
                         "type": "basic",
                         "name": "Label",
-                        "props": { "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0" },
+                        "props": {
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
+                        },
                         "children": [
-                          { "id": "contact_hours_daytime", "type": "basic", "name": "Checkbox", "props": { "className": "cmb-order-check", "data-cmb-daytime": "1" } },
-                          { "id": "contact_hours_daytime_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-order-check-text whitespace-nowrap" }, "text": "주간만" }
+                          {
+                            "id": "contact_hours_daytime",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "className": "cmb-order-check",
+                              "data-cmb-daytime": "1"
+                            }
+                          },
+                          {
+                            "id": "contact_hours_daytime_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-order-check-text whitespace-nowrap"
+                            },
+                            "text": "주간만"
+                          }
                         ]
                       }
                     ]
@@ -577,30 +1658,163 @@
                     "id": "chours_row",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "flex items-center gap-2" },
+                    "props": {
+                      "className": "flex items-center gap-2"
+                    },
                     "children": [
-                      { "id": "contact_hours_from", "type": "basic", "name": "Input", "props": { "name": "contact_hours_from", "value": "{{_local.form.contact_hours_from}}", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_hours_from": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.contact_hours_from": "{{$event.target.value}}" } }] },
-                      { "id": "chours_tilde", "type": "basic", "name": "Span", "props": { "className": "text-gray-400 shrink-0" }, "text": "~" },
-                      { "id": "contact_hours_to", "type": "basic", "name": "Input", "props": { "name": "contact_hours_to", "value": "{{_local.form.contact_hours_to}}", "type": "time", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_hours_to": "{{$event.target.value}}" } }, { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.contact_hours_to": "{{$event.target.value}}" } }] }
+                      {
+                        "id": "contact_hours_from",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "contact_hours_from",
+                          "value": "{{_local.form.contact_hours_from}}",
+                          "type": "time",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_from": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_from": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "chours_tilde",
+                        "type": "basic",
+                        "name": "Span",
+                        "props": {
+                          "className": "text-gray-400 shrink-0"
+                        },
+                        "text": "~"
+                      },
+                      {
+                        "id": "contact_hours_to",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "contact_hours_to",
+                          "value": "{{_local.form.contact_hours_to}}",
+                          "type": "time",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_to": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_to": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
                     ]
                   },
-                  { "id": "cemail_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "이메일" },
-                  { "id": "contact_email", "type": "basic", "name": "Input", "props": { "name": "contact_email", "value": "{{_local.form.contact_email}}", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.contact_email": "{{$event.target.value}}" } }] },
+                  {
+                    "id": "cemail_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "이메일"
+                  },
+                  {
+                    "id": "contact_email",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "contact_email",
+                      "value": "{{_local.form.contact_email}}",
+                      "type": "email",
+                      "placeholder": "name@example.com",
+                      "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_email": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
                   {
                     "id": "addr_block",
                     "type": "basic",
                     "name": "Div",
                     "if": "{{_local.form.requires_address !== '0'}}",
-                    "props": { "className": "space-y-3" },
+                    "props": {
+                      "className": "space-y-3"
+                    },
                     "children": [
-                      { "id": "addr_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "주소" },
+                      {
+                        "id": "addr_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "주소"
+                      },
                       {
                         "id": "zip_row",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "flex items-center gap-2" },
+                        "props": {
+                          "className": "flex items-center gap-2"
+                        },
                         "children": [
-                          { "id": "zipcode", "type": "basic", "name": "Input", "props": { "name": "zipcode", "value": "{{_local.form.zipcode}}", "placeholder": "우편번호", "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.zipcode": "{{$event.target.value}}" } }] },
+                          {
+                            "id": "zipcode",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "zipcode",
+                              "value": "{{_local.form.zipcode}}",
+                              "placeholder": "우편번호",
+                              "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.zipcode": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          },
                           {
                             "id": "postcode_btn",
                             "type": "basic",
@@ -614,23 +1828,163 @@
                           }
                         ]
                       },
-                      { "id": "address", "type": "basic", "name": "Input", "props": { "name": "address", "value": "{{_local.form.address}}", "placeholder": "기본 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.address": "{{$event.target.value}}" } }] },
-                      { "id": "address_detail", "type": "basic", "name": "Input", "props": { "name": "address_detail", "value": "{{_local.form.address_detail}}", "placeholder": "상세 주소", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.address_detail": "{{$event.target.value}}" } }] }
+                      {
+                        "id": "address",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "address",
+                          "value": "{{_local.form.address}}",
+                          "placeholder": "기본 주소",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.address": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "address_detail",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "address_detail",
+                          "value": "{{_local.form.address_detail}}",
+                          "placeholder": "상세 주소",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.address_detail": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
                     ]
                   },
                   {
                     "id": "manager_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-option cmb-manager-box rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3" },
+                    "props": {
+                      "className": "cmb-order-option cmb-manager-box rounded-xl border border-gray-200 dark:border-gray-700 bg-muted/30 dark:bg-gray-900/50 px-4 py-3 space-y-3"
+                    },
                     "children": [
-                      { "id": "manager_box_h", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-800 dark:text-gray-200" }, "text": "담당자 정보" },
-                      { "id": "manager_name_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 명" },
-                      { "id": "manager_name", "type": "basic", "name": "Input", "props": { "name": "manager_name", "value": "{{_local.form.manager_name}}", "placeholder": "담당자 이름", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_name": "{{$event.target.value}}" } }] },
-                      { "id": "manager_phone_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 연락처" },
-                      { "id": "manager_phone", "type": "basic", "name": "Input", "props": { "name": "manager_phone", "value": "{{_local.form.manager_phone}}", "placeholder": "010-0000-0000", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_phone": "{{$event.target.value}}" } }] },
-                      { "id": "manager_email_label", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "담당자 이메일" },
-                      { "id": "manager_email", "type": "basic", "name": "Input", "props": { "name": "manager_email", "value": "{{_local.form.manager_email}}", "type": "email", "placeholder": "name@example.com", "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white" }, "actions": [{ "type": "input", "event": "input", "handler": "setState", "params": { "target": "local", "form.manager_email": "{{$event.target.value}}" } }] }
+                      {
+                        "id": "manager_box_h",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-800 dark:text-gray-200"
+                        },
+                        "text": "담당자 정보"
+                      },
+                      {
+                        "id": "manager_name_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-xs text-gray-500 dark:text-gray-400"
+                        },
+                        "text": "담당자 명"
+                      },
+                      {
+                        "id": "manager_name",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "manager_name",
+                          "value": "{{_local.form.manager_name}}",
+                          "placeholder": "담당자 이름",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_name": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "manager_phone_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-xs text-gray-500 dark:text-gray-400"
+                        },
+                        "text": "담당자 연락처"
+                      },
+                      {
+                        "id": "manager_phone",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "manager_phone",
+                          "value": "{{_local.form.manager_phone}}",
+                          "placeholder": "010-0000-0000",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_phone": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "manager_email_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-xs text-gray-500 dark:text-gray-400"
+                        },
+                        "text": "담당자 이메일"
+                      },
+                      {
+                        "id": "manager_email",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "manager_email",
+                          "value": "{{_local.form.manager_email}}",
+                          "type": "email",
+                          "placeholder": "name@example.com",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_email": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
                     ]
                   }
                 ]
@@ -639,16 +1993,44 @@
                 "id": "sec_audience",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "space-y-4" },
+                "props": {
+                  "className": "space-y-4"
+                },
                 "children": [
-                  { "id": "sec_audience_h", "type": "basic", "name": "P", "props": { "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400" }, "text": "04. 공개 설정" },
-                  { "id": "audience_label", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-700 dark:text-gray-300" }, "text": "공개 설정" },
-                  { "id": "audience_hint", "type": "basic", "name": "P", "props": { "className": "text-xs text-gray-500 dark:text-gray-400" }, "text": "누가 이 의뢰를 보고 입찰할 수 있는지 정합니다." },
+                  {
+                    "id": "sec_audience_h",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "04. 공개 설정"
+                  },
+                  {
+                    "id": "audience_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                    },
+                    "text": "공개 설정"
+                  },
+                  {
+                    "id": "audience_hint",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "text-xs text-gray-500 dark:text-gray-400"
+                    },
+                    "text": "누가 이 의뢰를 보고 입찰할 수 있는지 정합니다."
+                  },
                   {
                     "id": "audience_wrap",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-order-select-wrap relative z-20 overflow-visible" },
+                    "props": {
+                      "className": "cmb-order-select-wrap relative z-20 overflow-visible"
+                    },
                     "children": [
                       {
                         "id": "audience",
@@ -659,9 +2041,18 @@
                           "value": "{{_local.form.audience}}",
                           "disabled": false,
                           "options": [
-                            { "value": "all", "label": "전체" },
-                            { "value": "company", "label": "업체만" },
-                            { "value": "individual", "label": "개인만" }
+                            {
+                              "value": "all",
+                              "label": "전체"
+                            },
+                            {
+                              "value": "company",
+                              "label": "업체만"
+                            },
+                            {
+                              "value": "individual",
+                              "label": "개인만"
+                            }
                           ],
                           "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
                         },
@@ -670,7 +2061,10 @@
                             "type": "change",
                             "event": "change",
                             "handler": "setState",
-                            "params": { "target": "local", "form.audience": "{{$event.target.value}}" }
+                            "params": {
+                              "target": "local",
+                              "form.audience": "{{$event.target.value}}"
+                            }
                           }
                         ]
                       }
@@ -683,15 +2077,28 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "주문서 등록",
-                "props": { "type": "button", "className": "cmb-order-submit w-full px-4 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium" },
+                "props": {
+                  "type": "button",
+                  "className": "cmb-order-submit w-full px-4 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium"
+                },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "sequence",
                     "params": {
                       "actions": [
-                        { "handler": "emitEvent", "params": { "event": "upload:maker_bids_images" } },
-                        { "handler": "emitEvent", "params": { "event": "upload:maker_bids_archives" } },
+                        {
+                          "handler": "emitEvent",
+                          "params": {
+                            "event": "upload:maker_bids_images"
+                          }
+                        },
+                        {
+                          "handler": "emitEvent",
+                          "params": {
+                            "event": "upload:maker_bids_archives"
+                          }
+                        },
                         {
                           "handler": "apiCall",
                           "auth_required": true,
@@ -701,11 +2108,28 @@
                             "body": "{{_local.form}}"
                           },
                           "onSuccess": [
-                            { "handler": "toast", "params": { "type": "success", "message": "의뢰가 등록되었습니다." } },
-                            { "handler": "navigate", "params": { "path": "/maker-bids/{{response.data.id || response.id}}" } }
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "success",
+                                "message": "의뢰가 등록되었습니다."
+                              }
+                            },
+                            {
+                              "handler": "navigate",
+                              "params": {
+                                "path": "/maker-bids/{{response.data.id || response.id}}"
+                              }
+                            }
                           ],
                           "onError": [
-                            { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "error",
+                                "message": "{{error.message || error.data.message}}"
+                              }
+                            }
                           ]
                         }
                       ]
@@ -714,18 +2138,6 @@
                 ]
               }
             ]
-          },
-          {
-            "id": "cmb_qa_fill",
-            "type": "basic",
-            "name": "Button",
-            "text": "임의입력",
-            "props": {
-              "type": "button",
-              "data-cmb-qa-fill": "1",
-              "title": "테스트용 임시 버튼 — 모듈 완성 후 삭제 예정",
-              "className": "cmb-qa-fill"
-            }
           }
         ]
       }

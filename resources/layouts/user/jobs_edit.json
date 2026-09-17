@@ -200,7 +200,7 @@
         "type": "basic",
         "name": "Div",
         "props": {
-          "className": "max-w-5xl mx-auto px-4 py-8 space-y-6"
+          "className": "cmb-page max-w-5xl mx-auto px-4 py-8 space-y-6"
         },
         "children": [
           {
@@ -278,6 +278,16 @@
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400"
                     },
                     "text": "입찰자 등록"
+                  },
+                  {
+                    "id": "t6",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/companies",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 목록"
                   }
                 ]
               }
@@ -371,13 +381,19 @@
                         "type": "input",
                         "event": "input",
                         "handler": "setState",
-                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                        "params": {
+                          "target": "local",
+                          "form.title": "{{$event.target.value}}"
+                        }
                       },
                       {
                         "type": "change",
                         "event": "change",
                         "handler": "setState",
-                        "params": { "target": "local", "form.title": "{{$event.target.value}}" }
+                        "params": {
+                          "target": "local",
+                          "form.title": "{{$event.target.value}}"
+                        }
                       }
                     ]
                   },
@@ -1774,9 +1790,18 @@
                           "value": "{{_local.form.audience}}",
                           "disabled": false,
                           "options": [
-                            { "value": "all", "label": "전체" },
-                            { "value": "company", "label": "업체만" },
-                            { "value": "individual", "label": "개인만" }
+                            {
+                              "value": "all",
+                              "label": "전체"
+                            },
+                            {
+                              "value": "company",
+                              "label": "업체만"
+                            },
+                            {
+                              "value": "individual",
+                              "label": "개인만"
+                            }
                           ],
                           "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
                         },
