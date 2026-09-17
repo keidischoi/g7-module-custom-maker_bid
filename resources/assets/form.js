@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.18';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.19';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -2351,3 +2351,72 @@
   } catch (eExp) {}
 })();
 
+/* cmb-existing-files / uploader remount: bump epoch after hydrate when files present */
+(function () {
+  function g7Get(path) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        return window.G7Core.state.get(path);
+      }
+    } catch (e) {}
+    return null;
+  }
+  function g7Set(path, value) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.set === 'function') {
+        window.G7Core.state.set(path, value);
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  function arrLen(v) {
+    return Array.isArray(v) ? v.length : 0;
+  }
+  function bumpFormEpoch() {
+    var images = g7Get('local.form.image_files') || g7Get('_local.form.image_files');
+    var archives = g7Get('local.form.archive_files') || g7Get('_local.form.archive_files');
+    if (arrLen(images) + arrLen(archives) < 1) return;
+    var epoch = Date.now();
+    g7Set('local.form.uploader_epoch', epoch);
+    g7Set('_local.form.uploader_epoch', epoch);
+    // files_ready false→true remount if layout still gates on it
+    g7Set('local.form.files_ready', false);
+    g7Set('_local.form.files_ready', false);
+    setTimeout(function () {
+      g7Set('local.form.files_ready', true);
+      g7Set('_local.form.files_ready', true);
+    }, 30);
+  }
+  function bumpCompanyEpoch() {
+    var logos = g7Get('local.company.logo_files') || g7Get('_local.company.logo_files');
+    if (arrLen(logos) < 1) return;
+    var epoch = Date.now();
+    g7Set('local.company.uploader_epoch', epoch);
+    g7Set('_local.company.uploader_epoch', epoch);
+    g7Set('local.company.files_ready', false);
+    g7Set('_local.company.files_ready', false);
+    setTimeout(function () {
+      g7Set('local.company.files_ready', true);
+      g7Set('_local.company.files_ready', true);
+    }, 30);
+  }
+  function bumpEditEpoch() {
+    var logos = g7Get('local.edit.logo_files') || g7Get('_local.edit.logo_files');
+    if (arrLen(logos) < 1) return;
+    var epoch = Date.now();
+    g7Set('local.edit.uploader_epoch', epoch);
+    g7Set('_local.edit.uploader_epoch', epoch);
+  }
+  function tick() {
+    bumpFormEpoch();
+    bumpCompanyEpoch();
+    bumpEditEpoch();
+  }
+  if (!document.documentElement.getAttribute('data-cmb-uploader-epoch-bound')) {
+    document.documentElement.setAttribute('data-cmb-uploader-epoch-bound', '1');
+    setTimeout(tick, 200);
+    setTimeout(tick, 800);
+    setTimeout(tick, 1600);
+  }
+})();

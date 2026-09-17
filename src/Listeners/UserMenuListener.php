@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.18';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.18';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.18';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.18';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.18';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.18';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.19';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.19';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.19';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.19';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.19';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.19';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',

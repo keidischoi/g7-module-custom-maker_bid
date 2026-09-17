@@ -1505,7 +1505,7 @@
 
 
 
-/* cmb-detail-bid: 의뢰 상세 견적 제출 — cookie+CSRF (avoid G7 auth_required false-neg on public page) */
+/* cmb-detail-bid: 의뢰 상세 견적 제출/수정 — class+data attr; cookie+CSRF (no layout apiCall) */
 (function () {
   function toast(type, message) {
     if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
@@ -1535,22 +1535,27 @@
     if (!el) return '';
     return String(el.value || '').trim();
   }
-  function localBid() {
+  function g7Get(path) {
     try {
       if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
-        var bid = window.G7Core.state.get('local.bid') || window.G7Core.state.get('_local.bid');
-        if (bid && typeof bid === 'object') return bid;
+        return window.G7Core.state.get(path);
       }
     } catch (e) {}
     return null;
   }
-  function submitDetailBid(btn) {
-    var form = btn.closest('.cmb-bid-form, [dataKey="bid"], #bidform') || document.querySelector('.cmb-bid-form');
-    var jobId = jobIdFromPath();
-    if (!jobId) {
-      toast('error', '의뢰를 찾을 수 없습니다.');
-      return;
-    }
+  function localBid() {
+    var bid = g7Get('local.bid') || g7Get('_local.bid');
+    if (bid && typeof bid === 'object') return bid;
+    return null;
+  }
+  function myBidId() {
+    var v = g7Get('viewer.data.my_bid') || g7Get('_data.viewer.data.my_bid') || g7Get('viewer.data.my_bid.id');
+    if (v && typeof v === 'object' && v.id != null) return String(v.id);
+    if (v != null && (typeof v === 'string' || typeof v === 'number')) return String(v);
+    var id = g7Get('viewer.data.my_bid.id') || g7Get('_data.viewer.data.my_bid.id');
+    return id != null ? String(id) : '';
+  }
+  function collectBody(form) {
     var fromState = localBid() || {};
     var amountRaw = fromState.amount != null && fromState.amount !== '' ? String(fromState.amount) : (form ? fieldValue(form, 'amount') : '');
     var daysRaw = fromState.days != null && fromState.days !== '' ? String(fromState.days) : (form ? fieldValue(form, 'days') : '');
@@ -1558,19 +1563,21 @@
     var amountNum = parseInt(String(amountRaw).replace(/[^\d]/g, ''), 10);
     if (!amountNum || amountNum < 1) {
       toast('error', '견적 금액을 입력해 주세요.');
-      return;
+      return null;
     }
     var body = { amount: amountNum };
     if (daysRaw !== '') {
       var daysNum = parseInt(String(daysRaw).replace(/[^\d]/g, ''), 10);
       if (!daysNum || daysNum < 1) {
         toast('error', '제작 일수를 확인해 주세요.');
-        return;
+        return null;
       }
       body.days = daysNum;
     }
     if (message) body.message = message;
-    btn.disabled = true;
+    return body;
+  }
+  function authHeaders() {
     var headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -1581,10 +1588,22 @@
       headers['X-CSRF-TOKEN'] = token;
       headers['X-XSRF-TOKEN'] = token;
     }
+    return headers;
+  }
+  function submitDetailBid(btn) {
+    var form = btn.closest('.cmb-bid-form, [dataKey="bid"], #bidform') || document.querySelector('.cmb-bid-form');
+    var jobId = jobIdFromPath();
+    if (!jobId) {
+      toast('error', '의뢰를 찾을 수 없습니다.');
+      return;
+    }
+    var body = collectBody(form);
+    if (!body) return;
+    btn.disabled = true;
     fetch('/api/modules/custom-maker_bids/jobs/' + encodeURIComponent(jobId) + '/bids', {
       method: 'POST',
       credentials: 'include',
-      headers: headers,
+      headers: authHeaders(),
       body: JSON.stringify(body)
     }).then(function (res) {
       return res.json().catch(function () { return null; }).then(function (json) {
@@ -1606,10 +1625,54 @@
       toast('error', '견적 등록에 실패했습니다.');
     });
   }
+  function updateDetailBid(btn) {
+    var form = btn.closest('.cmb-bid-form, [dataKey="bid"], #editform') || document.querySelector('#editform, .cmb-bid-form');
+    var jobId = jobIdFromPath();
+    var bidId = myBidId();
+    if (!jobId || !bidId) {
+      toast('error', '수정할 견적을 찾을 수 없습니다.');
+      return;
+    }
+    var body = collectBody(form);
+    if (!body) return;
+    btn.disabled = true;
+    fetch('/api/modules/custom-maker_bids/jobs/' + encodeURIComponent(jobId) + '/bids/' + encodeURIComponent(bidId), {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (json) {
+        return { ok: res.ok, status: res.status, json: json };
+      });
+    }).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        var msg = (r.json && (r.json.message || (r.json.error && r.json.error.message))) || '견적 수정에 실패했습니다.';
+        if (r.status === 401) msg = '로그인이 필요합니다. 새로고침 후 다시 시도해 주세요.';
+        toast('error', msg);
+        return;
+      }
+      toast('success', '견적 금액을 수정했습니다.');
+      dispatch('refetchDataSource', { dataSourceId: 'job' });
+      dispatch('refetchDataSource', { dataSourceId: 'viewer' });
+    }).catch(function () {
+      btn.disabled = false;
+      toast('error', '견적 수정에 실패했습니다.');
+    });
+  }
   function onClick(e) {
     var t = e.target;
     if (!t || !t.closest) return;
-    var btn = t.closest('[data-cmb-bid-submit]');
+    var updateBtn = t.closest('.cmb-bid-update, [data-cmb-bid-update]');
+    if (updateBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      updateDetailBid(updateBtn);
+      return;
+    }
+    var btn = t.closest('.cmb-bid-submit, [data-cmb-bid-submit]');
     if (!btn) return;
     e.preventDefault();
     e.stopPropagation();
@@ -1624,13 +1687,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.18';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.19';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.18') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.19') < 0) {
         existing.href = FORM_CSS;
       }
       return;
