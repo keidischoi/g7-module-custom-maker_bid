@@ -860,7 +860,7 @@
                                 "name": "Button",
                                 "text": "승인",
                                 "props": {
-                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                  "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border"
                                 },
                                 "actions": [
                                   {
@@ -905,7 +905,7 @@
                                 "name": "Button",
                                 "text": "보류",
                                 "props": {
-                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                  "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border"
                                 },
                                 "actions": [
                                   {
@@ -951,7 +951,7 @@
                                 "name": "Button",
                                 "text": "거절",
                                 "props": {
-                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                  "className": "cmb-btn-reject px-3 py-1 text-sm rounded-lg border"
                                 },
                                 "actions": [
                                   {

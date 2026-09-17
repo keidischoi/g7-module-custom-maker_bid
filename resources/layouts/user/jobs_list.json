@@ -170,7 +170,7 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-section-card flex gap-2 items-center mb-3",
+              "className": "cmb-section-card cmb-search-bar mb-3",
               "dataKey": "search",
               "trackChanges": true
             },
@@ -182,7 +182,7 @@
                 "props": {
                   "name": "q",
                   "placeholder": "검색어",
-                  "className": "cmb-order-field flex-1 rounded-lg border px-3 py-2 text-sm"
+                  "className": "cmb-order-field cmb-search-input rounded-lg border px-3 py-2 text-sm"
                 }
               },
               {
@@ -191,7 +191,7 @@
                 "name": "Button",
                 "text": "검색",
                 "props": {
-                  "className": "cmb-btn cmb-btn-primary"
+                  "className": "cmb-btn cmb-btn-primary cmb-search-go"
                 },
                 "actions": [
                   {
