@@ -14,7 +14,7 @@ expectTrue('default nav js on', $defaults['menu']['nav_js_enabled'] === true);
 expectTrue('default guests see list', $defaults['general']['guests_see_list'] === true);
 expectTrue('default job status quote_request', $defaults['general']['default_job_status'] === 'quote_request');
 expectTrue('default bid allow all', $defaults['general']['bid_allow'] === 'all');
-expectTrue('default bid audience mode public', $defaults['general']['bid_audience_mode'] === 'public');
+expectTrue('default provided extensions csv', is_string($defaults['general']['provided_extensions']) && str_contains($defaults['general']['provided_extensions'], 'STL'));
 expectTrue('list notice off by default', $defaults['notices']['list_enabled'] === false);
 
 $pages = SettingsRules::pages();
@@ -61,12 +61,10 @@ $nested = SettingsRules::fromInput(['form' => ['nav_label' => '폼라벨', 'list
 expectTrue('nested form lifted', $nested['menu']['nav_label'] === '폼라벨' && $nested['notices']['list_enabled'] === true);
 
 
-expectTrue('audience mode 관리자만', SettingsRules::normalizeAudienceMode('관리자만') === 'admin_only');
-expectTrue('audience mode 공개', SettingsRules::normalizeAudienceMode('공개') === 'public');
-expectTrue('audience mode bad falls public', SettingsRules::normalizeAudienceMode('nope') === 'public');
-expectTrue('fromInput admin_only', SettingsRules::fromInput(['bid_audience_mode' => 'admin_only'])['general']['bid_audience_mode'] === 'admin_only');
-expectTrue('isAudienceSelectable public', SettingsRules::isAudienceSelectable('public') === true);
-expectTrue('isAudienceSelectable admin_only', SettingsRules::isAudienceSelectable('admin_only') === false);
+expectTrue('provided extensions normalize PDF', SettingsRules::normalizeProvidedExtensionsSetting('stl, pdf') === 'STL,PDF');
+expectTrue('provided extensions list', SettingsRules::providedExtensionList('STL,PDF') === ['STL', 'PDF']);
+expectTrue('fromInput provided_extensions', SettingsRules::fromInput(['provided_extensions' => 'obj, dwg'])['general']['provided_extensions'] === 'OBJ,DWG');
+expectTrue('no bid_audience_mode in defaults', ! array_key_exists('bid_audience_mode', $defaults['general']));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

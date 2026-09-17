@@ -37,12 +37,14 @@ class JobFileController extends Controller
             }
             $collection = (string) ($request->input('collection') ?: $request->input('kind') ?: UploadRules::COLLECTION_IMAGES);
             $token = $request->input('upload_token') ?: $request->input('token');
+            $ctx = $this->jobs->viewerFromRequest($request);
             $row = $this->files->store(
                 (int) $request->user()->id,
                 $file,
                 $collection,
                 is_string($token) ? $token : null,
                 $jobId ?? ($request->filled('job_id') ? (int) $request->input('job_id') : null),
+                (bool) ($ctx['isAdmin'] ?? false),
             );
         } catch (DomainException $e) {
             return $this->domainError($e);
@@ -60,7 +62,12 @@ class JobFileController extends Controller
                     $hash = (string) $row->hash;
                 }
             }
-            $this->files->destroyOwned((int) $request->user()->id, $hash);
+            $ctx = $this->jobs->viewerFromRequest($request);
+            if (! empty($ctx['isAdmin'])) {
+                $this->files->destroyAdmin($hash);
+            } else {
+                $this->files->destroyOwned((int) $request->user()->id, $hash);
+            }
         } catch (DomainException $e) {
             return $this->domainError($e);
         }

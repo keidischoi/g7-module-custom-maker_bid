@@ -14,17 +14,6 @@ class SettingsRules
 
     public const LABEL_MAX = 40;
 
-    /** Members may choose job audience (전체/업체만/개인만). */
-    public const AUDIENCE_MODE_PUBLIC = 'public';
-
-    /** Only admins control audience; hide select on member job form. */
-    public const AUDIENCE_MODE_ADMIN = 'admin_only';
-
-    public const AUDIENCE_MODES = [
-        self::AUDIENCE_MODE_PUBLIC,
-        self::AUDIENCE_MODE_ADMIN,
-    ];
-
     /**
      * User pages that can show a 안내문.
      *
@@ -67,7 +56,7 @@ class SettingsRules
                 'default_job_status' => 'quote_request',
                 'guests_see_list' => true,
                 'bid_allow' => BidRules::ALLOW_ALL,
-                'bid_audience_mode' => self::AUDIENCE_MODE_PUBLIC,
+                'provided_extensions' => implode(',', UploadRules::PROVIDED_EXTENSIONS),
             ],
         ];
     }
@@ -214,7 +203,9 @@ class SettingsRules
                 'default_job_status' => $status,
                 'guests_see_list' => self::boolish($general['guests_see_list'] ?? true),
                 'bid_allow' => BidRules::normalizeAllow($general['bid_allow'] ?? BidRules::ALLOW_ALL),
-                'bid_audience_mode' => self::normalizeAudienceMode($general['bid_audience_mode'] ?? self::AUDIENCE_MODE_PUBLIC),
+                'provided_extensions' => self::normalizeProvidedExtensionsSetting(
+                    $general['provided_extensions'] ?? implode(',', UploadRules::PROVIDED_EXTENSIONS)
+                ),
             ],
         ];
     }
@@ -256,35 +247,33 @@ class SettingsRules
         return $html;
     }
 
-    public static function normalizeAudienceMode(mixed $raw): string
+
+    /**
+     * Canonical CSV of uppercase extensions for 제공 확장자 options.
+     */
+    public static function normalizeProvidedExtensionsSetting(mixed $raw): string
     {
-        $value = strtolower(trim((string) $raw));
-        $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
-        if (in_array($value, [
-            self::AUDIENCE_MODE_ADMIN,
-            'admin',
-            'admins',
-            '관리자만',
-            '기본 입찰을 관리자만',
-            '관리자',
-        ], true)) {
-            return self::AUDIENCE_MODE_ADMIN;
-        }
-        if (in_array($value, [
-            self::AUDIENCE_MODE_PUBLIC,
-            'open',
-            '공개',
-            '전체공개',
-        ], true)) {
-            return self::AUDIENCE_MODE_PUBLIC;
+        $list = UploadRules::parseExtensionList($raw);
+        if ($list === []) {
+            $list = UploadRules::PROVIDED_EXTENSIONS;
         }
 
-        return self::AUDIENCE_MODE_PUBLIC;
+        return implode(',', $list);
     }
 
-    public static function isAudienceSelectable(mixed $mode): bool
+    /**
+     * @return list<string>
+     */
+    public static function providedExtensionList(mixed $raw = null): array
     {
-        return self::normalizeAudienceMode($mode) === self::AUDIENCE_MODE_PUBLIC;
+        if ($raw === null) {
+            return UploadRules::PROVIDED_EXTENSIONS;
+        }
+        $list = UploadRules::parseExtensionList(
+            is_string($raw) || is_array($raw) ? $raw : self::normalizeProvidedExtensionsSetting($raw)
+        );
+
+        return $list !== [] ? $list : UploadRules::PROVIDED_EXTENSIONS;
     }
 
     public static function boolish(mixed $value): bool
@@ -317,7 +306,7 @@ class SettingsRules
             'default_job_status' => ['nullable', 'string', 'in:'.implode(',', JobRules::LISTING_STATUSES)],
             'guests_see_list' => ['nullable'],
             'bid_allow' => ['nullable', 'string', 'in:'.implode(',', BidRules::ALLOW_MODES)],
-            'bid_audience_mode' => ['nullable', 'string', 'in:'.implode(',', self::AUDIENCE_MODES)],
+            'provided_extensions' => ['nullable', 'string', 'max:500'],
             'menu' => ['nullable', 'array'],
             'notices' => ['nullable', 'array'],
             'general' => ['nullable', 'array'],

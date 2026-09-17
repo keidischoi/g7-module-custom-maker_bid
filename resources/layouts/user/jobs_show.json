@@ -342,7 +342,7 @@
                 "props": {
                   "className": "cmb-page-guide text-sm"
                 },
-                "text": "의뢰서와 동일한 공개 항목입니다. 연락처·배송지 등 개인정보는 본인·관리자·낙찰자에게만 표시됩니다."
+                "text": "의뢰서와 동일한 공개 항목입니다. 개인정보는 아래 별도 카드에서 확인할 수 있습니다."
               },
               {
                 "id": "spec_body",
@@ -383,6 +383,55 @@
                       "hidden": true,
                       "aria-label": "의뢰 이미지"
                     }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "privacy_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card cmb-privacy-card space-y-3"
+            },
+            "children": [
+              {
+                "id": "privacy_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "개인정보"
+              },
+              {
+                "id": "privacy_guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide text-sm"
+                },
+                "text": "연락처·배송지·담당자는 의뢰 본인, 관리자, 낙찰자에게만 표시됩니다. 그 외에는 비공개입니다."
+              },
+              {
+                "id": "privacy_grid",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-spec grid gap-2 sm:grid-cols-2 text-sm",
+                  "data-cmb-job-privacy": "1",
+                  "aria-live": "polite"
+                },
+                "children": [
+                  {
+                    "id": "privacy_loading",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-page-guide sm:col-span-2"
+                    },
+                    "text": "개인정보를 불러오는 중입니다."
                   }
                 ]
               }

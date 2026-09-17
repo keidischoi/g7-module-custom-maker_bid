@@ -16,10 +16,11 @@ use Modules\Custom\MakerBids\Services\JobService;
 use Modules\Custom\MakerBids\Services\JobTypeService;
 use Modules\Custom\MakerBids\Services\MakerBidSettingsService;
 use Modules\Custom\MakerBids\Services\MarketplaceService;
-use Modules\Custom\MakerBids\Support\SettingsRules;
 use Modules\Custom\MakerBids\Support\ArrayPaginator;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobPresenter;
+use Modules\Custom\MakerBids\Support\SettingsRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 
 class JobController extends Controller
 {
@@ -70,10 +71,6 @@ $data = $this->jobs->listPublic($request);
         }
         $profileName = $companyName !== '' ? $companyName : $memberName;
 
-        $audienceMode = SettingsRules::normalizeAudienceMode(
-            $this->settings->getSetting('general.bid_audience_mode', SettingsRules::AUDIENCE_MODE_PUBLIC),
-        );
-
         return response()->json(['data' => [
             'upload_token' => $token,
             'contact_name' => $profileName,
@@ -91,8 +88,6 @@ $data = $this->jobs->listPublic($request);
             'manager_phone' => '',
             'manager_email' => '',
             'types' => $this->types->listPublic()->map->toOptionArray()->values()->all(),
-            'bid_audience_mode' => $audienceMode,
-            'audience_selectable' => SettingsRules::isAudienceSelectable($audienceMode),
         ]]);
     }
 

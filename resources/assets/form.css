@@ -822,7 +822,7 @@ html.cmb-dark-boot .cmb-page .cmb-job-card {
   color: var(--cmb-card-fg, #e5e7eb);
 }
 
-/* 0.10.10: admin surfaces always translucent (no html.dark gate — host bg-white loses) */
+/* 0.10.12: admin surfaces always translucent (no html.dark gate — host bg-white loses) */
 .cmb-admin .cmb-admin-card,
 .cmb-admin .cmb-admin-row,
 .cmb-admin .cmb-admin-nav,
@@ -1561,4 +1561,13 @@ html.dark .cmb-pager a.is-active,
 }
 .cmb-search-sort-select {
   min-width: 7.5rem;
+}
+
+/* 0.10.12: separate 개인정보 card on job detail */
+.cmb-privacy-card {
+  margin-top: 0.75rem;
+}
+.cmb-privacy-card .cmb-section-title,
+.cmb-privacy-card .cmb-admin-card-title {
+  margin-bottom: 0.25rem;
 }

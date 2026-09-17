@@ -75,8 +75,9 @@ class CompanyService
         if ($row === null) {
             return null;
         }
+        $this->ensureUploadToken($row);
 
-        return CompanyPresenter::present($row, 'owner');
+        return CompanyPresenter::present($row->fresh() ?? $row, 'owner');
     }
 
     public function listPublic(): array
@@ -105,7 +106,11 @@ class CompanyService
 
         return $q->limit(200)
             ->get()
-            ->map(fn (MakerCompany $row): array => CompanyPresenter::present($row, 'admin'))
+            ->map(function (MakerCompany $row): array {
+                $this->ensureUploadToken($row);
+
+                return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
+            })
             ->values()
             ->all();
     }
@@ -113,8 +118,9 @@ class CompanyService
     public function findAdmin(int $id): array
     {
         $row = MakerCompany::query()->findOrFail($id);
+        $this->ensureUploadToken($row);
 
-        return CompanyPresenter::present($row, 'admin');
+        return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
     }
 
     public function storeAdmin(array $payload): array
@@ -177,6 +183,11 @@ class CompanyService
         $this->assertBusinessNo($attrs, (int) $row->id);
         $row->fill($attrs);
         $row->save();
+        $token = (string) ($payload['upload_token'] ?? $row->upload_token ?? '');
+        if ($token === '') {
+            $token = $this->ensureUploadToken($row);
+        }
+        $this->attachLogo($row, (int) $row->user_id, $token);
 
         return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
     }
@@ -251,16 +262,33 @@ class CompanyService
             return;
         }
         $file = MakerJobFile::query()
-            ->where('user_id', $userId)
             ->where('upload_token', $token)
             ->where('collection', UploadRules::COLLECTION_LOGOS)
             ->orderByDesc('id')
             ->first();
         if ($file) {
+            // Prefer company owner as file owner for future member edits.
+            if ((int) $file->user_id !== $userId && $userId > 0) {
+                $file->user_id = $userId;
+                $file->save();
+            }
             $row->logo_hash = $file->hash;
             $row->upload_token = $token;
             $row->save();
         }
+    }
+
+    private function ensureUploadToken(MakerCompany $row): string
+    {
+        $token = trim((string) ($row->upload_token ?? ''));
+        if ($token !== '') {
+            return $token;
+        }
+        $token = $this->files->newUploadToken();
+        $row->upload_token = $token;
+        $row->save();
+
+        return $token;
     }
 
     private function adminOnlyAttributes(array $payload, bool $creating): array

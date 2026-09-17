@@ -478,7 +478,7 @@
                             "id": "m_aud",
                             "type": "basic",
                             "name": "Span",
-                            "text": "{{$item.audience_label || ''}}"
+                            "text": "입찰 권한 {{$item.audience_label || '전체'}}"
                           }
                         ]
                       },

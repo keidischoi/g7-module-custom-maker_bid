@@ -15,6 +15,7 @@ use Modules\Custom\MakerBids\Support\JobPresenter;
 use Modules\Custom\MakerBids\Support\JobRules;
 use Modules\Custom\MakerBids\Support\PrivacyRules;
 use Modules\Custom\MakerBids\Support\SettingsRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 use Modules\Custom\MakerBids\Support\TypeCatalog;
 
 class JobService
@@ -211,8 +212,6 @@ class JobService
     {
         $type = $this->types->requireEnabled((string) $payload['type']);
         $this->assertAddress($type->toOptionArray(), $payload);
-        $payload = $this->applyMemberAudiencePolicy($payload, true);
-
         $attrs = $this->jobAttributes($payload, $type->id, (string) $type->slug);
         $attrs['user_id'] = $userId;
         if (empty($payload['status']) || empty($attrs['status'])) {
@@ -249,7 +248,6 @@ class JobService
         } elseif ($job->jobType) {
             $this->assertAddress($job->jobType->toOptionArray(), array_merge($job->toArray(), $payload));
         }
-        $payload = $this->applyMemberAudiencePolicy($payload, false);
 
         $attrs = $this->jobAttributes($payload, $payload['type_id'] ?? $job->type_id, (string) ($payload['type'] ?? $job->type), false);
         $job->fill($attrs);
@@ -575,31 +573,20 @@ class JobService
         }
     }
 
-    /**
-     * When bid_audience_mode=admin_only, members cannot choose audience.
-     * Create forces 전체(all); update ignores client audience.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
-    private function applyMemberAudiencePolicy(array $payload, bool $creating): array
-    {
-        $mode = $this->setting('general.bid_audience_mode', SettingsRules::AUDIENCE_MODE_PUBLIC);
-        if (SettingsRules::isAudienceSelectable($mode)) {
-            return $payload;
-        }
-        if ($creating) {
-            $payload['audience'] = 'all';
-        } else {
-            unset($payload['audience']);
-        }
-
-        return $payload;
-    }
 
     public function bidAllowMode(): string
     {
         return BidRules::normalizeAllow($this->setting('general.bid_allow', BidRules::ALLOW_ALL));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function providedExtensionAllowList(): array
+    {
+        return SettingsRules::providedExtensionList(
+            $this->setting('general.provided_extensions', implode(',', UploadRules::PROVIDED_EXTENSIONS))
+        );
     }
 
     /**
@@ -628,7 +615,7 @@ class JobService
             return [];
         }
 
-        return JobRules::collectProvidedExtensions($payload);
+        return JobRules::collectProvidedExtensions($payload, $this->providedExtensionAllowList());
     }
 
     /**

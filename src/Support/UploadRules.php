@@ -112,20 +112,27 @@ class UploadRules
         return in_array($ext, self::extensionsFor($collection), true);
     }
 
-    public static function isAllowedProvidedExtension(string $ext): bool
+    /**
+     * @param  list<string>|null  $allowed  null = built-in PROVIDED_EXTENSIONS
+     */
+    public static function isAllowedProvidedExtension(string $ext, ?array $allowed = null): bool
     {
-        return in_array(strtoupper($ext), self::PROVIDED_EXTENSIONS, true);
+        $allowed = $allowed ?? self::PROVIDED_EXTENSIONS;
+
+        return in_array(strtoupper($ext), $allowed, true);
     }
 
     /**
+     * Parse a settings textarea / CSV / array into uppercase extension tokens.
+     *
      * @param  mixed  $raw
      * @return list<string>
      */
-    public static function normalizeProvidedExtensions(mixed $raw): array
+    public static function parseExtensionList(mixed $raw): array
     {
         $items = [];
-        if (is_string($raw) && $raw !== '') {
-            $raw = preg_split('/[,\s]+/', $raw) ?: [];
+        if (is_string($raw) && trim($raw) !== '') {
+            $raw = preg_split('/[,\s;|]+/', $raw) ?: [];
         }
         if (! is_array($raw)) {
             return [];
@@ -134,13 +141,39 @@ class UploadRules
             if (! is_string($item) && ! is_int($item)) {
                 continue;
             }
-            $value = strtoupper(trim((string) $item));
-            if ($value !== '' && self::isAllowedProvidedExtension($value) && ! in_array($value, $items, true)) {
+            $value = strtoupper(ltrim(trim((string) $item), '.'));
+            if ($value === '' || ! preg_match('/^[A-Z0-9]{1,16}$/', $value)) {
+                continue;
+            }
+            if (! in_array($value, $items, true)) {
                 $items[] = $value;
             }
         }
 
         return $items;
+    }
+
+    /**
+     * @param  mixed  $raw
+     * @param  list<string>|null  $allowed
+     * @return list<string>
+     */
+    public static function normalizeProvidedExtensions(mixed $raw, ?array $allowed = null): array
+    {
+        $allowed = $allowed ?? self::PROVIDED_EXTENSIONS;
+        $items = [];
+        foreach (self::parseExtensionList($raw) as $value) {
+            if (self::isAllowedProvidedExtension($value, $allowed) && ! in_array($value, $items, true)) {
+                $items[] = $value;
+            }
+        }
+
+        return $items;
+    }
+
+    public static function extensionFieldKey(string $ext): string
+    {
+        return 'ext_'.strtolower($ext);
     }
 
     public static function deliveryExpiresAt(?\DateTimeInterface $from = null): \DateTimeInterface

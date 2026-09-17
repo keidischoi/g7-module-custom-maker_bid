@@ -31,14 +31,11 @@ class UpdateSettingsRequest extends FormRequest
         }
         $this->coerceBooleanFields($bools);
         $this->nullBlankFields(array_merge(
-            ['nav_label', 'nav_insert', 'default_job_status', 'bid_allow', 'bid_audience_mode'],
+            ['nav_label', 'nav_insert', 'default_job_status', 'bid_allow', 'provided_extensions'],
             array_map(static fn (string $page): string => $page.'_body', array_keys(SettingsRules::pages())),
         ));
         if ($this->exists('bid_allow')) {
             $this->merge(['bid_allow' => BidRules::normalizeAllow($this->input('bid_allow'))]);
-        }
-        if ($this->exists('bid_audience_mode')) {
-            $this->merge(['bid_audience_mode' => SettingsRules::normalizeAudienceMode($this->input('bid_audience_mode'))]);
         }
     }
 
