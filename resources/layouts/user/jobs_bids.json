@@ -243,7 +243,7 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-job-card"
+                      "className": "cmb-job-card cmb-list-item"
                     },
                     "iteration": {
                       "source": "{{mine?.data?.data ?? mine?.data ?? []}}",
@@ -403,7 +403,7 @@
                     "name": "A",
                     "props": {
                       "href": "/maker-bids/{{$item.id}}",
-                      "className": "cmb-job-card"
+                      "className": "cmb-job-card cmb-list-item"
                     },
                     "iteration": {
                       "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",

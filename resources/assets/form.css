@@ -638,11 +638,12 @@ html.dark .cmb-admin-check-text,
 
 html.dark .cmb-page,
 .dark .cmb-page {
-  --cmb-card: var(--color-card, var(--card, rgb(31 41 55)));
+  /* Prefer explicit surfaces; host --color-card often equals page bg and hid boxes */
+  --cmb-card: rgb(31 41 55);
   --cmb-card-fg: var(--color-card-foreground, var(--card-foreground, rgb(243 244 246)));
-  --cmb-muted: var(--color-muted, var(--muted, rgb(17 24 39)));
+  --cmb-muted: rgb(17 24 39);
   --cmb-muted-fg: var(--color-muted-foreground, var(--muted-foreground, rgb(156 163 175)));
-  --cmb-border: var(--color-border, var(--border, rgb(55 65 81)));
+  --cmb-border: rgb(75 85 99);
   --cmb-ring: var(--color-ring, var(--ring, rgb(147 197 253)));
   --cmb-accent: var(--color-primary, var(--primary, rgb(243 244 246)));
   --cmb-accent-fg: var(--color-primary-foreground, var(--primary-foreground, rgb(17 24 39)));
@@ -736,25 +737,60 @@ html.dark .cmb-page,
   gap: 0.75rem;
 }
 
+/* Item + section cards: always show a real box (bg + border + radius + padding).
+   Do not rely only on host --color-card/--border — dark themes often set those
+   equal to the page surface, which made rows look like plain text after 0.9.11–13. */
 .cmb-job-card,
 .cmb-company-card,
 .cmb-section-card,
-.cmb-bid-card {
+.cmb-bid-card,
+.cmb-list-item {
   display: block;
-  background: var(--cmb-card);
-  color: var(--cmb-card-fg);
-  border: 1px solid var(--cmb-border);
+  background: var(--cmb-card, rgb(255 255 255));
+  color: var(--cmb-card-fg, rgb(17 24 39));
+  border: 1px solid var(--cmb-border, rgb(209 213 219));
   border-radius: 1rem;
   padding: 1rem 1.15rem;
+  margin: 0;
   text-decoration: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
+/* Dark: explicit translucent panels so boxes stay visible on navy/slate pages */
+html.dark .cmb-page .cmb-job-card,
+.dark .cmb-page .cmb-job-card,
+html.dark .cmb-page .cmb-company-card,
+.dark .cmb-page .cmb-company-card,
+html.dark .cmb-page .cmb-bid-card,
+.dark .cmb-page .cmb-bid-card,
+html.dark .cmb-page .cmb-list-item,
+.dark .cmb-page .cmb-list-item,
+html.dark .cmb-page .cmb-section-card,
+.dark .cmb-page .cmb-section-card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  color: var(--cmb-card-fg, rgb(243 244 246));
+}
+
 a.cmb-job-card:hover,
-a.cmb-company-card:hover {
+a.cmb-company-card:hover,
+a.cmb-list-item:hover {
   border-color: color-mix(in srgb, var(--cmb-ring) 55%, var(--cmb-border));
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
   transform: translateY(-1px);
+}
+
+html.dark .cmb-page a.cmb-job-card:hover,
+.dark .cmb-page a.cmb-job-card:hover,
+html.dark .cmb-page a.cmb-company-card:hover,
+.dark .cmb-page a.cmb-company-card:hover,
+html.dark .cmb-page a.cmb-list-item:hover,
+.dark .cmb-page a.cmb-list-item:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
 }
 
 .cmb-job-card-top,
@@ -1040,20 +1076,44 @@ html.dark .cmb-bid-form input,
   gap: 0.55rem;
 }
 
-/* Nested item cards inside a section box: softer inset rows */
+/* Nested item cards inside a section box: still distinctly boxed */
 .cmb-section-card .cmb-job-card,
 .cmb-section-card .cmb-bid-card,
-.cmb-section-card .cmb-company-card {
-  background: color-mix(in srgb, var(--cmb-muted) 65%, var(--cmb-card));
+.cmb-section-card .cmb-company-card,
+.cmb-section-card .cmb-list-item {
+  background: color-mix(in srgb, var(--cmb-muted, rgb(249 250 251)) 55%, var(--cmb-card, rgb(255 255 255)));
+  border: 1px solid var(--cmb-border, rgb(209 213 219));
   border-radius: 0.75rem;
   padding: 0.85rem 1rem;
   box-shadow: none;
 }
+html.dark .cmb-page .cmb-section-card .cmb-job-card,
+.dark .cmb-page .cmb-section-card .cmb-job-card,
+html.dark .cmb-page .cmb-section-card .cmb-bid-card,
+.dark .cmb-page .cmb-section-card .cmb-bid-card,
+html.dark .cmb-page .cmb-section-card .cmb-company-card,
+.dark .cmb-page .cmb-section-card .cmb-company-card,
+html.dark .cmb-page .cmb-section-card .cmb-list-item,
+.dark .cmb-page .cmb-section-card .cmb-list-item {
+  /* Slightly lighter than the section shell so each row reads as its own card */
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
 .cmb-section-card a.cmb-job-card:hover,
-.cmb-section-card a.cmb-company-card:hover {
+.cmb-section-card a.cmb-company-card:hover,
+.cmb-section-card a.cmb-list-item:hover {
   transform: none;
   box-shadow: none;
   border-color: color-mix(in srgb, var(--cmb-ring) 45%, var(--cmb-border));
+}
+html.dark .cmb-page .cmb-section-card a.cmb-job-card:hover,
+.dark .cmb-page .cmb-section-card a.cmb-job-card:hover,
+html.dark .cmb-page .cmb-section-card a.cmb-company-card:hover,
+.dark .cmb-page .cmb-section-card a.cmb-company-card:hover,
+html.dark .cmb-page .cmb-section-card a.cmb-list-item:hover,
+.dark .cmb-page .cmb-section-card a.cmb-list-item:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .cmb-section-title {
@@ -1070,7 +1130,8 @@ html.dark .cmb-bid-form input,
   .cmb-job-card,
   .cmb-company-card,
   .cmb-section-card,
-  .cmb-bid-card {
+  .cmb-bid-card,
+  .cmb-list-item {
     padding: 0.9rem 1rem;
   }
 }

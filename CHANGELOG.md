@@ -4,6 +4,10 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.14] - 2026-09-17
+
+- 다크 테마에서 목록 행·섹션 카드가 페이지 배경과 같아져 박스가 안 보이던 문제를 고칩니다. `.cmb-job-card` / `.cmb-section-card` 등에 명시적 `rgba(255,255,255,0.06)` 배경·`0.12` 테두리를 넣고, `page.js`가 `form.css`와 `cmb-list-item` 클래스를 보장합니다.
+
 ## [0.9.13] - 2026-09-17
 
 - 공개 목록(의뢰·입찰현황·이력·입찰자·알림)에 `page`/`per_page` 페이지네이션과 카드형 섹션 레이아웃을 맞추고, 서브탭 오른쪽 정렬(0.9.12)과 함께 탭 전환 시 레이아웃이 흔들리지 않게 합니다. API 응답 `meta`: `total`, `page`, `per_page`, `last_page`.
