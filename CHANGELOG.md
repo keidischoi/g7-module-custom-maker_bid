@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.16] - 2026-09-18
+
+### Fixed
+- **제공 확장자 체크박스 쓰레기 값(FALSE/KRW/단일문자)**: `g7Get`이 `settings.general` 등 잘못된 노드를 치면 `normalizeExtList`가 객체 **값**을 확장자로 오인하던 문제를 수정. 임의 객체 값은 더 이상 순회하지 않고, 확장자 맵(`STL: true`)만 **키**를 사용합니다.
+- **`asExtToken` 강화**: 길이 < 2, 순수 숫자, TRUE/FALSE/YES/NO/ON/OFF/NULL/UNDEFINED, 통화·로케일(KRW/USD/KR/US/EN 등) 거부. 알려진 확장자 화이트리스트 밖이거나 오염되면 `EXT_FALLBACK`으로 대체.
+- **명세(`page.js`)·PHP `UploadRules::parseExtensionList`**: 동일 거부 규칙. 연관 배열의 비확장자 맵은 값 리스트로 취급하지 않음.
+
+### Changed
+- 버전·캐시 버스트 **0.10.16**.
+
 ## [0.10.15] - 2026-09-18
 
 ### Fixed

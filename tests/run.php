@@ -14,6 +14,7 @@ $files = [
     __DIR__.'/type_ext_coerce.php',
 ];
 
+
 $failed = 0;
 foreach ($files as $file) {
     echo '== '.basename($file)." ==\n";
@@ -22,6 +23,13 @@ foreach ($files as $file) {
     if ($code !== 0) {
         $failed++;
     }
+}
+
+echo "== ext_normalize_js.mjs ==\n";
+passthru('node '.escapeshellarg(__DIR__.'/ext_normalize_js.mjs'), $jsCode);
+echo "\n";
+if ($jsCode !== 0) {
+    $failed++;
 }
 
 exit($failed === 0 ? 0 : 1);

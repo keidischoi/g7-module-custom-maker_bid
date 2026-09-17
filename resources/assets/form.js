@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.15';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.16';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -95,10 +95,64 @@
     return s;
   }
 
+  // EXT_NORMALIZE_START
+  var EXT_FALLBACK = ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
+  var EXT_KNOWN = {
+    STL: 1, OBJ: 1, '3MF': 1, FBX: 1, PDF: 1, STEP: 1, STP: 1, GCODE: 1, DWG: 1,
+    GLB: 1, GLTF: 1, IGES: 1, IGS: 1, PLY: 1, AMF: 1, DAE: 1, BLEND: 1, ZIP: 1, RAR: 1, '7Z': 1
+  };
+  var EXT_TOKEN_JUNK = {
+    TRUE: 1, FALSE: 1, YES: 1, NO: 1, ON: 1, OFF: 1, NULL: 1, UNDEFINED: 1,
+    KRW: 1, USD: 1, EUR: 1, JPY: 1, CNY: 1, GBP: 1,
+    KR: 1, US: 1, EN: 1, JP: 1, CN: 1, KO: 1
+  };
+
+  function isExtLikeToken(s) {
+    return typeof s === 'string' && /^[A-Z0-9]{2,16}$/.test(s) && !EXT_TOKEN_JUNK[s] && !/^\d+$/.test(s);
+  }
+
+  function isBoolishExtValue(v) {
+    if (v === true || v === false || v === 0 || v === 1) return true;
+    if (v === '0' || v === '1') return true;
+    if (typeof v === 'string') {
+      var u = v.trim().toLowerCase();
+      return u === 'on' || u === 'off' || u === 'true' || u === 'false' || u === 'yes' || u === 'no';
+    }
+    return false;
+  }
+
+  function isTruthyExtValue(v) {
+    if (v === true || v === 1 || v === '1') return true;
+    if (typeof v === 'string') {
+      var u = v.trim().toLowerCase();
+      return u === 'on' || u === 'true' || u === 'yes';
+    }
+    return false;
+  }
+
+  function isSingleExtOption(obj) {
+    return !!(obj && typeof obj === 'object' && !Array.isArray(obj)
+      && (obj.value != null || obj.label != null || obj.ext != null || obj.slug != null));
+  }
+
+  function looksLikeExtMap(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+    var keys = Object.keys(obj);
+    if (!keys.length) return false;
+    var i, k, tok;
+    for (i = 0; i < keys.length; i++) {
+      k = keys[i];
+      tok = String(k || '').replace(/^\./, '').trim().toUpperCase();
+      if (!isExtLikeToken(tok) || !isBoolishExtValue(obj[k])) return false;
+    }
+    return true;
+  }
+
   function asExtToken(raw) {
     if (raw == null || raw === '') return '';
     var s = '';
     if (typeof raw === 'object') {
+      if (Array.isArray(raw)) return '';
       var v = raw.value != null ? raw.value : raw.label != null ? raw.label : raw.ext != null ? raw.ext : raw.slug != null ? raw.slug : '';
       if (typeof v === 'object') return asExtToken(v);
       s = String(v == null ? '' : v);
@@ -107,11 +161,41 @@
     }
     s = s.replace(/^\./, '').trim().toUpperCase();
     if (!s || s.indexOf('[OBJECT') === 0 || s === 'OBJECT]' || s === '[OBJECT OBJECT]' || /^\[OBJECT/.test(s)) return '';
-    if (!/^[A-Z0-9]{1,16}$/.test(s)) return '';
+    if (s.length < 2) return '';
+    if (/^\d+$/.test(s)) return '';
+    if (EXT_TOKEN_JUNK[s]) return '';
+    if (!/^[A-Z0-9]{2,16}$/.test(s)) return '';
     return s;
   }
 
-  var EXT_FALLBACK = ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
+  function extractExtTokensFromObject(raw) {
+    var t;
+    if (looksLikeExtMap(raw)) {
+      var keys = Object.keys(raw);
+      var out = [];
+      var i;
+      for (i = 0; i < keys.length; i++) {
+        if (!isTruthyExtValue(raw[keys[i]])) continue;
+        t = asExtToken(keys[i]);
+        if (t) out.push(t);
+      }
+      return out;
+    }
+    if (isSingleExtOption(raw)) {
+      t = asExtToken(raw);
+      return t ? [t] : [];
+    }
+    return [];
+  }
+
+  function listLooksPolluted(list) {
+    var i, t;
+    for (i = 0; i < list.length; i++) {
+      t = list[i];
+      if (!t || EXT_TOKEN_JUNK[t] || !EXT_KNOWN[t]) return true;
+    }
+    return false;
+  }
 
   function normalizeExtList(raw) {
     var out = [];
@@ -124,16 +208,24 @@
     };
     if (raw == null || raw === '') return EXT_FALLBACK.slice();
     if (Array.isArray(raw)) {
-      raw.forEach(push);
+      raw.forEach(function (item) {
+        if (item != null && typeof item === 'object' && !Array.isArray(item)) {
+          extractExtTokensFromObject(item).forEach(push);
+        } else {
+          push(item);
+        }
+      });
     } else if (typeof raw === 'string') {
       String(raw).split(/[\s,;|]+/).forEach(push);
     } else if (typeof raw === 'object') {
-      Object.keys(raw).forEach(function (k) { push(raw[k]); });
+      extractExtTokensFromObject(raw).forEach(push);
     } else {
       push(raw);
     }
-    return out.length ? out : EXT_FALLBACK.slice();
+    if (!out.length || listLooksPolluted(out)) return EXT_FALLBACK.slice();
+    return out;
   }
+  // EXT_NORMALIZE_END
 
   function normalizeTypeOption(row) {
     if (row == null) return null;
@@ -1249,29 +1341,19 @@
       '_data.settings.data.general.provided_extensions',
       'settings.data.general.provided_extensions'
     ];
-    var i, v, extracted;
+    var i, v, extracted, normalized;
     for (i = 0; i < paths.length; i++) {
       v = g7Get(paths[i]);
       if (v == null || v === '') continue;
-      extracted = [];
-      if (Array.isArray(v)) {
-        v.forEach(function (x) {
-          var t = asExtToken(x);
-          if (t) extracted.push(t);
-        });
-      } else if (typeof v === 'string') {
-        String(v).split(/[,\s;|]+/).forEach(function (x) {
-          var t = asExtToken(x);
-          if (t) extracted.push(t);
-        });
-      } else if (typeof v === 'object') {
-        Object.keys(v).forEach(function (k) {
-          var t = asExtToken(v[k]);
-          if (t) extracted.push(t);
-        });
+      if (typeof v === 'object' && !Array.isArray(v)) {
+        extracted = extractExtTokensFromObject(v);
+        if (!extracted.length) continue;
+        normalized = normalizeExtList(extracted);
+      } else {
+        normalized = normalizeExtList(v);
       }
-      if (extracted.length) {
-        return normalizeExtList(extracted);
+      if (normalized && normalized.length) {
+        return normalized;
       }
     }
     return EXT_FALLBACK.slice();
