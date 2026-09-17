@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.18] - 2026-09-18
+
+### Fixed
+- **수정 화면 FileUploader 빈 박스**: G7 FileUploader는 `initialFiles`를 마운트 시에만 읽음. 회원 `jobs_form`·관리자 `jobs_show`·`company_apply`·관리자 `companies_index`에서 API/`불러오기` hydrate 후 `files_ready`로 업로더를 다시 마운트해 등록된 이미지·첨부·로고가 보이게 함.
+- **Attachment 정규화**: `UploadRules::toUploaderFile` + `MakerJobFile::toAttachmentArray` / `CompanyPresenter::logoFiles`에 `file_name`/`name`/`url`/`download_url`/`thumbnail_url`/`is_image` 별칭 포함. JobPresenter는 `image`/`archive` 단수 컬렉션도 분류.
+- **견적 제출 로그인 토스트**: 공개 의뢰 상세에서 `auth_required`가 세션 쿠키와 무관하게 클라이언트 401 토스트를 내던 문제. 견적/수정/낙찰/거절·compare는 `auth_mode: optional`로 바꾸고, `page.js`가 `data-cmb-bid-submit` 클릭을 cookie+CSRF POST로 처리. 서버 `auth:sanctum` 유지.
+
+### Changed
+- 버전·캐시 버스트 **0.10.18**.
+
 ## [0.10.17] - 2026-09-18
 
 ### Fixed

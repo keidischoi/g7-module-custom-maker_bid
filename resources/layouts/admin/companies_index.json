@@ -60,7 +60,12 @@
       "report_count": "0",
       "is_recommended": false,
       "is_designated": false,
-      "priority": "0"
+      "priority": "0",
+      "upload_token": "",
+      "logo_files": [],
+      "logo_hash": "",
+      "logo_url": "",
+      "files_ready": false
     }
   },
   "data_sources": [
@@ -647,7 +652,8 @@
                             "upload_token": "{{_local.edit.upload_token}}"
                           },
                           "initialFiles": "{{_local.edit.logo_files || []}}"
-                        }
+                        },
+                        "if": "{{!!_local.edit.id && _local.edit.files_ready}}"
                       },
                       {
                         "id": "esave",
@@ -897,7 +903,16 @@
                                       "edit.upload_token": "{{$co.upload_token || ''}}",
                                       "edit.logo_files": "{{$co.logo_files || []}}",
                                       "edit.logo_hash": "{{$co.logo_hash || ''}}",
-                                      "edit.logo_url": "{{$co.logo_url || ''}}"
+                                      "edit.logo_url": "{{$co.logo_url || ''}}",
+                                      "edit.files_ready": false
+                                    }
+                                  },
+                                  {
+                                    "type": "click",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.files_ready": true
                                     }
                                   }
                                 ]

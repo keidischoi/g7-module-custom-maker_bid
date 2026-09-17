@@ -1504,15 +1504,133 @@
 })();
 
 
+
+/* cmb-detail-bid: 의뢰 상세 견적 제출 — cookie+CSRF (avoid G7 auth_required false-neg on public page) */
+(function () {
+  function toast(type, message) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: 'toast', params: { type: type, message: message } });
+    }
+  }
+  function dispatch(handler, params) {
+    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+      window.G7Core.dispatch({ handler: handler, params: params || {} });
+    }
+  }
+  function csrf() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    if (m && m.content) return m.content;
+    try {
+      var match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+      if (match) return decodeURIComponent(match[1]);
+    } catch (e) {}
+    return '';
+  }
+  function jobIdFromPath() {
+    var m = String(location.pathname || '').match(/\/maker-bids\/(\d+)(?:\/|$)/);
+    return m ? m[1] : '';
+  }
+  function fieldValue(form, name) {
+    var el = form.querySelector('[name="' + name + '"]');
+    if (!el) return '';
+    return String(el.value || '').trim();
+  }
+  function localBid() {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        var bid = window.G7Core.state.get('local.bid') || window.G7Core.state.get('_local.bid');
+        if (bid && typeof bid === 'object') return bid;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function submitDetailBid(btn) {
+    var form = btn.closest('.cmb-bid-form, [dataKey="bid"], #bidform') || document.querySelector('.cmb-bid-form');
+    var jobId = jobIdFromPath();
+    if (!jobId) {
+      toast('error', '의뢰를 찾을 수 없습니다.');
+      return;
+    }
+    var fromState = localBid() || {};
+    var amountRaw = fromState.amount != null && fromState.amount !== '' ? String(fromState.amount) : (form ? fieldValue(form, 'amount') : '');
+    var daysRaw = fromState.days != null && fromState.days !== '' ? String(fromState.days) : (form ? fieldValue(form, 'days') : '');
+    var message = fromState.message != null && fromState.message !== '' ? String(fromState.message) : (form ? fieldValue(form, 'message') : '');
+    var amountNum = parseInt(String(amountRaw).replace(/[^\d]/g, ''), 10);
+    if (!amountNum || amountNum < 1) {
+      toast('error', '견적 금액을 입력해 주세요.');
+      return;
+    }
+    var body = { amount: amountNum };
+    if (daysRaw !== '') {
+      var daysNum = parseInt(String(daysRaw).replace(/[^\d]/g, ''), 10);
+      if (!daysNum || daysNum < 1) {
+        toast('error', '제작 일수를 확인해 주세요.');
+        return;
+      }
+      body.days = daysNum;
+    }
+    if (message) body.message = message;
+    btn.disabled = true;
+    var headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    var token = csrf();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    fetch('/api/modules/custom-maker_bids/jobs/' + encodeURIComponent(jobId) + '/bids', {
+      method: 'POST',
+      credentials: 'include',
+      headers: headers,
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (json) {
+        return { ok: res.ok, status: res.status, json: json };
+      });
+    }).then(function (r) {
+      btn.disabled = false;
+      if (!r.ok) {
+        var msg = (r.json && (r.json.message || (r.json.error && r.json.error.message))) || '견적 등록에 실패했습니다.';
+        if (r.status === 401) msg = '로그인이 필요합니다. 새로고침 후 다시 시도해 주세요.';
+        toast('error', msg);
+        return;
+      }
+      toast('success', '견적을 등록했습니다.');
+      dispatch('refetchDataSource', { dataSourceId: 'job' });
+      dispatch('refetchDataSource', { dataSourceId: 'viewer' });
+    }).catch(function () {
+      btn.disabled = false;
+      toast('error', '견적 등록에 실패했습니다.');
+    });
+  }
+  function onClick(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest('[data-cmb-bid-submit]');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+    submitDetailBid(btn);
+  }
+  if (!document.documentElement.getAttribute('data-cmb-detail-bid-bound')) {
+    document.documentElement.setAttribute('data-cmb-detail-bid-bound', '1');
+    document.addEventListener('click', onClick, true);
+  }
+})();
+
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.17';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.18';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.17') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.18') < 0) {
         existing.href = FORM_CSS;
       }
       return;

@@ -82,7 +82,8 @@
       "archive_count": 0,
       "terms_agreed": false,
       "image_files": [],
-      "archive_files": []
+      "archive_files": [],
+      "files_ready": false
     },
     "ui": {}
   },
@@ -143,7 +144,8 @@
             "form.contact_hours_to": "{{response.data.contact_hours_to || _local.form.contact_hours_to || '18:00'}}",
             "form.provided_extensions": "{{response.data.provided_extensions || []}}",
             "form.image_files": "{{response.data.images || []}}",
-            "form.archive_files": "{{response.data.archives || []}}"
+            "form.archive_files": "{{response.data.archives || []}}",
+            "form.files_ready": true
           }
         }
       ],
@@ -1607,7 +1609,7 @@
                         }
                       }
                     ],
-                    "if": "{{!!route.id}}"
+                    "if": "{{!!route.id && _local.form.files_ready}}"
                   },
                   {
                     "id": "file_label",
@@ -1703,7 +1705,7 @@
                         }
                       }
                     ],
-                    "if": "{{!!route.id}}"
+                    "if": "{{!!route.id && _local.form.files_ready}}"
                   }
                 ]
               },

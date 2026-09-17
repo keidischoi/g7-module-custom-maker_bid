@@ -44,11 +44,19 @@ class JobPresenter
             if ($file instanceof MakerJobFile && $file->isExpired()) {
                 continue; // hide expired delivery/archives from payload
             }
-            $row = $file instanceof MakerJobFile ? $file->toAttachmentArray() : $file;
-            if (! empty($row['is_expired'])) {
+            $row = $file instanceof MakerJobFile ? $file->toAttachmentArray() : (is_array($file) ? UploadRules::toUploaderFile($file) : $file);
+            if (! is_array($row) || ! empty($row['is_expired'])) {
                 continue;
             }
             $collection = (string) ($row['collection'] ?? '');
+            if ($collection === 'image') {
+                $collection = UploadRules::COLLECTION_IMAGES;
+                $row['collection'] = $collection;
+            }
+            if ($collection === 'archive' || $collection === 'file' || $collection === 'files') {
+                $collection = UploadRules::COLLECTION_ARCHIVES;
+                $row['collection'] = $collection;
+            }
             if ($collection === UploadRules::COLLECTION_DELIVERY) {
                 if ($canViewArchives) {
                     $deliveries[] = $row;
