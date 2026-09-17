@@ -457,6 +457,9 @@ class JobService
             $attrs['sizes'] = null;
         }
 
+        if (array_key_exists('terms_agreed', $payload)) {
+            $attrs['terms_agreed'] = (bool) $payload['terms_agreed'];
+        }
         if (isset($payload['status']) && $payload['status'] !== '') {
             $attrs['status'] = $payload['status'] === 'open' ? 'quote_request' : $payload['status'];
         } elseif ($creating) {

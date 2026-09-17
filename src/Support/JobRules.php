@@ -9,15 +9,15 @@ class JobRules
     /** @deprecated 0.5.0 catalog slugs replace these. Kept as default-slug alias. */
     public const TYPES = ['modeling_3d', 'print_3d', 'full_package', 'character_figure', 'design_mockup', 'working_prototype'];
 
-    public const STATUSES = ['hold', 'request', 'quote_request', 'open', 'awarded', 'done', 'cancelled'];
+    public const STATUSES = ['hold', 'request', 'quote_request', 'open', 'awarded', 'done', 'cancelled', 'draft'];
 
-    public const LISTING_STATUSES = ['hold', 'request', 'quote_request'];
+    public const LISTING_STATUSES = ['hold', 'request', 'quote_request', 'draft'];
 
     public const PUBLIC_STATUSES = ['request', 'quote_request', 'open', 'awarded', 'done', 'cancelled'];
 
     public const BIDDABLE_STATUSES = ['request', 'quote_request', 'open'];
 
-    public const HIDDEN_PUBLIC_STATUSES = ['hold'];
+    public const HIDDEN_PUBLIC_STATUSES = ['hold', 'draft'];
 
     public const AUDIENCES = ['all', 'company', 'individual'];
 
@@ -45,6 +45,7 @@ class JobRules
             'budget_max' => ['nullable', 'integer', 'min:0'],
             'closes_at' => ['nullable', 'date'],
             'status' => ['nullable', 'string', 'in:'.implode(',', self::LISTING_STATUSES)],
+            'terms_agreed' => ['nullable', 'boolean'],
             'audience' => ['nullable', 'string', 'in:'.implode(',', self::AUDIENCES)],
             'rush_fee_enabled' => ['nullable', 'boolean'],
             'rush_deadline' => ['nullable', 'date', 'required_if:rush_fee_enabled,1', 'required_if:rush_fee_enabled,true'],

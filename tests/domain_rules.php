@@ -112,5 +112,43 @@ expectFalse('cannot reject already rejected', CompanyRules::canReject('rejected'
 expectTrue('can approve pending', CompanyRules::canApprove('pending'));
 expectFalse('cannot approve already approved', CompanyRules::canApprove('approved'));
 
+// --- 0.10.0 marketplace must-haves ---
+$marketSrc = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
+expectTrue('closeExpired notifies owner', str_contains($marketSrc, 'deadline_closed') && str_contains($marketSrc, 'function closeExpired'));
+expectTrue('notifyDeadlineSoon exists', str_contains($marketSrc, 'function notifyDeadlineSoon'));
+expectTrue('runSchedule closes and notices', str_contains($marketSrc, 'function runSchedule') && str_contains($marketSrc, 'notifyDeadlineSoon'));
+expectTrue('notify tries email and memo', str_contains($marketSrc, 'trySendEmail') && str_contains($marketSrc, 'trySendMemo'));
+expectTrue('work statuses include printing', str_contains($marketSrc, "'printing'") && str_contains($marketSrc, "'shipping'"));
+expectTrue('shipping requires tracking', str_contains($marketSrc, '발송 상태에는 송장번호가 필요합니다'));
+expectTrue('reviewsForJob API helper', str_contains($marketSrc, 'function reviewsForJob'));
+expectTrue('resolveReport helper', str_contains($marketSrc, 'function resolveReport'));
+
+$bidSrc = (string) file_get_contents($root.'/src/Services/BidService.php');
+expectTrue('new bid notifies owner', str_contains($bidSrc, 'new_bid') && str_contains($bidSrc, 'MarketplaceService'));
+
+$adminJob = (string) file_get_contents($root.'/src/Http/Controllers/Admin/JobAdminController.php');
+expectTrue('approve notifies', str_contains($adminJob, "'approved'"));
+expectTrue('hold notifies', str_contains($adminJob, "'hold'"));
+
+$mod = (string) file_get_contents($root.'/module.php');
+expectTrue('getSchedules registers maker-bids:run-schedule', str_contains($mod, 'function getSchedules') && str_contains($mod, 'maker-bids:run-schedule'));
+expectTrue('schedule command file exists', is_file($root.'/src/Console/Commands/RunMarketplaceScheduleCommand.php'));
+expectTrue('service provider registers command', is_file($root.'/src/Providers/MakerBidsServiceProvider.php'));
+
+$api = (string) file_get_contents($root.'/src/routes/api.php');
+expectTrue('reviews route', str_contains($api, "jobs/{id}/reviews"));
+expectTrue('company reviews route', str_contains($api, "companies/{id}/reviews"));
+expectTrue('run-schedule route', str_contains($api, 'jobs/run-schedule'));
+expectTrue('admin resolve report route', str_contains($api, "reports/{id}"));
+
+expectTrue('draft is listing status', in_array('draft', JobRules::LISTING_STATUSES, true));
+expectTrue('draft hidden from public', in_array('draft', JobRules::HIDDEN_PUBLIC_STATUSES, true));
+expectTrue('terms_agreed in create rules', array_key_exists('terms_agreed', JobRules::createRules()));
+
+expectTrue('business_no normalize helper', method_exists(CompanyRules::class, 'normalizeBusinessNo'));
+expectTrue('business_no rejects short', CompanyRules::isValidBusinessNo('123') === false);
+expectTrue('business_no normalize strips dashes', CompanyRules::normalizeBusinessNo('123-45-67890') === '1234567890');
+expectTrue('empty business_no allowed', CompanyRules::isValidBusinessNo(null) && CompanyRules::isValidBusinessNo(''));
+
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

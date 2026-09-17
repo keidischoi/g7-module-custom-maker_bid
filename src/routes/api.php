@@ -30,6 +30,7 @@ Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->midd
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
+Route::post('jobs/run-schedule', [MarketplaceController::class, 'runSchedule'])->middleware(['throttle:30,1'])->name('jobs.runSchedule');
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
@@ -58,6 +59,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('jobs/{id}/claim', [MarketplaceController::class, 'claim'])->whereNumber('id')->name('jobs.claim');
     Route::post('jobs/{id}/report', [MarketplaceController::class, 'report'])->whereNumber('id')->name('jobs.report');
     Route::get('jobs/{id}/export', [MarketplaceController::class, 'export'])->whereNumber('id')->name('jobs.export');
+    Route::get('jobs/{id}/reviews', [MarketplaceController::class, 'reviews'])->whereNumber('id')->name('jobs.reviews');
+    Route::get('companies/{id}/reviews', [MarketplaceController::class, 'companyReviews'])->whereNumber('id')->name('companies.reviews');
 });
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(function () {
@@ -90,4 +93,5 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::patch('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.patch');
     Route::get('ops', [MarketplaceAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.ops');
     Route::post('claims/{id}', [MarketplaceAdminController::class, 'resolveClaim'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.claims.resolve');
+    Route::post('reports/{id}', [MarketplaceAdminController::class, 'resolveReport'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.reports.resolve');
 });

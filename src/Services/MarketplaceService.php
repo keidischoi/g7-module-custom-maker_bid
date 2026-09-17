@@ -22,6 +22,12 @@ class MarketplaceService
             ->whereNotNull('closes_at')
             ->where('closes_at', '<', now())
             ->whereIn('status', ['quote_request', 'request', 'open']);
+        if (Schema::hasColumn('maker_jobs', 'bidding_status')) {
+            $q->where(function ($qq) {
+                $qq->whereNull('bidding_status')
+                    ->orWhere('bidding_status', '!=', BiddingRules::CLOSED);
+            });
+        }
         $count = 0;
         foreach ($q->get() as $job) {
             if (Schema::hasColumn($job->getTable(), 'bidding_status')) {
@@ -29,26 +35,141 @@ class MarketplaceService
                 $job->bidding_closed_at = now();
             }
             $job->save();
+            $this->notify((int) $job->user_id, 'deadline_closed', '입찰이 마감되었습니다.', (string) $job->title, (int) $job->id);
+            $this->audit(null, 'job.auto_close', 'job', (int) $job->id, ['closes_at' => (string) $job->closes_at]);
             $count++;
         }
 
         return $count;
     }
 
+    /** Notify owners of jobs closing within the next N hours (default 24). */
+    public function notifyDeadlineSoon(int $withinHours = 24): int
+    {
+        if (! Schema::hasTable('maker_jobs')) {
+            return 0;
+        }
+        $from = now();
+        $to = now()->addHours(max(1, $withinHours));
+        $q = MakerJob::query()
+            ->whereNotNull('closes_at')
+            ->whereBetween('closes_at', [$from, $to])
+            ->whereIn('status', ['quote_request', 'request', 'open']);
+        if (Schema::hasColumn('maker_jobs', 'bidding_status')) {
+            $q->where(function ($qq) {
+                $qq->whereNull('bidding_status')
+                    ->orWhere('bidding_status', '!=', BiddingRules::CLOSED);
+            });
+        }
+        $count = 0;
+        foreach ($q->get() as $job) {
+            $dup = false;
+            if (Schema::hasTable('maker_notices')) {
+                $dup = DB::table('maker_notices')
+                    ->where('user_id', (int) $job->user_id)
+                    ->where('job_id', (int) $job->id)
+                    ->where('type', 'deadline_soon')
+                    ->where('created_at', '>=', now()->subHours(12))
+                    ->exists();
+            }
+            if ($dup) {
+                continue;
+            }
+            $when = $job->closes_at ? (string) $job->closes_at : '';
+            $this->notify(
+                (int) $job->user_id,
+                'deadline_soon',
+                '마감 임박: '.(string) $job->title,
+                '입찰 마감 시각: '.$when,
+                (int) $job->id
+            );
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /** Run scheduled maintenance: close expired + deadline notices. */
+    public function runSchedule(): array
+    {
+        return [
+            'closed' => $this->closeExpired(),
+            'deadline_notices' => $this->notifyDeadlineSoon(24),
+        ];
+    }
+
     public function notify(int $userId, string $type, string $title, ?string $body = null, ?int $jobId = null): void
     {
-        if ($userId < 1 || ! Schema::hasTable('maker_notices')) {
+        if ($userId < 1) {
             return;
         }
-        DB::table('maker_notices')->insert([
-            'user_id' => $userId,
-            'job_id' => $jobId,
-            'type' => $type,
-            'title' => mb_substr($title, 0, 200),
-            'body' => $body,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        if (Schema::hasTable('maker_notices')) {
+            DB::table('maker_notices')->insert([
+                'user_id' => $userId,
+                'job_id' => $jobId,
+                'type' => $type,
+                'title' => mb_substr($title, 0, 200),
+                'body' => $body,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        $this->trySendEmail($userId, $title, $body);
+        $this->trySendMemo($userId, $title, $body, $jobId);
+    }
+
+    private function trySendEmail(int $userId, string $title, ?string $body): void
+    {
+        try {
+            $user = null;
+            if (class_exists(\App\Models\User::class)) {
+                $user = \App\Models\User::query()->find($userId);
+            } elseif (Schema::hasTable('users')) {
+                $user = DB::table('users')->where('id', $userId)->first();
+            }
+            $email = is_object($user) ? (string) ($user->email ?? '') : '';
+            if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return;
+            }
+            if (! class_exists(\Illuminate\Support\Facades\Mail::class)) {
+                return;
+            }
+            \Illuminate\Support\Facades\Mail::raw(
+                trim($title."\n\n".(string) $body),
+                static function ($message) use ($email, $title) {
+                    $message->to($email)->subject('[의뢰/입찰] '.$title);
+                }
+            );
+        } catch (\Throwable) {
+            // Optional: core mail may be unconfigured.
+        }
+    }
+
+    private function trySendMemo(int $userId, string $title, ?string $body, ?int $jobId): void
+    {
+        try {
+            // Soft-integrate G7 memo/message modules when present.
+            if (function_exists('g7_send_memo')) {
+                g7_send_memo($userId, $title, (string) $body);
+                return;
+            }
+            if (class_exists(\App\Services\MemoService::class)) {
+                app(\App\Services\MemoService::class)->sendSystem($userId, $title, (string) $body);
+                return;
+            }
+            if (Schema::hasTable('memos')) {
+                DB::table('memos')->insert([
+                    'recv_user_id' => $userId,
+                    'send_user_id' => 0,
+                    'title' => mb_substr($title, 0, 200),
+                    'content' => (string) $body,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        } catch (\Throwable) {
+            // Optional channel.
+        }
     }
 
     public function audit(?int $userId, string $action, string $type, ?int $id, array $meta = []): void
@@ -146,7 +267,13 @@ class MarketplaceService
                 'rating_count' => $cnt,
             ]);
         }
-        $this->audit($userId, 'job.complete', 'job', $jobId);
+        if ($job->awarded_bid_id) {
+            $winner = MakerBid::query()->find($job->awarded_bid_id);
+            if ($winner) {
+                $this->notify((int) $winner->user_id, 'complete', '의뢰가 완료·후기 처리되었습니다.', (string) $job->title, $jobId);
+            }
+        }
+        $this->audit($userId, 'job.complete', 'job', $jobId, ['score' => $score]);
 
         return ['ok' => true, 'status' => 'done'];
     }
@@ -159,9 +286,12 @@ class MarketplaceService
         if (! $ok) {
             throw new DomainException('낙찰 당사자만 진행을 바꿈 수 있습니다.', 403);
         }
-        $allow = ['producing', 'shipping', 'delivered', 'done'];
+        $allow = ['producing', 'printing', 'shipping', 'delivered', 'done'];
         if (! in_array($status, $allow, true)) {
             throw new DomainException('잘못된 진행 상태입니다.', 422);
+        }
+        if ($status === 'shipping' && ($tracking === null || trim((string) $tracking) === '')) {
+            throw new DomainException('발송 상태에는 송장번호가 필요합니다.', 422);
         }
         $job->work_status = $status;
         if ($tracking !== null) {
@@ -306,4 +436,40 @@ class MarketplaceService
             'updated_at' => now(),
         ]);
     }
+    public function reviewsForJob(int $jobId): array
+    {
+        if (! Schema::hasTable('maker_reviews')) {
+            return [];
+        }
+
+        return DB::table('maker_reviews')->where('job_id', $jobId)->orderByDesc('id')->get()->map(fn ($r) => (array) $r)->all();
+    }
+
+    public function reviewsForCompany(int $companyId): array
+    {
+        if (! Schema::hasTable('maker_reviews')) {
+            return [];
+        }
+
+        return DB::table('maker_reviews')->where('company_id', $companyId)->orderByDesc('id')->limit(50)->get()->map(fn ($r) => (array) $r)->all();
+    }
+
+    public function resolveReport(int $id, string $status, ?int $actorId = null): void
+    {
+        if (! Schema::hasTable('maker_reports')) {
+            return;
+        }
+        $status = $status === 'closed' ? 'closed' : 'open';
+        DB::table('maker_reports')->where('id', $id)->update([
+            'status' => $status,
+            'updated_at' => now(),
+        ]);
+        $this->audit($actorId, 'report.'.$status, 'report', $id);
+    }
+
+    public function notifyJobEvent(MakerJob $job, string $type, string $title, ?string $body = null): void
+    {
+        $this->notify((int) $job->user_id, $type, $title, $body, (int) $job->id);
+    }
+
 }

@@ -4,6 +4,19 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.0] - 2026-09-17
+
+### Added
+- **알림**: 신규 입찰·낙찰·승인/보류·마감 임박/마감 시 사이트 알림(+ 메일/쪽지 soft hook).
+- **마감 스케줄**: `getSchedules()` + `maker-bids:run-schedule` 시간당 마감 처리·마감 임박 알림.
+- **작업실**: 제작중/출력중/발송(송장)/완료 + 납품 파일 업로드 UI·API.
+- **완료·후기**: 평점/코멘트, 회사 `rating_score` 갱신, 의뢰·회사 후기 목록 API/UI.
+- **입찰 비교**: 상세 비교 카드에서 낙찰/거절.
+- **OPS/신뢰**: 임시저장(draft), 목록 검색, 약관 동의, 사업자번호 검증·중복 방지, 신고 종결 API/UI.
+
+### Changed
+- 버전·캐시 버스트 **0.10.0**.
+
 ## [0.9.15] - 2026-09-17
 
 ### Fixed

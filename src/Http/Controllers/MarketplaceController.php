@@ -126,4 +126,20 @@ class MarketplaceController extends Controller
     {
         return response()->json(['data' => ['closed' => $this->market->closeExpired()]]);
     }
+
+    public function runSchedule(): JsonResponse
+    {
+        return response()->json(['data' => $this->market->runSchedule()]);
+    }
+
+    public function reviews(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->market->reviewsForJob($id)]);
+    }
+
+    public function companyReviews(int $id): JsonResponse
+    {
+        return response()->json(['data' => $this->market->reviewsForCompany($id)]);
+    }
 }
+

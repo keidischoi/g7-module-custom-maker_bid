@@ -59,6 +59,7 @@ class CompanyService
             $existing->save();
             $row = $existing->fresh() ?? $existing;
         } else {
+            $this->assertBusinessNo($attrs);
             $row = MakerCompany::query()->create($attrs);
         }
 
@@ -131,7 +132,8 @@ class CompanyService
             $attrs['rejected_reason'] = $payload['rejected_reason'] ?? $payload['note'] ?? null;
         }
 
-        $row = MakerCompany::query()->create($attrs);
+        $this->assertBusinessNo($attrs);
+            $row = MakerCompany::query()->create($attrs);
         $this->attachLogo($row, $userId, (string) ($payload['upload_token'] ?? ''));
 
         return CompanyPresenter::present($row->fresh() ?? $row, 'admin');
@@ -166,6 +168,7 @@ class CompanyService
                 $attrs['hold_reason'] = $payload['hold_reason'] ?? null;
             }
         }
+        $this->assertBusinessNo($attrs, (int) $row->id);
         $row->fill($attrs);
         $row->save();
 
@@ -301,4 +304,26 @@ class CompanyService
 
         return false;
     }
+    private function assertBusinessNo(array &$attrs, ?int $ignoreId = null): void
+    {
+        if (! array_key_exists('business_no', $attrs)) {
+            return;
+        }
+        $digits = CompanyRules::normalizeBusinessNo($attrs['business_no']);
+        if ($digits !== null && $digits !== '' && ! CompanyRules::isValidBusinessNo($digits)) {
+            throw new DomainException('사업자등록번호 형식이 올바르지 않습니다. (10자리)', 422);
+        }
+        $attrs['business_no'] = $digits;
+        if ($digits) {
+            $q = MakerCompany::query()->where('business_no', $digits);
+            if ($ignoreId) {
+                $q->where('id', '!=', $ignoreId);
+            }
+            if ($q->exists()) {
+                throw new DomainException('이미 등록된 사업자등록번호입니다.', 422);
+            }
+        }
+    }
+
+
 }
