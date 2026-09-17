@@ -7,6 +7,7 @@ use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\AwardRules;
+use Modules\Custom\MakerBids\Support\CompanyPresenter;
 use Modules\Custom\MakerBids\Support\BidRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
 use Modules\Custom\MakerBids\Support\DomainException;
@@ -136,7 +137,7 @@ class JobService
             'can_edit' => $isOwner && JobRules::isListingStatus((string) $job->status),
             'can_view_privacy' => $canViewPersonal,
             'can_workspace' => $canWorkspace,
-            'my_bid' => $myBid,
+            'my_bid' => $myBid ? CompanyPresenter::presentBid($myBid) : null,
             'privacy' => $canViewPersonal ? $this->personalPayload($job) : null,
         ];
     }

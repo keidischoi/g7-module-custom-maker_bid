@@ -75,6 +75,7 @@ class CompanyPresenter
             'user_id' => (int) $bid->user_id,
             'company_id' => $bid->company_id !== null ? (int) $bid->company_id : null,
             'amount' => (int) $bid->amount,
+            'amount_label' => number_format((int) $bid->amount).'원',
             'days' => $bid->days,
             'message' => $bid->message,
             'status' => (string) $bid->status,

@@ -291,7 +291,7 @@
                             "id": "mm1",
                             "type": "basic",
                             "name": "Span",
-                            "text": "{{$item.amount}}원"
+                            "text": "{{$item.amount_label || ($item.amount + '원')}}"
                           },
                           {
                             "id": "mm2",

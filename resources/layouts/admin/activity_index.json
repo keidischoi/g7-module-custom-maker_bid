@@ -356,7 +356,7 @@
                                 "props": {
                                   "className": "cmb-admin-row-title"
                                 },
-                                "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status}}"
+                                "text": "#{{$item.id}} {{$item.amount_label || ($item.amount + '원')}} · {{$item.status}}"
                               },
                               {
                                 "id": "bmeta",

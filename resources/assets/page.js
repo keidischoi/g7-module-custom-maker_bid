@@ -166,6 +166,392 @@
   setTimeout(run, 3000);
 })();
 
+
+/* cmb-job-spec: render every applicable request-form field, including empty values */
+(function () {
+  var NONE = '해당없음';
+  var PRIVATE = '비공개';
+  var JOB_KEYS = ['job.data', 'job', '_data.job.data', '_data.job', 'dataSources.job.data', 'dataSources.job'];
+  var VIEWER_KEYS = ['viewer.data', 'viewer', '_data.viewer.data', '_data.viewer', 'dataSources.viewer.data', 'dataSources.viewer'];
+
+  function getState(key) {
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        return window.G7Core.state.get(key);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function unwrap(value) {
+    var out = value;
+    var i;
+    for (i = 0; i < 4; i++) {
+      if (out && out.data !== undefined && !Array.isArray(out.data) && typeof out.data === 'object') {
+        out = out.data;
+      } else {
+        break;
+      }
+    }
+    return out && typeof out === 'object' ? out : null;
+  }
+
+  function fromState(keys) {
+    var i;
+    var value;
+    for (i = 0; i < keys.length; i++) {
+      value = unwrap(getState(keys[i]));
+      if (value && (value.id || value.title || value.type)) return value;
+    }
+    return null;
+  }
+
+  function isEmpty(value) {
+    if (value === null || value === undefined) return true;
+    if (Array.isArray(value)) return value.length === 0;
+    return typeof value === 'string' && value.trim() === '';
+  }
+
+  function valueOrNone(value) {
+    if (isEmpty(value)) return NONE;
+    if (Array.isArray(value)) return value.join(', ') || NONE;
+    return String(value);
+  }
+
+  function formatNumber(value) {
+    if (value === null || value === undefined || value === '') return '';
+    if (typeof value === 'string' && value.indexOf(',') >= 0) return value;
+    var number = Number(String(value).replace(/[^0-9.-]/g, ''));
+    if (isNaN(number)) return String(value);
+    return Math.round(number).toLocaleString('ko-KR');
+  }
+
+  function money(value) {
+    if (isEmpty(value)) return NONE;
+    var formatted = formatNumber(value);
+    if (!formatted) return NONE;
+    return /원$/.test(formatted) ? formatted : formatted + '원';
+  }
+
+  window.CMB = window.CMB || {};
+  window.CMB.formatNumber = formatNumber;
+  window.CMB.formatMoney = money;
+
+  function count(value) {
+    if (isEmpty(value)) return NONE;
+    return String(value) + '회';
+  }
+
+  function booleanLabel(value, on, off) {
+    if (isEmpty(value)) return NONE;
+    var enabled = value === true || value === 1 || value === '1' || value === 'true';
+    return enabled ? on : off;
+  }
+
+  function fileNames(value) {
+    if (!Array.isArray(value) || !value.length) return NONE;
+    var names = value.map(function (file) {
+      return file && (file.original_filename || file.name || file.filename);
+    }).filter(function (name) { return !isEmpty(name); });
+    return names.length ? names.join(', ') : NONE;
+  }
+
+  function sizeValue(job) {
+    if (!isEmpty(job.size_label)) return job.size_label;
+    if (Array.isArray(job.sizes) && job.sizes.length) {
+      return job.sizes.map(function (row) {
+        if (!row || typeof row !== 'object') return '';
+        var dims = [row.w, row.d, row.h].map(function (v) { return isEmpty(v) ? '-' : v; }).join(' × ');
+        return (isEmpty(row.name) ? '' : row.name + ' ') + dims + ' mm';
+      }).filter(Boolean).join(', ');
+    }
+    return NONE;
+  }
+
+  function includesModeling(job) {
+    return job.type_includes_modeling !== false;
+  }
+
+  function requiresAddress(job) {
+    return job.type_requires_address !== false;
+  }
+
+  var CATALOG = [
+    { section: '의뢰 정보' },
+    { label: '유형', value: function (job) { return job.type_name || job.type; } },
+    { label: '예산 최소', key: 'budget_min', format: money },
+    { label: '예산 최대', value: function (job) { return job.budget_max == null ? job.budget : job.budget_max; }, format: money },
+    { label: '마감 시각', value: function (job) { return job.closes_at || job.closes_at_local; } },
+    { label: '급행비 가능', key: 'rush_fee_enabled', format: function (v) { return booleanLabel(v, '가능', '불가'); } },
+    { label: '급행 적용 조건', value: function (job) { return job.rush_deadline_label || job.rush_deadline; } },
+    { label: '스케줄 선점비 가능', key: 'schedule_premium_enabled', format: function (v) { return booleanLabel(v, '가능', '불가'); } },
+    { label: '상태', value: function (job) { return job.status_label || job.status; } },
+    { label: '공개 설정', value: function (job) { return job.audience_label || job.audience; } },
+    { section: '제작 사양' },
+    { label: '최종 크기', value: sizeValue, wide: true },
+    { label: '제공 확장자', key: 'provided_extensions', applies: includesModeling, wide: true },
+    { label: '소유권한', key: 'ownership_requested', format: function (v) { return booleanLabel(v, '요청함', '요청 안 함'); } },
+    { label: '수정 횟수 적용', key: 'revision_enabled', format: function (v) { return booleanLabel(v, '적용', '미적용'); } },
+    { label: '최소 수정 횟수', key: 'revision_count', format: count },
+    { label: '회당 / 최대 수정비용', key: 'revision_cost', format: money },
+    { label: '설명', key: 'description', wide: true, multiline: true },
+    { label: '압축 파일', key: 'archives', format: fileNames, private: true, wide: true },
+    { section: '개인정보' },
+    { label: '주문자명 또는 업체명', key: 'contact_name', private: true },
+    { label: '연락처', key: 'contact_phone', private: true },
+    { label: '연락 가능시간', key: 'contact_hours', private: true },
+    { label: '이메일', key: 'contact_email', private: true },
+    { label: '우편번호', key: 'zipcode', private: true, applies: requiresAddress },
+    { label: '주소', key: 'address', private: true, applies: requiresAddress, wide: true },
+    { label: '상세 주소', key: 'address_detail', private: true, applies: requiresAddress, wide: true },
+    { label: '담당자 명', key: 'manager_name', private: true },
+    { label: '담당자 연락처', key: 'manager_phone', private: true },
+    { label: '담당자 이메일', key: 'manager_email', private: true }
+  ];
+  window.CMB_JOB_SPEC_CATALOG = CATALOG;
+
+  function privateValue(job, privacy, key) {
+    if (!isEmpty(job[key])) return job[key];
+    return privacy && !isEmpty(privacy[key]) ? privacy[key] : null;
+  }
+
+  function rawValue(field, job, privacy) {
+    if (typeof field.value === 'function') return field.value(job, privacy);
+    return field.private ? privateValue(job, privacy, field.key) : job[field.key];
+  }
+
+  function addSection(host, label) {
+    var heading = document.createElement('h3');
+    heading.className = 'cmb-job-card-title sm:col-span-2';
+    heading.textContent = label;
+    host.appendChild(heading);
+  }
+
+  function addField(host, field, value) {
+    var row = document.createElement('p');
+    row.className = (field.multiline ? 'cmb-show-desc whitespace-pre-wrap' : 'cmb-page-guide') + (field.wide ? ' sm:col-span-2' : '');
+    var label = document.createElement('strong');
+    label.className = 'font-medium text-gray-900 dark:text-white';
+    label.textContent = field.label + ': ';
+    var text = document.createElement('span');
+    text.textContent = value;
+    row.appendChild(label);
+    row.appendChild(text);
+    host.appendChild(row);
+  }
+
+  var lightboxImages = [];
+  var lightboxIndex = 0;
+  var lightboxPreviousOverflow = '';
+
+  function imageUrl(file) {
+    if (!file || typeof file !== 'object') return '';
+    return String(file.download_url || file.url || file.src || '');
+  }
+
+  function isImageFile(file) {
+    if (!file || typeof file !== 'object') return false;
+    if (file.is_image === true || file.is_image === 1 || file.is_image === '1') return true;
+    var mime = String(file.mime_type || file.mime || file.type || '').toLowerCase();
+    if (mime.indexOf('image/') === 0) return true;
+    var name = String(file.original_filename || file.filename || file.name || imageUrl(file)).split('?')[0].toLowerCase();
+    return /\.(avif|bmp|gif|jpe?g|png|svg|webp)$/.test(name);
+  }
+
+  function jobImages(job) {
+    var groups = [job.images, job.files, job.attachments, job.archives, job.deliveries];
+    var seen = {};
+    var out = [];
+    groups.forEach(function (group) {
+      if (!Array.isArray(group)) return;
+      group.forEach(function (file) {
+        var url = imageUrl(file);
+        if (!url || !isImageFile(file) || seen[url]) return;
+        seen[url] = true;
+        out.push({
+          url: url,
+          alt: String(file.original_filename || file.filename || file.name || '의뢰 이미지')
+        });
+      });
+    });
+    return out;
+  }
+
+  function ensureLightbox() {
+    var modal = document.getElementById('cmb-job-lightbox');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'cmb-job-lightbox';
+    modal.className = 'cmb-job-lightbox';
+    modal.hidden = true;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', '의뢰 이미지 보기');
+    modal.innerHTML =
+      '<button type="button" class="cmb-job-lightbox-close" aria-label="닫기">×</button>' +
+      '<button type="button" class="cmb-job-lightbox-nav is-prev" aria-label="이전 이미지">‹</button>' +
+      '<div class="cmb-job-lightbox-viewport"><div class="cmb-job-lightbox-track"></div></div>' +
+      '<button type="button" class="cmb-job-lightbox-nav is-next" aria-label="다음 이미지">›</button>' +
+      '<p class="cmb-job-lightbox-count" aria-live="polite"></p>';
+    document.body.appendChild(modal);
+    modal.querySelector('.cmb-job-lightbox-close').addEventListener('click', closeLightbox);
+    modal.querySelector('.is-prev').addEventListener('click', function () { moveLightbox(-1); });
+    modal.querySelector('.is-next').addEventListener('click', function () { moveLightbox(1); });
+    modal.addEventListener('click', function (event) {
+      if (event.target === modal) closeLightbox();
+    });
+    return modal;
+  }
+
+  function updateLightbox() {
+    var modal = document.getElementById('cmb-job-lightbox');
+    if (!modal || modal.hidden) return;
+    modal.querySelector('.cmb-job-lightbox-track').style.transform = 'translate3d(-' + (lightboxIndex * 100) + '%, 0, 0)';
+    modal.querySelector('.cmb-job-lightbox-count').textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+    modal.querySelector('.is-prev').hidden = lightboxImages.length < 2;
+    modal.querySelector('.is-next').hidden = lightboxImages.length < 2;
+  }
+
+  function moveLightbox(delta) {
+    if (lightboxImages.length < 2) return;
+    lightboxIndex = (lightboxIndex + delta + lightboxImages.length) % lightboxImages.length;
+    updateLightbox();
+  }
+
+  function openLightbox(images, index) {
+    lightboxImages = images.slice();
+    lightboxIndex = Math.max(0, Math.min(Number(index) || 0, lightboxImages.length - 1));
+    var modal = ensureLightbox();
+    var track = modal.querySelector('.cmb-job-lightbox-track');
+    track.innerHTML = '';
+    lightboxImages.forEach(function (image, idx) {
+      var slide = document.createElement('div');
+      slide.className = 'cmb-job-lightbox-slide';
+      var img = document.createElement('img');
+      img.src = image.url;
+      img.alt = image.alt;
+      img.loading = idx === lightboxIndex ? 'eager' : 'lazy';
+      slide.appendChild(img);
+      track.appendChild(slide);
+    });
+    modal.hidden = false;
+    modal.classList.add('is-open');
+    lightboxPreviousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    updateLightbox();
+    try { modal.querySelector('.cmb-job-lightbox-close').focus(); } catch (e) {}
+  }
+
+  function closeLightbox() {
+    var modal = document.getElementById('cmb-job-lightbox');
+    if (!modal || modal.hidden) return;
+    modal.classList.remove('is-open');
+    modal.hidden = true;
+    document.body.style.overflow = lightboxPreviousOverflow;
+  }
+
+  function renderGallery(host, job) {
+    if (!host) return;
+    var body = host.closest ? host.closest('.cmb-job-spec-body') : null;
+    var images = jobImages(job);
+    host.innerHTML = '';
+    if (!images.length) {
+      host.hidden = true;
+      if (body) body.classList.remove('has-gallery');
+      return;
+    }
+    host.hidden = false;
+    if (body) body.classList.add('has-gallery');
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'cmb-job-spec-gallery-button';
+    button.setAttribute('aria-label', '의뢰 이미지 ' + images.length + '장 보기');
+    var image = document.createElement('img');
+    image.src = images[0].url;
+    image.alt = images[0].alt;
+    image.loading = 'lazy';
+    button.appendChild(image);
+    if (images.length > 1) {
+      var badge = document.createElement('span');
+      badge.className = 'cmb-job-spec-gallery-count';
+      badge.textContent = '+' + (images.length - 1);
+      button.appendChild(badge);
+    }
+    button.addEventListener('click', function () { openLightbox(images, 0); });
+    host.appendChild(button);
+  }
+
+  if (!window.__cmbJobLightboxKeys) {
+    window.__cmbJobLightboxKeys = true;
+    document.addEventListener('keydown', function (event) {
+      var modal = document.getElementById('cmb-job-lightbox');
+      if (!modal || modal.hidden) return;
+      if (event.key === 'Escape') closeLightbox();
+      if (event.key === 'ArrowLeft') moveLightbox(-1);
+      if (event.key === 'ArrowRight') moveLightbox(1);
+    });
+  }
+
+  function signatureOf(value) {
+    var text;
+    var hash = 5381;
+    var i;
+    try { text = JSON.stringify(value); } catch (e) { text = String(value); }
+    for (i = 0; i < text.length; i++) hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
+    return String(hash >>> 0);
+  }
+
+  function render(host, job, viewer) {
+    var admin = /^\/admin\/maker-bids\/jobs\/\d+\/?$/.test(String(location.pathname || ''));
+    var canViewPrivate = admin || job.privacy_visible === true || !!(viewer && viewer.can_view_privacy);
+    var privacy = viewer && viewer.privacy && typeof viewer.privacy === 'object' ? viewer.privacy : {};
+    var signature = signatureOf([job.id, job.updated_at, canViewPrivate, job, privacy]);
+    if (host.getAttribute('data-cmb-job-spec-signature') === signature) return;
+    host.innerHTML = '';
+    CATALOG.forEach(function (field) {
+      if (field.section) {
+        addSection(host, field.section);
+        return;
+      }
+      if (field.applies && !field.applies(job)) return;
+      var value = field.private && !canViewPrivate ? PRIVATE : rawValue(field, job, privacy);
+      if (!(field.private && !canViewPrivate)) {
+        value = field.format ? field.format(value) : valueOrNone(value);
+      }
+      addField(host, field, value);
+    });
+    if (!canViewPrivate) {
+      var note = document.createElement('p');
+      note.className = 'cmb-hint sm:col-span-2';
+      note.textContent = '연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다.';
+      host.appendChild(note);
+    }
+    var body = host.closest ? host.closest('.cmb-job-spec-body') : null;
+    renderGallery(body && body.querySelector('[data-cmb-job-gallery]'), job);
+    host.setAttribute('data-cmb-job-spec-signature', signature);
+  }
+
+  function scan() {
+    var job = fromState(JOB_KEYS);
+    if (!job) return;
+    var viewer = fromState(VIEWER_KEYS) || unwrap(getState('viewer.data')) || unwrap(getState('viewer')) || {};
+    document.querySelectorAll('[data-cmb-job-spec]').forEach(function (host) {
+      render(host, job, viewer);
+    });
+  }
+
+  scan();
+  document.addEventListener('DOMContentLoaded', scan);
+  setTimeout(scan, 200);
+  setTimeout(scan, 800);
+  setTimeout(scan, 1600);
+  setTimeout(scan, 3200);
+  if (!window.__cmbJobSpecObs) {
+    window.__cmbJobSpecObs = new MutationObserver(scan);
+    try { window.__cmbJobSpecObs.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+  }
+})();
+
 /* cmb-pager */
 (function () {
   function qs(name) {
@@ -258,13 +644,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.6';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.7';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.6') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.7') < 0) {
         existing.href = FORM_CSS;
       }
       return;
