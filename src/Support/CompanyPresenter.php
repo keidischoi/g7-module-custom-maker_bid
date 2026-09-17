@@ -50,6 +50,8 @@ class CompanyPresenter
             $payload['rejected_reason'] = $row->rejected_reason;
             $payload['reviewed_at'] = optional($row->reviewed_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('reviewed_at');
             $payload['note'] = $row->note;
+            $payload['upload_token'] = $row->upload_token;
+            $payload['logo_files'] = self::logoFiles($row->logo_hash);
         }
 
         if ($audience === 'admin') {
@@ -57,7 +59,6 @@ class CompanyPresenter
             $payload['claim_count'] = (int) ($row->claim_count ?? 0);
             $payload['claim_history'] = CompanyRules::normalizeClaimHistory($row->claim_history);
             $payload['report_count'] = (int) ($row->report_count ?? 0);
-            $payload['upload_token'] = $row->upload_token;
         }
 
         return $payload;
@@ -99,5 +100,28 @@ class CompanyPresenter
         }
 
         return '/api/modules/custom-maker_bids/files/'.$hash;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public static function logoFiles(?string $hash): array
+    {
+        $url = self::logoUrl($hash);
+        if ($url === null || $hash === null || $hash === '') {
+            return [];
+        }
+
+        return [[
+            'id' => $hash,
+            'hash' => $hash,
+            'url' => $url,
+            'download_url' => $url,
+            'thumbnail_url' => $url,
+            'original_filename' => 'logo',
+            'is_image' => true,
+            'mime_type' => 'image/png',
+            'collection' => 'logos',
+        ]];
     }
 }

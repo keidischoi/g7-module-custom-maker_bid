@@ -24,6 +24,7 @@ class JobFileService
         string $collection,
         ?string $token = null,
         ?int $jobId = null,
+        bool $asAdmin = false,
     ): MakerJobFile {
         $collection = $this->normalizeCollection($collection);
 
@@ -38,7 +39,7 @@ class JobFileService
             $this->assertLogoDimensions($file);
         }
 
-        $job = $this->resolveJob($userId, $token, $jobId, $collection);
+        $job = $this->resolveJob($userId, $token, $jobId, $collection, $asAdmin);
         if ($collection === UploadRules::COLLECTION_LOGOS) {
             $this->replaceExistingLogos($userId, $token, $job?->id);
         }
@@ -195,14 +196,14 @@ class JobFileService
             && in_array((string) $job->status, ['awarded', 'done'], true);
     }
 
-    private function resolveJob(int $userId, ?string $token, ?int $jobId, string $collection = ''): ?MakerJob
+    private function resolveJob(int $userId, ?string $token, ?int $jobId, string $collection = '', bool $asAdmin = false): ?MakerJob
     {
         if ($jobId) {
             $job = MakerJob::query()->find($jobId);
             if (! $job) {
                 return null;
             }
-            if ((int) $job->user_id === $userId) {
+            if ($asAdmin || (int) $job->user_id === $userId) {
                 return $job;
             }
             if (UploadRules::isProtectedCollection($collection)

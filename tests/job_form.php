@@ -107,6 +107,14 @@ expectFalse('create has no has_copyright field', isset($create['has_copyright'])
 expect('audience 업체만', JobRules::normalizeAudience('업체만'), 'company');
 expect('audience 개인만', JobRules::normalizeAudience('개인만'), 'individual');
 expect('audience default all', JobRules::normalizeAudience(''), 'all');
+expect('audience 관리자', JobRules::normalizeAudience('관리자'), 'admin');
+expect('audienceLabel 관리자', JobRules::audienceLabel('admin'), '관리자');
+expectFalse('member cannot see admin-only', JobRules::canViewAudience('admin', false, false, true, false, null));
+expectTrue('admin sees admin-only', JobRules::canViewAudience('admin', false, true, true, false, null));
+expectTrue('owner sees admin-only', JobRules::canViewAudience('admin', true, false, true, false, null));
+expectTrue('admin can bid admin-only', JobRules::canBidAudience('admin', true, false, null, BidRules::ALLOW_ALL, true, false));
+expectFalse('member cannot bid admin-only', JobRules::canBidAudience('admin', true, false, null, BidRules::ALLOW_ALL, false, false));
+
 expect('list sort 최신순', JobRules::normalizeListSort('최신순'), 'latest');
 expect('list sort 등록순', JobRules::normalizeListSort('등록순'), 'created');
 expect('list sort 조회순', JobRules::normalizeListSort('조회순'), 'views');

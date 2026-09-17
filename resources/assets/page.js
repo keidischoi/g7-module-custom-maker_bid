@@ -206,6 +206,7 @@
     var v = String(raw == null ? '' : raw).toLowerCase().trim();
     if (v === 'company' || v === 'company_only' || v === '업체만' || v === '업체') return '업체만';
     if (v === 'individual' || v === 'individual_only' || v === '개인만' || v === '개인' || v === 'person') return '개인만';
+    if (v === 'admin' || v === 'admin_only' || v === '관리자' || v === '관리자만') return '관리자';
     if (v === 'all' || v === '전체' || v === '') return '전체';
     return String(raw);
   }
@@ -437,7 +438,7 @@
     { label: '회당 / 최대 수정비용', key: 'revision_cost', format: money },
     { label: '설명', key: 'description', wide: true, multiline: true },
     { label: '압축 파일', key: 'archives', format: fileNames, private: true, wide: true },
-    { section: '개인정보' },
+    { section: '개인정보', privacyCard: true },
     { label: '주문자명 또는 업체명', key: 'contact_name', private: true },
     { label: '연락처', key: 'contact_phone', private: true },
     { label: '연락 가능시간', key: 'contact_hours', private: true },
@@ -682,12 +683,20 @@
     });
   }
 
-  function renderCatalog(host, job, viewer, canViewPrivate, privacy) {
+  function renderCatalog(host, job, viewer, canViewPrivate, privacy, privacyOnly) {
+    var inPrivacy = false;
     CATALOG.forEach(function (field) {
       if (field.section) {
+        inPrivacy = !!field.privacyCard;
+        if (privacyOnly) {
+          if (inPrivacy) addSection(host, field.section);
+          return;
+        }
+        if (inPrivacy) return; // skip privacy heading in main spec
         addSection(host, field.section);
         return;
       }
+      if (privacyOnly ? !inPrivacy : inPrivacy) return;
       if (field.applies && !field.applies(job)) return;
       var value = field.private && !canViewPrivate ? PRIVATE : rawValue(field, job, privacy);
       if (!(field.private && !canViewPrivate)) {
@@ -695,6 +704,23 @@
       }
       addField(host, field, value);
     });
+  }
+
+  function renderPrivacy(host, job, viewer, canViewPrivate, privacy) {
+    if (!host) return;
+    host.innerHTML = '';
+    try {
+      renderCatalog(host, job, viewer, canViewPrivate, privacy, true);
+    } catch (err) {
+      host.innerHTML = '';
+    }
+    if (!canViewPrivate) {
+      var note = document.createElement('p');
+      note.className = 'cmb-hint sm:col-span-2';
+      note.textContent = '연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다.';
+      host.appendChild(note);
+    }
+    host.setAttribute('data-cmb-job-privacy-ready', '1');
   }
 
   function render(host, job, viewer) {
@@ -713,17 +739,13 @@
       }
       host.innerHTML = '';
       try {
-        renderCatalog(host, job, viewer, canViewPrivate, privacy);
+        renderCatalog(host, job, viewer, canViewPrivate, privacy, false);
       } catch (err) {
         host.innerHTML = '';
         renderFallback(host, job);
       }
-      if (!canViewPrivate) {
-        var note = document.createElement('p');
-        note.className = 'cmb-hint sm:col-span-2';
-        note.textContent = '연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다.';
-        host.appendChild(note);
-      }
+      var privacyHost = document.querySelector('[data-cmb-job-privacy]');
+      try { renderPrivacy(privacyHost, job, viewer, canViewPrivate, privacy); } catch (e) {}
       var body = host.closest ? host.closest('.cmb-job-spec-body') : null;
       try { renderGallery(body && body.querySelector('[data-cmb-job-gallery]'), job); } catch (e) {}
       host.setAttribute('data-cmb-job-spec-signature', signature);
@@ -1314,13 +1336,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.11';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.12';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.11') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.12') < 0) {
         existing.href = FORM_CSS;
       }
       return;

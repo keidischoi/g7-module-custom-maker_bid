@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.11';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.12';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
@@ -184,7 +184,7 @@
     var name;
     var tag;
     var val;
-    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, bid_audience_mode: 1, default_job_status: 1 };
+    var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
     for (i = 0; i < nodes.length; i++) {
       el = nodes[i];
       name = el.getAttribute('name');
@@ -875,6 +875,7 @@
       'form.includes_modeling': modeling ? '1' : '0'
     });
     syncExtVisibility(modeling);
+    syncProvidedExtOptions();
   }
 
   function loadTypes(cb) {
@@ -1018,45 +1019,86 @@
     }
   }
 
-  function audienceModeFromState() {
-    var paths = [
-      '_data.defaults.data.bid_audience_mode',
-      'defaults.data.bid_audience_mode',
-      '_local.ui.bid_audience_mode',
-      'ui.bid_audience_mode'
-    ];
-    var i, v;
-    for (i = 0; i < paths.length; i++) {
-      v = g7Get(paths[i]);
-      if (v != null && String(v).trim() !== '') {
-        return String(v).trim().toLowerCase();
-      }
-    }
-    var selectable = g7Get('_data.defaults.data.audience_selectable');
-    if (selectable === false || selectable === 0 || selectable === '0' || selectable === 'false') {
-      return 'admin_only';
-    }
-    return 'public';
-  }
-
   function syncAudienceSection() {
     var sec = document.querySelector('[data-cmb-audience-section], .cmb-audience-section, #sec_audience');
     if (!sec) {
       return;
     }
-    var show = audienceModeFromState() !== 'admin_only';
-    if (show) {
-      sec.removeAttribute('hidden');
-      sec.style.removeProperty('display');
-      sec.classList.remove('is-collapsed');
-    } else {
-      sec.setAttribute('hidden', 'hidden');
-      sec.style.display = 'none';
-      sec.classList.add('is-collapsed');
-      var map = {};
-      map[localFormKey() + '.audience'] = 'all';
-      setLocal(map);
+    sec.removeAttribute('hidden');
+    sec.style.removeProperty('display');
+    sec.classList.remove('is-collapsed');
+  }
+
+  function providedExtensionsFromState() {
+    var paths = [
+      '_data.defaults.data.provided_extensions',
+      'defaults.data.provided_extensions',
+      '_data.settings.data.general.provided_extensions',
+      'settings.data.general.provided_extensions'
+    ];
+    var i, v, list;
+    for (i = 0; i < paths.length; i++) {
+      v = g7Get(paths[i]);
+      if (Array.isArray(v) && v.length) {
+        return v.map(function (x) { return String(x).replace(/^\./, '').toUpperCase(); }).filter(Boolean);
+      }
+      if (v != null && String(v).trim() !== '') {
+        list = String(v).split(/[,\s;|]+/).map(function (x) {
+          return String(x).replace(/^\./, '').trim().toUpperCase();
+        }).filter(Boolean);
+        if (list.length) return list;
+      }
     }
+    return ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX', 'DWG'];
+  }
+
+  function extFieldKey(ext) {
+    return 'ext_' + String(ext || '').toLowerCase();
+  }
+
+  function syncProvidedExtOptions() {
+    var host = document.querySelector('#ext_row, [data-cmb-ext-row]');
+    if (!host) return;
+    var allowed = providedExtensionsFromState();
+    var allowedSet = {};
+    allowed.forEach(function (e) { allowedSet[e] = 1; });
+    EXT_KEYS = allowed.map(extFieldKey);
+    var existing = {};
+    host.querySelectorAll('label, [data-cmb-ext-wrap]').forEach(function (wrap) {
+      var input = wrap.querySelector('input[type="checkbox"], input[name^="ext_"]');
+      var name = input && input.getAttribute('name');
+      var label = (wrap.textContent || '').trim().toUpperCase();
+      var ext = name && name.indexOf('ext_') === 0 ? name.slice(4).toUpperCase() : label.split(/\s+/)[0];
+      if (!ext) return;
+      existing[ext] = wrap;
+      if (allowedSet[ext]) {
+        wrap.style.removeProperty('display');
+        wrap.removeAttribute('hidden');
+      } else {
+        wrap.style.display = 'none';
+        wrap.setAttribute('hidden', 'hidden');
+        if (input) {
+          try { input.checked = false; } catch (e) {}
+        }
+      }
+    });
+    allowed.forEach(function (ext) {
+      if (existing[ext]) return;
+      var key = extFieldKey(ext);
+      var label = document.createElement('label');
+      label.className = 'cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer';
+      label.setAttribute('data-cmb-ext-wrap', ext);
+      var input = document.createElement('input');
+      input.type = 'checkbox';
+      input.className = 'cmb-order-check';
+      input.name = key;
+      var span = document.createElement('span');
+      span.className = 'cmb-order-check-text';
+      span.textContent = ext;
+      label.appendChild(input);
+      label.appendChild(span);
+      host.appendChild(label);
+    });
   }
 
   function bindCondToggles() {
@@ -1656,6 +1698,7 @@
     bindDaytime();
     bindCondToggles();
     syncAudienceSection();
+    syncProvidedExtOptions();
     bindProfileName();
     bindProfileFill();
     bindTypeSelect();
@@ -1673,8 +1716,8 @@
   setTimeout(bind, 300);
   setTimeout(bind, 1000);
   setTimeout(bind, 2500);
-  setTimeout(syncAudienceSection, 400);
-  setTimeout(syncAudienceSection, 1200);
-  setTimeout(syncAudienceSection, 2500);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 400);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 1200);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 2500);
 })();
 

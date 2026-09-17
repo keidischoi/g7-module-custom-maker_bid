@@ -93,7 +93,7 @@
           "handler": "setState",
           "params": {
             "target": "local",
-            "company.upload_token": "{{response.data.upload_token || _local.company.upload_token}}"
+            "company.upload_token": "{{response.data.upload_token || _local.company.upload_token || defaults.data.upload_token}}"
           }
         }
       ]
@@ -445,7 +445,8 @@
                     "collection": "logos",
                     "token": "{{_local.company.upload_token || defaults.data.upload_token}}",
                     "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
-                  }
+                  },
+                  "initialFiles": "{{company.data.logo_files || (company.data.logo_url ? [{ id: company.data.logo_hash, hash: company.data.logo_hash, url: company.data.logo_url, download_url: company.data.logo_url, thumbnail_url: company.data.logo_url, original_filename: 'logo', is_image: true }] : [])}}"
                 }
               },
               {

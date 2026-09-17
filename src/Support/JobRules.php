@@ -19,7 +19,7 @@ class JobRules
 
     public const HIDDEN_PUBLIC_STATUSES = ['hold', 'draft'];
 
-    public const AUDIENCES = ['all', 'company', 'individual'];
+    public const AUDIENCES = ['all', 'company', 'individual', 'admin'];
 
     /** Public list sort: latest=최신순, created=등록순, views=조회순 */
     public const LIST_SORT_LATEST = 'latest';
@@ -67,8 +67,8 @@ class JobRules
             'size_d' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'size_h' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'sizes' => ['nullable'],
-            'provided_extensions' => ['nullable', 'array'],
-            'provided_extensions.*' => ['string', 'in:'.implode(',', UploadRules::PROVIDED_EXTENSIONS)],
+            'provided_extensions' => ['nullable'],
+            'provided_extensions.*' => ['string', 'max:16'],
             'ownership_requested' => ['nullable', 'boolean'],
             'revision_enabled' => ['nullable', 'boolean'],
             'revision_count' => ['nullable', 'integer', 'min:0', 'max:99', 'required_if:revision_enabled,1', 'required_if:revision_enabled,true'],
@@ -178,6 +178,9 @@ class JobRules
         if (in_array($value, ['individual', 'individual_only', '개인만', '개인', 'person'], true)) {
             return 'individual';
         }
+        if (in_array($value, ['admin', 'admin_only', 'admins', '관리자', '관리자만'], true)) {
+            return 'admin';
+        }
 
         return 'all';
     }
@@ -187,6 +190,7 @@ class JobRules
         return match (self::normalizeAudience($audience)) {
             'company' => '업체만',
             'individual' => '개인만',
+            'admin' => '관리자',
             default => '전체',
         };
     }
@@ -233,9 +237,14 @@ class JobRules
         if ($isOwner || $isAdmin) {
             return true;
         }
+        $scope = self::normalizeAudience($audience);
+        // 관리자 공개: only owner/admin may view (owner/admin already returned).
+        if ($scope === 'admin') {
+            return false;
+        }
 
         return in_array(
-            self::normalizeAudience($audience),
+            $scope,
             self::visibleAudiencesFor($isMember, $hasApprovedCompany, $companyKind),
             true,
         );
@@ -250,6 +259,11 @@ class JobRules
         bool $isAdmin = false,
         bool $isDesignated = false,
     ): bool {
+        $scope = self::normalizeAudience($audience);
+        // Job audience 관리자: only admins may bid (matches 관리자만 / BidRules::ALLOW_ADMIN intent).
+        if ($scope === 'admin') {
+            return $isAdmin;
+        }
         if (! BidRules::canBid($isMember, $hasApprovedCompany, $allowMode, $isAdmin, $companyKind, $isDesignated)) {
             return false;
         }
@@ -258,7 +272,6 @@ class JobRules
             return true;
         }
         $role = self::viewerRole($isMember, $hasApprovedCompany, $companyKind);
-        $scope = self::normalizeAudience($audience);
         if ($scope === 'company') {
             return $role === 'company';
         }
@@ -562,21 +575,23 @@ class JobRules
      * @param  array<string, mixed>  $payload
      * @return list<string>
      */
-    public static function collectProvidedExtensions(array $payload): array
+    /**
+     * @param  list<string>|null  $allowed
+     * @return list<string>
+     */
+    public static function collectProvidedExtensions(array $payload, ?array $allowed = null): array
     {
-        $fromArray = UploadRules::normalizeProvidedExtensions($payload['provided_extensions'] ?? null);
-        $map = [
-            'ext_stl' => 'STL',
-            'ext_3mf' => '3MF',
-            'ext_obj' => 'OBJ',
-            'ext_step' => 'STEP',
-            'ext_stp' => 'STP',
-            'ext_gcode' => 'GCODE',
-            'ext_fbx' => 'FBX',
-            'ext_dwg' => 'DWG',
-        ];
-        foreach ($map as $key => $ext) {
-            if (! empty($payload[$key]) && ! in_array($ext, $fromArray, true)) {
+        $allowed = $allowed ?? UploadRules::PROVIDED_EXTENSIONS;
+        $fromArray = UploadRules::normalizeProvidedExtensions($payload['provided_extensions'] ?? null, $allowed);
+        foreach ($payload as $key => $value) {
+            if (! is_string($key) || ! str_starts_with($key, 'ext_') || empty($value)) {
+                continue;
+            }
+            $ext = strtoupper(substr($key, 4));
+            if ($ext === '' || ! UploadRules::isAllowedProvidedExtension($ext, $allowed)) {
+                continue;
+            }
+            if (! in_array($ext, $fromArray, true)) {
                 $fromArray[] = $ext;
             }
         }

@@ -4,6 +4,24 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.12] - 2026-09-18
+
+### Added
+- 의뢰 **공개 설정**에 **관리자** 옵션 (`audience=admin`). 작성자·관리자만 열람, **관리자만 입찰** (기존 `BidRules::ALLOW_ADMIN` / 「관리자만」과 동일 취지). 목록에서는 비관리자에게 숨김(본인 의뢰 제외).
+- 관리자 설정 **제공 확장자** (`general.provided_extensions` CSV). 의뢰 폼·명세 체크 목록이 이 설정을 사용 (기본 STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG). PDF 등 추가 가능.
+- 관리자 **의뢰 수정** 이미지 업로드(FileUploader, 기존 job files API). 관리자는 타인 의뢰 파일 업로드·삭제 가능.
+- 관리자 **업체 수정**·회원 **입찰자 등록/수정** 로고 업로드 보강 (`logo_files` · `upload_token` 보장).
+
+### Changed
+- 관리자 설정 **기본 입찰 공개 설정** (`bid_audience_mode`) 제거. 의뢰 폼 공개 설정은 항상 표시. 플랫폼 전역 **입찰 허용 권한** (`bid_allow`)은 유지.
+- 의뢰 상세 **개인정보**를 의뢰 명세 그리드에서 분리해 별도 `cmb-section-card` / `cmb-privacy-card`로 표시 (마스킹 규칙 동일: 본인·관리자·낙찰자).
+
+### Fixed
+- 0.10.11 명세 키/입찰 권한 라벨 매핑 유지.
+
+### Meta
+- 버전·캐시 버스트 **0.10.12**.
+
 ## [0.10.11] - 2026-09-18
 
 ### Fixed

@@ -209,7 +209,7 @@
                 "props": {
                   "className": "cmb-admin-muted"
                 },
-                "text": "의뢰서 전체 항목입니다. 관리자는 개인정보를 포함해 확인할 수 있습니다."
+                "text": "의뢰서 전체 공개 항목입니다. 개인정보는 아래 별도 카드에서 확인할 수 있습니다."
               },
               {
                 "id": "spec_body",
@@ -250,6 +250,55 @@
                       "hidden": true,
                       "aria-label": "의뢰 이미지"
                     }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "privacy_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-admin-card cmb-privacy-card space-y-2 mt-3"
+            },
+            "children": [
+              {
+                "id": "privacy_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-admin-card-title"
+                },
+                "text": "개인정보"
+              },
+              {
+                "id": "privacy_guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-muted"
+                },
+                "text": "관리자는 연락처·배송지·담당자를 항상 열람할 수 있습니다."
+              },
+              {
+                "id": "privacy_grid",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-spec grid gap-2 sm:grid-cols-2 text-sm",
+                  "data-cmb-job-privacy": "1",
+                  "aria-live": "polite"
+                },
+                "children": [
+                  {
+                    "id": "privacy_loading",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-muted sm:col-span-2"
+                    },
+                    "text": "개인정보를 불러오는 중입니다."
                   }
                 ]
               }
@@ -641,6 +690,10 @@
                                 {
                                   "value": "individual",
                                   "label": "개인만"
+                                },
+                                {
+                                  "value": "admin",
+                                  "label": "관리자"
                                 }
                               ]
                             },
@@ -1532,6 +1585,50 @@
                     ]
                   },
                   {
+                    "id": "img_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "이미지"
+                  },
+                  {
+                    "id": "cmb_admin_images_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "images",
+                      "maxFiles": 10,
+                      "maxSize": 10,
+                      "accept": ".jpg,.jpeg,.png,.gif,.webp",
+                      "autoUpload": true,
+                      "className": "cmb-order-uploader mt-1",
+                      "uploadTriggerEvent": "upload:maker_bids_admin_images",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "images",
+                        "token": "{{_local.form.upload_token || job.data.upload_token || ''}}",
+                        "upload_token": "{{_local.form.upload_token || job.data.upload_token || ''}}"
+                      },
+                      "initialFiles": "{{job.data.images || []}}"
+                    },
+                    "actions": [
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
                     "id": "esave",
                     "type": "basic",
                     "name": "Button",
@@ -1540,6 +1637,13 @@
                       "className": "px-4 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
                     },
                     "actions": [
+                      {
+                        "type": "click",
+                        "handler": "fireEvent",
+                        "params": {
+                          "event": "upload:maker_bids_admin_images"
+                        }
+                      },
                       {
                         "type": "click",
                         "handler": "apiCall",
