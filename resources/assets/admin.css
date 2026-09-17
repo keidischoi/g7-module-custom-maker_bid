@@ -4,14 +4,15 @@
    content-sized triggers), not reliably native input/select. */
 
 .cmb-admin {
-  --cmb-admin-fg: rgb(17 24 39);
-  --cmb-admin-muted: rgb(107 114 128);
-  --cmb-admin-border: rgb(209 213 219);
-  --cmb-admin-row-border: rgb(156 163 175);
-  --cmb-admin-card: rgb(255 255 255);
-  --cmb-admin-row: rgb(255 255 255);
-  --cmb-admin-check: rgb(17 24 39);
-  --cmb-admin-control: rgb(255 255 255);
+  /* Admin chrome always matches public dark translucent cards — never solid #fff. */
+  --cmb-admin-fg: #e5e7eb;
+  --cmb-admin-muted: rgb(156 163 175);
+  --cmb-admin-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-row-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-card: rgba(255, 255, 255, 0.08);
+  --cmb-admin-row: rgba(255, 255, 255, 0.06);
+  --cmb-admin-check: #e5e7eb;
+  --cmb-admin-control: rgba(255, 255, 255, 0.06);
   box-sizing: border-box;
   display: flex !important;
   flex-direction: column !important;
@@ -22,16 +23,19 @@
 }
 
 html.dark .cmb-admin,
-.dark .cmb-admin {
-  --cmb-admin-fg: rgb(243 244 246);
+.dark .cmb-admin,
+html[data-theme="dark"] .cmb-admin,
+html.cmb-dark-boot .cmb-admin,
+html.cmb-admin-dark .cmb-admin {
+  --cmb-admin-fg: #e5e7eb;
   --cmb-admin-muted: rgb(156 163 175);
-  /* Visible boxes on dark admin chrome (same idea as public cmb-list-item). */
-  --cmb-admin-border: rgb(148 163 184);
-  --cmb-admin-row-border: rgba(255, 255, 255, 0.16);
-  --cmb-admin-card: rgb(30 41 59);
+  /* Match public translucent cards — never solid white/#fff. */
+  --cmb-admin-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-row-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-card: rgba(255, 255, 255, 0.08);
   --cmb-admin-row: rgba(255, 255, 255, 0.06);
-  --cmb-admin-check: rgb(243 244 246);
-  --cmb-admin-control: rgb(15 23 42);
+  --cmb-admin-check: #e5e7eb;
+  --cmb-admin-control: rgba(255, 255, 255, 0.06);
 }
 
 .cmb-admin *,
@@ -53,8 +57,9 @@ html.dark .cmb-admin,
   gap: 0.25rem;
   padding: 0.35rem;
   border-radius: 0.75rem;
-  border: 1px solid var(--cmb-admin-border);
-  background: var(--cmb-admin-card);
+  border: 1px solid var(--cmb-admin-border) !important;
+  background: var(--cmb-admin-card) !important;
+  background-color: var(--cmb-admin-card) !important;
 }
 
 .cmb-admin-nav a {
@@ -69,8 +74,11 @@ html.dark .cmb-admin,
 }
 
 html.dark .cmb-admin-nav a:hover,
-.dark .cmb-admin-nav a:hover {
-  background: rgb(51 65 85);
+.dark .cmb-admin-nav a:hover,
+html[data-theme="dark"] .cmb-admin-nav a:hover,
+html.cmb-dark-boot .cmb-admin-nav a:hover,
+html.cmb-admin-dark .cmb-admin-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .cmb-admin-lead {
@@ -83,21 +91,34 @@ html.dark .cmb-admin-nav a:hover,
 }
 
 .cmb-admin-card {
-  border: 1px solid var(--cmb-admin-border);
-  border-radius: 0.75rem;
-  background: var(--cmb-admin-card);
+  border: 1px solid var(--cmb-admin-border) !important;
+  border-radius: 1rem;
+  background: var(--cmb-admin-card) !important;
+  background-color: var(--cmb-admin-card) !important;
   padding: 1rem 1.1rem;
   width: 100% !important;
   max-width: none !important;
+  color: var(--cmb-admin-fg);
 }
 
 html.dark .cmb-admin-card,
 .dark .cmb-admin-card,
+html[data-theme="dark"] .cmb-admin-card,
+html.cmb-dark-boot .cmb-admin-card,
+html.cmb-admin-dark .cmb-admin-card,
 html.dark .cmb-admin-filter,
 .dark .cmb-admin-filter,
+html[data-theme="dark"] .cmb-admin-filter,
+html.cmb-dark-boot .cmb-admin-filter,
+html.cmb-admin-dark .cmb-admin-filter,
 html.dark .cmb-admin-nav,
-.dark .cmb-admin-nav {
-  border-color: rgb(107 114 128);
+.dark .cmb-admin-nav,
+html[data-theme="dark"] .cmb-admin-nav,
+html.cmb-dark-boot .cmb-admin-nav,
+html.cmb-admin-dark .cmb-admin-nav {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #e5e7eb;
 }
 
 .cmb-admin-card-title {
@@ -329,10 +350,13 @@ html.dark .cmb-admin-nav,
 }
 
 html.dark .cmb-admin-check-label,
-.dark .cmb-admin-check-label {
-  background: rgb(31 41 55);
-  border-color: rgb(75 85 99);
-  color: rgb(249 250 251) !important;
+.dark .cmb-admin-check-label,
+html[data-theme="dark"] .cmb-admin-check-label,
+html.cmb-dark-boot .cmb-admin-check-label,
+html.cmb-admin-dark .cmb-admin-check-label {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e5e7eb !important;
 }
 
 .cmb-admin-check-text {
@@ -342,8 +366,11 @@ html.dark .cmb-admin-check-label,
 }
 
 html.dark .cmb-admin-check-text,
-.dark .cmb-admin-check-text {
-  color: rgb(249 250 251) !important;
+.dark .cmb-admin-check-text,
+html[data-theme="dark"] .cmb-admin-check-text,
+html.cmb-dark-boot .cmb-admin-check-text,
+html.cmb-admin-dark .cmb-admin-check-text {
+  color: #e5e7eb !important;
 }
 
 .cmb-admin-check-label input[type="checkbox"],
@@ -375,20 +402,40 @@ html.dark .cmb-admin-check-text,
   justify-content: space-between !important;
   gap: 0.75rem 1.15rem;
   padding: 1rem 1.15rem;
-  border: 1px solid var(--cmb-admin-row-border);
-  border-radius: 0.75rem;
-  background: var(--cmb-admin-row);
+  border: 1px solid var(--cmb-admin-row-border) !important;
+  border-radius: 1rem;
+  background: var(--cmb-admin-row) !important;
+  background-color: var(--cmb-admin-row) !important;
   width: 100% !important;
   max-width: none !important;
   align-self: stretch !important;
+  color: var(--cmb-admin-fg);
 }
 
 html.dark .cmb-admin-row,
 .dark .cmb-admin-row,
+html[data-theme="dark"] .cmb-admin-row,
+html.cmb-dark-boot .cmb-admin-row,
+html.cmb-admin-dark .cmb-admin-row,
 html.dark .cmb-admin-list-item,
-.dark .cmb-admin-list-item {
+.dark .cmb-admin-list-item,
+html[data-theme="dark"] .cmb-admin-list-item,
+html.cmb-dark-boot .cmb-admin-list-item,
+html.cmb-admin-dark .cmb-admin-list-item,
+html.dark .cmb-admin .cmb-list-item,
+.dark .cmb-admin .cmb-list-item,
+html[data-theme="dark"] .cmb-admin .cmb-list-item,
+html.cmb-dark-boot .cmb-admin .cmb-list-item,
+html.cmb-admin-dark .cmb-admin .cmb-list-item,
+html.dark .cmb-admin .cmb-section-card,
+.dark .cmb-admin .cmb-section-card,
+html[data-theme="dark"] .cmb-admin .cmb-section-card,
+html.cmb-dark-boot .cmb-admin .cmb-section-card,
+html.cmb-admin-dark .cmb-admin .cmb-section-card {
   background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 1rem;
+  color: #e5e7eb;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 2px rgb(0 0 0 / 0.35);
 }
 
@@ -616,7 +663,23 @@ html.cmb-admin-ui [data-slot="select-item"],
 /* Explicit list card class (admin.js adds cmb-list-item / cmb-admin-list-item). */
 .cmb-admin-list-item.cmb-admin-row,
 .cmb-admin-row.cmb-list-item {
-  border-radius: 0.75rem;
+  border-radius: 1rem;
+}
+
+/* Stronger section panels (filter bars / form cards) on dark */
+html.dark .cmb-admin-card.cmb-admin-filter,
+.dark .cmb-admin-card.cmb-admin-filter,
+html[data-theme="dark"] .cmb-admin-card.cmb-admin-filter,
+html.cmb-dark-boot .cmb-admin-card.cmb-admin-filter,
+html.cmb-admin-dark .cmb-admin-card.cmb-admin-filter,
+html.dark .cmb-admin-nav,
+.dark .cmb-admin-nav,
+html[data-theme="dark"] .cmb-admin-nav,
+html.cmb-dark-boot .cmb-admin-nav,
+html.cmb-admin-dark .cmb-admin-nav {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 1rem;
 }
 
 /* Approve / Hold / Reject — filled defaults; .is-active = current status */
@@ -650,24 +713,42 @@ html.cmb-admin-ui [data-slot="select-item"],
 
 html.dark .cmb-admin .cmb-btn-approve,
 .dark .cmb-admin .cmb-btn-approve,
+html[data-theme="dark"] .cmb-admin .cmb-btn-approve,
+html.cmb-dark-boot .cmb-admin .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve,
 html.dark .cmb-btn-approve,
-.dark .cmb-btn-approve {
+.dark .cmb-btn-approve,
+html[data-theme="dark"] .cmb-btn-approve,
+html.cmb-dark-boot .cmb-btn-approve,
+html.cmb-admin-dark .cmb-btn-approve {
   background: rgba(5, 150, 105, 0.28) !important;
   color: rgb(167 243 208) !important;
   border-color: rgba(52, 211, 153, 0.55) !important;
 }
 html.dark .cmb-admin .cmb-btn-hold,
 .dark .cmb-admin .cmb-btn-hold,
+html[data-theme="dark"] .cmb-admin .cmb-btn-hold,
+html.cmb-dark-boot .cmb-admin .cmb-btn-hold,
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold,
 html.dark .cmb-btn-hold,
-.dark .cmb-btn-hold {
+.dark .cmb-btn-hold,
+html[data-theme="dark"] .cmb-btn-hold,
+html.cmb-dark-boot .cmb-btn-hold,
+html.cmb-admin-dark .cmb-btn-hold {
   background: rgba(217, 119, 6, 0.28) !important;
   color: rgb(253 230 138) !important;
   border-color: rgba(251, 191, 36, 0.55) !important;
 }
 html.dark .cmb-admin .cmb-btn-reject,
 .dark .cmb-admin .cmb-btn-reject,
+html[data-theme="dark"] .cmb-admin .cmb-btn-reject,
+html.cmb-dark-boot .cmb-admin .cmb-btn-reject,
+html.cmb-admin-dark .cmb-admin .cmb-btn-reject,
 html.dark .cmb-btn-reject,
-.dark .cmb-btn-reject {
+.dark .cmb-btn-reject,
+html[data-theme="dark"] .cmb-btn-reject,
+html.cmb-dark-boot .cmb-btn-reject,
+html.cmb-admin-dark .cmb-btn-reject {
   background: rgba(220, 38, 38, 0.28) !important;
   color: rgb(254 202 202) !important;
   border-color: rgba(252, 165, 165, 0.55) !important;
@@ -722,4 +803,93 @@ html.dark .cmb-btn-reject,
   .cmb-admin-filter {
     flex-wrap: wrap !important;
   }
+}
+
+/* ===== 0.10.8: force dark translucent surfaces (host/Tailwind bg-white loses) =====
+   Admin pages sit on dark shop chrome. Do NOT gate on html.dark — host often
+   injects bg-white / bg-card / bg-background on Div wrappers. */
+.cmb-admin-card,
+.cmb-admin-nav,
+.cmb-admin-row,
+.cmb-admin-list-item,
+.cmb-admin .cmb-list-item,
+.cmb-admin .cmb-section-card,
+.cmb-admin-card.cmb-admin-filter,
+html.cmb-admin-ui .cmb-admin-card,
+html.cmb-admin-ui .cmb-admin-nav,
+html.cmb-admin-ui .cmb-admin-row,
+html.cmb-admin-ui .cmb-admin-list-item,
+html.cmb-admin-ui .cmb-admin .cmb-list-item,
+html.cmb-admin-ui .cmb-admin .cmb-section-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+.cmb-admin-card,
+.cmb-admin-nav,
+.cmb-admin-card.cmb-admin-filter,
+html.cmb-admin-ui .cmb-admin-card,
+html.cmb-admin-ui .cmb-admin-nav,
+html.cmb-admin-ui .cmb-admin-card.cmb-admin-filter {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Host utilities that paint solid white on our cards/rows */
+.cmb-admin-card.bg-white,
+.cmb-admin-card.bg-card,
+.cmb-admin-card.bg-background,
+.cmb-admin-card.bg-gray-50,
+.cmb-admin-card.bg-gray-100,
+.cmb-admin-row.bg-white,
+.cmb-admin-row.bg-card,
+.cmb-admin-row.bg-background,
+.cmb-admin-row.bg-gray-50,
+.cmb-admin-row.bg-gray-100,
+.cmb-admin-nav.bg-white,
+.cmb-admin-nav.bg-card,
+.cmb-admin-nav.bg-background,
+.cmb-admin .cmb-section-card.bg-white,
+.cmb-admin .cmb-section-card.bg-card,
+.cmb-admin .cmb-section-card.bg-background,
+.cmb-admin .cmb-list-item.bg-white,
+.cmb-admin .cmb-list-item.bg-card,
+.cmb-admin .cmb-list-item.bg-background,
+.cmb-admin-list-item.bg-white,
+.cmb-admin-list-item.bg-card,
+.cmb-admin-list-item.bg-background,
+.cmb-admin .bg-white.cmb-admin-card,
+.cmb-admin .bg-white.cmb-admin-row,
+.cmb-admin .bg-card.cmb-admin-card,
+.cmb-admin .bg-card.cmb-admin-row,
+.cmb-admin .bg-background.cmb-admin-card,
+.cmb-admin .bg-background.cmb-admin-row {
+  background: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.cmb-admin-card.bg-white,
+.cmb-admin-card.bg-card,
+.cmb-admin-card.bg-background,
+.cmb-admin-nav.bg-white,
+.cmb-admin-nav.bg-card,
+.cmb-admin-nav.bg-background,
+.cmb-admin-card.cmb-admin-filter.bg-white,
+.cmb-admin-card.cmb-admin-filter.bg-card,
+.cmb-admin-card.cmb-admin-filter.bg-background {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Check chips + muted hover stay translucent, not gray-50 paper */
+.cmb-admin-check-label {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #e5e7eb !important;
+}
+.cmb-admin-nav a:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
 }

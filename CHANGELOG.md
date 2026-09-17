@@ -4,6 +4,34 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.8] - 2026-09-17
+
+### Fixed
+- **관리자 흰 박스 강제 제거**: `.cmb-admin-card` / `.cmb-admin-row` / `.cmb-admin-nav` / filter·settings·ops 패널이 호스트 `bg-white`/`bg-card`/`bg-background`에 밀려 다시 흰색이 되던 문제를 수정. `html.dark` 감지에 의존하지 않고 관리자 표면을 항상 `rgba(255,255,255,0.06~0.08)` + `border rgba(…,0.12)` + 밝은 텍스트로 `!important` 강제. `admin.js`는 `.cmb-admin` 존재 시 `cmb-admin-dark`를 무조건 켜고 런타임 CSS로 호스트 유틸을 덮어씀.
+- 공개 페이지도 `html.cmb-dark-boot`에서 `.cmb-section-card`/`.cmb-list-item` 흰 폴백을 반투명 카드로 덮음.
+
+### Changed
+- 버전·캐시 버스트 **0.10.8**.
+
+## [0.10.7] - 2026-09-17
+
+### Fixed
+- **의뢰 상세 명세 누락**: 공개·관리자 의뢰 상세의 `의뢰 명세`가 의뢰 유형별 전체 의뢰서 필드를 렌더링하며, 값이 비어 있어도 항목을 생략하지 않고 `해당없음`으로 표시. 설명은 제목 영역의 별도 `의뢰 내용` 카드에서 제거하고 명세에만 표시.
+- 연락처·배송지·담당자와 비공개 압축 파일은 기존과 동일하게 의뢰인·관리자·낙찰자에게만 실제 값을 표시하고, 그 외에는 `비공개`로 마스킹.
+- **의뢰 명세 이미지**: 이미지 첨부가 있을 때만 명세 오른쪽에 대표 썸네일(+N 배지)을 표시하고, 클릭 시 이전/다음·키보드 이동이 되는 슬라이드 라이트박스로 탐색. 없으면 자리를 비움.
+- **금액 천단위 구분**: 예산·입찰 금액 표시에 한국어 천단위 콤마(`100,000원`)를 적용. `amount_label`/`budget_label` 및 공통 `CMB.formatMoney` 사용.
+
+### Changed
+- 버전·캐시 버스트 **0.10.7**.
+
+## [0.10.6] - 2026-09-17
+
+### Fixed
+- **관리자 다크 테마 흰 박스**: 의뢰 목록 행·필터 카드·운영(신고 종결) 폼 등 컨테이너가 `white`/`#fff`/`rgb(255…)`로 남던 문제를 수정. `html.dark`뿐 아니라 `data-theme="dark"` / `cmb-dark-boot` / 런타임 `cmb-admin-dark`(밝기 감지)에서도 `rgba(255,255,255,0.06~0.08)` 반투명 표면·`0.12` 테두리·`1rem` 라운드를 강제. `form.css`의 `.cmb-list-item`/`.cmb-section-card` 화이트 폴백이 관리자(`.cmb-page` 없음)에 먹히지 않게 덮어씀.
+
+### Changed
+- 버전·캐시 버스트 **0.10.6**.
+
 ## [0.10.5] - 2026-09-17
 
 ### Added

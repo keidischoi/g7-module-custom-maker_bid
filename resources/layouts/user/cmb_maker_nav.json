@@ -7,7 +7,7 @@
   "failOnError": false,
   "scripts": [
     {
-      "src": "/api/modules/custom-maker_bids/assets/nav.js?v=0.10.5",
+      "src": "/api/modules/custom-maker_bids/assets/nav.js?v=0.10.8",
       "async": false,
       "optional": true,
       "required": false,

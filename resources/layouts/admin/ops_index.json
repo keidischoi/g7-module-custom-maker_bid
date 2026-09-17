@@ -476,7 +476,7 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-section-card mt-4"
+              "className": "cmb-admin-card mt-4 space-y-2"
             },
             "children": [
               {
