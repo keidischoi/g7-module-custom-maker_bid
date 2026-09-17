@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.14';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.14';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.14';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.14';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.14';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.14';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.15';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.15';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.15';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.15';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.15';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.15';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
@@ -76,7 +76,8 @@ class UserMenuListener implements HookListenerInterface
             ];
             if (in_array($name, $publicLayouts, true)) {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
-                $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+                $styles = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+                $layout['styles'] = $this->preferStyleFirst($styles, 'cmb_maker_form_css');
             }
             if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show'], true)) {
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
@@ -298,6 +299,31 @@ class UserMenuListener implements HookListenerInterface
         return $nodes;
     }
 
+
+    /**
+     * Move a stylesheet to the front of the list so critical CSS paints sooner.
+     *
+     * @param  list<array<string, mixed>>  $styles
+     * @return list<array<string, mixed>>
+     */
+    private function preferStyleFirst(array $styles, string $id): array
+    {
+        $picked = null;
+        $rest = [];
+        foreach ($styles as $style) {
+            if (is_array($style) && ($style['id'] ?? '') === $id) {
+                $picked = $style;
+                continue;
+            }
+            $rest[] = $style;
+        }
+        if ($picked === null) {
+            return $styles;
+        }
+
+        return array_values(array_merge([$picked], $rest));
+    }
+
     private function upsertScript(array $scripts, string $id, string $src): array
     {
         $found = false;
@@ -308,14 +334,18 @@ class UserMenuListener implements HookListenerInterface
             'cmb_maker_admin_js' => 'custom-maker_bids/assets/admin.js',
         ];
         $needle = $needles[$id] ?? $id;
+        // nav.js boot CSS must run early to kill white FOUC — keep it sync.
+        $async = $id !== 'cmb_maker_nav';
         foreach ($scripts as $i => $script) {
             if (is_array($script) && (($script['id'] ?? '') === $id || str_contains((string) ($script['src'] ?? ''), $needle))) {
+                $scripts[$i]['id'] = $id;
                 $scripts[$i]['src'] = $src;
+                $scripts[$i]['async'] = $async;
                 $found = true;
             }
         }
         if (! $found) {
-            $scripts[] = ['id' => $id, 'src' => $src, 'async' => true, 'optional' => true, 'required' => false, 'failOnError' => false, 'onError' => ['handler' => 'suppress']];
+            $scripts[] = ['id' => $id, 'src' => $src, 'async' => $async, 'optional' => true, 'required' => false, 'failOnError' => false, 'onError' => ['handler' => 'suppress']];
         }
         return $scripts;
     }

@@ -1,3 +1,15 @@
+/* Critical: kill white FOUC on dark shop chrome before theme CSS paints.
+   Matches gray-900 / shop --background fallbacks used by .cmb-page. */
+html.dark,
+html.dark body,
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html.cmb-dark-boot,
+html.cmb-dark-boot body {
+  background-color: var(--background, var(--color-background, rgb(17 24 39)));
+  color-scheme: dark;
+}
+
 /* Theme-aware 주문서 card. Uses shop CSS variables when present
    (--color-card / --card / --background …) and G7 dark gray fallbacks
    so the form matches navy shop chrome instead of a paper-white sheet. */
