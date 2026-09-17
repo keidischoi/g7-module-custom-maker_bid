@@ -81,25 +81,29 @@ class MakerJobFile extends Model
             $expiresStr = null;
         }
 
-        return [
+        $name = (string) $this->original_filename;
+        $base = UploadRules::toUploaderFile([
             'id' => (int) $this->id,
             'hash' => (string) $this->hash,
-            'original_filename' => (string) $this->original_filename,
+            'original_filename' => $name,
             'mime_type' => (string) ($this->mime_type ?: ($isImage ? 'image/png' : 'application/octet-stream')),
             'size' => $size,
-            'size_formatted' => self::formatSize($size),
             'collection' => (string) $this->collection,
             'order' => (int) $this->sort_order,
             'download_url' => $url,
             'url' => $url,
             'thumbnail_url' => ($isImage && ! $expired) ? $url : '',
             'is_image' => $isImage,
+        ]);
+
+        return array_merge($base, [
+            'size_formatted' => self::formatSize($size),
             'is_expired' => $expired,
             'is_purged' => $this->isPurged(),
             'expires_at' => $expiresStr,
             'meta' => [],
             'job_id' => $this->job_id,
-        ];
+        ]);
     }
 
     /**

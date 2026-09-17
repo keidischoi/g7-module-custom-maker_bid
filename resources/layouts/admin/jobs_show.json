@@ -79,7 +79,8 @@
       "manager_email": "",
       "upload_token": "",
       "image_files": [],
-      "archive_files": []
+      "archive_files": [],
+      "files_ready": false
     }
   },
   "data_sources": [
@@ -135,7 +136,8 @@
             "form.manager_email": "{{response.data.manager_email || job.data.manager_email || ''}}",
             "form.upload_token": "{{response.data.upload_token || job.data.upload_token || ''}}",
             "form.image_files": "{{response.data.images || job.data.images || []}}",
-            "form.archive_files": "{{response.data.archives || job.data.archives || []}}"
+            "form.archive_files": "{{response.data.archives || job.data.archives || []}}",
+            "form.files_ready": true
           }
         }
       ]
@@ -1632,7 +1634,8 @@
                           "message": "{{$args[0]}}"
                         }
                       }
-                    ]
+                    ],
+                    "if": "{{_local.form.files_ready}}"
                   },
                   {
                     "id": "arch_l",
@@ -1676,7 +1679,8 @@
                           "message": "{{$args[0]}}"
                         }
                       }
-                    ]
+                    ],
+                    "if": "{{_local.form.files_ready}}"
                   },
                   {
                     "id": "esave",

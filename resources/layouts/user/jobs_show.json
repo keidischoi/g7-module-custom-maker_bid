@@ -84,7 +84,7 @@
       "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/compare",
       "method": "GET",
       "auto_fetch": true,
-      "auth_required": true,
+      "auth_mode": "optional",
       "errorHandling": {
         "401": {
           "handler": "suppress"
@@ -577,7 +577,7 @@
                   {
                     "type": "click",
                     "handler": "apiCall",
-                    "auth_required": true,
+                    "auth_mode": "optional",
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
                     "params": {
                       "method": "POST",
@@ -751,7 +751,7 @@
                               {
                                 "type": "click",
                                 "handler": "apiCall",
-                                "auth_required": true,
+                                "auth_mode": "optional",
                                 "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
                                 "params": {
                                   "method": "POST",
@@ -800,7 +800,7 @@
                               {
                                 "type": "click",
                                 "handler": "apiCall",
-                                "auth_required": true,
+                                "auth_mode": "optional",
                                 "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{$bid.id}}/reject",
                                 "params": {
                                   "method": "POST",
@@ -904,17 +904,20 @@
                 "name": "Button",
                 "text": "견적 제출",
                 "props": {
-                  "className": "cmb-btn cmb-btn-primary"
+                  "className": "cmb-btn cmb-btn-primary",
+                  "type": "button",
+                  "data-cmb-bid-submit": "1"
                 },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "apiCall",
-                    "auth_required": true,
+                    "auth_mode": "optional",
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids",
                     "params": {
                       "method": "POST",
-                      "body": "{{_local.bid}}"
+                      "body": "{{_local.bid}}",
+                      "credentials": "include"
                     },
                     "onSuccess": [
                       {
@@ -1022,7 +1025,7 @@
                   {
                     "type": "click",
                     "handler": "apiCall",
-                    "auth_required": true,
+                    "auth_mode": "optional",
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}",
                     "params": {
                       "method": "PATCH",

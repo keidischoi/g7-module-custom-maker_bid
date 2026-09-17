@@ -112,16 +112,20 @@ class CompanyPresenter
             return [];
         }
 
-        return [[
+        return [UploadRules::toUploaderFile([
             'id' => $hash,
             'hash' => $hash,
             'url' => $url,
             'download_url' => $url,
             'thumbnail_url' => $url,
             'original_filename' => 'logo',
+            'file_name' => 'logo',
+            'name' => 'logo',
             'is_image' => true,
             'mime_type' => 'image/png',
-            'collection' => 'logos',
-        ]];
+            'collection' => UploadRules::COLLECTION_LOGOS,
+            'size' => 0,
+            'order' => 0,
+        ])];
     }
 }

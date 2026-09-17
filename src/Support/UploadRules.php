@@ -305,4 +305,49 @@ class UploadRules
 
         return $base->modify('+'.self::DELIVERY_TTL_DAYS.' days');
     }
+
+    /**
+     * Normalize a file row into G7 FileUploader Attachment shape.
+     * is_image true only for real images (uploader blob-GETs download_url on mount).
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public static function toUploaderFile(array $row): array
+    {
+        $hash = (string) ($row['hash'] ?? $row['id'] ?? '');
+        $name = (string) ($row['original_filename'] ?? $row['file_name'] ?? $row['name'] ?? 'file');
+        $mime = (string) ($row['mime_type'] ?? $row['file_mime'] ?? '');
+        $collection = (string) ($row['collection'] ?? '');
+        $isImage = array_key_exists('is_image', $row)
+            ? (bool) $row['is_image']
+            : (self::isImageCollection($collection) || str_starts_with($mime, 'image/'));
+        $url = (string) ($row['download_url'] ?? $row['url'] ?? '');
+        if ($url === '' && $hash !== '') {
+            $url = '/api/modules/custom-maker_bids/files/'.$hash;
+        }
+        $id = $row['id'] ?? $hash;
+        if (is_numeric($id)) {
+            $id = (int) $id;
+        } else {
+            $id = (string) $id;
+        }
+
+        return [
+            'id' => $id,
+            'hash' => $hash !== '' ? $hash : (string) $id,
+            'original_filename' => $name,
+            'file_name' => $name,
+            'name' => $name,
+            'mime_type' => $mime !== '' ? $mime : ($isImage ? 'image/png' : 'application/octet-stream'),
+            'size' => (int) ($row['size'] ?? $row['file_size'] ?? 0),
+            'url' => $url,
+            'download_url' => $url,
+            'thumbnail_url' => $isImage ? (string) ($row['thumbnail_url'] ?? $url) : '',
+            'is_image' => $isImage,
+            'order' => (int) ($row['order'] ?? $row['sort_order'] ?? 0),
+            'collection' => $collection,
+        ];
+    }
 }
+

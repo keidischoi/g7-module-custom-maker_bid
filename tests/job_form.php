@@ -216,6 +216,13 @@ expectFalse('zip attachment is not image', $zipAtt['is_image']);
 $zipPayload = $zip->toUploaderPayload();
 expectTrue('zip uploader payload wrapped', $zipPayload['success'] === true && $zipPayload['data']['hash'] === $zipAtt['hash']);
 
+expectTrue('png attachment has file_name alias', ($att['file_name'] ?? null) === 'shot.png' && ($att['name'] ?? null) === 'shot.png');
+expectTrue('png attachment has url alias', ($att['url'] ?? '') === ($att['download_url'] ?? 'x'));
+$logo = \Modules\Custom\MakerBids\Support\CompanyPresenter::logoFiles('logohash01234567890123456789012');
+expectTrue('logo_files attachment shape', is_array($logo) && ($logo[0]['is_image'] ?? false) === true && ($logo[0]['file_name'] ?? '') === 'logo' && str_contains((string) ($logo[0]['download_url'] ?? ''), 'logohash'));
+expectTrue('toUploaderFile helper', method_exists(\Modules\Custom\MakerBids\Support\UploadRules::class, 'toUploaderFile'));
+
+
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);
 

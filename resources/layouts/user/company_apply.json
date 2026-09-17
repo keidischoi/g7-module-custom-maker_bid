@@ -52,7 +52,8 @@
       "address_detail": "",
       "upload_token": "",
       "logo_count": 0,
-      "logo_files": []
+      "logo_files": [],
+      "files_ready": false
     }
   },
   "data_sources": [
@@ -94,7 +95,8 @@
           "handler": "setState",
           "params": {
             "target": "local",
-            "company.upload_token": "{{response.data.upload_token || _local.company.upload_token || defaults.data.upload_token}}"
+            "company.upload_token": "{{response.data.upload_token || _local.company.upload_token || defaults.data.upload_token}}",
+            "company.files_ready": true
           }
         }
       ]
@@ -110,6 +112,14 @@
       "errorHandling": {
         "401": {
           "handler": "suppress"
+        },
+        "404": {
+          "handler": "setState",
+          "params": {
+            "target": "local",
+            "company.logo_files": [],
+            "company.files_ready": true
+          }
         }
       },
       "fallback": {
@@ -122,6 +132,7 @@
             "target": "local",
             "company.upload_token": "{{response.data.upload_token || _local.company.upload_token || defaults.data.upload_token || ''}}",
             "company.logo_files": "{{response.data.logo_files || []}}",
+            "company.files_ready": false,
             "company.name": "{{response.data.name || _local.company.name || ''}}",
             "company.kind": "{{response.data.kind || _local.company.kind || 'company'}}",
             "company.business_no": "{{response.data.business_no || _local.company.business_no || ''}}",
@@ -135,6 +146,13 @@
             "company.address": "{{response.data.address || _local.company.address || ''}}",
             "company.address_detail": "{{response.data.address_detail || _local.company.address_detail || ''}}",
             "company.job_types": "{{response.data.job_types || _local.company.job_types || []}}"
+          }
+        },
+        {
+          "handler": "setState",
+          "params": {
+            "target": "local",
+            "company.files_ready": true
           }
         }
       ]
@@ -479,7 +497,7 @@
                     "token": "{{_local.company.upload_token || defaults.data.upload_token}}",
                     "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
                   },
-                  "initialFiles": "{{_local.company.logo_files || me.data.logo_files || (me.data.logo_url ? [{ id: me.data.logo_hash, hash: me.data.logo_hash, url: me.data.logo_url, download_url: me.data.logo_url, thumbnail_url: me.data.logo_url, original_filename: 'logo', is_image: true }] : [])}}"
+                  "initialFiles": "{{_local.company.logo_files || me.data.logo_files || []}}"
                 },
                 "actions": [
                   {
@@ -498,7 +516,8 @@
                       "message": "{{$args[0]}}"
                     }
                   }
-                ]
+                ],
+                "if": "{{_local.company.files_ready}}"
               },
               {
                 "id": "bio_label",
