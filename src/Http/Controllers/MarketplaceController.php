@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBids\Services\MarketplaceService;
+use Modules\Custom\MakerBids\Support\ArrayPaginator;
 use Modules\Custom\MakerBids\Support\DomainException;
 
 class MarketplaceController extends Controller
@@ -17,7 +18,9 @@ class MarketplaceController extends Controller
 
     public function notices(Request $request): JsonResponse
     {
-        return response()->json(['data' => $this->market->notices((int) $request->user()->id)]);
+        $items = $this->market->notices((int) $request->user()->id);
+
+        return response()->json(ArrayPaginator::paginate($items, $request, 'page', 10));
     }
 
     public function readNotice(Request $request, int $id): JsonResponse

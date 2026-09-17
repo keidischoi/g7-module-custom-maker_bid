@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.13] - 2026-09-17
+
+- 공개 목록(의뢰·입찰현황·이력·입찰자·알림)에 `page`/`per_page` 페이지네이션과 카드형 섹션 레이아웃을 맞추고, 서브탭 오른쪽 정렬(0.9.12)과 함께 탭 전환 시 레이아웃이 흔들리지 않게 합니다. API 응답 `meta`: `total`, `page`, `per_page`, `last_page`.
+
+## [0.9.12] - 2026-09-17
+
+- 공개 maker_bids 서브탭을 모든 페이지에서 오른쪽 정렬로 통일해 탭 전환 시 위치가 흔들리지 않게 합니다.
+
 ## [0.9.11] - 2026-09-17
 
 ### Changed

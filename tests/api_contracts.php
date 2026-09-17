@@ -49,7 +49,7 @@ expectTrue('admin bid patch route', str_contains($api, "Route::patch('bids/{id}'
 expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}', [JobAdminController::class, 'update'])"));
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
-expectTrue('module version is 0.9.11', ($moduleMeta['version'] ?? null) === '0.9.11');
+expectTrue('module version is 0.9.13', ($moduleMeta['version'] ?? null) === '0.9.13');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -133,6 +133,18 @@ if ($authBlockStart !== false && $authBlockEnd !== false) {
         expectTrue("auth block contains {$route}", str_contains($block, $route));
     }
 }
+
+$paginator = (string) file_get_contents($root.'/src/Support/ArrayPaginator.php');
+expectTrue('ArrayPaginator helper exists', str_contains($paginator, 'last_page') && str_contains($paginator, 'per_page'));
+$jobCtrl = (string) file_get_contents($root.'/src/Http/Controllers/JobController.php');
+expectTrue('jobs index/mine paginated', str_contains($jobCtrl, 'ArrayPaginator::paginate') && substr_count($jobCtrl, 'ArrayPaginator::paginate') >= 2);
+$bidCtrl = (string) file_get_contents($root.'/src/Http/Controllers/BidController.php');
+expectTrue('bids mine paginated', str_contains($bidCtrl, 'ArrayPaginator::paginate'));
+$coCtrl = (string) file_get_contents($root.'/src/Http/Controllers/CompanyController.php');
+expectTrue('companies index paginated', str_contains($coCtrl, 'ArrayPaginator::paginate'));
+$mktCtrl = (string) file_get_contents($root.'/src/Http/Controllers/MarketplaceController.php');
+expectTrue('notices paginated', str_contains($mktCtrl, 'ArrayPaginator::paginate'));
+
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

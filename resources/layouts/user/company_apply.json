@@ -148,7 +148,7 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap justify-end",
+                  "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto justify-end",
                   "data-cmb-subnav": "1"
                 },
                 "children": [

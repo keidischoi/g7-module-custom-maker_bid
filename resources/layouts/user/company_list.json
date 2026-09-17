@@ -46,6 +46,10 @@
       "auth_mode": "optional",
       "fallback": {
         "data": []
+      },
+      "params": {
+        "page": "{{query.page || 1}}",
+        "per_page": "{{query.per_page || 12}}"
       }
     },
     {
@@ -98,7 +102,7 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-maker-subnav flex items-center gap-1 flex-wrap ml-auto",
+                  "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto",
                   "data-cmb-subnav": "1"
                 },
                 "children": [
@@ -447,6 +451,20 @@
                     ]
                   }
                 ]
+              },
+              {
+                "id": "companies_pager",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-pager",
+                  "data-cmb-pager": "1",
+                  "data-param": "page",
+                  "data-page": "{{companies?.data?.meta?.page || 1}}",
+                  "data-total": "{{companies?.data?.meta?.total || 0}}",
+                  "data-last-page": "{{companies?.data?.meta?.last_page || 1}}",
+                  "data-per-page": "{{companies?.data?.meta?.per_page || 12}}"
+                }
               }
             ]
           }
