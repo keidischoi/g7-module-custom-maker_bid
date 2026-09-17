@@ -51,7 +51,8 @@
       "address": "",
       "address_detail": "",
       "upload_token": "",
-      "logo_count": 0
+      "logo_count": 0,
+      "logo_files": []
     }
   },
   "data_sources": [
@@ -113,7 +114,30 @@
       },
       "fallback": {
         "data": null
-      }
+      },
+      "onSuccess": [
+        {
+          "handler": "setState",
+          "params": {
+            "target": "local",
+            "company.upload_token": "{{response.data.upload_token || _local.company.upload_token || defaults.data.upload_token || ''}}",
+            "company.logo_files": "{{response.data.logo_files || []}}",
+            "company.name": "{{response.data.name || _local.company.name || ''}}",
+            "company.kind": "{{response.data.kind || _local.company.kind || 'company'}}",
+            "company.business_no": "{{response.data.business_no || _local.company.business_no || ''}}",
+            "company.bio": "{{response.data.bio || _local.company.bio || ''}}",
+            "company.homepage_url": "{{response.data.homepage_url || _local.company.homepage_url || ''}}",
+            "company.portfolio_url": "{{response.data.portfolio_url || _local.company.portfolio_url || ''}}",
+            "company.manager_name": "{{response.data.manager_name || _local.company.manager_name || ''}}",
+            "company.phone": "{{response.data.phone || _local.company.phone || ''}}",
+            "company.email": "{{response.data.email || _local.company.email || ''}}",
+            "company.zipcode": "{{response.data.zipcode || _local.company.zipcode || ''}}",
+            "company.address": "{{response.data.address || _local.company.address || ''}}",
+            "company.address_detail": "{{response.data.address_detail || _local.company.address_detail || ''}}",
+            "company.job_types": "{{response.data.job_types || _local.company.job_types || []}}"
+          }
+        }
+      ]
     }
   ],
   "slots": {
@@ -215,6 +239,15 @@
                 ]
               }
             ]
+          },
+          {
+            "id": "cmb_notice",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "company"
+            }
           },
           {
             "id": "guide",
@@ -446,7 +479,7 @@
                     "token": "{{_local.company.upload_token || defaults.data.upload_token}}",
                     "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
                   },
-                  "initialFiles": "{{company.data.logo_files || (company.data.logo_url ? [{ id: company.data.logo_hash, hash: company.data.logo_hash, url: company.data.logo_url, download_url: company.data.logo_url, thumbnail_url: company.data.logo_url, original_filename: 'logo', is_image: true }] : [])}}"
+                  "initialFiles": "{{_local.company.logo_files || me.data.logo_files || (me.data.logo_url ? [{ id: me.data.logo_hash, hash: me.data.logo_hash, url: me.data.logo_url, download_url: me.data.logo_url, thumbnail_url: me.data.logo_url, original_filename: 'logo', is_image: true }] : [])}}"
                 },
                 "actions": [
                   {

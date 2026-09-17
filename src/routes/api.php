@@ -27,6 +27,7 @@ Route::get('job-types', [JobTypeController::class, 'index'])->middleware(['throt
 Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware(['throttle:600,1'])->name('files.download');
 Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
+Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
@@ -35,7 +36,6 @@ Route::post('jobs/run-schedule', [MarketplaceController::class, 'runSchedule'])-
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
     Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
-    Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->name('jobs.viewer');
     Route::get('jobs/{id}/edit', [JobController::class, 'editData'])->whereNumber('id')->name('jobs.edit');
     Route::post('jobs', [JobController::class, 'store'])->name('jobs.store');
     Route::patch('jobs/{id}', [JobController::class, 'update'])->whereNumber('id')->name('jobs.update');

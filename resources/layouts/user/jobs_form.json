@@ -80,7 +80,9 @@
       "upload_token": "",
       "image_count": 0,
       "archive_count": 0,
-      "terms_agreed": false
+      "terms_agreed": false,
+      "image_files": [],
+      "archive_files": []
     },
     "ui": {}
   },
@@ -126,7 +128,7 @@
             "form.manager_name": "{{response.data.manager_name || ''}}",
             "form.manager_phone": "{{response.data.manager_phone || ''}}",
             "form.manager_email": "{{response.data.manager_email || ''}}",
-            "form.upload_token": "{{response.data.upload_token || defaults.data.upload_token || ''}}",
+            "form.upload_token": "{{response.data.upload_token || _local.form.upload_token || defaults.data.upload_token || ''}}",
             "form.includes_modeling": "{{response.data.type_includes_modeling ? '1' : '0'}}",
             "form.ownership_requested": "{{response.data.ownership_requested}}",
             "form.ext_stl": "{{response.data.ext_stl}}",
@@ -139,7 +141,9 @@
             "form.ext_dwg": "{{response.data.ext_dwg}}",
             "form.contact_hours_from": "{{response.data.contact_hours_from || _local.form.contact_hours_from || '09:00'}}",
             "form.contact_hours_to": "{{response.data.contact_hours_to || _local.form.contact_hours_to || '18:00'}}",
-            "form.provided_extensions": "{{response.data.provided_extensions || []}}"
+            "form.provided_extensions": "{{response.data.provided_extensions || []}}",
+            "form.image_files": "{{response.data.images || []}}",
+            "form.archive_files": "{{response.data.archives || []}}"
           }
         }
       ],
@@ -1583,7 +1587,7 @@
                         "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
                         "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
                       },
-                      "initialFiles": "{{job.data.images || []}}"
+                      "initialFiles": "{{_local.form.image_files || job.data.images || []}}"
                     },
                     "actions": [
                       {
@@ -1679,7 +1683,7 @@
                         "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
                         "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
                       },
-                      "initialFiles": "{{job.data.archives || []}}"
+                      "initialFiles": "{{_local.form.archive_files || job.data.archives || []}}"
                     },
                     "actions": [
                       {

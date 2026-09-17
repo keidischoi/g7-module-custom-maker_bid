@@ -27,6 +27,7 @@ class SettingsRules
             'bids' => '입찰현황',
             'history' => '이력',
             'company' => '입찰자 등록',
+            'companies' => '입찰자 목록',
             'show' => '의뢰 상세',
             'edit' => '의뢰서 수정',
         ];

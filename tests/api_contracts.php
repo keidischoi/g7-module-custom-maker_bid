@@ -50,7 +50,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.16', ($moduleMeta['version'] ?? null) === '0.10.16');
+expectTrue('module version is 0.10.17', ($moduleMeta['version'] ?? null) === '0.10.17');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -83,6 +83,7 @@ expectTrue('upload staging route', str_contains($api, "Route::post('uploads'"));
 expectTrue('admin job-types route', str_contains($api, "Route::get('job-types', [JobTypeAdminController::class, 'index'])"));
 expectTrue('admin job-types move route', str_contains($api, "Route::post('job-types/{id}/move'"));
 expectTrue('job viewer route exists', str_contains($api, "Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])"));
+expectTrue('job viewer uses optional.sanctum', preg_match("/Route::get\('jobs\/\{id\}\/viewer'.*?optional\.sanctum/s", $api) === 1);
 expectTrue('job store envelopes id for layout navigate', str_contains($jobController, 'JobPresenter::envelope($job)'));
 $jobService = (string) file_get_contents($root.'/src/Services/JobService.php');
 expectTrue('findPublic maps missing id to domain 404', str_contains($jobService, 'function denyPublic') && str_contains($jobService, '->find($id)'));
@@ -113,7 +114,6 @@ expectTrue('additive company user unique', str_contains($migration, 'maker_compa
 
 $mutators = [
     "Route::get('jobs/mine'",
-    "Route::get('jobs/{id}/viewer'",
     "Route::get('bids/mine'",
     "Route::get('jobs/form-defaults'",
     "Route::patch('jobs/{id}'",
@@ -133,6 +133,7 @@ if ($authBlockStart !== false && $authBlockEnd !== false) {
     foreach ($mutators as $route) {
         expectTrue("auth block contains {$route}", str_contains($block, $route));
     }
+    expectTrue('auth block excludes jobs viewer', ! str_contains($block, "Route::get('jobs/{id}/viewer'"));
 }
 
 $paginator = (string) file_get_contents($root.'/src/Support/ArrayPaginator.php');

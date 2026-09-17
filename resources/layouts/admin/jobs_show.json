@@ -76,7 +76,10 @@
       "address_detail": "",
       "manager_name": "",
       "manager_phone": "",
-      "manager_email": ""
+      "manager_email": "",
+      "upload_token": "",
+      "image_files": [],
+      "archive_files": []
     }
   },
   "data_sources": [
@@ -129,7 +132,10 @@
             "form.address_detail": "{{response.data.address_detail || job.data.address_detail || ''}}",
             "form.manager_name": "{{response.data.manager_name || job.data.manager_name || ''}}",
             "form.manager_phone": "{{response.data.manager_phone || job.data.manager_phone || ''}}",
-            "form.manager_email": "{{response.data.manager_email || job.data.manager_email || ''}}"
+            "form.manager_email": "{{response.data.manager_email || job.data.manager_email || ''}}",
+            "form.upload_token": "{{response.data.upload_token || job.data.upload_token || ''}}",
+            "form.image_files": "{{response.data.images || job.data.images || []}}",
+            "form.archive_files": "{{response.data.archives || job.data.archives || []}}"
           }
         }
       ]
@@ -1615,7 +1621,51 @@
                         "token": "{{_local.form.upload_token || job.data.upload_token || ''}}",
                         "upload_token": "{{_local.form.upload_token || job.data.upload_token || ''}}"
                       },
-                      "initialFiles": "{{job.data.images || []}}"
+                      "initialFiles": "{{_local.form.image_files || job.data.images || []}}"
+                    },
+                    "actions": [
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "arch_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "첨부파일"
+                  },
+                  {
+                    "id": "cmb_admin_archives_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "archives",
+                      "maxFiles": 20,
+                      "maxSize": 50,
+                      "accept": ".zip,.rar,.7z,.stl,.3mf,.obj,.step,.stp,.gcode,.fbx,.dwg,.pdf",
+                      "autoUpload": true,
+                      "className": "cmb-order-uploader mt-1",
+                      "uploadTriggerEvent": "upload:maker_bids_admin_archives",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "archives",
+                        "token": "{{_local.form.upload_token || job.data.upload_token || ''}}",
+                        "upload_token": "{{_local.form.upload_token || job.data.upload_token || ''}}"
+                      },
+                      "initialFiles": "{{_local.form.archive_files || job.data.archives || []}}"
                     },
                     "actions": [
                       {
@@ -1642,6 +1692,13 @@
                         "handler": "fireEvent",
                         "params": {
                           "event": "upload:maker_bids_admin_images"
+                        }
+                      },
+                      {
+                        "type": "click",
+                        "handler": "fireEvent",
+                        "params": {
+                          "event": "upload:maker_bids_admin_archives"
                         }
                       },
                       {
