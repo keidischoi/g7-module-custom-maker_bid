@@ -74,7 +74,12 @@ trait BlankToNull
             return $value ? '1' : '';
         }
 
-        return trim((string) $value);
+        $s = trim((string) $value);
+        if ($s === '[object Object]' || $s === 'Array' || str_starts_with(strtolower($s), '[object ')) {
+            return '';
+        }
+
+        return $s;
     }
 
     /**

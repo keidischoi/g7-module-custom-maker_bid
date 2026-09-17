@@ -55,9 +55,13 @@ class JobTypeService
 
     public function requireEnabled(string $slug): MakerJobType
     {
+        $slug = TypeCatalog::coerceTypeInput($slug);
+        if ($slug === '') {
+            throw new DomainException('사용할 수 없는 의뢰 유형입니다. 유형 슬러그를 확인하세요.', 422);
+        }
         $row = $this->findBySlug($slug);
         if ($row === null) {
-            throw new DomainException('사용할 수 없는 의뢰 유형입니다. 유형 슬러그를 확인하세요. ('.$slug.')', 422);
+            throw new DomainException('사용할 수 없는 의뢰 유형입니다. 유형 슬러그를 확인하세요.', 422);
         }
 
         return $row;

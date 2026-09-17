@@ -213,7 +213,7 @@ class JobService
      */
     public function create(int $userId, array $payload): array
     {
-        $type = $this->types->requireEnabled((string) $payload['type']);
+        $type = $this->types->requireEnabled(TypeCatalog::coerceTypeInput($payload['type'] ?? null));
         $this->assertAddress($type->toOptionArray(), $payload);
         $attrs = $this->jobAttributes($payload, $type->id, (string) $type->slug);
         $attrs['user_id'] = $userId;
@@ -245,7 +245,7 @@ class JobService
         $payload = $this->resolveTypePayload($payload, $job);
         $existing = $job->toArray();
         if (isset($payload['type'])) {
-            $type = $this->types->requireEnabled((string) $payload['type']);
+            $type = $this->types->requireEnabled(TypeCatalog::coerceTypeInput($payload['type'] ?? null));
             $payload['type_id'] = $type->id;
             $payload['type'] = $type->slug;
             $this->assertAddress($type->toOptionArray(), $payload, $existing);
@@ -306,7 +306,7 @@ class JobService
         $job = MakerJob::query()->findOrFail($id);
         $payload = $this->resolveTypePayload($payload, $job);
         if (isset($payload['type'])) {
-            $type = $this->types->requireEnabled((string) $payload['type']);
+            $type = $this->types->requireEnabled(TypeCatalog::coerceTypeInput($payload['type'] ?? null));
             $payload['type_id'] = $type->id;
             $payload['type'] = $type->slug;
         }
@@ -356,8 +356,11 @@ class JobService
     {
         if (array_key_exists('type', $payload)) {
             $raw = $payload['type'];
-            if ($raw === null || (is_string($raw) && trim($raw) === '') || $raw === []) {
+            $coerced = TypeCatalog::coerceTypeInput($raw);
+            if ($coerced === '') {
                 unset($payload['type']);
+            } else {
+                $payload['type'] = $coerced;
             }
         }
         if (! isset($payload['type']) && isset($payload['type_id']) && $payload['type_id'] !== '' && $payload['type_id'] !== null) {

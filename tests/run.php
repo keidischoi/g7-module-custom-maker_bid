@@ -11,6 +11,7 @@ $files = [
     __DIR__.'/api_contracts.php',
     __DIR__.'/layouts.php',
     __DIR__.'/settings.php',
+    __DIR__.'/type_ext_coerce.php',
 ];
 
 $failed = 0;
