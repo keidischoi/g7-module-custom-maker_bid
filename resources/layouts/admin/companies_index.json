@@ -65,7 +65,8 @@
       "logo_files": [],
       "logo_hash": "",
       "logo_url": "",
-      "files_ready": false
+      "files_ready": false,
+      "uploader_epoch": 0
     }
   },
   "data_sources": [
@@ -627,6 +628,118 @@
                         "text": "로고 / 이미지 (1장, 최대 512×512)"
                       },
                       {
+                        "id": "cmb_admin_logo_existing",
+                        "type": "basic",
+                        "name": "Div",
+                        "if": "{{_local.edit.logo_files && _local.edit.logo_files.length}}",
+                        "props": {
+                          "className": "cmb-existing-files",
+                          "data-cmb-existing-files": "logo"
+                        },
+                        "children": [
+                          {
+                            "id": "cmb_admin_logo_existing_label",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                            },
+                            "text": "등록된 파일"
+                          },
+                          {
+                            "id": "cmb_admin_logo_existing_item_{{idx}}",
+                            "type": "basic",
+                            "name": "Div",
+                            "iteration": {
+                              "source": "{{_local.edit.logo_files || []}}",
+                              "item_var": "$file",
+                              "index_var": "idx"
+                            },
+                            "props": {
+                              "className": "cmb-existing-item",
+                              "data-cmb-existing-id": "{{$file.hash || $file.id}}",
+                              "data-cmb-existing-kind": "logo"
+                            },
+                            "children": [
+                              {
+                                "id": "cmb_admin_logo_thumb_{{idx}}",
+                                "type": "basic",
+                                "name": "A",
+                                "props": {
+                                  "href": "{{$file.thumbnail_url || $file.url || $file.download_url}}",
+                                  "target": "_blank",
+                                  "rel": "noopener",
+                                  "className": "cmb-existing-thumb-link",
+                                  "title": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                                },
+                                "text": "🖼"
+                              },
+                              {
+                                "id": "cmb_admin_logo_name_{{idx}}",
+                                "type": "basic",
+                                "name": "A",
+                                "props": {
+                                  "href": "{{$file.download_url || $file.url || '#'}}",
+                                  "target": "_blank",
+                                  "className": "cmb-existing-name text-sm underline truncate"
+                                },
+                                "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                              },
+                              {
+                                "id": "cmb_admin_logo_del_{{idx}}",
+                                "type": "basic",
+                                "name": "Button",
+                                "text": "삭제",
+                                "props": {
+                                  "type": "button",
+                                  "className": "cmb-existing-del cmb-btn text-xs",
+                                  "data-cmb-existing-delete": "1",
+                                  "data-file-hash": "{{$file.hash || $file.id}}",
+                                  "data-file-kind": "logo"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "click",
+                                    "handler": "apiCall",
+                                    "auth_mode": "optional",
+                                    "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                                    "params": {
+                                      "method": "DELETE",
+                                      "credentials": "include"
+                                    },
+                                    "confirm": "이 파일을 삭제할까요?",
+                                    "onSuccess": [
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "success",
+                                          "message": "파일을 삭제했습니다."
+                                        }
+                                      },
+                                      {
+                                        "handler": "refetchDataSource",
+                                        "params": {
+                                          "dataSourceId": "companies"
+                                        }
+                                      }
+                                    ],
+                                    "onError": [
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "error",
+                                          "message": "{{error.message}}"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
                         "id": "cmb_admin_logo_uploader",
                         "type": "composite",
                         "name": "FileUploader",
@@ -651,7 +764,8 @@
                             "token": "{{_local.edit.upload_token}}",
                             "upload_token": "{{_local.edit.upload_token}}"
                           },
-                          "initialFiles": "{{_local.edit.logo_files || []}}"
+                          "initialFiles": "{{_local.edit.logo_files || []}}",
+                          "key": "admin-logo-{{_local.edit.uploader_epoch}}"
                         },
                         "if": "{{!!_local.edit.id && _local.edit.files_ready}}"
                       },
@@ -904,7 +1018,8 @@
                                       "edit.logo_files": "{{$co.logo_files || []}}",
                                       "edit.logo_hash": "{{$co.logo_hash || ''}}",
                                       "edit.logo_url": "{{$co.logo_url || ''}}",
-                                      "edit.files_ready": false
+                                      "edit.files_ready": false,
+                                      "edit.uploader_epoch": "{{Date.now()}}"
                                     }
                                   },
                                   {

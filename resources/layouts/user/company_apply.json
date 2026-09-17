@@ -53,7 +53,8 @@
       "upload_token": "",
       "logo_count": 0,
       "logo_files": [],
-      "files_ready": false
+      "files_ready": false,
+      "uploader_epoch": 0
     }
   },
   "data_sources": [
@@ -145,7 +146,8 @@
             "company.zipcode": "{{response.data.zipcode || _local.company.zipcode || ''}}",
             "company.address": "{{response.data.address || _local.company.address || ''}}",
             "company.address_detail": "{{response.data.address_detail || _local.company.address_detail || ''}}",
-            "company.job_types": "{{response.data.job_types || _local.company.job_types || []}}"
+            "company.job_types": "{{response.data.job_types || _local.company.job_types || []}}",
+            "company.uploader_epoch": "{{Date.now()}}"
           }
         },
         {
@@ -473,6 +475,118 @@
                 "text": "표시할 로고 또는 이미지 (1장, 최대 512×512)"
               },
               {
+                "id": "cmb_logo_existing",
+                "type": "basic",
+                "name": "Div",
+                "if": "{{(_local.company.logo_files && _local.company.logo_files.length) || (me.data.logo_files && me.data.logo_files.length)}}",
+                "props": {
+                  "className": "cmb-existing-files",
+                  "data-cmb-existing-files": "logo"
+                },
+                "children": [
+                  {
+                    "id": "cmb_logo_existing_label",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                    },
+                    "text": "등록된 파일"
+                  },
+                  {
+                    "id": "cmb_logo_existing_item_{{idx}}",
+                    "type": "basic",
+                    "name": "Div",
+                    "iteration": {
+                      "source": "{{_local.company.logo_files || me.data.logo_files || []}}",
+                      "item_var": "$file",
+                      "index_var": "idx"
+                    },
+                    "props": {
+                      "className": "cmb-existing-item",
+                      "data-cmb-existing-id": "{{$file.hash || $file.id}}",
+                      "data-cmb-existing-kind": "logo"
+                    },
+                    "children": [
+                      {
+                        "id": "cmb_logo_thumb_{{idx}}",
+                        "type": "basic",
+                        "name": "A",
+                        "props": {
+                          "href": "{{$file.thumbnail_url || $file.url || $file.download_url}}",
+                          "target": "_blank",
+                          "rel": "noopener",
+                          "className": "cmb-existing-thumb-link",
+                          "title": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                        },
+                        "text": "🖼"
+                      },
+                      {
+                        "id": "cmb_logo_name_{{idx}}",
+                        "type": "basic",
+                        "name": "A",
+                        "props": {
+                          "href": "{{$file.download_url || $file.url || '#'}}",
+                          "target": "_blank",
+                          "className": "cmb-existing-name text-sm underline truncate"
+                        },
+                        "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                      },
+                      {
+                        "id": "cmb_logo_del_{{idx}}",
+                        "type": "basic",
+                        "name": "Button",
+                        "text": "삭제",
+                        "props": {
+                          "type": "button",
+                          "className": "cmb-existing-del cmb-btn text-xs",
+                          "data-cmb-existing-delete": "1",
+                          "data-file-hash": "{{$file.hash || $file.id}}",
+                          "data-file-kind": "logo"
+                        },
+                        "actions": [
+                          {
+                            "type": "click",
+                            "handler": "apiCall",
+                            "auth_mode": "optional",
+                            "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                            "params": {
+                              "method": "DELETE",
+                              "credentials": "include"
+                            },
+                            "confirm": "이 파일을 삭제할까요?",
+                            "onSuccess": [
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "success",
+                                  "message": "파일을 삭제했습니다."
+                                }
+                              },
+                              {
+                                "handler": "refetchDataSource",
+                                "params": {
+                                  "dataSourceId": "me"
+                                }
+                              }
+                            ],
+                            "onError": [
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "error",
+                                  "message": "{{error.message}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
                 "id": "cmb_logo_uploader",
                 "type": "composite",
                 "name": "FileUploader",
@@ -497,7 +611,8 @@
                     "token": "{{_local.company.upload_token || defaults.data.upload_token}}",
                     "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
                   },
-                  "initialFiles": "{{_local.company.logo_files || me.data.logo_files || []}}"
+                  "initialFiles": "{{_local.company.logo_files || me.data.logo_files || []}}",
+                  "key": "logo-{{_local.company.uploader_epoch}}"
                 },
                 "actions": [
                   {

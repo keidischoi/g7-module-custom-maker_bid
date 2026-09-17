@@ -62,8 +62,8 @@ $show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 $adminJobsShowSpec = (string) file_get_contents($root.'/resources/layouts/admin/jobs_show.json');
 expectTrue('detail has award action', str_contains($show, '/jobs/{{route.id}}/award'));
-expectTrue('detail has bid create', str_contains($show, '/jobs/{{route.id}}/bids'));
-expectTrue('detail has bid patch', str_contains($show, '/bids/{{viewer.data.my_bid.id}}'));
+expectTrue('detail has bid create', str_contains($pageJs, "/jobs/' + encodeURIComponent(jobId) + '/bids") || str_contains($show, '/jobs/{{route.id}}/bids'));
+expectTrue('detail has bid patch', str_contains($pageJs, 'updateDetailBid') || str_contains($show, '/bids/{{viewer.data.my_bid.id}}'));
 expectTrue('detail mutate uses auth_mode optional (no auth_required gate)', str_contains($show, '"auth_mode": "optional"') && !str_contains($show, '"auth_required": true'));
 expectTrue('detail job fetch uses optional auth_mode', str_contains($show, '"auth_mode": "optional"') && preg_match('/"id": "job"[\s\S]*?"auth_mode": "optional"[\s\S]*?"id": "viewer"/', $show) === 1);
 expectTrue('detail toasts errors', str_contains($show, '"handler": "toast"') && str_contains($show, '{{error.message}}'));
@@ -207,12 +207,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.10.18', str_contains($nav, 'nav.js?v=0.10.18'));
-expectTrue('form.js cache bust 0.10.18', str_contains($nav, 'form.js?v=0.10.18'));
-expectTrue('form.css cache bust 0.10.18', str_contains($nav, 'form.css?v=0.10.18'));
-expectTrue('admin.css cache bust 0.10.18', str_contains($nav, 'admin.css?v=0.10.18'));
-expectTrue('admin.js cache bust 0.10.18', str_contains($nav, 'admin.js?v=0.10.18'));
-expectTrue('cmb_maker_nav cache bust 0.10.18', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.18'));
+expectTrue('nav cache bust 0.10.19', str_contains($nav, 'nav.js?v=0.10.19'));
+expectTrue('form.js cache bust 0.10.19', str_contains($nav, 'form.js?v=0.10.19'));
+expectTrue('form.css cache bust 0.10.19', str_contains($nav, 'form.css?v=0.10.19'));
+expectTrue('admin.css cache bust 0.10.19', str_contains($nav, 'admin.css?v=0.10.19'));
+expectTrue('admin.js cache bust 0.10.19', str_contains($nav, 'admin.js?v=0.10.19'));
+expectTrue('cmb_maker_nav cache bust 0.10.19', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.19'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -281,7 +281,7 @@ expectTrue('form.css can collapse company form until 등록', str_contains($css,
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
 expectTrue('form.js syncAudienceSection always show', str_contains($formJs, 'syncAudienceSection') && ! str_contains($formJs, 'admin_only') && str_contains($formJs, 'syncProvidedExtOptions'));
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.18'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.19'));
 
 $history = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
 expectTrue('jobs_history notices section card', str_contains($history, 'notices_card') && str_contains($history, 'cmb-section-card'));
@@ -314,7 +314,7 @@ expectTrue('form.css pager styles', str_contains($formCss, '.cmb-pager') && str_
 expectTrue('subnav right aligned in css', str_contains($formCss, '.cmb-maker-subnav') && str_contains($formCss, 'justify-content: flex-end !important'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
-expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.18'));
+expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.19'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
 expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
@@ -423,8 +423,8 @@ expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, 'rgba(255, 255, 255, 0.06)') && (str_contains($adminCss, 'rgba(255, 255, 255, 0.14)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.12)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.16)')));
 expectTrue('admin.css dark covers data-theme and cmb-admin-dark', str_contains($adminCss, 'html[data-theme="dark"]') && str_contains($adminCss, 'html.cmb-admin-dark') && str_contains($adminCss, 'html.cmb-dark-boot'));
 expectTrue('admin.css dark chrome border is translucent', str_contains($adminCss, '--cmb-admin-border: rgba(255, 255, 255, 0.12)') || str_contains($adminCss, '--cmb-admin-border: rgb(148 163 184)') || str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.18'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.18'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.19'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.19'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js syncs cmb-admin-dark', str_contains($adminJs, 'syncAdminDark') && str_contains($adminJs, 'cmb-admin-dark-css'));
@@ -571,10 +571,28 @@ expectTrue('company_apply logo gated by files_ready', str_contains($companyApply
 $adminCos = (string) file_get_contents($root.'/resources/layouts/admin/companies_index.json');
 expectTrue('admin company logo gated by files_ready', str_contains($adminCos, 'edit.files_ready'));
 $jobsShow = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json');
-expectTrue('jobs_show bid submit has no auth_required', str_contains($jobsShow, 'data-cmb-bid-submit') && !preg_match('/"target": "\/api\/modules\/custom-maker_bids\/jobs\/\{\{route\.id\}\}\/bids"[\s\S]{0,80}"auth_required"|auth_required[\s\S]{0,120}\/bids"/', $jobsShow));
-expectTrue('jobs_show bid submit auth_mode optional', str_contains($jobsShow, '"auth_mode": "optional"') && str_contains($jobsShow, '/jobs/{{route.id}}/bids'));
+expectTrue('jobs_show bid submit class cmb-bid-submit', str_contains($jobsShow, 'cmb-bid-submit') && str_contains($jobsShow, 'data-cmb-bid-submit'));
+expectTrue('jobs_show bid update class cmb-bid-update', str_contains($jobsShow, 'cmb-bid-update') && str_contains($jobsShow, 'data-cmb-bid-update'));
+// Submit button must not carry layout apiCall (page.js owns the POST)
+// Prefer structural check: no actions block near submit with bids POST
+$submitSlice = '';
+if (preg_match('/"id":\s*"submit"[\s\S]{0,1200}?("id":\s*"esubmit"|"id":\s*"editform"|$)/', $jobsShow, $m)) {
+    $submitSlice = $m[0];
+}
+expectTrue('jobs_show bid submit has no apiCall actions', $submitSlice !== '' && !str_contains($submitSlice, '"handler": "apiCall"') && !str_contains($submitSlice, '/jobs/{{route.id}}/bids'));
+$editSlice = '';
+if (preg_match('/"id":\s*"esubmit"[\s\S]{0,1200}?("id":\s*"|$)/', $jobsShow, $m)) {
+    $editSlice = $m[0];
+}
+expectTrue('jobs_show bid update has no apiCall actions', $editSlice !== '' && !str_contains($editSlice, '"handler": "apiCall"'));
+expectTrue('jobs_form existing files gallery', str_contains($form, 'cmb-existing-files') && str_contains($form, 'cmb_images_existing') && str_contains($form, 'cmb_archives_existing'));
+expectTrue('admin jobs_show existing files gallery', str_contains($adminJobsShow, 'cmb_admin_images_existing') && str_contains($adminJobsShow, 'cmb_admin_archives_existing'));
+expectTrue('company_apply existing logo gallery', str_contains($companyApply, 'cmb_logo_existing') && str_contains($companyApply, 'cmb-existing-files'));
+expectTrue('admin company existing logo gallery', str_contains($adminCos, 'cmb_admin_logo_existing'));
+expectTrue('jobs_form uploader_epoch', str_contains($form, 'uploader_epoch'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
-expectTrue('page.js detail bid cookie POST', str_contains($pageJs, 'data-cmb-bid-submit') && str_contains($pageJs, 'credentials: \'include\''));
+expectTrue('page.js detail bid cookie POST', str_contains($pageJs, 'cmb-bid-submit') && str_contains($pageJs, '[data-cmb-bid-submit]') && str_contains($pageJs, 'credentials: \'include\''));
+expectTrue('page.js detail bid update', str_contains($pageJs, 'cmb-bid-update') && str_contains($pageJs, 'updateDetailBid'));
 expectTrue('UploadRules toUploaderFile', str_contains((string) file_get_contents($root.'/src/Support/UploadRules.php'), 'function toUploaderFile'));
 
 

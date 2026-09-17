@@ -80,7 +80,8 @@
       "upload_token": "",
       "image_files": [],
       "archive_files": [],
-      "files_ready": false
+      "files_ready": false,
+      "uploader_epoch": 0
     }
   },
   "data_sources": [
@@ -137,7 +138,8 @@
             "form.upload_token": "{{response.data.upload_token || job.data.upload_token || ''}}",
             "form.image_files": "{{response.data.images || job.data.images || []}}",
             "form.archive_files": "{{response.data.archives || job.data.archives || []}}",
-            "form.files_ready": true
+            "form.files_ready": true,
+            "form.uploader_epoch": "{{Date.now()}}"
           }
         }
       ]
@@ -1602,6 +1604,118 @@
                     "text": "이미지"
                   },
                   {
+                    "id": "cmb_admin_images_existing",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{(_local.form.image_files && _local.form.image_files.length) || (job.data.images && job.data.images.length)}}",
+                    "props": {
+                      "className": "cmb-existing-files",
+                      "data-cmb-existing-files": "images"
+                    },
+                    "children": [
+                      {
+                        "id": "cmb_admin_images_existing_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                        },
+                        "text": "등록된 파일"
+                      },
+                      {
+                        "id": "cmb_admin_images_existing_item_{{idx}}",
+                        "type": "basic",
+                        "name": "Div",
+                        "iteration": {
+                          "source": "{{_local.form.image_files || job.data.images || []}}",
+                          "item_var": "$file",
+                          "index_var": "idx"
+                        },
+                        "props": {
+                          "className": "cmb-existing-item",
+                          "data-cmb-existing-id": "{{$file.hash || $file.id}}",
+                          "data-cmb-existing-kind": "images"
+                        },
+                        "children": [
+                          {
+                            "id": "cmb_admin_images_thumb_{{idx}}",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "{{$file.thumbnail_url || $file.url || $file.download_url}}",
+                              "target": "_blank",
+                              "rel": "noopener",
+                              "className": "cmb-existing-thumb-link",
+                              "title": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                            },
+                            "text": "🖼"
+                          },
+                          {
+                            "id": "cmb_admin_images_name_{{idx}}",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "{{$file.download_url || $file.url || '#'}}",
+                              "target": "_blank",
+                              "className": "cmb-existing-name text-sm underline truncate"
+                            },
+                            "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                          },
+                          {
+                            "id": "cmb_admin_images_del_{{idx}}",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "삭제",
+                            "props": {
+                              "type": "button",
+                              "className": "cmb-existing-del cmb-btn text-xs",
+                              "data-cmb-existing-delete": "1",
+                              "data-file-hash": "{{$file.hash || $file.id}}",
+                              "data-file-kind": "images"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_mode": "optional",
+                                "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                                "params": {
+                                  "method": "DELETE",
+                                  "credentials": "include"
+                                },
+                                "confirm": "이 파일을 삭제할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "파일을 삭제했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "job"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
                     "id": "cmb_admin_images_uploader",
                     "type": "composite",
                     "name": "FileUploader",
@@ -1623,7 +1737,8 @@
                         "token": "{{_local.form.upload_token || job.data.upload_token || ''}}",
                         "upload_token": "{{_local.form.upload_token || job.data.upload_token || ''}}"
                       },
-                      "initialFiles": "{{_local.form.image_files || job.data.images || []}}"
+                      "initialFiles": "{{_local.form.image_files || job.data.images || []}}",
+                      "key": "cmb_admin_images_uploader-{{_local.form.uploader_epoch}}"
                     },
                     "actions": [
                       {
@@ -1647,6 +1762,114 @@
                     "text": "첨부파일"
                   },
                   {
+                    "id": "cmb_admin_archives_existing",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{(_local.form.archive_files && _local.form.archive_files.length) || (job.data.archives && job.data.archives.length)}}",
+                    "props": {
+                      "className": "cmb-existing-files",
+                      "data-cmb-existing-files": "archives"
+                    },
+                    "children": [
+                      {
+                        "id": "cmb_admin_archives_existing_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                        },
+                        "text": "등록된 파일"
+                      },
+                      {
+                        "id": "cmb_admin_archives_existing_item_{{idx}}",
+                        "type": "basic",
+                        "name": "Div",
+                        "iteration": {
+                          "source": "{{_local.form.archive_files || job.data.archives || []}}",
+                          "item_var": "$file",
+                          "index_var": "idx"
+                        },
+                        "props": {
+                          "className": "cmb-existing-item",
+                          "data-cmb-existing-id": "{{$file.hash || $file.id}}",
+                          "data-cmb-existing-kind": "archives"
+                        },
+                        "children": [
+                          {
+                            "id": "cmb_admin_archives_icon_{{idx}}",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-existing-icon"
+                            },
+                            "text": "📎"
+                          },
+                          {
+                            "id": "cmb_admin_archives_name_{{idx}}",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "{{$file.download_url || $file.url || '#'}}",
+                              "target": "_blank",
+                              "className": "cmb-existing-name text-sm underline truncate"
+                            },
+                            "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                          },
+                          {
+                            "id": "cmb_admin_archives_del_{{idx}}",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "삭제",
+                            "props": {
+                              "type": "button",
+                              "className": "cmb-existing-del cmb-btn text-xs",
+                              "data-cmb-existing-delete": "1",
+                              "data-file-hash": "{{$file.hash || $file.id}}",
+                              "data-file-kind": "archives"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_mode": "optional",
+                                "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                                "params": {
+                                  "method": "DELETE",
+                                  "credentials": "include"
+                                },
+                                "confirm": "이 파일을 삭제할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "파일을 삭제했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "job"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
                     "id": "cmb_admin_archives_uploader",
                     "type": "composite",
                     "name": "FileUploader",
@@ -1668,7 +1891,8 @@
                         "token": "{{_local.form.upload_token || job.data.upload_token || ''}}",
                         "upload_token": "{{_local.form.upload_token || job.data.upload_token || ''}}"
                       },
-                      "initialFiles": "{{_local.form.archive_files || job.data.archives || []}}"
+                      "initialFiles": "{{_local.form.archive_files || job.data.archives || []}}",
+                      "key": "cmb_admin_archives_uploader-{{_local.form.uploader_epoch}}"
                     },
                     "actions": [
                       {

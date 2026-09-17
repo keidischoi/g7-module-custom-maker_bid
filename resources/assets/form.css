@@ -1571,3 +1571,64 @@ html.dark .cmb-pager a.is-active,
 .cmb-privacy-card .cmb-admin-card-title {
   margin-bottom: 0.25rem;
 }
+
+/* Existing files gallery (edit forms) — independent of FileUploader initialFiles */
+.cmb-existing-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.35rem 0 0.75rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.03);
+}
+.dark .cmb-existing-files {
+  background: rgba(15, 23, 42, 0.35);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+.cmb-existing-files-label { margin: 0; }
+.cmb-existing-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.cmb-existing-thumb {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+.cmb-existing-icon { flex-shrink: 0; }
+.cmb-existing-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cmb-existing-del {
+  flex-shrink: 0;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 0.35rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+.cmb-existing-thumb-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+.dark .cmb-existing-thumb-link { background: #334155; }

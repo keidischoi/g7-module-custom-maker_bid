@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.19] - 2026-09-18
+
+### Fixed
+- **견적 제출 로그인 토스트**: `jobs_show` 견적 제출·금액 수정 버튼에서 G7 `apiCall`/`actions`를 제거하고 `cmb-bid-submit` / `cmb-bid-update` 클래스로만 처리. `page.js`가 capture-phase로 `preventDefault`+`stopImmediatePropagation` 후 cookie+CSRF fetch. (G7 Button이 data-*를 DOM에 안 올려도 클래스 매칭.)
+- **수정 화면 기존 파일 안 보임**: FileUploader `initialFiles`에만 의존하지 않고, 회원 `jobs_form`·관리자 `jobs_show`·`company_apply`·관리자 업체 수정에 **등록된 파일 갤러리**(`cmb-existing-files`)를 추가. `uploader_epoch` + `files_ready` 재토글로 업로더 리마운트 보강.
+
+### Changed
+- 버전·캐시 버스트 **0.10.19**.
+- `jobs_show` 페이지 401 토스트 문구를 `{{error.message || '요청을 처리하지 못했습니다.'}}`로 완화.
+
 ## [0.10.18] - 2026-09-18
 
 ### Fixed
