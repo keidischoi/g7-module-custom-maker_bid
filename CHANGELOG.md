@@ -4,6 +4,13 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.11] - 2026-09-17
+
+### Changed
+
+- 회원(사용자) 홈·목록 화면의 **각 목록을 섹션 박스**(`cmb-section-card`)로 정렬합니다. 이력(알림·내 의뢰), 입찰현황(내 입찰·입찰 가능), 의뢰목록, 입찰자 목록·알림에 공통 헤더 행(`cmb-section-head`)과 안쪽 리스트 행 스타일을 맞춥니다.
+- 버전·캐시 버스트 **0.9.11**.
+
 ## [0.9.10] - 2026-09-17
 
 ### Changed

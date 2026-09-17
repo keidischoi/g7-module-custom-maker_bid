@@ -988,6 +988,55 @@ html.dark .cmb-bid-form input,
   gap: 0.5rem;
 }
 
+.cmb-section-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cmb-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--cmb-border);
+}
+
+.cmb-section-link {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--cmb-muted-fg);
+  text-decoration: none;
+}
+.cmb-section-link:hover {
+  color: var(--cmb-card-fg);
+  text-decoration: underline;
+}
+
+.cmb-section-card > .cmb-card-list,
+.cmb-section-card > .cmb-card-list.mt-3 {
+  margin-top: 0;
+  gap: 0.55rem;
+}
+
+/* Nested item cards inside a section box: softer inset rows */
+.cmb-section-card .cmb-job-card,
+.cmb-section-card .cmb-bid-card,
+.cmb-section-card .cmb-company-card {
+  background: color-mix(in srgb, var(--cmb-muted) 65%, var(--cmb-card));
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  box-shadow: none;
+}
+.cmb-section-card a.cmb-job-card:hover,
+.cmb-section-card a.cmb-company-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--cmb-ring) 45%, var(--cmb-border));
+}
+
 .cmb-section-title {
   font-size: 1.125rem;
   font-weight: 600;

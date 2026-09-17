@@ -287,142 +287,162 @@
             ]
           },
           {
-            "id": "dh",
-            "type": "basic",
-            "name": "H2",
-            "props": {
-              "className": "cmb-section-title"
-            },
-            "text": "공개 입찰자"
-          },
-          {
-            "id": "empty",
-            "type": "basic",
-            "name": "P",
-            "if": "{{!(companies?.data?.data ?? companies?.data ?? []).length}}",
-            "props": {
-              "className": "cmb-empty"
-            },
-            "text": "공개된 입찰자가 없습니다."
-          },
-          {
-            "id": "clist",
+            "id": "dir_card",
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-card-list"
+              "className": "cmb-section-card"
             },
             "children": [
               {
-                "id": "citem",
+                "id": "dh_row",
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-company-card"
-                },
-                "iteration": {
-                  "source": "{{companies?.data?.data ?? companies?.data ?? []}}",
-                  "item_var": "$item"
+                  "className": "cmb-section-head"
                 },
                 "children": [
                   {
-                    "id": "ctop",
+                    "id": "dh",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-section-title"
+                    },
+                    "text": "공개 입찰자"
+                  }
+                ]
+              },
+              {
+                "id": "empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(companies?.data?.data ?? companies?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-empty"
+                },
+                "text": "공개된 입찰자가 없습니다."
+              },
+              {
+                "id": "clist",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list"
+                },
+                "children": [
+                  {
+                    "id": "citem",
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-company-card-top"
+                      "className": "cmb-company-card"
+                    },
+                    "iteration": {
+                      "source": "{{companies?.data?.data ?? companies?.data ?? []}}",
+                      "item_var": "$item"
                     },
                     "children": [
                       {
-                        "id": "cname",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-company-card-title"
-                        },
-                        "text": "{{$item.name}}"
-                      },
-                      {
-                        "id": "cbadges",
+                        "id": "ctop",
                         "type": "basic",
                         "name": "Div",
                         "props": {
-                          "className": "flex gap-1 flex-wrap"
+                          "className": "cmb-company-card-top"
                         },
                         "children": [
                           {
-                            "id": "ckind",
+                            "id": "cname",
                             "type": "basic",
-                            "name": "Span",
+                            "name": "P",
                             "props": {
-                              "className": "cmb-badge"
+                              "className": "cmb-company-card-title"
                             },
-                            "text": "{{$item.kind_label || $item.kind}}"
+                            "text": "{{$item.name}}"
                           },
                           {
-                            "id": "crec",
+                            "id": "cbadges",
                             "type": "basic",
-                            "name": "Span",
-                            "if": "{{$item.is_recommended}}",
+                            "name": "Div",
                             "props": {
-                              "className": "cmb-badge cmb-badge-rec"
+                              "className": "flex gap-1 flex-wrap"
                             },
-                            "text": "추천"
+                            "children": [
+                              {
+                                "id": "ckind",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-badge"
+                                },
+                                "text": "{{$item.kind_label || $item.kind}}"
+                              },
+                              {
+                                "id": "crec",
+                                "type": "basic",
+                                "name": "Span",
+                                "if": "{{$item.is_recommended}}",
+                                "props": {
+                                  "className": "cmb-badge cmb-badge-rec"
+                                },
+                                "text": "추천"
+                              }
+                            ]
                           }
                         ]
-                      }
-                    ]
-                  },
-                  {
-                    "id": "cbio",
-                    "type": "basic",
-                    "name": "P",
-                    "if": "{{$item.bio}}",
-                    "props": {
-                      "className": "cmb-page-guide mt-2"
-                    },
-                    "text": "{{$item.bio}}"
-                  },
-                  {
-                    "id": "cmeta",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-company-card-meta"
-                    },
-                    "children": [
-                      {
-                        "id": "cr",
-                        "type": "basic",
-                        "name": "Span",
-                        "if": "{{$item.rating_count}}",
-                        "text": "평점 {{$item.rating_score}} ({{$item.rating_count}})"
                       },
                       {
-                        "id": "ch",
+                        "id": "cbio",
                         "type": "basic",
-                        "name": "A",
-                        "if": "{{$item.homepage_url}}",
+                        "name": "P",
+                        "if": "{{$item.bio}}",
                         "props": {
-                          "href": "{{$item.homepage_url}}",
-                          "className": "underline",
-                          "target": "_blank",
-                          "rel": "noopener"
+                          "className": "cmb-page-guide mt-2"
                         },
-                        "text": "홈페이지"
+                        "text": "{{$item.bio}}"
                       },
                       {
-                        "id": "cp",
+                        "id": "cmeta",
                         "type": "basic",
-                        "name": "A",
-                        "if": "{{$item.portfolio_url}}",
+                        "name": "Div",
                         "props": {
-                          "href": "{{$item.portfolio_url}}",
-                          "className": "underline",
-                          "target": "_blank",
-                          "rel": "noopener"
+                          "className": "cmb-company-card-meta"
                         },
-                        "text": "포트폴리오"
+                        "children": [
+                          {
+                            "id": "cr",
+                            "type": "basic",
+                            "name": "Span",
+                            "if": "{{$item.rating_count}}",
+                            "text": "평점 {{$item.rating_score}} ({{$item.rating_count}})"
+                          },
+                          {
+                            "id": "ch",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$item.homepage_url}}",
+                            "props": {
+                              "href": "{{$item.homepage_url}}",
+                              "className": "underline",
+                              "target": "_blank",
+                              "rel": "noopener"
+                            },
+                            "text": "홈페이지"
+                          },
+                          {
+                            "id": "cp",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$item.portfolio_url}}",
+                            "props": {
+                              "href": "{{$item.portfolio_url}}",
+                              "className": "underline",
+                              "target": "_blank",
+                              "rel": "noopener"
+                            },
+                            "text": "포트폴리오"
+                          }
+                        ]
                       }
                     ]
                   }
