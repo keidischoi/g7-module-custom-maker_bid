@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.11] - 2026-09-18
+
+### Fixed
+- **의뢰 명세 전부 해당없음**: 상세의 `data-cmb-job-spec`가 라우트 id 없는 `_local.form`(빈 의뢰 폼 셸)을 job으로 오인해 유형·예산·마감·급행·크기·설명 등을 전부 `해당없음`으로 그리던 문제를 수정. 상세에서는 **job.id가 URL과 일치**할 때만 사용하고, `payload`/`type_slug`/`rush_fee` 등 저장 키를 정규화한 뒤 CATALOG/FALLBACK이 읽습니다.
+- **입찰 권한** 표시: 명세·목록에서 `job.audience` → **전체/업체만/개인만** (`audience_label`). 관리자 의뢰 목록 메타에 `입찰 권한` 컬럼 문구 추가.
+- **본인 의뢰 개인정보**: 소유자(`viewer.is_owner` / `privacy_visible` / `can_view_privacy`)는 연락처 등을 `비공개`로 가리지 않음. (입찰 허용 권한·기본 입찰 공개 설정과는 무관 — PII 박스는 별도 privacy 규칙.)
+
+### Changed
+- 버전·캐시 버스트 **0.10.11**.
+
 ## [0.10.10] - 2026-09-17
 
 ### Added

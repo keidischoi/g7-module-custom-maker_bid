@@ -822,7 +822,7 @@ html.cmb-dark-boot .cmb-page .cmb-job-card {
   color: var(--cmb-card-fg, #e5e7eb);
 }
 
-/* 0.10.10: admin surfaces always translucent (no html.dark gate — host bg-white loses) */
+/* 0.10.11: admin surfaces always translucent (no html.dark gate — host bg-white loses) */
 .cmb-admin .cmb-admin-card,
 .cmb-admin .cmb-admin-row,
 .cmb-admin .cmb-admin-nav,

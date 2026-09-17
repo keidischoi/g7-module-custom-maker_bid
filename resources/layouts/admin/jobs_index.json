@@ -284,7 +284,7 @@
                         "props": {
                           "className": "cmb-admin-muted"
                         },
-                        "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}"
+                        "text": "{{$item.type_name || $item.type}} · {{$item.status_label || $item.status}} · 입찰 권한 {{$item.audience_label || '전체'}} · 회원 {{$item.user_id}} · 입찰 {{$item.bids_count ?? 0}}"
                       }
                     ]
                   },

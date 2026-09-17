@@ -196,33 +196,96 @@
     return out && typeof out === 'object' ? out : null;
   }
 
-  function looksLikeJob(value) {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-    if (value.id == null && value.title == null && value.type == null && !value.type_name) return false;
-    return !!(value.id || value.title || value.type || value.type_name || value.budget_label || value.status);
-  }
-
   function jobIdFromLocation() {
     var p = String(location.pathname || '');
     var m = p.match(/\/maker-bids\/(?:jobs\/)?(\d+)(?:\/|$)/) || p.match(/\/admin\/maker-bids\/jobs\/(\d+)/);
     return m ? String(m[1]) : '';
   }
 
+  function audienceLabel(raw) {
+    var v = String(raw == null ? '' : raw).toLowerCase().trim();
+    if (v === 'company' || v === 'company_only' || v === '업체만' || v === '업체') return '업체만';
+    if (v === 'individual' || v === 'individual_only' || v === '개인만' || v === '개인' || v === 'person') return '개인만';
+    if (v === 'all' || v === '전체' || v === '') return '전체';
+    return String(raw);
+  }
+
+  function jobRichness(job) {
+    if (!job || typeof job !== 'object') return 0;
+    var score = 0;
+    if (job.id != null) score += 50;
+    ['title', 'type', 'type_name', 'type_slug', 'budget_min', 'budget_max', 'budget', 'budget_label',
+      'closes_at', 'closes_at_local', 'description', 'audience', 'audience_label', 'size_label',
+      'sizes', 'rush_fee_enabled', 'status_label', 'privacy_visible'].forEach(function (k) {
+      var v = job[k];
+      if (v === null || v === undefined) return;
+      if (typeof v === 'string' && v.trim() === '') return;
+      if (Array.isArray(v) && !v.length) return;
+      score += 1;
+    });
+    return score;
+  }
+
+  function normalizeJob(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    var base = raw;
+    // Create/edit and some hosts nest saved fields under payload
+    if (raw.payload && typeof raw.payload === 'object' && !Array.isArray(raw.payload)) {
+      base = Object.assign({}, raw.payload, raw);
+      try { delete base.payload; } catch (e) { base.payload = undefined; }
+    }
+    var job = Object.assign({}, base);
+    if ((job.type == null || job.type === '') && job.type_slug) job.type = job.type_slug;
+    if ((job.type_name == null || job.type_name === '') && job.type_label) job.type_name = job.type_label;
+    if (job.rush_fee_enabled == null && job.rush_fee != null) job.rush_fee_enabled = job.rush_fee;
+    if (job.budget_max == null && job.budget != null) job.budget_max = job.budget;
+    if (job.budget_min == null && job.budget_from != null) job.budget_min = job.budget_from;
+    if ((job.closes_at == null || job.closes_at === '') && job.deadline) job.closes_at = job.deadline;
+    if (!job.audience_label && job.audience != null && job.audience !== '') {
+      job.audience_label = audienceLabel(job.audience);
+    } else if (job.audience_label) {
+      job.audience_label = audienceLabel(job.audience_label);
+    }
+    return job;
+  }
+
+  function looksLikeJob(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    // Reject empty create/edit form shells (status/audience defaults, no id)
+    if (value.id == null && !value.type_name && !value.budget_label && !value.privacy_visible
+      && !(value.title && String(value.title).trim()) && !(value.description && String(value.description).trim())) {
+      return false;
+    }
+    return !!(value.id || value.title || value.type || value.type_name || value.type_slug
+      || value.budget_label || value.budget_min != null || value.closes_at || value.status_label);
+  }
+
   function matchRouteJob(value) {
     var id = jobIdFromLocation();
-    if (!looksLikeJob(value)) return null;
-    if (id && value.id != null && String(value.id) !== id) return null;
-    return value;
+    var job = normalizeJob(value);
+    if (!looksLikeJob(job)) return null;
+    // On detail pages, never accept id-less form state (was painting every field 해당없음)
+    if (id) {
+      if (job.id == null || String(job.id) !== id) return null;
+    }
+    return job;
+  }
+
+  function pickRicher(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    return jobRichness(b) > jobRichness(a) ? b : a;
   }
 
   function fromState(keys) {
     var i;
     var value;
+    var best = null;
     for (i = 0; i < keys.length; i++) {
       value = matchRouteJob(unwrap(getState(keys[i])));
-      if (value) return value;
+      best = pickRicher(best, value);
     }
-    return null;
+    return best;
   }
 
   function walkStateForJob(node, depth, seen) {
@@ -260,11 +323,24 @@
   }
 
   function resolveJob() {
-    return fromState(JOB_KEYS) || jobFromFullState() || cachedJob || null;
+    var fromKeys = fromState(JOB_KEYS);
+    var walked = jobFromFullState();
+    var best = pickRicher(fromKeys, walked);
+    best = pickRicher(best, cachedJob && matchRouteJob(cachedJob));
+    return best || null;
   }
 
   function resolveViewer() {
-    return fromState(VIEWER_KEYS) || unwrap(getState('viewer.data')) || unwrap(getState('viewer')) || cachedViewer || {};
+    var i;
+    var value;
+    for (i = 0; i < VIEWER_KEYS.length; i++) {
+      value = unwrap(getState(VIEWER_KEYS[i]));
+      if (value && typeof value === 'object' && !Array.isArray(value)
+        && (value.can_view_privacy != null || value.is_owner != null || value.authenticated != null || value.privacy)) {
+        return value;
+      }
+    }
+    return unwrap(getState('viewer.data')) || unwrap(getState('viewer')) || cachedViewer || {};
   }
 
   function isEmpty(value) {
@@ -347,7 +423,11 @@
     { label: '급행 적용 조건', value: function (job) { return job.rush_deadline_label || job.rush_deadline; } },
     { label: '스케줄 선점비 가능', key: 'schedule_premium_enabled', format: function (v) { return booleanLabel(v, '가능', '불가'); } },
     { label: '상태', value: function (job) { return job.status_label || job.status; } },
-    { label: '공개 설정', value: function (job) { return job.audience_label || job.audience; } },
+    { label: '입찰 권한', value: function (job) {
+      if (job.audience_label) return audienceLabel(job.audience_label);
+      if (job.audience != null && job.audience !== '') return audienceLabel(job.audience);
+      return null;
+    } },
     { section: '제작 사양' },
     { label: '최종 크기', value: sizeValue, wide: true },
     { label: '제공 확장자', key: 'provided_extensions', applies: includesModeling, wide: true },
@@ -382,8 +462,8 @@
     ['closes_at', '마감 시각'],
     ['status_label', '상태'],
     ['status', '상태'],
-    ['audience_label', '공개 설정'],
-    ['audience', '공개 설정'],
+    ['audience_label', '입찰 권한'],
+    ['audience', '입찰 권한'],
     ['size_label', '최종 크기'],
     ['description', '설명'],
     ['rush_deadline_label', '급행 적용 조건'],
@@ -592,8 +672,11 @@
     FALLBACK_KEYS.forEach(function (pair) {
       var key = pair[0];
       var label = pair[1];
-      if (!(key in job)) return;
+      if (!(key in job) && key !== 'audience_label') return;
       var raw = job[key];
+      if (key === 'audience' || key === 'audience_label') {
+        raw = job.audience_label || audienceLabel(job.audience);
+      }
       var value = key.indexOf('budget') >= 0 && key !== 'budget_label' ? money(raw) : valueOrNone(raw);
       addField(host, { label: label, wide: key === 'description', multiline: key === 'description' }, value);
     });
@@ -616,7 +699,10 @@
 
   function render(host, job, viewer) {
     var admin = /\/admin\/maker-bids\/jobs\/\d+/.test(String(location.pathname || ''));
-    var canViewPrivate = admin || job.privacy_visible === true || !!(viewer && viewer.can_view_privacy);
+    var canViewPrivate = admin
+      || job.privacy_visible === true
+      || !!(viewer && viewer.can_view_privacy)
+      || !!(viewer && viewer.is_owner);
     var privacy = viewer && viewer.privacy && typeof viewer.privacy === 'object' ? viewer.privacy : {};
     var signature = signatureOf([job.id, job.updated_at, canViewPrivate, job.budget_max, job.description, privacy]);
     if (host.getAttribute('data-cmb-job-spec-signature') === signature) return;
@@ -1228,13 +1314,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.10';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.11';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.10') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.11') < 0) {
         existing.href = FORM_CSS;
       }
       return;

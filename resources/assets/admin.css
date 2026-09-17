@@ -805,7 +805,7 @@ html.cmb-admin-dark .cmb-btn-reject {
   }
 }
 
-/* ===== 0.10.10: force dark translucent surfaces (host/Tailwind bg-white loses) =====
+/* ===== 0.10.11: force dark translucent surfaces (host/Tailwind bg-white loses) =====
    Admin pages sit on dark shop chrome. Do NOT gate on html.dark — host often
    injects bg-white / bg-card / bg-background on Div wrappers. */
 .cmb-admin-card,
