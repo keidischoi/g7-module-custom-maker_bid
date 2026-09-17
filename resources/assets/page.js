@@ -288,27 +288,92 @@
     }
     if (job.provided_extensions != null) {
       job.provided_extensions = (function normalizeExtListPage(raw) {
-        var out = [];
-        var seen = {};
-        var push = function (tok) {
-          if (tok == null || tok === '') return;
+        var EXT_KNOWN_PAGE = {
+          STL: 1, OBJ: 1, '3MF': 1, FBX: 1, PDF: 1, STEP: 1, STP: 1, GCODE: 1, DWG: 1,
+          GLB: 1, GLTF: 1, IGES: 1, IGS: 1, PLY: 1, AMF: 1, DAE: 1, BLEND: 1, ZIP: 1, RAR: 1, '7Z': 1
+        };
+        var EXT_JUNK_PAGE = {
+          TRUE: 1, FALSE: 1, YES: 1, NO: 1, ON: 1, OFF: 1, NULL: 1, UNDEFINED: 1,
+          KRW: 1, USD: 1, EUR: 1, JPY: 1, CNY: 1, GBP: 1,
+          KR: 1, US: 1, EN: 1, JP: 1, CN: 1, KO: 1
+        };
+        function asExtTokenPage(tok) {
+          if (tok == null || tok === '') return '';
           var s = '';
           if (typeof tok === 'object') {
+            if (Array.isArray(tok)) return '';
             var v = tok.value != null ? tok.value : tok.label != null ? tok.label : tok.ext != null ? tok.ext : tok.slug != null ? tok.slug : '';
-            if (typeof v === 'object') return;
+            if (typeof v === 'object') return '';
             s = String(v == null ? '' : v);
           } else {
             s = String(tok);
           }
           s = s.replace(/^\./, '').trim().toUpperCase();
-          if (!s || s.indexOf('[OBJECT') === 0 || s === 'OBJECT]' || !/^[A-Z0-9]{1,16}$/.test(s)) return;
-          if (seen[s]) return;
+          if (!s || s.indexOf('[OBJECT') === 0 || s === 'OBJECT]' || /^\[OBJECT/.test(s)) return '';
+          if (s.length < 2 || /^\d+$/.test(s) || EXT_JUNK_PAGE[s]) return '';
+          if (!/^[A-Z0-9]{2,16}$/.test(s)) return '';
+          return s;
+        }
+        function isBoolish(v) {
+          if (v === true || v === false || v === 0 || v === 1 || v === '0' || v === '1') return true;
+          if (typeof v === 'string') {
+            var u = v.trim().toLowerCase();
+            return u === 'on' || u === 'off' || u === 'true' || u === 'false' || u === 'yes' || u === 'no';
+          }
+          return false;
+        }
+        function isTruthy(v) {
+          if (v === true || v === 1 || v === '1') return true;
+          if (typeof v === 'string') {
+            var u = v.trim().toLowerCase();
+            return u === 'on' || u === 'true' || u === 'yes';
+          }
+          return false;
+        }
+        function looksLikeExtMap(obj) {
+          if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
+          var keys = Object.keys(obj);
+          if (!keys.length) return false;
+          var i, tok;
+          for (i = 0; i < keys.length; i++) {
+            tok = String(keys[i] || '').replace(/^\./, '').trim().toUpperCase();
+            if (tok.length < 2 || !/^[A-Z0-9]{2,16}$/.test(tok) || EXT_JUNK_PAGE[tok] || /^\d+$/.test(tok) || !isBoolish(obj[keys[i]])) return false;
+          }
+          return true;
+        }
+        function isSingleOpt(obj) {
+          return !!(obj && typeof obj === 'object' && !Array.isArray(obj)
+            && (obj.value != null || obj.label != null || obj.ext != null || obj.slug != null));
+        }
+        var out = [];
+        var seen = {};
+        var push = function (tok) {
+          var s = asExtTokenPage(tok);
+          if (!s || seen[s] || !EXT_KNOWN_PAGE[s]) return;
           seen[s] = 1;
           out.push(s);
         };
-        if (Array.isArray(raw)) raw.forEach(push);
-        else if (typeof raw === 'string') String(raw).split(/[\s,;|]+/).forEach(push);
-        else if (typeof raw === 'object') Object.keys(raw).forEach(function (k) { push(raw[k]); });
+        if (Array.isArray(raw)) {
+          raw.forEach(function (item) {
+            if (item != null && typeof item === 'object' && !Array.isArray(item)) {
+              if (looksLikeExtMap(item)) {
+                Object.keys(item).forEach(function (k) { if (isTruthy(item[k])) push(k); });
+              } else if (isSingleOpt(item)) {
+                push(item);
+              }
+            } else {
+              push(item);
+            }
+          });
+        } else if (typeof raw === 'string') {
+          String(raw).split(/[\s,;|]+/).forEach(push);
+        } else if (typeof raw === 'object' && raw) {
+          if (looksLikeExtMap(raw)) {
+            Object.keys(raw).forEach(function (k) { if (isTruthy(raw[k])) push(k); });
+          } else if (isSingleOpt(raw)) {
+            push(raw);
+          }
+        }
         return out;
       })(job.provided_extensions);
     }
@@ -1441,13 +1506,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.15';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.16';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.15') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.16') < 0) {
         existing.href = FORM_CSS;
       }
       return;

@@ -25,7 +25,16 @@ expect('ext object items', UploadRules::parseExtensionList([
     ['ext' => 'pdf'],
 ]), ['3MF', 'FBX', 'PDF']);
 expect('ext rejects object Object split junk', UploadRules::parseExtensionList(['[OBJECT', 'OBJECT]']), []);
-expect('ext plain object values', UploadRules::parseExtensionList(['a' => 'STL', 'b' => 'DWG']), ['STL', 'DWG']);
+expect('ext rejects assoc non-ext map values', UploadRules::parseExtensionList(['a' => 'STL', 'b' => 'DWG']), []);
+expect('ext map uses truthy keys', UploadRules::parseExtensionList(['STL' => true, 'OBJ' => 1, 'PDF' => false, 'DWG' => 'on']), ['STL', 'OBJ', 'DWG']);
+expect('ext rejects settings junk object', UploadRules::parseExtensionList([
+    'rush' => false,
+    'currency' => 'KRW',
+    'title' => 'DEFAULT',
+    'n' => 2,
+]), []);
+expect('ext rejects boolean-ish tokens', UploadRules::parseExtensionList(['FALSE', 'KRW', 'A', '2', 'STL']), ['STL']);
+expect('ext single option object', UploadRules::parseExtensionList(['value' => 'obj', 'label' => 'OBJ File']), ['OBJ']);
 
 // --- BlankToNull slugString via anon ---
 $req = new class {

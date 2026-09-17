@@ -122,8 +122,100 @@ class UploadRules
         return in_array(strtoupper($ext), $allowed, true);
     }
 
+    /** @var list<string> */
+    private const EXT_TOKEN_JUNK = [
+        'TRUE', 'FALSE', 'YES', 'NO', 'ON', 'OFF', 'NULL', 'UNDEFINED',
+        'KRW', 'USD', 'EUR', 'JPY', 'CNY', 'GBP',
+        'KR', 'US', 'EN', 'JP', 'CN', 'KO',
+    ];
+
+    /**
+     * Normalize a single extension token; returns null when rejected.
+     */
+    public static function normalizeExtToken(mixed $raw): ?string
+    {
+        if (is_array($raw)) {
+            $raw = $raw['value'] ?? $raw['label'] ?? $raw['ext'] ?? $raw['slug'] ?? null;
+            if (is_array($raw) || is_object($raw)) {
+                return null;
+            }
+        } elseif (is_object($raw)) {
+            $arr = (array) $raw;
+            $raw = $arr['value'] ?? $arr['label'] ?? $arr['ext'] ?? $arr['slug'] ?? null;
+            if (is_array($raw) || is_object($raw)) {
+                return null;
+            }
+        }
+        if (! is_string($raw) && ! is_int($raw) && ! is_float($raw)) {
+            return null;
+        }
+        $value = strtoupper(ltrim(trim((string) $raw), '.'));
+        if ($value === '' || str_starts_with($value, '[OBJECT') || $value === 'OBJECT]') {
+            return null;
+        }
+        if (strlen($value) < 2 || ctype_digit($value) || in_array($value, self::EXT_TOKEN_JUNK, true)) {
+            return null;
+        }
+        if (! preg_match('/^[A-Z0-9]{2,16}$/', $value)) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private static function isBoolishExtValue(mixed $v): bool
+    {
+        if (is_bool($v) || $v === 0 || $v === 1 || $v === '0' || $v === '1') {
+            return true;
+        }
+        if (is_string($v)) {
+            $u = strtolower(trim($v));
+
+            return in_array($u, ['on', 'off', 'true', 'false', 'yes', 'no'], true);
+        }
+
+        return false;
+    }
+
+    private static function isTruthyExtValue(mixed $v): bool
+    {
+        if ($v === true || $v === 1 || $v === '1') {
+            return true;
+        }
+        if (is_string($v)) {
+            $u = strtolower(trim($v));
+
+            return in_array($u, ['on', 'true', 'yes'], true);
+        }
+
+        return false;
+    }
+
+    /**
+     * Associative map whose keys look like extensions and values are boolean-ish.
+     *
+     * @param  array<mixed, mixed>  $raw
+     */
+    private static function isExtensionMap(array $raw): bool
+    {
+        if ($raw === [] || array_is_list($raw)) {
+            return false;
+        }
+        foreach ($raw as $key => $value) {
+            $tok = self::normalizeExtToken(is_string($key) || is_int($key) ? (string) $key : null);
+            if ($tok === null || ! self::isBoolishExtValue($value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Parse a settings textarea / CSV / array into uppercase extension tokens.
+     *
+     * Never treats arbitrary associative object values (e.g. settings.general) as extensions.
+     * Extension maps use KEYS (STL => true), not values.
      *
      * @param  mixed  $raw
      * @return list<string>
@@ -137,28 +229,45 @@ class UploadRules
         if (! is_array($raw)) {
             return [];
         }
+
+        if (self::isExtensionMap($raw)) {
+            foreach ($raw as $key => $value) {
+                if (! self::isTruthyExtValue($value)) {
+                    continue;
+                }
+                $tok = self::normalizeExtToken((string) $key);
+                if ($tok !== null && ! in_array($tok, $items, true)) {
+                    $items[] = $tok;
+                }
+            }
+
+            return $items;
+        }
+
+        // Single option-shaped assoc: {value|label|ext|slug}
+        if (! array_is_list($raw)) {
+            if (array_key_exists('value', $raw) || array_key_exists('label', $raw)
+                || array_key_exists('ext', $raw) || array_key_exists('slug', $raw)) {
+                $tok = self::normalizeExtToken($raw);
+                return $tok !== null ? [$tok] : [];
+            }
+
+            // Arbitrary associative map (settings blob, form state) — do not iterate values.
+            return [];
+        }
+
         foreach ($raw as $item) {
-            if (is_array($item)) {
-                $item = $item['value'] ?? $item['label'] ?? $item['ext'] ?? $item['slug'] ?? null;
-                if (is_array($item)) {
-                    continue;
+            if (is_array($item) && ! array_is_list($item) && self::isExtensionMap($item)) {
+                foreach (self::parseExtensionList($item) as $tok) {
+                    if (! in_array($tok, $items, true)) {
+                        $items[] = $tok;
+                    }
                 }
-            } elseif (is_object($item)) {
-                $item = (array) $item;
-                $item = $item['value'] ?? $item['label'] ?? $item['ext'] ?? $item['slug'] ?? null;
-                if (is_array($item) || is_object($item)) {
-                    continue;
-                }
-            }
-            if (! is_string($item) && ! is_int($item) && ! is_float($item)) {
                 continue;
             }
-            $value = strtoupper(ltrim(trim((string) $item), '.'));
-            if ($value === '' || str_starts_with($value, '[OBJECT') || $value === 'OBJECT]' || ! preg_match('/^[A-Z0-9]{1,16}$/', $value)) {
-                continue;
-            }
-            if (! in_array($value, $items, true)) {
-                $items[] = $value;
+            $tok = self::normalizeExtToken($item);
+            if ($tok !== null && ! in_array($tok, $items, true)) {
+                $items[] = $tok;
             }
         }
 
