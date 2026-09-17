@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.9] - 2026-09-17
+
+### Fixed
+- **의뢰 명세 무한 로딩**: 상세의 `의뢰 명세를 불러오는 중입니다.` 가 끝나지 않던 문제를 수정. `G7Core.state` 키 조회 실패·SPA에서 job이 늦게 도착·MutationObserver가 `characterData`만 바뀔 때 재스캔하지 않던 경우를 모두 커버.
+- 명세는 내장 필드 카탈로그로 **동기 렌더**하며, 상태 전체 walk → 필요 시 job API 직접 fetch → 폴링/`state.subscribe`로 호스트에 `data-cmb-job-spec-ready`가 붙을 때까지 재시도. 카탈로그 렌더가 실패해도 job에 있는 키로 폴백 표시.
+- 빈 값 `해당없음`, 개인정보 마스킹, 이미지 갤러리(+N·라이트박스), 금액 천단위 포맷 유지.
+
+### Changed
+- 버전·캐시 버스트 **0.10.9**.
+
 ## [0.10.8] - 2026-09-17
 
 ### Fixed

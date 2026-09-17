@@ -186,7 +186,7 @@
   function unwrap(value) {
     var out = value;
     var i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 6; i++) {
       if (out && out.data !== undefined && !Array.isArray(out.data) && typeof out.data === 'object') {
         out = out.data;
       } else {
@@ -196,14 +196,75 @@
     return out && typeof out === 'object' ? out : null;
   }
 
+  function looksLikeJob(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    if (value.id == null && value.title == null && value.type == null && !value.type_name) return false;
+    return !!(value.id || value.title || value.type || value.type_name || value.budget_label || value.status);
+  }
+
+  function jobIdFromLocation() {
+    var p = String(location.pathname || '');
+    var m = p.match(/\/maker-bids\/(?:jobs\/)?(\d+)(?:\/|$)/) || p.match(/\/admin\/maker-bids\/jobs\/(\d+)/);
+    return m ? String(m[1]) : '';
+  }
+
+  function matchRouteJob(value) {
+    var id = jobIdFromLocation();
+    if (!looksLikeJob(value)) return null;
+    if (id && value.id != null && String(value.id) !== id) return null;
+    return value;
+  }
+
   function fromState(keys) {
     var i;
     var value;
     for (i = 0; i < keys.length; i++) {
-      value = unwrap(getState(keys[i]));
-      if (value && (value.id || value.title || value.type)) return value;
+      value = matchRouteJob(unwrap(getState(keys[i])));
+      if (value) return value;
     }
     return null;
+  }
+
+  function walkStateForJob(node, depth, seen) {
+    if (!node || typeof node !== 'object' || depth > 8) return null;
+    if (seen.has(node)) return null;
+    seen.add(node);
+    var matched = matchRouteJob(unwrap(node));
+    if (matched) return matched;
+    var key;
+    var child;
+    if (Array.isArray(node)) {
+      for (key = 0; key < Math.min(node.length, 40); key++) {
+        child = walkStateForJob(node[key], depth + 1, seen);
+        if (child) return child;
+      }
+      return null;
+    }
+    for (key in node) {
+      if (!Object.prototype.hasOwnProperty.call(node, key)) continue;
+      if (key === '_global' || key === 'window' || key === 'document') continue;
+      child = walkStateForJob(node[key], depth + 1, seen);
+      if (child) return child;
+    }
+    return null;
+  }
+
+  function jobFromFullState() {
+    try {
+      if (!(window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function')) return null;
+      var root = window.G7Core.state.get();
+      return walkStateForJob(root, 0, new Set());
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function resolveJob() {
+    return fromState(JOB_KEYS) || jobFromFullState() || cachedJob || null;
+  }
+
+  function resolveViewer() {
+    return fromState(VIEWER_KEYS) || unwrap(getState('viewer.data')) || unwrap(getState('viewer')) || cachedViewer || {};
   }
 
   function isEmpty(value) {
@@ -310,6 +371,25 @@
   ];
   window.CMB_JOB_SPEC_CATALOG = CATALOG;
 
+  var FALLBACK_KEYS = [
+    ['title', '제목'],
+    ['type_name', '유형'],
+    ['type', '유형 코드'],
+    ['budget_label', '예산'],
+    ['budget_min', '예산 최소'],
+    ['budget_max', '예산 최대'],
+    ['closes_at_local', '마감 시각'],
+    ['closes_at', '마감 시각'],
+    ['status_label', '상태'],
+    ['status', '상태'],
+    ['audience_label', '공개 설정'],
+    ['audience', '공개 설정'],
+    ['size_label', '최종 크기'],
+    ['description', '설명'],
+    ['rush_deadline_label', '급행 적용 조건'],
+    ['provided_extensions', '제공 확장자']
+  ];
+
   function privateValue(job, privacy, key) {
     if (!isEmpty(job[key])) return job[key];
     return privacy && !isEmpty(privacy[key]) ? privacy[key] : null;
@@ -343,6 +423,12 @@
   var lightboxImages = [];
   var lightboxIndex = 0;
   var lightboxPreviousOverflow = '';
+  var cachedJob = null;
+  var cachedViewer = null;
+  var fetchInFlight = null;
+  var fetchAttemptedFor = '';
+  var rendering = false;
+  var pollTimer = null;
 
   function imageUrl(file) {
     if (!file || typeof file !== 'object') return '';
@@ -501,13 +587,19 @@
     return String(hash >>> 0);
   }
 
-  function render(host, job, viewer) {
-    var admin = /^\/admin\/maker-bids\/jobs\/\d+\/?$/.test(String(location.pathname || ''));
-    var canViewPrivate = admin || job.privacy_visible === true || !!(viewer && viewer.can_view_privacy);
-    var privacy = viewer && viewer.privacy && typeof viewer.privacy === 'object' ? viewer.privacy : {};
-    var signature = signatureOf([job.id, job.updated_at, canViewPrivate, job, privacy]);
-    if (host.getAttribute('data-cmb-job-spec-signature') === signature) return;
-    host.innerHTML = '';
+  function renderFallback(host, job) {
+    addSection(host, '의뢰 명세');
+    FALLBACK_KEYS.forEach(function (pair) {
+      var key = pair[0];
+      var label = pair[1];
+      if (!(key in job)) return;
+      var raw = job[key];
+      var value = key.indexOf('budget') >= 0 && key !== 'budget_label' ? money(raw) : valueOrNone(raw);
+      addField(host, { label: label, wide: key === 'description', multiline: key === 'description' }, value);
+    });
+  }
+
+  function renderCatalog(host, job, viewer, canViewPrivate, privacy) {
     CATALOG.forEach(function (field) {
       if (field.section) {
         addSection(host, field.section);
@@ -520,35 +612,189 @@
       }
       addField(host, field, value);
     });
-    if (!canViewPrivate) {
-      var note = document.createElement('p');
-      note.className = 'cmb-hint sm:col-span-2';
-      note.textContent = '연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다.';
-      host.appendChild(note);
-    }
-    var body = host.closest ? host.closest('.cmb-job-spec-body') : null;
-    renderGallery(body && body.querySelector('[data-cmb-job-gallery]'), job);
-    host.setAttribute('data-cmb-job-spec-signature', signature);
   }
 
-  function scan() {
-    var job = fromState(JOB_KEYS);
-    if (!job) return;
-    var viewer = fromState(VIEWER_KEYS) || unwrap(getState('viewer.data')) || unwrap(getState('viewer')) || {};
-    document.querySelectorAll('[data-cmb-job-spec]').forEach(function (host) {
-      render(host, job, viewer);
+  function render(host, job, viewer) {
+    var admin = /\/admin\/maker-bids\/jobs\/\d+/.test(String(location.pathname || ''));
+    var canViewPrivate = admin || job.privacy_visible === true || !!(viewer && viewer.can_view_privacy);
+    var privacy = viewer && viewer.privacy && typeof viewer.privacy === 'object' ? viewer.privacy : {};
+    var signature = signatureOf([job.id, job.updated_at, canViewPrivate, job.budget_max, job.description, privacy]);
+    if (host.getAttribute('data-cmb-job-spec-signature') === signature) return;
+    rendering = true;
+    try {
+      if (window.__cmbJobSpecObs) {
+        try { window.__cmbJobSpecObs.disconnect(); } catch (e) {}
+      }
+      host.innerHTML = '';
+      try {
+        renderCatalog(host, job, viewer, canViewPrivate, privacy);
+      } catch (err) {
+        host.innerHTML = '';
+        renderFallback(host, job);
+      }
+      if (!canViewPrivate) {
+        var note = document.createElement('p');
+        note.className = 'cmb-hint sm:col-span-2';
+        note.textContent = '연락처·배송지 등 개인정보는 의뢰 본인, 관리자, 낙찰 완료 후에만 확인할 수 있습니다.';
+        host.appendChild(note);
+      }
+      var body = host.closest ? host.closest('.cmb-job-spec-body') : null;
+      try { renderGallery(body && body.querySelector('[data-cmb-job-gallery]'), job); } catch (e) {}
+      host.setAttribute('data-cmb-job-spec-signature', signature);
+      host.setAttribute('data-cmb-job-spec-ready', '1');
+    } finally {
+      rendering = false;
+      if (window.__cmbJobSpecObs) {
+        try {
+          window.__cmbJobSpecObs.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true
+          });
+        } catch (e) {}
+      }
+    }
+  }
+
+  function pendingHosts() {
+    var hosts = document.querySelectorAll('[data-cmb-job-spec]');
+    var pending = [];
+    hosts.forEach(function (host) {
+      if (!host.getAttribute('data-cmb-job-spec-ready')) pending.push(host);
+    });
+    return pending;
+  }
+
+  function jobFetchUrl(id) {
+    var admin = /\/admin\/maker-bids\/jobs\//.test(String(location.pathname || ''));
+    if (admin) return '/api/modules/custom-maker_bids/admin/jobs/' + id;
+    return '/api/modules/custom-maker_bids/jobs/' + id;
+  }
+
+  function ingestFetched(payload) {
+    var job = matchRouteJob(unwrap(payload));
+    if (!job) return null;
+    cachedJob = job;
+    return job;
+  }
+
+  function fetchJobIfNeeded() {
+    var id = jobIdFromLocation();
+    if (!id || !pendingHosts().length) return;
+    if (fetchAttemptedFor === id && fetchInFlight) return;
+    if (cachedJob && String(cachedJob.id) === id) {
+      scan(true);
+      return;
+    }
+    fetchAttemptedFor = id;
+    var url = jobFetchUrl(id);
+    var handle = function (payload) {
+      fetchInFlight = null;
+      if (ingestFetched(payload)) scan(true);
+    };
+    var fail = function () { fetchInFlight = null; };
+    if (window.G7Core && window.G7Core.api && typeof window.G7Core.api.get === 'function') {
+      fetchInFlight = window.G7Core.api.get(url).then(handle).catch(fail);
+      return;
+    }
+    fetchInFlight = fetch(url, { credentials: 'include', headers: { Accept: 'application/json' } })
+      .then(function (res) { return res.ok ? res.json() : Promise.reject(); })
+      .then(handle)
+      .catch(fail);
+  }
+
+  function scan(fromFetch) {
+    if (rendering) return;
+    var hosts = document.querySelectorAll('[data-cmb-job-spec]');
+    if (!hosts.length) return;
+    var job = resolveJob();
+    if (!job) {
+      if (!fromFetch) fetchJobIfNeeded();
+      return;
+    }
+    cachedJob = job;
+    var viewer = resolveViewer();
+    cachedViewer = viewer;
+    hosts.forEach(function (host) {
+      try { render(host, job, viewer); } catch (e) {
+        try {
+          host.innerHTML = '';
+          renderFallback(host, job);
+          host.setAttribute('data-cmb-job-spec-ready', '1');
+        } catch (e2) {}
+      }
     });
   }
 
-  scan();
-  document.addEventListener('DOMContentLoaded', scan);
-  setTimeout(scan, 200);
-  setTimeout(scan, 800);
-  setTimeout(scan, 1600);
-  setTimeout(scan, 3200);
+  function ensurePolling() {
+    if (pollTimer) return;
+    var ticks = 0;
+    pollTimer = setInterval(function () {
+      ticks += 1;
+      if (!pendingHosts().length) {
+        if (ticks > 40) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        return;
+      }
+      scan();
+      if (ticks === 3 || ticks === 8 || ticks === 15) fetchJobIfNeeded();
+      if (ticks > 120) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }, 500);
+  }
+
+  function boot() {
+    scan();
+    ensurePolling();
+  }
+
+  boot();
+  document.addEventListener('DOMContentLoaded', boot);
+  setTimeout(boot, 100);
+  setTimeout(boot, 400);
+  setTimeout(boot, 1000);
+  setTimeout(boot, 2500);
+  setTimeout(function () { fetchJobIfNeeded(); }, 600);
+
   if (!window.__cmbJobSpecObs) {
-    window.__cmbJobSpecObs = new MutationObserver(scan);
-    try { window.__cmbJobSpecObs.observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+    window.__cmbJobSpecObs = new MutationObserver(function () {
+      if (rendering) return;
+      ensurePolling();
+      scan();
+    });
+    try {
+      window.__cmbJobSpecObs.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+    } catch (e) {}
+  }
+
+  if (!window.__cmbJobSpecSub && window.G7Core && window.G7Core.state && typeof window.G7Core.state.subscribe === 'function') {
+    window.__cmbJobSpecSub = true;
+    try {
+      window.G7Core.state.subscribe(function () {
+        ensurePolling();
+        scan();
+      });
+    } catch (e) {}
+  }
+
+  if (!window.__cmbJobSpecNav) {
+    window.__cmbJobSpecNav = true;
+    window.addEventListener('popstate', function () {
+      fetchAttemptedFor = '';
+      cachedJob = null;
+      ensurePolling();
+      boot();
+    });
   }
 })();
 
@@ -644,13 +890,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.8';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.9';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.8') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.9') < 0) {
         existing.href = FORM_CSS;
       }
       return;
