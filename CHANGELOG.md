@@ -4,6 +4,19 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.14] - 2026-09-18
+
+### Fixed
+- **의뢰 등록 상태 검증**: 한국어 라벨(견적요청 등)이 `status`로 전송되며 "선택한 상태이(가) 올바르지 않습니다."가 나던 문제를 수정. 클라이언트·`prepareForValidation`·`JobService`에서 slug(`quote_request` 등)로 정규화합니다.
+- **더미 입력**: type/status/audience(공개 설정) 셀렉트 값 설정 + change 트리거, 제작 사양(sizes) 채우기, 제공 확장자 체크. 유형은 모델링(`modeling_3d`)으로 확장자 섹션이 열리게 함.
+- **등록/저장 후 셀렉트 옵션 소실**: 폼 부팅 시 `form-defaults`·유형 카탈로그에서 옵션을 다시 로드(`reloadFormCatalog`).
+- **제공 확장자 → 의뢰 명세**: `ext_*` 체크를 `provided_extensions` 배열로 합쳐 검증 전에 보존. form-defaults가 설정 기반 확장자 목록을 반환. 설정이 비면 STL/OBJ/3MF/FBX/PDF… 기본값.
+- **제작 사양 랜덤 추가**: 「랜덤 추가」 버튼으로 sizes 행을 무작위 추가.
+- **업체 이미지(로고) 업로드**: 회원 폼 `autoUpload` + logo_count, 승인/대기 상태에서도 폼이 보이면 저장 가능. 관리자 「불러오기」 시 `upload_token`·`logo_files` 주입.
+
+### Changed
+- 버전·캐시 버스트 **0.10.14**.
+
 ## [0.10.13] - 2026-09-18
 
 ### Fixed

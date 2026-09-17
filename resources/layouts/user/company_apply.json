@@ -432,7 +432,7 @@
                   "maxWidth": 512,
                   "maxHeight": 512,
                   "accept": ".jpg,.jpeg,.png,.gif,.webp",
-                  "autoUpload": false,
+                  "autoUpload": true,
                   "className": "cmb-order-uploader mt-1",
                   "data-cmb-logo-uploader": "1",
                   "uploadTriggerEvent": "upload:maker_bids_logo",
@@ -447,7 +447,25 @@
                     "upload_token": "{{_local.company.upload_token || defaults.data.upload_token}}"
                   },
                   "initialFiles": "{{company.data.logo_files || (company.data.logo_url ? [{ id: company.data.logo_hash, hash: company.data.logo_hash, url: company.data.logo_url, download_url: company.data.logo_url, thumbnail_url: company.data.logo_url, original_filename: 'logo', is_image: true }] : [])}}"
-                }
+                },
+                "actions": [
+                  {
+                    "event": "onFilesChange",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "company.logo_count": "{{($args[0] && $args[0].length) || 0}}"
+                    }
+                  },
+                  {
+                    "event": "onUploadError",
+                    "handler": "toast",
+                    "params": {
+                      "type": "error",
+                      "message": "{{$args[0]}}"
+                    }
+                  }
+                ]
               },
               {
                 "id": "bio_label",

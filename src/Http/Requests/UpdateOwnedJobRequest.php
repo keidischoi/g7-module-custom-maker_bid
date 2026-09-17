@@ -43,6 +43,8 @@ class UpdateOwnedJobRequest extends FormRequest
             'zipcode', 'address', 'address_detail', 'upload_token',
             'manager_name', 'manager_phone', 'manager_email', 'sizes_json',
         ]);
+        $this->normalizeJobStatusAndExtensions();
+
         if ($this->exists('sizes')) {
             $decoded = JobRules::decodeSizesInput($this->input('sizes'));
             if ($decoded === [] || $decoded === null || $decoded === '') {

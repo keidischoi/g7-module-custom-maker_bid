@@ -88,6 +88,7 @@ $data = $this->jobs->listPublic($request);
             'manager_phone' => '',
             'manager_email' => '',
             'types' => $this->types->listPublic()->map->toOptionArray()->values()->all(),
+            'provided_extensions' => $this->jobs->providedExtensionAllowList(),
         ]]);
     }
 

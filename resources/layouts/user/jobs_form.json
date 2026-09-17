@@ -138,7 +138,8 @@
             "form.ext_fbx": "{{response.data.ext_fbx}}",
             "form.ext_dwg": "{{response.data.ext_dwg}}",
             "form.contact_hours_from": "{{response.data.contact_hours_from || _local.form.contact_hours_from || '09:00'}}",
-            "form.contact_hours_to": "{{response.data.contact_hours_to || _local.form.contact_hours_to || '18:00'}}"
+            "form.contact_hours_to": "{{response.data.contact_hours_to || _local.form.contact_hours_to || '18:00'}}",
+            "form.provided_extensions": "{{response.data.provided_extensions || []}}"
           }
         }
       ],
@@ -196,12 +197,13 @@
           "manager_email": "",
           "provided_extensions": [
             "STL",
-            "3MF",
             "OBJ",
+            "3MF",
+            "FBX",
+            "PDF",
             "STEP",
             "STP",
             "GCODE",
-            "FBX",
             "DWG"
           ]
         }
@@ -946,6 +948,17 @@
                           "type": "button",
                           "data-cmb-size-add": "1",
                           "className": "cmb-size-add inline-flex items-center px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200"
+                        }
+                      },
+                      {
+                        "id": "size_random",
+                        "type": "basic",
+                        "name": "Button",
+                        "text": "랜덤 추가",
+                        "props": {
+                          "type": "button",
+                          "data-cmb-size-random": "1",
+                          "className": "cmb-size-random inline-flex items-center px-3 py-1.5 text-sm rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300"
                         }
                       },
                       {

@@ -49,6 +49,8 @@ class UpdateJobRequest extends FormRequest
                 $this->merge(['sizes' => $decoded]);
             }
         }
+        $this->normalizeJobStatusAndExtensions();
+
         if ($this->exists('sizes')) {
             $decoded = JobRules::decodeSizesInput($this->input('sizes'));
             if ($decoded === [] || $decoded === null || $decoded === '') {

@@ -169,6 +169,48 @@ class JobRules
         return in_array($status, self::BIDDABLE_STATUSES, true);
     }
 
+    /**
+     * Normalize create/edit listing status to a valid slug.
+     * Accepts Korean labels (견적요청/의뢰/보류/임시저장) and legacy `open`.
+     * Never returns a Korean label — invalid values fall back to quote_request.
+     */
+    public static function normalizeListingStatus(mixed $raw): string
+    {
+        if (is_array($raw)) {
+            foreach (['status', 'value', 'slug', 'id', 'label', 'name'] as $k) {
+                if (isset($raw[$k]) && ! is_array($raw[$k]) && (string) $raw[$k] !== '') {
+                    $raw = $raw[$k];
+                    break;
+                }
+            }
+        }
+        $value = trim((string) $raw);
+        if ($value === '') {
+            return 'quote_request';
+        }
+        $map = [
+            '견적요청' => 'quote_request',
+            '의뢰' => 'request',
+            '보류' => 'hold',
+            '임시저장' => 'draft',
+            '초안' => 'draft',
+            'open' => 'quote_request',
+            'OPEN' => 'quote_request',
+        ];
+        if (isset($map[$value])) {
+            return $map[$value];
+        }
+        $lower = strtolower($value);
+        if (isset($map[$lower])) {
+            return $map[$lower];
+        }
+        if (in_array($lower, self::LISTING_STATUSES, true)) {
+            return $lower;
+        }
+
+        return 'quote_request';
+    }
+
     public static function normalizeAudience(mixed $raw): string
     {
         $value = strtolower(trim((string) $raw));

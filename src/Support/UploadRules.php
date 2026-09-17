@@ -49,7 +49,7 @@ class UploadRules
 
     public const DELIVERY_MAX_MB = 50;
 
-    public const PROVIDED_EXTENSIONS = ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX', 'DWG'];
+    public const PROVIDED_EXTENSIONS = ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
 
     public static function isAllowedCollection(string $collection): bool
     {

@@ -15,6 +15,23 @@
     }
     dispatch('setState', params);
   }
+
+  function collectCreateJobPayload() {
+    if (window.cmbForm && typeof window.cmbForm.collectCreateJobPayload === 'function') {
+      return window.cmbForm.collectCreateJobPayload();
+    }
+    return null;
+  }
+  function applyDummyJobForm() {
+    if (window.cmbForm && typeof window.cmbForm.applyDummyJobForm === 'function') {
+      return window.cmbForm.applyDummyJobForm();
+    }
+  }
+  function syncProvidedExtOptions() {
+    if (window.cmbForm && typeof window.cmbForm.syncProvidedExtOptions === 'function') {
+      return window.cmbForm.syncProvidedExtOptions();
+    }
+  }
   function g7Get(p) {
     try {
       if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
@@ -82,6 +99,12 @@
   }
 
   function applyJob(d) {
+    if (d && d.status != null && window.cmbForm && typeof window.cmbForm.normalizeStatusSlug === 'function') {
+      d.status = window.cmbForm.normalizeStatusSlug(d.status);
+    } else if (d && d.status) {
+      var sm = { '견적요청': 'quote_request', '의뢰': 'request', '보류': 'hold', '임시저장': 'draft', open: 'quote_request' };
+      if (sm[d.status]) d.status = sm[d.status];
+    }
     applyPrefixed('form', d, [
       'title','type','status','audience','budget_min','budget_max','description',
       'closes_at','rush_deadline','size_w','size_d','size_h',
@@ -252,11 +275,21 @@
     }
     if ((!job.provided_extensions || !job.provided_extensions.length)) {
       var built = [];
-      [['ext_stl', 'STL'], ['ext_3mf', '3MF'], ['ext_obj', 'OBJ'], ['ext_step', 'STEP'],
-        ['ext_stp', 'STP'], ['ext_gcode', 'GCODE'], ['ext_fbx', 'FBX'], ['ext_dwg', 'DWG']].forEach(function (pair) {
-        if (job[pair[0]] === true || job[pair[0]] === 1 || job[pair[0]] === '1') built.push(pair[1]);
+      var seenExt = {};
+      Object.keys(job).forEach(function (k) {
+        if (k.indexOf('ext_') !== 0) return;
+        if (!(job[k] === true || job[k] === 1 || job[k] === '1')) return;
+        var token = String(k.slice(4) || '').toUpperCase();
+        if (!token || seenExt[token]) return;
+        seenExt[token] = 1;
+        built.push(token);
       });
       if (built.length) job.provided_extensions = built;
+    }
+    if (Array.isArray(job.provided_extensions) && job.provided_extensions.length) {
+      job.provided_extensions = job.provided_extensions.map(function (x) {
+        return String(x).replace(/^\./, '').toUpperCase();
+      }).filter(Boolean);
     }
     return job;
   }
@@ -1387,13 +1420,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.13';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.14';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.13') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.14') < 0) {
         existing.href = FORM_CSS;
       }
       return;

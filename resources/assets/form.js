@@ -1,10 +1,10 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.13';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.14';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
-  var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
+  var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
   var TYPE_FALLBACK = [
     { value: 'modeling_3d', slug: 'modeling_3d', label: '3D 모델링', name: '3D 모델링', requires_address: false, is_design_only: true, includes_modeling: true },
     { value: 'print_3d', slug: 'print_3d', label: '3D 출력 대행', name: '3D 출력 대행', requires_address: true, is_design_only: false, includes_modeling: false },
@@ -175,6 +175,95 @@
     return 'form';
   }
 
+  var STATUS_SLUGS = {
+    quote_request: 'quote_request',
+    open: 'quote_request',
+    request: 'request',
+    hold: 'hold',
+    draft: 'draft',
+    '견적요청': 'quote_request',
+    '의뢰': 'request',
+    '보류': 'hold',
+    '임시저장': 'draft',
+    '초안': 'draft'
+  };
+
+  function normalizeStatusSlug(raw) {
+    var v = String(raw == null ? '' : raw).trim();
+    if (!v) return 'quote_request';
+    if (STATUS_SLUGS[v]) return STATUS_SLUGS[v];
+    var lower = v.toLowerCase();
+    if (STATUS_SLUGS[lower]) return STATUS_SLUGS[lower];
+    if (['quote_request', 'request', 'hold', 'draft'].indexOf(lower) !== -1) return lower;
+    return 'quote_request';
+  }
+
+  function normalizeAudienceSlug(raw) {
+    var v = String(raw == null ? '' : raw).trim();
+    if (!v) return 'all';
+    if (v === '업체만' || v === '업체' || v === 'company') return 'company';
+    if (v === '개인만' || v === '개인' || v === 'individual') return 'individual';
+    if (v === '관리자' || v === '관리자만' || v === 'admin') return 'admin';
+    if (v === '전체' || v === 'all') return 'all';
+    return 'all';
+  }
+
+  function collectCheckedExtensions() {
+    var allowed = providedExtensionsFromState();
+    var out = [];
+    var seen = {};
+    allowed.forEach(function (ext) {
+      var key = extFieldKey(ext);
+      var on = false;
+      var cur = g7Get('_local.form.' + key);
+      if (typeof cur === 'boolean') on = cur;
+      else {
+        var el = document.querySelector('[name="' + key + '"]');
+        on = !!(el && (el.checked || el.value === '1' || el.value === 'true'));
+      }
+      if (on) {
+        var up = String(ext).toUpperCase();
+        if (!seen[up]) {
+          seen[up] = 1;
+          out.push(up);
+        }
+      }
+    });
+    return out;
+  }
+
+  /** Build a clean create/update payload: slug status, never Korean labels. */
+  function collectCreateJobPayload() {
+    harvestNamedFields();
+    var form = g7Get('_local.form') || {};
+    var status = normalizeStatusSlug(form.status || readNamedValue('status') || 'quote_request');
+    var audience = normalizeAudienceSlug(form.audience || readNamedValue('audience') || 'all');
+    var type = String(form.type || readNamedValue('type') || '').trim();
+    var typeRow = findTypeRow(type);
+    if (typeRow && (typeRow.value || typeRow.slug)) {
+      type = String(typeRow.value || typeRow.slug);
+    }
+    var exts = collectCheckedExtensions();
+    var map = {
+      'form.status': status,
+      'form.audience': audience,
+      'form.provided_extensions': exts
+    };
+    if (type) map['form.type'] = type;
+    exts.forEach(function (ext) {
+      map['form.' + extFieldKey(ext)] = true;
+    });
+    setLocal(map);
+    fillNamed('status', status);
+    return Object.assign({}, g7Get('_local.form') || {}, {
+      status: status,
+      audience: audience,
+      type: type,
+      provided_extensions: exts
+    });
+  }
+
+
   function harvestNamedFields() {
     var prefix = localFormKey();
     var map = {};
@@ -224,6 +313,24 @@
         map[prefix + '.' + k] = cur[k];
       }
     });
+    if (prefix === 'form') {
+      if (map['form.status'] != null) {
+        map['form.status'] = normalizeStatusSlug(map['form.status']);
+      } else if (cur && cur.status != null) {
+        map['form.status'] = normalizeStatusSlug(cur.status);
+      }
+      if (map['form.audience'] != null) {
+        map['form.audience'] = normalizeAudienceSlug(map['form.audience']);
+      }
+      var row = findTypeRow(map['form.type'] || (cur && cur.type) || '');
+      if (row && (row.value || row.slug)) {
+        map['form.type'] = String(row.value || row.slug);
+      }
+      try {
+        var exts = collectCheckedExtensions();
+        map['form.provided_extensions'] = exts;
+      } catch (eExt) {}
+    }
     if (Object.keys(map).length) {
       setLocal(map);
     }
@@ -265,7 +372,11 @@
       }
       btns[i].setAttribute('data-cmb-harvest', '1');
       btns[i].addEventListener('click', function () {
-        harvestNamedFields();
+        if (document.querySelector('.cmb-order-card') && !document.querySelector('[data-cmb-company-form]')) {
+          try { collectCreateJobPayload(); } catch (eH) { harvestNamedFields(); }
+        } else {
+          harvestNamedFields();
+        }
       }, true);
     }
   }
@@ -406,27 +517,22 @@
     btn.addEventListener(
       'click',
       function (e) {
-        var st = companyMeStatus();
         var form = companyFormEl();
         var visible = companyFormIsVisible(form);
-        if (st === 'approved') {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          return;
-        }
+        // First click on collapsed form: reveal only (create / pending / approved edit).
         if (!form || !visible) {
           e.preventDefault();
           e.stopImmediatePropagation();
           revealCompanyForm();
           return;
         }
-        if (st === 'pending') {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          revealCompanyForm();
-          return;
-        }
+        // Form visible: harvest and let layout sequence (logo upload + POST) run.
         harvestNamedFields();
+        // Ensure upload_token is present for logo attach.
+        var token = g7Get('_local.company.upload_token') || g7Get('defaults.data.upload_token') || '';
+        if (token) {
+          setLocal({ 'company.upload_token': token });
+        }
       },
       true
     );
@@ -1061,7 +1167,7 @@
         if (list.length) return list;
       }
     }
-    return ['STL', '3MF', 'OBJ', 'STEP', 'STP', 'GCODE', 'FBX', 'DWG'];
+    return ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
   }
 
   function extFieldKey(ext) {
@@ -1462,6 +1568,104 @@
     syncSizes(list);
   }
 
+
+  function randomSizeRow() {
+    var names = ['본체', '뚜껑', '브라켓', '하우징', '베이스', '커버', '프레임', '조인트'];
+    var name = names[Math.floor(Math.random() * names.length)];
+    var w = 20 + Math.floor(Math.random() * 280);
+    var d = 20 + Math.floor(Math.random() * 200);
+    var h = 5 + Math.floor(Math.random() * 120);
+    return { name: name, w: w, d: d, h: h };
+  }
+
+  function ensureRandomSizeButton(root, list) {
+    root = root || document.querySelector('[data-cmb-sizes]');
+    list = list || document.querySelector('[data-cmb-sizes-list]');
+    if (!root || !list) return;
+    if (root.querySelector('[data-cmb-size-random]')) return;
+    var add = root.querySelector('[data-cmb-size-add]');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('data-cmb-size-random', '1');
+    btn.textContent = '랜덤 추가';
+    btn.className = 'cmb-size-random inline-flex items-center px-3 py-1.5 text-sm rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 ml-2';
+    btn.title = '무작위 제작 사양 행 추가';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var rows = rowsFromDom(list);
+      if (rows.length >= SIZE_MAX) return;
+      rows.push(randomSizeRow());
+      sizesTouched = true;
+      renderSizeRows(list, rows);
+      syncSizes(list);
+    });
+    if (add && add.parentNode) {
+      add.parentNode.insertBefore(btn, add.nextSibling);
+    } else {
+      root.appendChild(btn);
+    }
+  }
+
+  /** Reload type/status/audience/ext options from settings/catalog after save+redirect. */
+  function reloadFormCatalog() {
+    if (!document.querySelector('.cmb-order-card, [data-cmb-job-form]')) return;
+    typesCache = null;
+    loadTypes(function () {
+      var list = catalogTypes();
+      try {
+        dispatch('setState', { target: 'data', 'defaults.data.types': list });
+      } catch (e1) {}
+      try {
+        setLocal({}); // no-op keep
+        if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.set === 'function') {
+          window.G7Core.state.set('defaults.data.types', list);
+        }
+      } catch (e2) {}
+      // Re-paint current select values so empty triggers recover
+      var curType = readNamedValue('type') || (g7Get('_local.form.type') || '');
+      var curStatus = normalizeStatusSlug(readNamedValue('status') || g7Get('_local.form.status') || 'quote_request');
+      var curAud = normalizeAudienceSlug(readNamedValue('audience') || g7Get('_local.form.audience') || 'all');
+      if (curType) {
+        var row = findTypeRow(curType);
+        if (row && (row.value || row.slug)) curType = String(row.value || row.slug);
+        setLocal({ 'form.type': curType, 'form.status': curStatus, 'form.audience': curAud });
+        paintSelectTrigger('type', curType, optionLabelFor('type', curType));
+        paintSelectTrigger('status', curStatus, optionLabelFor('status', curStatus));
+        paintSelectTrigger('audience', curAud, optionLabelFor('audience', curAud));
+        applyTypeFlags(curType);
+      } else {
+        setLocal({ 'form.status': curStatus, 'form.audience': curAud });
+        paintSelectTrigger('status', curStatus, optionLabelFor('status', curStatus));
+        paintSelectTrigger('audience', curAud, optionLabelFor('audience', curAud));
+      }
+      syncProvidedExtOptions();
+      syncAudienceSection();
+    });
+    // Also refresh provided_extensions from defaults if API returned them
+    fetch('/api/modules/custom-maker_bids/jobs/form-defaults', { credentials: 'include', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (body) {
+        var data = body && body.data ? body.data : body;
+        if (!data) return;
+        if (data.types && data.types.length) {
+          typesCache = extractTypesList(data.types);
+        }
+        if (data.provided_extensions) {
+          try {
+            if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.set === 'function') {
+              window.G7Core.state.set('defaults.data.provided_extensions', data.provided_extensions);
+            }
+          } catch (e3) {}
+        }
+        if (data.upload_token && !g7Get('_local.form.upload_token')) {
+          setLocal({ 'form.upload_token': data.upload_token });
+        }
+        syncProvidedExtOptions();
+      })
+      .catch(function () {});
+  }
+
   function bindSizes() {
     var root = document.querySelector('[data-cmb-sizes]');
     var list = document.querySelector('[data-cmb-sizes-list]');
@@ -1515,7 +1719,9 @@
           syncSizes(list);
         });
       }
+      ensureRandomSizeButton(root, list);
     }
+    ensureRandomSizeButton(root, list);
     if (!sizesTouched) {
       var seed = readSizeSeed();
       var seedJson = JSON.stringify(serializeSizes(seed));
@@ -1713,8 +1919,9 @@
   }
 
   function applyJobDummyFill() {
-    var typeSlug = 'print_3d';
-    var typeLabel = '3D 출력 대행';
+    // modeling type so 제공 확장자 section opens (includes_modeling)
+    var typeSlug = 'modeling_3d';
+    var typeLabel = '3D 모델링';
     var closes = '';
     try {
       var d = new Date();
@@ -1727,6 +1934,8 @@
       { name: '본체', w: 120, d: 80, h: 45 },
       { name: '뚜껑', w: 120, d: 80, h: 8 }
     ]);
+    syncProvidedExtOptions();
+    var allowedExts = providedExtensionsFromState();
     var map = {
       'form.title': '[테스트] 아크릴 하우징 소량 출력 의뢰',
       'form.type': typeSlug,
@@ -1757,43 +1966,61 @@
       'form.manager_name': '이담당',
       'form.manager_phone': '010-9876-5432',
       'form.manager_email': 'manager@example.com',
-      'form.requires_address': '1',
-      'form.includes_modeling': '0',
-      'form.ext_stl': true,
-      'form.ext_3mf': true,
-      'form.ext_obj': false,
+      'form.requires_address': '0',
+      'form.includes_modeling': '1',
       'form.terms_agreed': true
     };
+    var pick = ['STL', 'OBJ', '3MF', 'PDF'];
+    allowedExts.forEach(function (ext) {
+      var on = pick.indexOf(String(ext).toUpperCase()) !== -1;
+      map['form.' + extFieldKey(ext)] = on;
+    });
+    map['form.provided_extensions'] = pick.filter(function (e) {
+      return allowedExts.indexOf(e) !== -1 || allowedExts.indexOf(e.toLowerCase()) !== -1;
+    });
+    if (!map['form.provided_extensions'].length) {
+      map['form.provided_extensions'] = allowedExts.slice(0, 3);
+    }
     setLocal(map);
     Object.keys(map).forEach(function (k) {
       var name = k.replace(/^form\./, '');
       var val = map[k];
       if (typeof val === 'boolean') {
         fillCheckboxNamed(name, val);
-      } else {
+      } else if (name !== 'provided_extensions') {
         fillNamed(name, String(val));
       }
     });
-    if (typeof setG7Select === 'function') {
-      setG7Select('type', typeSlug);
-      setG7Select('status', 'quote_request');
-      setG7Select('audience', 'all');
-    } else {
-      paintSelectTrigger('type', typeSlug, typeLabel);
-      paintSelectTrigger('status', 'quote_request', '견적요청');
-      paintSelectTrigger('audience', 'all', '전체');
-    }
-    // Refresh sizes UI if present
-    var sizesHost = document.querySelector('[data-cmb-sizes], [data-cmb-sizes-seed]');
-    if (sizesHost) {
-      sizesHost.setAttribute('data-cmb-sizes-seed', sizesJson);
+    // Selects: set value + trigger change so dependent fields refresh
+    function afterType() {
+      applyTypeFlags(typeSlug);
+      syncExtVisibility(true);
+      syncProvidedExtOptions();
+      allowedExts.forEach(function (ext) {
+        var on = map['form.' + extFieldKey(ext)];
+        fillCheckboxNamed(extFieldKey(ext), !!on);
+      });
+      fillSizeRows([
+        { name: '본체', w: 120, d: 80, h: 45 },
+        { name: '뚜껑', w: 120, d: 80, h: 8 }
+      ]);
       try {
-        sizesHost.dispatchEvent(new Event('cmb:sizes-seed', { bubbles: true }));
-      } catch (e2) {}
+        dispatch('toast', { type: 'success', message: '더미 입력(테스트) — 제출되지 않았습니다. 값을 확인하세요.' });
+      } catch (e3) {}
     }
-    try {
-      dispatch('toast', { type: 'success', message: '더미 입력(테스트) — 제출되지 않았습니다. 값을 확인하세요.' });
-    } catch (e3) {}
+    loadTypes(function () {
+      setG7Select('type', typeSlug, function () {
+        setG7Select('status', 'quote_request', function () {
+          setG7Select('audience', 'all', function () {
+            afterType();
+          });
+        });
+      });
+    });
+  }
+
+  function applyDummyJobForm() {
+    applyJobDummyFill();
   }
 
   function applyCompanyDummyFill() {
@@ -1907,6 +2134,7 @@
     bindCompanyJobTypes();
     bindLogoLimit();
     bindDummyFill();
+    reloadFormCatalog();
   }
 
   bind();
@@ -1914,8 +2142,17 @@
   setTimeout(bind, 300);
   setTimeout(bind, 1000);
   setTimeout(bind, 2500);
-  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 400);
-  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 1200);
-  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); }, 2500);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); reloadFormCatalog(); }, 400);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); reloadFormCatalog(); }, 1200);
+  setTimeout(function () { syncAudienceSection(); syncProvidedExtOptions(); reloadFormCatalog(); }, 2500);
+  // Expose for page.js / debugging
+  try {
+    window.cmbForm = window.cmbForm || {};
+    window.cmbForm.collectCreateJobPayload = collectCreateJobPayload;
+    window.cmbForm.applyDummyJobForm = applyDummyJobForm;
+    window.cmbForm.syncProvidedExtOptions = syncProvidedExtOptions;
+    window.cmbForm.reloadFormCatalog = reloadFormCatalog;
+    window.cmbForm.normalizeStatusSlug = normalizeStatusSlug;
+  } catch (eExp) {}
 })();
 
