@@ -618,3 +618,108 @@ html.cmb-admin-ui [data-slot="select-item"],
 .cmb-admin-row.cmb-list-item {
   border-radius: 0.75rem;
 }
+
+/* Approve / Hold / Reject — filled defaults; .is-active = current status */
+.cmb-admin .cmb-btn-approve,
+.cmb-admin button.cmb-btn-approve,
+.cmb-btn-approve {
+  background: rgb(209 250 229) !important;
+  color: rgb(4 120 87) !important;
+  border: 1px solid rgb(52 211 153) !important;
+  font-weight: 500;
+  opacity: 1;
+}
+.cmb-admin .cmb-btn-hold,
+.cmb-admin button.cmb-btn-hold,
+.cmb-btn-hold {
+  background: rgb(254 243 199) !important;
+  color: rgb(146 64 14) !important;
+  border: 1px solid rgb(251 191 36) !important;
+  font-weight: 500;
+  opacity: 1;
+}
+.cmb-admin .cmb-btn-reject,
+.cmb-admin button.cmb-btn-reject,
+.cmb-btn-reject {
+  background: rgb(254 226 226) !important;
+  color: rgb(153 27 27) !important;
+  border: 1px solid rgb(252 165 165) !important;
+  font-weight: 500;
+  opacity: 1;
+}
+
+html.dark .cmb-admin .cmb-btn-approve,
+.dark .cmb-admin .cmb-btn-approve,
+html.dark .cmb-btn-approve,
+.dark .cmb-btn-approve {
+  background: rgba(5, 150, 105, 0.28) !important;
+  color: rgb(167 243 208) !important;
+  border-color: rgba(52, 211, 153, 0.55) !important;
+}
+html.dark .cmb-admin .cmb-btn-hold,
+.dark .cmb-admin .cmb-btn-hold,
+html.dark .cmb-btn-hold,
+.dark .cmb-btn-hold {
+  background: rgba(217, 119, 6, 0.28) !important;
+  color: rgb(253 230 138) !important;
+  border-color: rgba(251, 191, 36, 0.55) !important;
+}
+html.dark .cmb-admin .cmb-btn-reject,
+.dark .cmb-admin .cmb-btn-reject,
+html.dark .cmb-btn-reject,
+.dark .cmb-btn-reject {
+  background: rgba(220, 38, 38, 0.28) !important;
+  color: rgb(254 202 202) !important;
+  border-color: rgba(252, 165, 165, 0.55) !important;
+}
+
+.cmb-admin .cmb-btn-approve.is-active,
+.cmb-admin .cmb-btn-approve[data-cmb-active="1"],
+.cmb-btn-approve.is-active,
+.cmb-btn-approve[data-cmb-active="1"] {
+  background: rgb(5 150 105) !important;
+  color: #fff !important;
+  border-color: rgb(4 120 87) !important;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.4);
+  font-weight: 700;
+  opacity: 1;
+}
+.cmb-admin .cmb-btn-hold.is-active,
+.cmb-admin .cmb-btn-hold[data-cmb-active="1"],
+.cmb-btn-hold.is-active,
+.cmb-btn-hold[data-cmb-active="1"] {
+  background: rgb(217 119 6) !important;
+  color: #fff !important;
+  border-color: rgb(180 83 9) !important;
+  box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.4);
+  font-weight: 700;
+  opacity: 1;
+}
+.cmb-admin .cmb-btn-reject.is-active,
+.cmb-admin .cmb-btn-reject[data-cmb-active="1"],
+.cmb-btn-reject.is-active,
+.cmb-btn-reject[data-cmb-active="1"] {
+  background: rgb(220 38 38) !important;
+  color: #fff !important;
+  border-color: rgb(185 28 28) !important;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.4);
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* Keep admin filter controls + 필터 button on one row when space allows */
+.cmb-admin-filter {
+  flex-wrap: nowrap !important;
+  align-items: flex-end !important;
+}
+.cmb-admin-filter > .cmb-admin-filter-go,
+.cmb-admin-filter > button {
+  flex: 0 0 auto !important;
+  white-space: nowrap;
+  align-self: flex-end !important;
+}
+@media (max-width: 640px) {
+  .cmb-admin-filter {
+    flex-wrap: wrap !important;
+  }
+}

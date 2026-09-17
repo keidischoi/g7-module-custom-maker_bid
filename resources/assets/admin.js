@@ -1,9 +1,6 @@
 (function () {
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
-  var ON_APPROVE = 'background:#059669;color:#fff;border-color:#059669';
-  var ON_HOLD = 'background:#d97706;color:#fff;border-color:#d97706';
-  var ON_REJECT = 'background:#dc2626;color:#fff;border-color:#dc2626';
-  var OFF = 'background:transparent;color:inherit';
+  var ACTIVE_SUFFIX = ' · 현재';
 
   function statusFromText(text) {
     text = String(text || '');
@@ -14,27 +11,45 @@
     return '';
   }
 
-  function paintBtn(btn, on, styleOn) {
+  function baseLabel(btn) {
+    var t = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+    var i = t.indexOf(ACTIVE_SUFFIX);
+    if (i >= 0) t = t.slice(0, i).trim();
+    // strip leading check mark if any
+    t = t.replace(/^✓\s*/, '');
+    return t;
+  }
+
+  function paintBtn(btn, on, kind) {
     if (!btn) return;
-    btn.setAttribute('style', on ? styleOn : OFF);
+    var base = baseLabel(btn) || (kind === 'approve' ? '승인' : kind === 'hold' ? '보류' : '거절');
+    btn.classList.add(kind === 'approve' ? 'cmb-btn-approve' : kind === 'hold' ? 'cmb-btn-hold' : 'cmb-btn-reject');
+    btn.classList.toggle('is-active', !!on);
+    if (on) btn.setAttribute('data-cmb-active', '1');
+    else btn.removeAttribute('data-cmb-active');
+    // clear leftover inline paint from older builds
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+    btn.textContent = on ? ('✓ ' + base + ACTIVE_SUFFIX) : base;
   }
 
   function buttonsIn(root) {
     var out = { approve: null, hold: null, reject: null };
     root.querySelectorAll('button').forEach(function (b) {
-      var t = (b.textContent || '').trim();
-      if (t === '승인') out.approve = b;
-      if (t === '보류') out.hold = b;
-      if (t === '거절') out.reject = b;
+      var t = baseLabel(b);
+      if (t === '승인' || b.classList.contains('cmb-btn-approve')) out.approve = b;
+      else if (t === '보류' || b.classList.contains('cmb-btn-hold')) out.hold = b;
+      else if (t === '거절' || b.classList.contains('cmb-btn-reject')) out.reject = b;
     });
     return out;
   }
 
   function paintGroup(root, st) {
     var btns = buttonsIn(root);
-    paintBtn(btns.approve, st === 'quote_request' || st === 'approved', ON_APPROVE);
-    paintBtn(btns.hold, st === 'hold', ON_HOLD);
-    paintBtn(btns.reject, st === 'rejected', ON_REJECT);
+    paintBtn(btns.approve, st === 'quote_request' || st === 'approved' || st === 'open', 'approve');
+    paintBtn(btns.hold, st === 'hold', 'hold');
+    paintBtn(btns.reject, st === 'rejected', 'reject');
   }
 
   function companyIdFromEdit() {
@@ -63,7 +78,8 @@
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
-      b.className = 'px-3 py-1.5 text-sm rounded-lg border mr-2';
+      var kind = label === '승인' ? 'cmb-btn-approve' : label === '보류' ? 'cmb-btn-hold' : label === '거절' ? 'cmb-btn-reject' : '';
+      b.className = (kind ? kind + ' ' : '') + 'px-3 py-1.5 text-sm rounded-lg border mr-2';
       b.addEventListener('click', function () {
         var id = companyIdFromEdit();
         if (!id) return alert('먼저 목록에서 업체를 불러오세요.');
