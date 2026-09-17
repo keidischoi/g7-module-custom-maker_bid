@@ -2,18 +2,52 @@
   "version": "1.0.0",
   "layout_name": "companies_index",
   "extends": "_admin_base",
-  "meta": { "title": "회사 목록" },
-  "permissions": ["custom-maker_bids.companies.read"],
+  "meta": {
+    "title": "회사 목록"
+  },
+  "permissions": [
+    "custom-maker_bids.companies.read"
+  ],
   "errorHandling": {
-    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
   },
   "state": {
-    "filter": { "status": "" },
-    "reject": { "rejected_reason": "" },
-    "hold": { "hold_reason": "" },
+    "filter": {
+      "status": ""
+    },
+    "reject": {
+      "rejected_reason": ""
+    },
+    "hold": {
+      "hold_reason": ""
+    },
     "edit": {
       "id": "",
       "status": "pending",
@@ -41,7 +75,9 @@
       "params": {
         "status": "{{_local.filter.status}}"
       },
-      "fallback": { "data": [] }
+      "fallback": {
+        "data": []
+      }
     }
   ],
   "slots": {
@@ -50,37 +86,65 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5 w-full" },
+        "props": {
+          "className": "admin-page-content cmb-admin space-y-5 w-full"
+        },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "회사 목록" },
           {
-            "id": "nav",
+            "id": "h",
+            "type": "basic",
+            "name": "H1",
+            "props": {
+              "className": "page-title"
+            },
+            "text": "회사 목록"
+          },
+          {
+            "id": "cmb_admin_nav",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-nav text-sm" },
-            "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
-            ]
+            "props": {
+              "className": "cmb-admin-nav text-sm",
+              "data-cmb-admin-nav": "1"
+            },
+            "children": []
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "입찰자 신청을 보류·승인·거절하고, 추천/지정업체/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다. 지정업체는 설정에서 입찰 허용이 「지정업체」일 때 입찰할 수 있습니다." },
+          {
+            "id": "d",
+            "type": "basic",
+            "name": "P",
+            "props": {
+              "className": "cmb-admin-lead"
+            },
+            "text": "입찰자 신청을 보류·승인·거절하고, 추천/지정업체/우선 노출·평점·크레임·신고를 관리합니다. 목록은 추천·우선 노출 순입니다. 지정업체는 설정에서 입찰 허용이 「지정업체」일 때 입찰할 수 있습니다."
+          },
           {
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-card cmb-admin-filter w-full", "dataKey": "filter", "trackChanges": true },
+            "props": {
+              "className": "cmb-admin-card cmb-admin-filter w-full",
+              "dataKey": "filter",
+              "trackChanges": true
+            },
             "children": [
               {
                 "id": "fstatus_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host" },
+                "props": {
+                  "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host"
+                },
                 "children": [
-                  { "id": "fstatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
+                  {
+                    "id": "fstatus_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "상태"
+                  },
                   {
                     "id": "fstatus",
                     "type": "basic",
@@ -90,14 +154,34 @@
                       "value": "{{_local.filter.status}}",
                       "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
                       "options": [
-                        { "value": "", "label": "전체" },
-                        { "value": "pending", "label": "보류" },
-                        { "value": "approved", "label": "승인" },
-                        { "value": "rejected", "label": "거절" }
+                        {
+                          "value": "",
+                          "label": "전체"
+                        },
+                        {
+                          "value": "pending",
+                          "label": "보류"
+                        },
+                        {
+                          "value": "approved",
+                          "label": "승인"
+                        },
+                        {
+                          "value": "rejected",
+                          "label": "거절"
+                        }
                       ]
                     },
                     "actions": [
-                      { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "filter.status": "{{$event.target.value}}" } }
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "filter.status": "{{$event.target.value}}"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -107,9 +191,17 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "필터",
-                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                },
                 "actions": [
-                  { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                  {
+                    "type": "click",
+                    "handler": "refetchDataSource",
+                    "params": {
+                      "dataSourceId": "companies"
+                    }
+                  }
                 ]
               }
             ]
@@ -118,118 +210,449 @@
             "id": "body",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-split w-full" },
+            "props": {
+              "className": "cmb-admin-split w-full"
+            },
             "children": [
               {
                 "id": "side",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-stack" },
+                "props": {
+                  "className": "cmb-admin-stack"
+                },
                 "children": [
                   {
                     "id": "edit_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-card space-y-3", "dataKey": "edit", "trackChanges": true },
+                    "props": {
+                      "className": "cmb-admin-card space-y-3",
+                      "dataKey": "edit",
+                      "trackChanges": true
+                    },
                     "children": [
-                      { "id": "eh", "type": "basic", "name": "P", "props": { "className": "cmb-admin-card-title" }, "text": "선택 업체 관리 (#{{_local.edit.id || '-'}})" },
-                      { "id": "ehelp", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "목록에서 불러오기 후 저장합니다. 비어 있으면 업체를 선택하세요." },
-                      { "id": "estatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "승인 여부" },
                       {
-                        "id": "estatus_host",
+                        "id": "eh",
                         "type": "basic",
-                        "name": "Div",
-                        "props": { "className": "cmb-admin-select-host cmb-admin-select-host-sm" },
-                        "children": [
-                      {
-                        "id": "estatus",
-                        "type": "basic",
-                        "name": "Select",
+                        "name": "P",
                         "props": {
-                          "name": "status",
-                          "value": "{{_local.edit.status}}",
-                          "className": "cmb-admin-select cmb-admin-w-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
-                          "options": [
-                            { "value": "pending", "label": "보류" },
-                            { "value": "approved", "label": "승인" },
-                            { "value": "rejected", "label": "거절" }
-                          ]
+                          "className": "cmb-admin-card-title"
                         },
-                        "actions": [
-                          { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "edit.status": "{{$event.target.value}}" } }
-                        ]
-                      }
-                        ]
+                        "text": "선택 업체 관리 (#{{_local.edit.id || '-'}})"
                       },
-                      { "id": "ememo_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "관리자 메모" },
-                      { "id": "ememo", "type": "basic", "name": "Textarea", "props": { "name": "admin_memo", "placeholder": "관리자 메모", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } },
-                      { "id": "ehold_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "보류 이유" },
-                      { "id": "ehold", "type": "basic", "name": "Input", "props": { "name": "hold_reason", "placeholder": "보류 이유", "className": "cmb-admin-w-full" } },
-                      { "id": "erate_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "평점 / 평점 수" },
                       {
-                        "id": "erate_row",
+                        "id": "ehelp",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "목록에서 불러오기 후 저장합니다. 비어 있으면 업체를 선택하세요."
+                      },
+                      {
+                        "id": "estatus_block",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "flex items-center gap-2" },
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
                         "children": [
-                          { "id": "escore", "type": "basic", "name": "Input", "props": { "name": "rating_score", "type": "number", "min": "0", "max": "5", "step": "0.1", "placeholder": "4.5", "className": "cmb-admin-w-xs" } },
-                          { "id": "ecount", "type": "basic", "name": "Input", "props": { "name": "rating_count", "type": "number", "min": "0", "placeholder": "12", "className": "cmb-admin-w-xs" } }
+                          {
+                            "id": "estatus_wrap2",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "estatus_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "승인 여부"
+                              },
+                              {
+                                "id": "estatus_host",
+                                "type": "basic",
+                                "name": "Div",
+                                "props": {
+                                  "className": "cmb-admin-select-host cmb-admin-select-host-sm"
+                                },
+                                "children": [
+                                  {
+                                    "id": "estatus",
+                                    "type": "basic",
+                                    "name": "Select",
+                                    "props": {
+                                      "name": "status",
+                                      "value": "{{_local.edit.status}}",
+                                      "className": "cmb-admin-select cmb-admin-w-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                      "options": [
+                                        {
+                                          "value": "pending",
+                                          "label": "보류"
+                                        },
+                                        {
+                                          "value": "approved",
+                                          "label": "승인"
+                                        },
+                                        {
+                                          "value": "rejected",
+                                          "label": "거절"
+                                        }
+                                      ]
+                                    },
+                                    "actions": [
+                                      {
+                                        "type": "change",
+                                        "event": "change",
+                                        "handler": "setState",
+                                        "params": {
+                                          "target": "local",
+                                          "edit.status": "{{$event.target.value}}"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
                         ]
                       },
-                      { "id": "eclaim_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "크레임 건수 / 이력" },
-                      { "id": "eclaimc", "type": "basic", "name": "Input", "props": { "name": "claim_count", "type": "number", "min": "0", "placeholder": "0", "className": "cmb-admin-w-xs" } },
-                      { "id": "eclaimh", "type": "basic", "name": "Textarea", "props": { "name": "claim_history", "placeholder": "한 줄에 하나씩, 또는 JSON", "className": "cmb-admin-w-full min-h-[64px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } },
-                      { "id": "erep_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "신고 건수" },
-                      { "id": "erep", "type": "basic", "name": "Input", "props": { "name": "report_count", "type": "number", "min": "0", "placeholder": "0", "className": "cmb-admin-w-xs" } },
+                      {
+                        "id": "ememo_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-field-span"
+                        },
+                        "children": [
+                          {
+                            "id": "ememo_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "관리자 메모"
+                          },
+                          {
+                            "id": "ememo",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "admin_memo",
+                              "placeholder": "관리자 메모",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ehold_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "ehold_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "보류 이유"
+                          },
+                          {
+                            "id": "ehold",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "hold_reason",
+                              "placeholder": "보류 이유",
+                              "className": "cmb-admin-w-full"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "emetrics",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
+                        "children": [
+                          {
+                            "id": "erate_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "erate_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "평점 / 평점 수"
+                              },
+                              {
+                                "id": "erate_row",
+                                "type": "basic",
+                                "name": "Div",
+                                "props": {
+                                  "className": "flex items-center gap-2"
+                                },
+                                "children": [
+                                  {
+                                    "id": "escore",
+                                    "type": "basic",
+                                    "name": "Input",
+                                    "props": {
+                                      "name": "rating_score",
+                                      "type": "number",
+                                      "min": "0",
+                                      "max": "5",
+                                      "step": "0.1",
+                                      "placeholder": "4.5",
+                                      "className": "cmb-admin-w-xs"
+                                    }
+                                  },
+                                  {
+                                    "id": "ecount",
+                                    "type": "basic",
+                                    "name": "Input",
+                                    "props": {
+                                      "name": "rating_count",
+                                      "type": "number",
+                                      "min": "0",
+                                      "placeholder": "12",
+                                      "className": "cmb-admin-w-xs"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eclaimc_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "eclaimc_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "크레임 건수"
+                              },
+                              {
+                                "id": "eclaimc",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "claim_count",
+                                  "type": "number",
+                                  "min": "0",
+                                  "placeholder": "0",
+                                  "className": "cmb-admin-w-xs"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "erep_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "erep_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "신고 건수"
+                              },
+                              {
+                                "id": "erep",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "report_count",
+                                  "type": "number",
+                                  "min": "0",
+                                  "placeholder": "0",
+                                  "className": "cmb-admin-w-xs"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "epri_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "epri_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "우선 노출 (클수록 앞)"
+                              },
+                              {
+                                "id": "epri",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "priority",
+                                  "type": "number",
+                                  "min": "0",
+                                  "placeholder": "0",
+                                  "className": "cmb-admin-w-xs"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "eclaimh_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "eclaimh_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "크레임 이력"
+                          },
+                          {
+                            "id": "eclaimh",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "claim_history",
+                              "placeholder": "한 줄에 하나씩, 또는 JSON",
+                              "className": "cmb-admin-w-full min-h-[64px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
+                        ]
+                      },
                       {
                         "id": "eflags",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-checks" },
+                        "props": {
+                          "className": "cmb-admin-checks"
+                        },
                         "children": [
                           {
                             "id": "erec_wrap",
                             "type": "basic",
                             "name": "Label",
-                            "props": { "className": "cmb-admin-check-label" },
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
                             "children": [
-                              { "id": "erec", "type": "basic", "name": "Checkbox", "props": { "name": "is_recommended" } },
-                              { "id": "erec_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "추천업체 또는 추천 입찰자" }
+                              {
+                                "id": "erec",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "is_recommended"
+                                }
+                              },
+                              {
+                                "id": "erec_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "추천업체 또는 추천 입찰자"
+                              }
                             ]
                           },
                           {
                             "id": "edes_wrap",
                             "type": "basic",
                             "name": "Label",
-                            "props": { "className": "cmb-admin-check-label" },
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
                             "children": [
-                              { "id": "edes", "type": "basic", "name": "Checkbox", "props": { "name": "is_designated" } },
-                              { "id": "edes_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "지정업체 (입찰 허용 「지정업체」일 때 입찰 가능)" }
+                              {
+                                "id": "edes",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "is_designated"
+                                }
+                              },
+                              {
+                                "id": "edes_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "지정업체 (입찰 허용 「지정업체」일 때 입찰 가능)"
+                              }
                             ]
                           }
                         ]
                       },
-                      { "id": "epri_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "우선 노출 (클수록 앞)" },
-                      { "id": "epri", "type": "basic", "name": "Input", "props": { "name": "priority", "type": "number", "min": "0", "placeholder": "0", "className": "cmb-admin-w-xs" } },
                       {
                         "id": "esave",
                         "type": "basic",
                         "name": "Button",
                         "text": "선택 업체 저장",
-                        "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                        "props": {
+                          "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                        },
                         "actions": [
                           {
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
                             "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}",
-                            "params": { "method": "PATCH", "body": "{{_local.edit}}" },
+                            "params": {
+                              "method": "PATCH",
+                              "body": "{{_local.edit}}"
+                            },
                             "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "저장했습니다." } },
-                              { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "success",
+                                  "message": "저장했습니다."
+                                }
+                              },
+                              {
+                                "handler": "refetchDataSource",
+                                "params": {
+                                  "dataSourceId": "companies"
+                                }
+                              }
                             ],
                             "onError": [
-                              { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "error",
+                                  "message": "{{error.message}}"
+                                }
+                              }
                             ]
                           }
                         ]
@@ -240,22 +663,80 @@
                     "id": "reject_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-card space-y-2", "dataKey": "reject", "trackChanges": true },
+                    "props": {
+                      "className": "cmb-admin-card space-y-2",
+                      "dataKey": "reject",
+                      "trackChanges": true
+                    },
                     "children": [
-                      { "id": "rl", "type": "basic", "name": "P", "props": { "className": "cmb-admin-card-title" }, "text": "거절 사유" },
-                      { "id": "rhelp", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "거절 버튼과 함께 전송됩니다." },
-                      { "id": "rreason", "type": "basic", "name": "Input", "props": { "name": "rejected_reason", "placeholder": "거절 사유", "className": "cmb-admin-w-full" } }
+                      {
+                        "id": "rl",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-card-title"
+                        },
+                        "text": "거절 사유"
+                      },
+                      {
+                        "id": "rhelp",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "거절 버튼과 함께 전송됩니다."
+                      },
+                      {
+                        "id": "rreason",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "rejected_reason",
+                          "placeholder": "거절 사유",
+                          "className": "cmb-admin-w-full"
+                        }
+                      }
                     ]
                   },
                   {
                     "id": "hold_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-card space-y-2", "dataKey": "hold", "trackChanges": true },
+                    "props": {
+                      "className": "cmb-admin-card space-y-2",
+                      "dataKey": "hold",
+                      "trackChanges": true
+                    },
                     "children": [
-                      { "id": "hl", "type": "basic", "name": "P", "props": { "className": "cmb-admin-card-title" }, "text": "보류 이유" },
-                      { "id": "hhelp", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "보류 버튼과 함께 전송됩니다." },
-                      { "id": "hreason", "type": "basic", "name": "Input", "props": { "name": "hold_reason", "placeholder": "보류 이유", "className": "cmb-admin-w-full" } }
+                      {
+                        "id": "hl",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-card-title"
+                        },
+                        "text": "보류 이유"
+                      },
+                      {
+                        "id": "hhelp",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "보류 버튼과 함께 전송됩니다."
+                      },
+                      {
+                        "id": "hreason",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "hold_reason",
+                          "placeholder": "보류 이유",
+                          "className": "cmb-admin-w-full"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -264,45 +745,93 @@
                 "id": "list_col",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-stack" },
+                "props": {
+                  "className": "cmb-admin-stack"
+                },
                 "children": [
-                  { "id": "empty", "type": "basic", "name": "P", "if": "{{!(companies.data && companies.data.length)}}", "props": { "className": "cmb-admin-card cmb-admin-empty" }, "text": "등록된 업체가 없습니다." },
+                  {
+                    "id": "empty",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{!(companies.data && companies.data.length)}}",
+                    "props": {
+                      "className": "cmb-admin-card cmb-admin-empty"
+                    },
+                    "text": "등록된 업체가 없습니다."
+                  },
                   {
                     "id": "clist",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-list w-full" },
+                    "props": {
+                      "className": "cmb-admin-list w-full"
+                    },
                     "children": [
                       {
                         "id": "crow",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
-                        "iteration": { "source": "{{companies.data}}", "item_var": "$co" },
+                        "props": {
+                          "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
+                        },
+                        "iteration": {
+                          "source": "{{companies.data}}",
+                          "item_var": "$co"
+                        },
                         "children": [
                           {
                             "id": "cmain",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
+                            "props": {
+                              "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center"
+                            },
                             "children": [
-                              { "id": "ctxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}" },
-                              { "id": "cmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}}{{$co.is_designated ? ' · 지정업체' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}" },
-                              { "id": "cmemo", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "{{$co.admin_memo || $co.hold_reason || $co.rejected_reason || ''}}" }
+                              {
+                                "id": "ctxt",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-row-title"
+                                },
+                                "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}"
+                              },
+                              {
+                                "id": "cmeta",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-muted"
+                                },
+                                "text": "회원 {{$co.user_id}} · {{$co.status_label || $co.status}}{{$co.is_recommended ? ' · 추천' : ''}}{{$co.is_designated ? ' · 지정업체' : ''}} · 우선 {{$co.priority ?? 0}} · 평점 {{$co.rating_score ?? 0}}/{{$co.rating_count ?? 0}} · 크레임 {{$co.claim_count ?? 0}} · 신고 {{$co.report_count ?? 0}}"
+                              },
+                              {
+                                "id": "cmemo",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-muted"
+                                },
+                                "text": "{{$co.admin_memo || $co.hold_reason || $co.rejected_reason || ''}}"
+                              }
                             ]
                           },
                           {
                             "id": "cacts",
                             "type": "basic",
                             "name": "Div",
-                            "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
+                            "props": {
+                              "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center"
+                            },
                             "children": [
                               {
                                 "id": "load",
                                 "type": "basic",
                                 "name": "Button",
                                 "text": "불러오기",
-                                "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                                "props": {
+                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                },
                                 "actions": [
                                   {
                                     "type": "click",
@@ -330,21 +859,42 @@
                                 "type": "basic",
                                 "name": "Button",
                                 "text": "승인",
-                                "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                                "props": {
+                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                },
                                 "actions": [
                                   {
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
                                     "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/approve",
-                                    "params": { "method": "POST" },
+                                    "params": {
+                                      "method": "POST"
+                                    },
                                     "confirm": "이 업체를 승인할까요?",
                                     "onSuccess": [
-                                      { "handler": "toast", "params": { "type": "success", "message": "승인했습니다." } },
-                                      { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "success",
+                                          "message": "승인했습니다."
+                                        }
+                                      },
+                                      {
+                                        "handler": "refetchDataSource",
+                                        "params": {
+                                          "dataSourceId": "companies"
+                                        }
+                                      }
                                     ],
                                     "onError": [
-                                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "error",
+                                          "message": "{{error.message}}"
+                                        }
+                                      }
                                     ]
                                   }
                                 ]
@@ -354,21 +904,43 @@
                                 "type": "basic",
                                 "name": "Button",
                                 "text": "보류",
-                                "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                                "props": {
+                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                },
                                 "actions": [
                                   {
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
                                     "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/hold",
-                                    "params": { "method": "POST", "body": "{{_local.hold}}" },
+                                    "params": {
+                                      "method": "POST",
+                                      "body": "{{_local.hold}}"
+                                    },
                                     "confirm": "이 업체를 보류할까요?",
                                     "onSuccess": [
-                                      { "handler": "toast", "params": { "type": "success", "message": "보류했습니다." } },
-                                      { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "success",
+                                          "message": "보류했습니다."
+                                        }
+                                      },
+                                      {
+                                        "handler": "refetchDataSource",
+                                        "params": {
+                                          "dataSourceId": "companies"
+                                        }
+                                      }
                                     ],
                                     "onError": [
-                                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "error",
+                                          "message": "{{error.message}}"
+                                        }
+                                      }
                                     ]
                                   }
                                 ]
@@ -378,21 +950,43 @@
                                 "type": "basic",
                                 "name": "Button",
                                 "text": "거절",
-                                "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                                "props": {
+                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                },
                                 "actions": [
                                   {
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
                                     "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}/reject",
-                                    "params": { "method": "POST", "body": "{{_local.reject}}" },
+                                    "params": {
+                                      "method": "POST",
+                                      "body": "{{_local.reject}}"
+                                    },
                                     "confirm": "이 업체를 거절할까요?",
                                     "onSuccess": [
-                                      { "handler": "toast", "params": { "type": "success", "message": "거절했습니다." } },
-                                      { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "success",
+                                          "message": "거절했습니다."
+                                        }
+                                      },
+                                      {
+                                        "handler": "refetchDataSource",
+                                        "params": {
+                                          "dataSourceId": "companies"
+                                        }
+                                      }
                                     ],
                                     "onError": [
-                                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "error",
+                                          "message": "{{error.message}}"
+                                        }
+                                      }
                                     ]
                                   }
                                 ]
@@ -402,21 +996,42 @@
                                 "type": "basic",
                                 "name": "Button",
                                 "text": "삭제",
-                                "props": { "className": "px-3 py-1 text-sm rounded-lg text-red-600" },
+                                "props": {
+                                  "className": "px-3 py-1 text-sm rounded-lg text-red-600"
+                                },
                                 "actions": [
                                   {
                                     "type": "click",
                                     "handler": "apiCall",
                                     "auth_required": true,
                                     "target": "/api/modules/custom-maker_bids/admin/companies/{{$co.id}}",
-                                    "params": { "method": "DELETE" },
+                                    "params": {
+                                      "method": "DELETE"
+                                    },
                                     "confirm": "이 업체를 삭제할까요?",
                                     "onSuccess": [
-                                      { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                                      { "handler": "refetchDataSource", "params": { "dataSourceId": "companies" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "success",
+                                          "message": "삭제했습니다."
+                                        }
+                                      },
+                                      {
+                                        "handler": "refetchDataSource",
+                                        "params": {
+                                          "dataSourceId": "companies"
+                                        }
+                                      }
                                     ],
                                     "onError": [
-                                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                                      {
+                                        "handler": "toast",
+                                        "params": {
+                                          "type": "error",
+                                          "message": "{{error.message}}"
+                                        }
+                                      }
                                     ]
                                   }
                                 ]
@@ -436,4 +1051,3 @@
     ]
   }
 }
-

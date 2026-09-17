@@ -58,8 +58,9 @@ class Module extends AbstractModule
                     $this->adminMenuChild('유형 관리', 'Job types', 'types', '/admin/maker-bids/types', 'fa-tags', 2, 'custom-maker_bids.jobs.read'),
                     $this->adminMenuChild('입찰 관리', 'Bids', 'bids', '/admin/maker-bids/bids', 'fa-gavel', 3, 'custom-maker_bids.bids.read'),
                     $this->adminMenuChild('회사 목록', 'Companies', 'companies', '/admin/maker-bids/companies', 'fa-building', 4, 'custom-maker_bids.companies.read'),
-                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 5, 'custom-maker_bids.jobs.read'),
-                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 6, 'custom-maker_bids.settings.read'),
+                    $this->adminMenuChild('운영', 'Ops', 'ops', '/admin/maker-bids/ops', 'fa-clipboard-list', 5, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 6, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 7, 'custom-maker_bids.settings.read'),
                 ],
             ],
         ];
@@ -98,12 +99,14 @@ class Module extends AbstractModule
                 'custom-maker_bids-bids',
                 'custom-maker_bids-companies',
                 'custom-maker_bids-activity',
+                'custom-maker_bids-ops',
                 'custom-maker_bids-settings',
                 'custom-maker_bid-jobs',
                 'custom-maker_bid-types',
                 'custom-maker_bid-bids',
                 'custom-maker_bid-companies',
                 'custom-maker_bid-activity',
+                'custom-maker_bid-ops',
                 'custom-maker_bid-settings',
             ];
             DB::table('menus')
@@ -131,6 +134,13 @@ class Module extends AbstractModule
             'maker_job_types',
             'maker_job_files',
             'maker_module_settings',
+            'maker_notices',
+            'maker_messages',
+            'maker_reviews',
+            'maker_claims',
+            'maker_reports',
+            'maker_audits',
+            'maker_file_logs',
         ];
     }
 

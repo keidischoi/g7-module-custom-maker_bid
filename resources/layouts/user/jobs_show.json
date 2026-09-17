@@ -2,14 +2,46 @@
   "version": "1.0.0",
   "layout_name": "jobs_show",
   "extends": "_user_base",
-  "meta": { "title": "의뢰 상세" },
-  "errorHandling": {
-    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+  "meta": {
+    "title": "의뢰 상세"
   },
-  "state": { "bid": { "amount": "", "days": "", "message": "" } },
+  "errorHandling": {
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
+  },
+  "state": {
+    "bid": {
+      "amount": "",
+      "days": "",
+      "message": ""
+    }
+  },
   "data_sources": [
     {
       "id": "job",
@@ -29,7 +61,9 @@
       "refetchOnMount": true,
       "auth_required": true,
       "errorHandling": {
-        "401": { "handler": "suppress" }
+        "401": {
+          "handler": "suppress"
+        }
       },
       "fallback": {
         "data": {
@@ -39,6 +73,7 @@
           "can_bid": false,
           "can_award": false,
           "can_update_bid": false,
+          "can_workspace": false,
           "my_bid": null
         }
       }
@@ -50,42 +85,291 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "max-w-3xl mx-auto px-4 py-10 space-y-6" },
+        "props": {
+          "className": "cmb-page max-w-3xl"
+        },
         "children": [
           {
             "id": "tabs",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-maker-subnav flex items-center gap-1 flex-wrap", "data-cmb-subnav": "1" },
+            "props": {
+              "className": "cmb-maker-subnav flex items-center gap-1 flex-wrap",
+              "data-cmb-subnav": "1"
+            },
             "children": [
-              { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
-              { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
-              { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
-              { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
-              { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-500 dark:text-gray-400" }, "text": "입찰자 등록" }
+              {
+                "id": "t1",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/new",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "의뢰서 작성"
+              },
+              {
+                "id": "t2",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids",
+                  "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                },
+                "text": "의뢰목록"
+              },
+              {
+                "id": "t3",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/bids",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰현황"
+              },
+              {
+                "id": "t4",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/history",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "이력"
+              },
+              {
+                "id": "t5",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/company",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰자 등록"
+              },
+              {
+                "id": "t6",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/companies",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "입찰자 목록"
+              }
             ]
           },
-          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "show" } },
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "{{job.data.title}}" },
-          { "id": "meta", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.type_name || job.data.type}} · {{job.data.budget_label || '예산 미정'}} · {{job.data.status_label || job.data.status}} · 공개 {{job.data.audience_label || '전체'}} · 마감 {{job.data.closes_at || '없음'}}" },
-          { "id": "size", "type": "basic", "name": "P", "if": "{{job.data.size_label}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "최종 크기 {{job.data.size_label}}" },
-          { "id": "exts", "type": "basic", "name": "P", "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "제공 확장자 {{job.data.provided_extensions}}" },
-          { "id": "ownership", "type": "basic", "name": "P", "if": "{{job.data.ownership_requested}}", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "소유권한 요청" },
-          { "id": "flags", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "{{job.data.rush_fee_enabled ? ('급행비 적용 가능' + (job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : '')) : ''}} {{job.data.schedule_premium_enabled ? '· 스케줄 선점비 적용 가능' : ''}} {{job.data.revision_enabled ? ('· 수정 ' + (job.data.revision_count || '') + '회' + (job.data.revision_cost != null ? (' · 회당 ' + job.data.revision_cost + '원') : '')) : ''}}" },
-          { "id": "desc", "type": "basic", "name": "P", "props": { "className": "whitespace-pre-wrap text-gray-800 dark:text-gray-200" }, "text": "{{job.data.description ?? ''}}" },
+          {
+            "id": "cmb_notice",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "show"
+            }
+          },
+          {
+            "id": "hero",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card cmb-show-hero"
+            },
+            "children": [
+              {
+                "id": "hero_top",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-job-card-top"
+                },
+                "children": [
+                  {
+                    "id": "h",
+                    "type": "basic",
+                    "name": "H1",
+                    "props": {
+                      "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
+                    },
+                    "text": "{{job.data.title}}"
+                  },
+                  {
+                    "id": "badge",
+                    "type": "basic",
+                    "name": "Span",
+                    "props": {
+                      "className": "cmb-badge cmb-badge-{{job.data.status}}"
+                    },
+                    "text": "{{job.data.status_label || job.data.status}}"
+                  }
+                ]
+              },
+              {
+                "id": "meta",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-show-meta-row cmb-job-card-meta"
+                },
+                "children": [
+                  {
+                    "id": "m1",
+                    "type": "basic",
+                    "name": "Span",
+                    "text": "{{job.data.type_name || job.data.type}}"
+                  },
+                  {
+                    "id": "m2",
+                    "type": "basic",
+                    "name": "Span",
+                    "text": "{{job.data.budget_label || '예산 미정'}}"
+                  },
+                  {
+                    "id": "m3",
+                    "type": "basic",
+                    "name": "Span",
+                    "text": "공개 {{job.data.audience_label || '전체'}}"
+                  },
+                  {
+                    "id": "m4",
+                    "type": "basic",
+                    "name": "Span",
+                    "text": "마감 {{job.data.closes_at || '없음'}}"
+                  },
+                  {
+                    "id": "m5",
+                    "type": "basic",
+                    "name": "Span",
+                    "if": "{{job.data.bidding_status_label}}",
+                    "text": "입찰 {{job.data.bidding_status_label}}"
+                  }
+                ]
+              },
+              {
+                "id": "size",
+                "type": "basic",
+                "name": "P",
+                "if": "{{job.data.size_label}}",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "최종 크기 {{job.data.size_label}}"
+              },
+              {
+                "id": "exts",
+                "type": "basic",
+                "name": "P",
+                "if": "{{job.data.provided_extensions && job.data.provided_extensions.length}}",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "제공 확장자 {{job.data.provided_extensions}}"
+              },
+              {
+                "id": "ownership",
+                "type": "basic",
+                "name": "P",
+                "if": "{{job.data.ownership_requested}}",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "소유권한 요청"
+              },
+              {
+                "id": "flags",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "{{job.data.rush_fee_enabled ? ('급행비 적용 가능' + (job.data.rush_deadline_label ? (' · 조건 ' + job.data.rush_deadline_label) : '')) : ''}} {{job.data.schedule_premium_enabled ? '· 스케줄 선점비 적용 가능' : ''}} {{job.data.revision_enabled ? ('· 수정 ' + (job.data.revision_count || '') + '회' + (job.data.revision_cost != null ? (' · 회당 ' + job.data.revision_cost + '원') : '')) : ''}}"
+              },
+              {
+                "id": "hero_actions",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-job-card-actions"
+                },
+                "children": [
+                  {
+                    "id": "edit_link",
+                    "type": "basic",
+                    "name": "A",
+                    "if": "{{viewer.data?.can_edit}}",
+                    "props": {
+                      "href": "/maker-bids/{{route.id}}/edit",
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "text": "의뢰서 수정"
+                  },
+                  {
+                    "id": "work_link",
+                    "type": "basic",
+                    "name": "A",
+                    "if": "{{viewer.data?.can_workspace || job.data.status === 'awarded' || job.data.status === 'done'}}",
+                    "props": {
+                      "href": "/maker-bids/{{route.id}}/work",
+                      "className": "cmb-btn cmb-btn-primary"
+                    },
+                    "text": "작업실"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "desc_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card"
+            },
+            "children": [
+              {
+                "id": "desc_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "의뢰 내용"
+              },
+              {
+                "id": "desc",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-show-desc mt-3"
+                },
+                "text": "{{job.data.description ?? ''}}"
+              }
+            ]
+          },
           {
             "id": "imgs",
             "type": "basic",
             "name": "Div",
             "if": "{{job.data.images && job.data.images.length}}",
-            "props": { "className": "grid grid-cols-2 sm:grid-cols-3 gap-3" },
+            "props": {
+              "className": "grid grid-cols-2 sm:grid-cols-3 gap-3"
+            },
             "children": [
               {
                 "id": "img_{{idx}}",
                 "type": "basic",
                 "name": "Img",
-                "iteration": { "source": "{{job.data.images}}", "item_var": "$img", "index_var": "idx" },
-                "props": { "src": "{{$img.download_url || $img.url}}", "alt": "{{$img.original_filename}}", "className": "w-full h-32 object-cover rounded-lg border border-gray-200 dark:border-white/10" }
+                "iteration": {
+                  "source": "{{job.data.images}}",
+                  "item_var": "$img",
+                  "index_var": "idx"
+                },
+                "props": {
+                  "src": "{{$img.download_url || $img.url}}",
+                  "alt": "{{$img.original_filename}}",
+                  "className": "w-full h-32 object-cover rounded-xl border border-gray-200 dark:border-white/10"
+                }
               }
             ]
           },
@@ -94,23 +378,73 @@
             "type": "basic",
             "name": "Div",
             "if": "{{job.data.privacy_visible || viewer.data?.can_view_privacy}}",
-            "props": { "className": "rounded-xl border border-gray-200 dark:border-white/10 p-4 space-y-1 text-sm text-gray-800 dark:text-gray-200" },
+            "props": {
+              "className": "cmb-section-card space-y-1 text-sm"
+            },
             "children": [
-              { "id": "ph", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "주문자 정보" },
-              { "id": "pn", "type": "basic", "name": "P", "text": "{{job.data.contact_name || viewer.data.privacy.contact_name}}" },
-              { "id": "pp", "type": "basic", "name": "P", "text": "{{job.data.contact_phone || viewer.data.privacy.contact_phone}} · {{job.data.contact_hours || viewer.data.privacy.contact_hours || ''}}" },
-              { "id": "pe", "type": "basic", "name": "P", "text": "{{job.data.contact_email || viewer.data.privacy.contact_email}}" },
-              { "id": "pa", "type": "basic", "name": "P", "text": "{{job.data.zipcode || viewer.data.privacy.zipcode || ''}} {{job.data.address || viewer.data.privacy.address || ''}} {{job.data.address_detail || viewer.data.privacy.address_detail || ''}}" },
+              {
+                "id": "ph",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "font-medium"
+                },
+                "text": "주문자 정보"
+              },
+              {
+                "id": "pn",
+                "type": "basic",
+                "name": "P",
+                "text": "{{job.data.contact_name || viewer.data.privacy.contact_name}}"
+              },
+              {
+                "id": "pp",
+                "type": "basic",
+                "name": "P",
+                "text": "{{job.data.contact_phone || viewer.data.privacy.contact_phone}} · {{job.data.contact_hours || viewer.data.privacy.contact_hours || ''}}"
+              },
+              {
+                "id": "pe",
+                "type": "basic",
+                "name": "P",
+                "text": "{{job.data.contact_email || viewer.data.privacy.contact_email}}"
+              },
+              {
+                "id": "pa",
+                "type": "basic",
+                "name": "P",
+                "text": "{{job.data.zipcode || viewer.data.privacy.zipcode || ''}} {{job.data.address || viewer.data.privacy.address || ''}} {{job.data.address_detail || viewer.data.privacy.address_detail || ''}}"
+              },
               {
                 "id": "manager_box",
                 "type": "basic",
                 "name": "Div",
                 "if": "{{job.data.manager_name || job.data.manager_phone || job.data.manager_email || viewer.data.privacy.manager_name || viewer.data.privacy.manager_phone || viewer.data.privacy.manager_email}}",
-                "props": { "className": "mt-2 pt-2 border-t border-gray-200 dark:border-white/10 space-y-1" },
+                "props": {
+                  "className": "mt-2 pt-2 border-t border-gray-200 dark:border-white/10 space-y-1"
+                },
                 "children": [
-                  { "id": "mh", "type": "basic", "name": "P", "props": { "className": "font-medium" }, "text": "담당자 정보" },
-                  { "id": "mn", "type": "basic", "name": "P", "text": "{{job.data.manager_name || viewer.data.privacy.manager_name || ''}}" },
-                  { "id": "mp", "type": "basic", "name": "P", "text": "{{job.data.manager_phone || viewer.data.privacy.manager_phone || ''}} · {{job.data.manager_email || viewer.data.privacy.manager_email || ''}}" }
+                  {
+                    "id": "mh",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "font-medium"
+                    },
+                    "text": "담당자 정보"
+                  },
+                  {
+                    "id": "mn",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "{{job.data.manager_name || viewer.data.privacy.manager_name || ''}}"
+                  },
+                  {
+                    "id": "mp",
+                    "type": "basic",
+                    "name": "P",
+                    "text": "{{job.data.manager_phone || viewer.data.privacy.manager_phone || ''}} · {{job.data.manager_email || viewer.data.privacy.manager_email || ''}}"
+                  }
                 ]
               }
             ]
@@ -120,7 +454,9 @@
             "type": "basic",
             "name": "P",
             "if": "{{job.data.privacy_blocked && !viewer.data?.can_view_privacy}}",
-            "props": { "className": "text-sm text-gray-500 dark:text-gray-400 rounded-xl border border-dashed border-gray-200 dark:border-white/10 px-4 py-3" },
+            "props": {
+              "className": "cmb-hint"
+            },
             "text": "주문자 연락처·주소는 제작 의뢰가 확정(낙찰)된 뒤에 상대에게 공개됩니다."
           },
           {
@@ -128,74 +464,173 @@
             "type": "basic",
             "name": "Div",
             "if": "{{job.data.archives && job.data.archives.length}}",
-            "props": { "className": "space-y-1" },
+            "props": {
+              "className": "cmb-section-card space-y-2"
+            },
             "children": [
-              { "id": "ah", "type": "basic", "name": "P", "props": { "className": "text-sm font-medium text-gray-800 dark:text-gray-200" }, "text": "첨부 파일" },
+              {
+                "id": "ah",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-section-title text-base"
+                },
+                "text": "첨부 파일"
+              },
               {
                 "id": "afile",
                 "type": "basic",
                 "name": "A",
-                "iteration": { "source": "{{job.data.archives}}", "item_var": "$file" },
-                "props": { "href": "{{$file.download_url}}", "className": "block text-sm text-gray-600 dark:text-gray-300 underline" },
+                "iteration": {
+                  "source": "{{job.data.archives}}",
+                  "item_var": "$file"
+                },
+                "props": {
+                  "href": "{{$file.download_url}}",
+                  "className": "block text-sm underline text-gray-600 dark:text-gray-300"
+                },
                 "text": "{{$file.original_filename}}"
               }
             ]
-          },
-          {
-            "id": "edit_link",
-            "type": "basic",
-            "name": "A",
-            "if": "{{viewer.data?.can_edit}}",
-            "props": { "href": "/maker-bids/{{route.id}}/edit", "className": "inline-block px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200" },
-            "text": "의뢰서 수정"
           },
           {
             "id": "owner_note",
             "type": "basic",
             "name": "P",
             "if": "{{viewer.data?.is_owner}}",
-            "props": { "className": "text-sm text-gray-700 dark:text-gray-300" },
+            "props": {
+              "className": "cmb-hint"
+            },
             "text": "내 의뢰입니다. 열린 상태에서는 견적을 낙찰할 수 있습니다. 보류/의뢰/견적요청은 수정 화면에서 바꿀 수 있습니다."
           },
-          { "id": "bids_h", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "들어온 견적" },
+          {
+            "id": "bids_h",
+            "type": "basic",
+            "name": "H2",
+            "props": {
+              "className": "cmb-section-title"
+            },
+            "text": "들어온 견적"
+          },
           {
             "id": "bids_empty",
             "type": "basic",
             "name": "P",
             "if": "{{!(job.data.bids && job.data.bids.length)}}",
-            "props": { "className": "text-sm text-gray-500 dark:text-gray-400 py-4" },
+            "props": {
+              "className": "cmb-empty"
+            },
             "text": "아직 들어온 견적이 없습니다."
           },
           {
             "id": "bidrow_{{idx}}",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "py-3 border-b border-gray-200 dark:border-white/10 space-y-2" },
-            "iteration": { "source": "{{job.data.bids}}", "item_var": "$bid", "index_var": "idx" },
+            "props": {
+              "className": "cmb-bid-card"
+            },
+            "iteration": {
+              "source": "{{job.data.bids}}",
+              "item_var": "$bid",
+              "index_var": "idx"
+            },
             "children": [
-              { "id": "bidtxt_{{idx}}", "type": "basic", "name": "P", "props": { "className": "text-gray-800 dark:text-gray-200" }, "text": "#{{$bid.id}} {{$bid.amount}}원 / {{$bid.days ?? '-'}}일 · {{$bid.status}} · {{$bid.company_name ? ($bid.company_name + ($bid.is_recommended ? ' · 추천' : '')) : ''}} · {{$bid.message ?? ''}}" },
+              {
+                "id": "bidtop_{{idx}}",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-bid-card-top"
+                },
+                "children": [
+                  {
+                    "id": "bidamt_{{idx}}",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-job-card-title"
+                    },
+                    "text": "{{$bid.amount}}원 · {{$bid.days ?? '-'}}일"
+                  },
+                  {
+                    "id": "bidst_{{idx}}",
+                    "type": "basic",
+                    "name": "Span",
+                    "props": {
+                      "className": "cmb-badge cmb-badge-{{$bid.status}}"
+                    },
+                    "text": "{{$bid.status_label || $bid.status}}"
+                  }
+                ]
+              },
+              {
+                "id": "bidmeta_{{idx}}",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-bid-card-meta"
+                },
+                "children": [
+                  {
+                    "id": "bidco_{{idx}}",
+                    "type": "basic",
+                    "name": "Span",
+                    "text": "{{$bid.company_name ? ($bid.company_name + ($bid.is_recommended ? ' · 추천' : '')) : ('#' + $bid.id)}}"
+                  },
+                  {
+                    "id": "bidmsg_{{idx}}",
+                    "type": "basic",
+                    "name": "Span",
+                    "if": "{{$bid.message}}",
+                    "text": "{{$bid.message}}"
+                  }
+                ]
+              },
               {
                 "id": "award_{{idx}}",
                 "type": "basic",
                 "name": "Button",
                 "if": "{{viewer.data?.can_award}}",
                 "text": "이 견적으로 낙찰",
-                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "cmb-btn cmb-btn-primary mt-3"
+                },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
-                    "params": { "method": "POST", "body": { "bid_id": "{{$bid.id}}" } },
+                    "params": {
+                      "method": "POST",
+                      "body": {
+                        "bid_id": "{{$bid.id}}"
+                      }
+                    },
                     "confirm": "이 견적으로 낙찰할까요? 나머지 입찰은 거절됩니다.",
                     "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "낙찰되었습니다." } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "job" } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "viewer" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "낙찰되었습니다. 작업실로 이동합니다."
+                        }
+                      },
+                      {
+                        "handler": "navigate",
+                        "params": {
+                          "path": "/maker-bids/{{route.id}}/work"
+                        }
+                      }
                     ],
                     "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message}}"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -206,16 +641,20 @@
             "id": "login_hint",
             "type": "basic",
             "name": "P",
-            "if": "{{!viewer.data?.authenticated && job.data?.status === 'open'}}",
-            "props": { "className": "text-sm text-gray-500 dark:text-gray-400" },
+            "if": "{{!viewer.data?.authenticated && job.data?.is_open}}",
+            "props": {
+              "className": "cmb-hint"
+            },
             "text": "로그인하면 견적을 넣을 수 있습니다. 본인 의뢰에는 입찰할 수 없습니다."
           },
           {
             "id": "closed_hint",
             "type": "basic",
             "name": "P",
-            "if": "{{job.data?.status && job.data.status !== 'open'}}",
-            "props": { "className": "text-sm text-gray-500 dark:text-gray-400" },
+            "if": "{{job.data && job.data.is_open === false}}",
+            "props": {
+              "className": "cmb-hint cmb-hint-warn"
+            },
             "text": "이 의뢰는 열려 있지 않아 견적·낙찰을 할 수 없습니다."
           },
           {
@@ -223,32 +662,98 @@
             "type": "basic",
             "name": "Div",
             "if": "{{viewer.data?.can_bid && !viewer.data?.my_bid}}",
-            "props": { "className": "space-y-3", "dataKey": "bid", "trackChanges": true },
+            "props": {
+              "className": "cmb-section-card cmb-form-stack cmb-bid-form space-y-3",
+              "dataKey": "bid",
+              "trackChanges": true
+            },
             "children": [
-              { "id": "bh", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "견적 넣기" },
-              { "id": "amount", "type": "basic", "name": "Input", "props": { "name": "amount", "placeholder": "견적 금액(원)" } },
-              { "id": "days", "type": "basic", "name": "Input", "props": { "name": "days", "placeholder": "제작 일수" } },
-              { "id": "msg", "type": "basic", "name": "Input", "props": { "name": "message", "placeholder": "메시지" } },
+              {
+                "id": "bh",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "견적 넣기"
+              },
+              {
+                "id": "amount",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "amount",
+                  "placeholder": "견적 금액(원)",
+                  "className": "cmb-order-field"
+                }
+              },
+              {
+                "id": "days",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "days",
+                  "placeholder": "제작 일수",
+                  "className": "cmb-order-field"
+                }
+              },
+              {
+                "id": "msg",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "message",
+                  "placeholder": "메시지",
+                  "className": "cmb-order-field"
+                }
+              },
               {
                 "id": "submit",
                 "type": "basic",
                 "name": "Button",
                 "text": "견적 제출",
-                "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "cmb-btn cmb-btn-primary"
+                },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids",
-                    "params": { "method": "POST", "body": "{{_local.bid}}" },
+                    "params": {
+                      "method": "POST",
+                      "body": "{{_local.bid}}"
+                    },
                     "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "견적을 등록했습니다." } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "job" } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "viewer" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "견적을 등록했습니다."
+                        }
+                      },
+                      {
+                        "handler": "refetchDataSource",
+                        "params": {
+                          "dataSourceId": "job"
+                        }
+                      },
+                      {
+                        "handler": "refetchDataSource",
+                        "params": {
+                          "dataSourceId": "viewer"
+                        }
+                      }
                     ],
                     "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message}}"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -260,40 +765,123 @@
             "type": "basic",
             "name": "Div",
             "if": "{{viewer.data?.can_update_bid}}",
-            "props": { "className": "space-y-3", "dataKey": "bid", "trackChanges": true },
+            "props": {
+              "className": "cmb-section-card cmb-form-stack cmb-bid-form space-y-3",
+              "dataKey": "bid",
+              "trackChanges": true
+            },
             "children": [
-              { "id": "eh", "type": "basic", "name": "H2", "props": { "className": "text-lg text-gray-900 dark:text-white" }, "text": "내 견적 수정" },
-              { "id": "cur", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 dark:text-gray-400" }, "text": "현재 {{viewer.data.my_bid.amount}}원 / {{viewer.data.my_bid.days ?? '-'}}일 · {{viewer.data.my_bid.status}}. 의뢰가 열려 있는 동안 금액을 바꿀 수 있습니다." },
-              { "id": "eamount", "type": "basic", "name": "Input", "props": { "name": "amount", "placeholder": "새 견적 금액(원)" } },
-              { "id": "edays", "type": "basic", "name": "Input", "props": { "name": "days", "placeholder": "제작 일수" } },
-              { "id": "emsg", "type": "basic", "name": "Input", "props": { "name": "message", "placeholder": "메시지" } },
+              {
+                "id": "eh",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "내 견적 수정"
+              },
+              {
+                "id": "cur",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "현재 {{viewer.data.my_bid.amount}}원 / {{viewer.data.my_bid.days ?? '-'}}일 · {{viewer.data.my_bid.status}}. 의뢰가 열려 있는 동안 금액을 바꿀 수 있습니다."
+              },
+              {
+                "id": "eamount",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "amount",
+                  "placeholder": "새 견적 금액(원)",
+                  "className": "cmb-order-field"
+                }
+              },
+              {
+                "id": "edays",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "days",
+                  "placeholder": "제작 일수",
+                  "className": "cmb-order-field"
+                }
+              },
+              {
+                "id": "emsg",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "message",
+                  "placeholder": "메시지",
+                  "className": "cmb-order-field"
+                }
+              },
               {
                 "id": "esubmit",
                 "type": "basic",
                 "name": "Button",
                 "text": "금액 수정",
-                "props": { "className": "px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "cmb-btn cmb-btn-primary"
+                },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}",
-                    "params": { "method": "PATCH", "body": "{{_local.bid}}" },
+                    "params": {
+                      "method": "PATCH",
+                      "body": "{{_local.bid}}"
+                    },
                     "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "견적 금액을 수정했습니다." } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "job" } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "viewer" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "견적 금액을 수정했습니다."
+                        }
+                      },
+                      {
+                        "handler": "refetchDataSource",
+                        "params": {
+                          "dataSourceId": "job"
+                        }
+                      },
+                      {
+                        "handler": "refetchDataSource",
+                        "params": {
+                          "dataSourceId": "viewer"
+                        }
+                      }
                     ],
                     "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message}}"
+                        }
+                      }
                     ]
                   }
                 ]
               }
             ]
           },
-          { "id": "co_link", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "inline-block text-sm text-gray-500 dark:text-gray-400 underline" }, "text": "업체로 등록하기" }
+          {
+            "id": "co_link",
+            "type": "basic",
+            "name": "A",
+            "props": {
+              "href": "/maker-bids/company",
+              "className": "cmb-btn cmb-btn-ghost"
+            },
+            "text": "업체로 등록하기"
+          }
         ]
       }
     ]

@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.15';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.15';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.15';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.15';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.15';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.15';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.10';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.10';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.10';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.10';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.10';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.10';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
@@ -44,7 +44,7 @@ class UserMenuListener implements HookListenerInterface
         try {
             if (! is_array($layout)) return $layout;
             $name = (string) ($layout['layout_name'] ?? '');
-            if (in_array($name, ['jobs_edit', 'jobs_show'], true) || str_contains($name, 'jobs_show') || str_contains($name, 'jobs_edit')) {
+            if (in_array($name, ['jobs_form', 'jobs_edit', 'jobs_show'], true) || str_contains($name, 'jobs_show') || str_contains($name, 'jobs_edit') || str_contains($name, 'jobs_form')) {
                 $layout = $this->bindNamedValues($layout, self::JOB_FIELDS, 'job.data');
             }
             if ($name === 'company_apply') {
@@ -57,6 +57,7 @@ class UserMenuListener implements HookListenerInterface
                 $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
                 $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
+                $layout = $this->ensureAdminNav($layout);
                 if (in_array($name, ['jobs_show', 'jobs_index'], true)) {
                     $layout = $this->bindNamedValues($layout, self::JOB_FIELDS, 'job.data');
                 }
@@ -69,10 +70,16 @@ class UserMenuListener implements HookListenerInterface
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
-            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply', 'jobs_show'], true)) {
-                $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
+            $publicLayouts = [
+                'jobs_form', 'jobs_list', 'jobs_show', 'jobs_bids', 'jobs_history', 'jobs_notices',
+                'jobs_workspace', 'company_apply', 'company_list',
+            ];
+            if (in_array($name, $publicLayouts, true)) {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
+            }
+            if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show'], true)) {
+                $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
             }
             $layout['scripts'] = $scripts;
         } catch (\Throwable) {}
@@ -143,6 +150,152 @@ class UserMenuListener implements HookListenerInterface
             }
         }
         return $node;
+    }
+
+
+    /**
+     * Shared admin chrome: one 7-link nav (includes ops). Layouts keep an empty
+     * #cmb_admin_nav / .cmb-admin-nav stub; this fills children so pages stop
+     * duplicating the link list.
+     *
+     * @param  array<string, mixed>  $layout
+     * @return array<string, mixed>
+     */
+    private function ensureAdminNav(array $layout): array
+    {
+        $children = $this->adminNavChildren();
+        $filled = false;
+        $layout = $this->fillAdminNavNode($layout, $children, $filled);
+        if (! $filled) {
+            $layout = $this->insertAdminNavStub($layout, $children);
+        }
+
+        return $layout;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function adminNavChildren(): array
+    {
+        $links = [
+            ['cmb_an_jobs', '/admin/maker-bids', '의뢰 목록'],
+            ['cmb_an_types', '/admin/maker-bids/types', '유형 관리'],
+            ['cmb_an_bids', '/admin/maker-bids/bids', '입찰 관리'],
+            ['cmb_an_cos', '/admin/maker-bids/companies', '회사 목록'],
+            ['cmb_an_ops', '/admin/maker-bids/ops', '운영'],
+            ['cmb_an_act', '/admin/maker-bids/activity', '회원 활동'],
+            ['cmb_an_set', '/admin/maker-bids/settings', '설정'],
+        ];
+        $out = [];
+        foreach ($links as [$id, $href, $label]) {
+            $out[] = [
+                'id' => $id,
+                'type' => 'basic',
+                'name' => 'A',
+                'props' => ['href' => $href],
+                'text' => $label,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $node
+     * @param  list<array<string, mixed>>  $children
+     * @return array<string, mixed>
+     */
+    private function fillAdminNavNode(array $node, array $children, bool &$filled): array
+    {
+        $props = is_array($node['props'] ?? null) ? $node['props'] : [];
+        $cls = (string) ($props['className'] ?? '');
+        $id = (string) ($node['id'] ?? '');
+        if (($node['name'] ?? '') === 'Div' && ($id === 'cmb_admin_nav' || str_contains($cls, 'cmb-admin-nav'))) {
+            $node['id'] = 'cmb_admin_nav';
+            $props['className'] = 'cmb-admin-nav text-sm';
+            $props['data-cmb-admin-nav'] = '1';
+            $node['props'] = $props;
+            $node['children'] = $children;
+            $filled = true;
+
+            return $node;
+        }
+        foreach (['children', 'injections', 'components'] as $key) {
+            if (! isset($node[$key]) || ! is_array($node[$key])) {
+                continue;
+            }
+            foreach ($node[$key] as $i => $child) {
+                if (is_array($child)) {
+                    $node[$key][$i] = $this->fillAdminNavNode($child, $children, $filled);
+                }
+            }
+        }
+        if (isset($node['slots']) && is_array($node['slots'])) {
+            foreach ($node['slots'] as $slot => $items) {
+                if (! is_array($items)) {
+                    continue;
+                }
+                foreach ($items as $i => $child) {
+                    if (is_array($child)) {
+                        $node['slots'][$slot][$i] = $this->fillAdminNavNode($child, $children, $filled);
+                    }
+                }
+            }
+        }
+
+        return $node;
+    }
+
+    /**
+     * @param  array<string, mixed>  $layout
+     * @param  list<array<string, mixed>>  $children
+     * @return array<string, mixed>
+     */
+    private function insertAdminNavStub(array $layout, array $children): array
+    {
+        $stub = [
+            'id' => 'cmb_admin_nav',
+            'type' => 'basic',
+            'name' => 'Div',
+            'props' => ['className' => 'cmb-admin-nav text-sm', 'data-cmb-admin-nav' => '1'],
+            'children' => $children,
+        ];
+        if (! isset($layout['slots']['content']) || ! is_array($layout['slots']['content'])) {
+            return $layout;
+        }
+        $layout['slots']['content'] = $this->insertAfterFirstH1($layout['slots']['content'], $stub);
+
+        return $layout;
+    }
+
+    /**
+     * @param  list<mixed>  $nodes
+     * @param  array<string, mixed>  $stub
+     * @return list<mixed>
+     */
+    private function insertAfterFirstH1(array $nodes, array $stub): array
+    {
+        foreach ($nodes as $i => $child) {
+            if (! is_array($child)) {
+                continue;
+            }
+            if (($child['name'] ?? '') === 'H1') {
+                array_splice($nodes, $i + 1, 0, [$stub]);
+
+                return $nodes;
+            }
+            if (isset($child['children']) && is_array($child['children'])) {
+                $before = $child['children'];
+                $child['children'] = $this->insertAfterFirstH1($child['children'], $stub);
+                $nodes[$i] = $child;
+                if ($child['children'] !== $before) {
+                    return $nodes;
+                }
+            }
+        }
+
+        return $nodes;
     }
 
     private function upsertScript(array $scripts, string $id, string $src): array

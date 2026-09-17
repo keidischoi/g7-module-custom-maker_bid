@@ -40,6 +40,7 @@
     if (/\/maker-bids\/new$/.test(p)) return '/maker-bids/new';
     if (/\/maker-bids\/bids$/.test(p)) return '/maker-bids/bids';
     if (/\/maker-bids\/history$/.test(p)) return '/maker-bids/history';
+    if (/\/maker-bids\/notices$/.test(p)) return '/maker-bids/notices';
     if (/\/maker-bids\/companies$/.test(p)) return '/maker-bids/companies';
     if (/\/maker-bids\/company$/.test(p)) return '/maker-bids/company';
     if (/\/maker-bids\/\d+(\/edit)?$/.test(p)) return '';

@@ -120,6 +120,12 @@ class JobService
             $isDesignated,
         );
 
+        $canWorkspace = $userId > 0 && (
+            $isOwner
+            || $isAdmin
+            || ($awardedUserId !== null && $awardedUserId === $userId)
+        ) && in_array((string) $job->status, ['awarded', 'done'], true);
+
         return [
             'authenticated' => $userId > 0,
             'is_owner' => $isOwner,
@@ -129,6 +135,7 @@ class JobService
             'can_update_bid' => $canUpdate,
             'can_edit' => $isOwner && JobRules::isListingStatus((string) $job->status),
             'can_view_privacy' => $canViewPersonal,
+            'can_workspace' => $canWorkspace,
             'my_bid' => $myBid,
             'privacy' => $canViewPersonal ? $this->personalPayload($job) : null,
         ];

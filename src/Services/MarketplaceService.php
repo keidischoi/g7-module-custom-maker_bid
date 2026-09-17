@@ -78,6 +78,9 @@ class MarketplaceService
 
     public function markRead(int $userId, int $id): void
     {
+        if (! Schema::hasTable('maker_notices')) {
+            return;
+        }
         DB::table('maker_notices')->where('user_id', $userId)->where('id', $id)->update(['read_at' => now()]);
     }
 
@@ -135,7 +138,7 @@ class MarketplaceService
                 ]
             );
         }
-        if ($companyId) {
+        if ($companyId && Schema::hasTable('maker_reviews')) {
             $avg = DB::table('maker_reviews')->where('company_id', $companyId)->avg('score');
             $cnt = DB::table('maker_reviews')->where('company_id', $companyId)->count();
             MakerCompany::query()->where('id', $companyId)->update([
@@ -175,6 +178,9 @@ class MarketplaceService
 
     public function postMessage(int $userId, int $jobId, string $body): array
     {
+        if (! Schema::hasTable('maker_messages')) {
+            throw new DomainException('메시지 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
+        }
         $job = MakerJob::query()->findOrFail($jobId);
         $winner = $job->awarded_bid_id ? MakerBid::query()->find($job->awarded_bid_id) : null;
         $ok = (int) $job->user_id === $userId || ($winner && (int) $winner->user_id === $userId);
@@ -201,7 +207,7 @@ class MarketplaceService
         $job = MakerJob::query()->findOrFail($jobId);
         $winner = $job->awarded_bid_id ? MakerBid::query()->find($job->awarded_bid_id) : null;
         $ok = (int) $job->user_id === $userId || ($winner && (int) $winner->user_id === $userId);
-        if (! $ok) {
+        if (! $ok || ! Schema::hasTable('maker_messages')) {
             return [];
         }
 
@@ -210,6 +216,9 @@ class MarketplaceService
 
     public function claim(int $userId, int $jobId, string $reason): array
     {
+        if (! Schema::hasTable('maker_claims')) {
+            throw new DomainException('클레임 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
+        }
         $id = DB::table('maker_claims')->insertGetId([
             'job_id' => $jobId,
             'user_id' => $userId,
@@ -225,6 +234,9 @@ class MarketplaceService
 
     public function report(int $userId, int $jobId, string $reason): array
     {
+        if (! Schema::hasTable('maker_reports')) {
+            throw new DomainException('신고 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
+        }
         $id = DB::table('maker_reports')->insertGetId([
             'job_id' => $jobId,
             'user_id' => $userId,
@@ -285,6 +297,9 @@ class MarketplaceService
 
     public function resolveClaim(int $id, string $status, ?string $note): void
     {
+        if (! Schema::hasTable('maker_claims')) {
+            return;
+        }
         DB::table('maker_claims')->where('id', $id)->update([
             'status' => $status === 'closed' ? 'closed' : 'open',
             'admin_note' => $note,
