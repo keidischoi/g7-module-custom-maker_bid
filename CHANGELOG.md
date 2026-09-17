@@ -4,6 +4,25 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.10] - 2026-09-17
+
+### Added
+- 관리자 설정 **기본 입찰 공개 설정** (`general.bid_audience_mode`: `admin_only` | `public`).
+  - **공개**: 의뢰 작성/수정에 공개 설정 선택 표시 — **전체**(업체+개인) / **업체만** / **개인만** (`JobRules::AUDIENCES`).
+  - **관리자만**: 회원 의뢰 폼에서 공개 설정 셀렉트 숨김. 생성 시 `audience=all` 강제, 수정 시 클라이언트 `audience` 무시(관리자 패널에서만 변경).
+- 의뢰 폼 defaults API에 `bid_audience_mode` · `audience_selectable` 포함. `form.js`가 섹션 show/hide.
+- 의뢰목록 **정렬**: `sort=latest|created|views` (최신순/등록순/조회순). UI 셀렉트·소프트 갱신.
+- 의뢰 `view_count` 컬럼(마이그레이션) + 상세 조회 시 증가. 조회순 정렬에 사용.
+- **입찰현황** 열린 의뢰 카드에서 **견적 넣기** 인라인 폼(금액·일수·메시지·제출). `POST …/jobs/{id}/bids` 후 `jobs`/`mine` refetch.
+
+### Fixed
+- **의뢰목록 검색**: 검색어가 `_local.search.q`에 바인딩되지 않아 `q=`가 비던 문제 수정. 입력 변경·검색 버튼·**Enter**가 동일하게 동작(전체 새로고침 없음).
+- 검색 `q`가 제목·설명·유형·연락/담당자명·의뢰인 회원명/아이디·업체명까지 OR 매칭.
+
+### Changed
+- 버전·캐시 버스트 **0.10.10**.
+
+
 ## [0.10.9] - 2026-09-17
 
 ### Fixed

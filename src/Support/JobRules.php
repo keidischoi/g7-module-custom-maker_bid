@@ -21,6 +21,19 @@ class JobRules
 
     public const AUDIENCES = ['all', 'company', 'individual'];
 
+    /** Public list sort: latest=최신순, created=등록순, views=조회순 */
+    public const LIST_SORT_LATEST = 'latest';
+
+    public const LIST_SORT_CREATED = 'created';
+
+    public const LIST_SORT_VIEWS = 'views';
+
+    public const LIST_SORTS = [
+        self::LIST_SORT_LATEST,
+        self::LIST_SORT_CREATED,
+        self::LIST_SORT_VIEWS,
+    ];
+
     public const TITLE_MAX = 200;
 
     public const SIZES_MAX = 20;
@@ -290,6 +303,22 @@ class JobRules
         }
 
         return [$raw];
+    }
+
+    public static function normalizeListSort(mixed $raw): string
+    {
+        $value = strtolower(trim((string) $raw));
+        if (in_array($value, ['created', 'created_asc', '등록순', '등록', 'oldest'], true)) {
+            return self::LIST_SORT_CREATED;
+        }
+        if (in_array($value, ['views', 'view', 'view_count', '조회순', '조회', 'popular', 'hits'], true)) {
+            return self::LIST_SORT_VIEWS;
+        }
+        if (in_array($value, ['latest', 'newest', 'recent', '최신순', '최신', 'id_desc', ''], true) || $value === '') {
+            return self::LIST_SORT_LATEST;
+        }
+
+        return self::LIST_SORT_LATEST;
     }
 
     public static function isOpen(string $status, mixed $closesAt = null, ?DateTimeInterface $now = null): bool

@@ -20,7 +20,7 @@ class MakerJob extends Model
         'revision_enabled', 'revision_count', 'revision_cost', 'contact_name', 'contact_phone',
         'contact_hours', 'contact_email', 'zipcode', 'address', 'address_detail',
         'manager_name', 'manager_phone', 'manager_email', 'upload_token',
-        'terms_agreed', 'work_status', 'tracking_no', 'carrier',
+        'terms_agreed', 'work_status', 'tracking_no', 'carrier', 'view_count',
     ];
 
     protected $casts = [
@@ -46,6 +46,7 @@ class MakerJob extends Model
         'revision_count' => 'integer',
         'revision_cost' => 'integer',
         'terms_agreed' => 'boolean',
+        'view_count' => 'integer',
     ];
 
     public function bids(): HasMany

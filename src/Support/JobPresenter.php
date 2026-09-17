@@ -66,6 +66,9 @@ class JobPresenter
         $payload = [
             'id' => (int) $job->id,
             'user_id' => $job->user_id !== null ? (int) $job->user_id : null,
+            'owner_name' => isset($job->owner_name) ? (string) $job->owner_name : null,
+            'owner_login' => isset($job->owner_login) ? (string) $job->owner_login : null,
+            'owner_company_name' => isset($job->owner_company_name) ? (string) $job->owner_company_name : null,
             'type' => (string) $job->type,
             'type_id' => $job->type_id !== null ? (int) $job->type_id : null,
             'type_name' => $typeRow['name'] ?? (string) $job->type,
@@ -125,6 +128,7 @@ class JobPresenter
             'revision_count' => $job->revision_count,
             'revision_cost' => $job->revision_cost,
             'bids_count' => (int) ($job->bids_count ?? 0),
+            'view_count' => (int) ($job->view_count ?? 0),
             'images' => $images,
             'archives' => $archives,
             'deliveries' => $deliveries,
