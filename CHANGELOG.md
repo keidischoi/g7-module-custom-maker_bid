@@ -4,6 +4,15 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.15] - 2026-09-17
+
+### Fixed
+
+- 다크 샵에서 maker_bids 탭·목록 링크를 누를 때 새로고침이 하얗게 번쩍이던 FOUC를 줄입니다.
+  - `form.css` 상단 + `nav.js` 부트 인라인 스타일로 `html`/`body`에 즉시 어두운 배경·`color-scheme: dark`를 칠합니다 (`cmb-theme` localStorage로 다음 로드에도 유지).
+  - 같은 모듈 `/maker-bids` 링크(서브탭·카드)는 `G7Core.navigate` / `startViewTransition`으로 부드럽게 이동해 전체 크롬 화이트 플래시를 피합니다.
+- 버전·캐시 버스트 **0.9.15**. `nav.js`는 FOUC 방지를 위해 sync 로드.
+
 ## [0.9.14] - 2026-09-17
 
 - 다크 테마에서 목록 행·섹션 카드가 페이지 배경과 같아져 박스가 안 보이던 문제를 고칩니다. `.cmb-job-card` / `.cmb-section-card` 등에 명시적 `rgba(255,255,255,0.06)` 배경·`0.12` 테두리를 넣고, `page.js`가 `form.css`와 `cmb-list-item` 클래스를 보장합니다.

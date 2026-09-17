@@ -1,4 +1,121 @@
 (function () {
+  /* --- boot: early dark surface + soft in-module nav (kill white flash) --- */
+  var BOOT_BG = 'rgb(17 24 39)';
+  var BOOT_CSS =
+    'html.cmb-dark-boot,html.cmb-dark-boot body,html.dark,html.dark body,' +
+    'html[data-theme="dark"],html[data-theme="dark"] body{' +
+    'background-color:var(--background,var(--color-background,' + BOOT_BG + '));' +
+    'color-scheme:dark}';
+
+  function isDarkChrome() {
+    var html = document.documentElement;
+    if (!html) return false;
+    if (html.classList.contains('dark') || html.classList.contains('dark-mode')) return true;
+    if (html.getAttribute('data-theme') === 'dark') return true;
+    if (html.getAttribute('data-color-mode') === 'dark') return true;
+    try {
+      if (localStorage.getItem('cmb-theme') === 'dark') return true;
+      if (localStorage.getItem('theme') === 'dark') return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function rememberTheme() {
+    var html = document.documentElement;
+    if (!html) return;
+    var dark = html.classList.contains('dark') || html.classList.contains('dark-mode') ||
+      html.getAttribute('data-theme') === 'dark';
+    var light = html.classList.contains('light') || html.getAttribute('data-theme') === 'light';
+    try {
+      if (dark) localStorage.setItem('cmb-theme', 'dark');
+      else if (light) localStorage.setItem('cmb-theme', 'light');
+    } catch (e) {}
+  }
+
+  function injectBootCss() {
+    if (document.getElementById('cmb-boot-css')) return;
+    var s = document.createElement('style');
+    s.id = 'cmb-boot-css';
+    s.textContent = BOOT_CSS;
+    var parent = document.head || document.documentElement;
+    if (parent.firstChild) parent.insertBefore(s, parent.firstChild);
+    else parent.appendChild(s);
+  }
+
+  function applyDarkBoot() {
+    rememberTheme();
+    if (!isDarkChrome()) return;
+    injectBootCss();
+    try { document.documentElement.classList.add('cmb-dark-boot'); } catch (e) {}
+    try {
+      document.documentElement.style.backgroundColor = BOOT_BG;
+      if (document.body) document.body.style.backgroundColor = BOOT_BG;
+    } catch (e2) {}
+  }
+
+  // Run as early as this script executes (before DOMContentLoaded when possible).
+  applyDarkBoot();
+
+  function makerBidsPath(pathname) {
+    var p = String(pathname || '').replace(/\/+$/, '') || '/';
+    return p === '/maker-bids' || p.indexOf('/maker-bids/') === 0;
+  }
+
+  function softGo(path) {
+    function go() {
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'navigate', params: { path: path } });
+        return;
+      }
+      window.location.assign(path);
+    }
+    if (typeof document.startViewTransition === 'function') {
+      try {
+        document.startViewTransition(go);
+        return;
+      } catch (e) {}
+    }
+    go();
+  }
+
+  function bindSoftNav() {
+    if (document.documentElement.getAttribute('data-cmb-soft-nav')) return;
+    document.documentElement.setAttribute('data-cmb-soft-nav', '1');
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented) return;
+      if (e.button != null && e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var t = e.target;
+      var a = t && t.closest ? t.closest('a[href]') : null;
+      if (!a) return;
+      if (a.getAttribute('data-cmb-full-nav') === '1') return;
+      var tgt = a.getAttribute('target');
+      if (tgt && tgt !== '' && tgt !== '_self') return;
+      if (a.hasAttribute('download')) return;
+      var href = a.getAttribute('href');
+      if (!href || href.charAt(0) === '#' || /^javascript:/i.test(href)) return;
+      var url;
+      try { url = new URL(href, location.origin); } catch (err) { return; }
+      if (url.origin !== location.origin) return;
+      if (url.pathname.indexOf('/admin/') >= 0) return;
+      if (!makerBidsPath(url.pathname)) return;
+      // Soft-nav maker_bids tabs, list cards, and in-module links.
+      e.preventDefault();
+      applyDarkBoot();
+      softGo(url.pathname + url.search + url.hash);
+      setTimeout(applyDarkBoot, 0);
+      setTimeout(applyDarkBoot, 120);
+    }, true);
+  }
+
+  bindSoftNav();
+  document.addEventListener('DOMContentLoaded', function () {
+    applyDarkBoot();
+    bindSoftNav();
+  });
+  setTimeout(applyDarkBoot, 0);
+  setTimeout(applyDarkBoot, 200);
+
   var PATH = '/maker-bids';
   var BTN_ID = 'cmb-nav-jobs';
   var CLS =
@@ -19,11 +136,7 @@
   var TAB_ON = 'px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 cmb-tab-current';
 
   function go() {
-    if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-      window.G7Core.dispatch({ handler: 'navigate', params: { path: PATH } });
-      return;
-    }
-    window.location.href = PATH;
+    softGo(PATH);
   }
 
   function currentPath() {
