@@ -275,6 +275,8 @@ $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
 expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.9.15'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
+expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
+expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
 expectTrue('nav.js boot CSS id', str_contains($navJs, 'cmb-boot-css') && str_contains($navJs, 'cmb-dark-boot'));
 expectTrue('nav.js soft-nav for maker_bids', str_contains($navJs, 'data-cmb-soft-nav') && str_contains($navJs, 'startViewTransition') && str_contains($navJs, "handler: 'navigate'"));
 expectTrue('form.css critical dark html/body', str_contains((string) file_get_contents($root.'/resources/assets/form.css'), 'html.cmb-dark-boot') && str_contains((string) file_get_contents($root.'/resources/assets/form.css'), 'color-scheme: dark'));
