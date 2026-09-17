@@ -4,6 +4,23 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.13] - 2026-09-18
+
+### Fixed
+- **의뢰 수정 저장 시 필드 초기화**: 이미지(FileUploader)만 바꾼 뒤 저장하면 예산·설명·공개설정·주소 등이 비던 문제를 수정. 업데이트 FormRequest는 `nullBlankFields` 대신 `dropBlankKeys`로 빈 값을 제거하고, `JobService::jobAttributes`는 null/빈 문자열로 기존 컬럼을 덮어쓰지 않습니다.
+- **「이 유형은 주소가 필요합니다」 on edit**: 주소 미전송/빈 값일 때 기존 DB 주소를 유지하고, 주소 필수 검증도 기존 값으로 통과합니다. 소유자 수정 API는 개인정보(주소·연락처)를 항상 실값으로 내려 폼에 채웁니다.
+- **업체 수정(회원·관리자)**: 로고만 저장해도 프로필이 지워지지 않도록 `applicantUpdateAttributes` + blank `business_no` 스킵. 기존 업체 PATCH는 `applyUpdateRules`(name/kind sometimes).
+- **입찰 수정**: blank `days`/`message`가 기존 값을 null로 덮지 않음. 부분 업데이트 시 누락 키 유지.
+- **의뢰 명세**: 카탈로그에 제목·예산 라벨·확장자 플래그·연락시간 from/to 보강. `JobPresenter`가 `contact_hours_from`/`to`를 내려 수정 폼 재바인딩.
+
+### Changed
+- 입찰 상태 `pending` 표시를 **검토중**으로 변경 (DB 값은 `pending` 유지).
+- 버전·캐시 버스트 **0.10.13**.
+
+### Added
+- 의뢰·업체 폼 **더미 입력 (테스트)** 버튼 — `_local.form`/`company`에 한국어 샘플을 채우며 제출하지 않음.
+- `tests/partial_update.php` 회귀 테스트.
+
 ## [0.10.12] - 2026-09-18
 
 ### Added

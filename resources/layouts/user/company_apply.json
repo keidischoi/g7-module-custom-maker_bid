@@ -625,6 +625,19 @@
                 }
               },
               {
+                "id": "cmb_dummy_fill_company",
+                "type": "basic",
+                "name": "Button",
+                "text": "더미 입력 (테스트)",
+                "props": {
+                  "type": "button",
+                  "data-cmb-dummy-fill": "company",
+                  "title": "테스트 채우기 — 제출하지 않음",
+                  "className": "cmb-dummy-fill w-full mt-2 mb-1 px-4 py-2 rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 text-sm font-medium"
+                },
+                "actions": []
+              },
+              {
                 "id": "submit",
                 "type": "basic",
                 "name": "Button",

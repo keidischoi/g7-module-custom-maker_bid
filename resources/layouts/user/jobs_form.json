@@ -2388,6 +2388,19 @@
                 ]
               },
               {
+                "id": "cmb_dummy_fill_job_create",
+                "type": "basic",
+                "name": "Button",
+                "text": "더미 입력 (테스트)",
+                "props": {
+                  "type": "button",
+                  "data-cmb-dummy-fill": "job",
+                  "title": "테스트 채우기 — 제출하지 않음",
+                  "className": "cmb-dummy-fill w-full mb-2 px-4 py-2 rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 text-sm font-medium"
+                },
+                "actions": []
+              },
+              {
                 "id": "submit_create",
                 "type": "basic",
                 "name": "Button",
@@ -2452,6 +2465,19 @@
                   }
                 ],
                 "if": "{{!route.id}}"
+              },
+              {
+                "id": "cmb_dummy_fill_job",
+                "type": "basic",
+                "name": "Button",
+                "text": "더미 입력 (테스트)",
+                "props": {
+                  "type": "button",
+                  "data-cmb-dummy-fill": "job",
+                  "title": "테스트 채우기 — 제출하지 않음",
+                  "className": "cmb-dummy-fill w-full mb-2 px-4 py-2 rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 text-sm font-medium"
+                },
+                "actions": []
               },
               {
                 "id": "submit_edit",

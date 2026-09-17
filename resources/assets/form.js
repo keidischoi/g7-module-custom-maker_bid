@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.12';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.13';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'];
@@ -185,6 +185,7 @@
     var tag;
     var val;
     var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
+    var cur = g7Get('_local.' + prefix) || {};
     for (i = 0; i < nodes.length; i++) {
       el = nodes[i];
       name = el.getAttribute('name');
@@ -193,13 +194,22 @@
       }
       tag = (el.tagName || '').toUpperCase();
       if (el.type === 'checkbox') {
-        map[prefix + '.' + name] = !!el.checked;
+        // Prefer bound _local state — DOM checked can be stale vs G7 bindings.
+        if (cur && typeof cur[name] === 'boolean') {
+          map[prefix + '.' + name] = cur[name];
+        } else {
+          map[prefix + '.' + name] = !!el.checked;
+        }
         continue;
       }
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
         val = el.value;
         // G7 Select wrappers often leave an empty hidden/input — do not clobber local slug.
         if (selectKeys[name] && String(val || '').trim() === '') {
+          continue;
+        }
+        // Unbound/empty DOM must not wipe edit values before PATCH (image-only save).
+        if (String(val || '').trim() === '') {
           continue;
         }
         map[prefix + '.' + name] = val;
@@ -210,6 +220,8 @@
       var live = readNamedValue(k);
       if (live && String(live).trim() !== '') {
         map[prefix + '.' + k] = live;
+      } else if (cur && cur[k] != null && String(cur[k]).trim() !== '') {
+        map[prefix + '.' + k] = cur[k];
       }
     });
     if (Object.keys(map).length) {
@@ -1684,6 +1696,191 @@
     }, true);
   }
 
+
+  function fillCheckboxNamed(name, on) {
+    var nodes = document.querySelectorAll('[name="' + name + '"]');
+    var i;
+    var el;
+    for (i = 0; i < nodes.length; i++) {
+      el = nodes[i];
+      if (el.type !== 'checkbox') continue;
+      el.checked = !!on;
+      try {
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch (e) {}
+    }
+  }
+
+  function applyJobDummyFill() {
+    var typeSlug = 'print_3d';
+    var typeLabel = '3D 출력 대행';
+    var closes = '';
+    try {
+      var d = new Date();
+      d.setDate(d.getDate() + 14);
+      closes = d.toISOString().slice(0, 16);
+    } catch (e) {
+      closes = '2026-10-01T18:00';
+    }
+    var sizesJson = JSON.stringify([
+      { name: '본체', w: 120, d: 80, h: 45 },
+      { name: '뚜껑', w: 120, d: 80, h: 8 }
+    ]);
+    var map = {
+      'form.title': '[테스트] 아크릴 하우징 소량 출력 의뢰',
+      'form.type': typeSlug,
+      'form.status': 'quote_request',
+      'form.audience': 'all',
+      'form.budget_min': '80000',
+      'form.budget_max': '150000',
+      'form.closes_at': closes,
+      'form.rush_fee_enabled': false,
+      'form.schedule_premium_enabled': false,
+      'form.revision_enabled': true,
+      'form.revision_count': '2',
+      'form.revision_cost': '15000',
+      'form.ownership_requested': false,
+      'form.description': '테스트용 더미 데이터입니다. PLA 흑색, 지지대 최소화, 후가공 샌딩 요청. 수량 3개.',
+      'form.size_w': '120',
+      'form.size_d': '80',
+      'form.size_h': '45',
+      'form.sizes': sizesJson,
+      'form.contact_name': '김테스트',
+      'form.contact_phone': '010-1234-5678',
+      'form.contact_email': 'test.maker@example.com',
+      'form.contact_hours_from': '09:00',
+      'form.contact_hours_to': '18:00',
+      'form.zipcode': '06236',
+      'form.address': '서울특별시 강남구 테헤란로 123',
+      'form.address_detail': '테스트타워 10층 1001호',
+      'form.manager_name': '이담당',
+      'form.manager_phone': '010-9876-5432',
+      'form.manager_email': 'manager@example.com',
+      'form.requires_address': '1',
+      'form.includes_modeling': '0',
+      'form.ext_stl': true,
+      'form.ext_3mf': true,
+      'form.ext_obj': false,
+      'form.terms_agreed': true
+    };
+    setLocal(map);
+    Object.keys(map).forEach(function (k) {
+      var name = k.replace(/^form\./, '');
+      var val = map[k];
+      if (typeof val === 'boolean') {
+        fillCheckboxNamed(name, val);
+      } else {
+        fillNamed(name, String(val));
+      }
+    });
+    if (typeof setG7Select === 'function') {
+      setG7Select('type', typeSlug);
+      setG7Select('status', 'quote_request');
+      setG7Select('audience', 'all');
+    } else {
+      paintSelectTrigger('type', typeSlug, typeLabel);
+      paintSelectTrigger('status', 'quote_request', '견적요청');
+      paintSelectTrigger('audience', 'all', '전체');
+    }
+    // Refresh sizes UI if present
+    var sizesHost = document.querySelector('[data-cmb-sizes], [data-cmb-sizes-seed]');
+    if (sizesHost) {
+      sizesHost.setAttribute('data-cmb-sizes-seed', sizesJson);
+      try {
+        sizesHost.dispatchEvent(new Event('cmb:sizes-seed', { bubbles: true }));
+      } catch (e2) {}
+    }
+    try {
+      dispatch('toast', { type: 'success', message: '더미 입력(테스트) — 제출되지 않았습니다. 값을 확인하세요.' });
+    } catch (e3) {}
+  }
+
+  function applyCompanyDummyFill() {
+    var map = {
+      'company.kind': 'company',
+      'company.name': '[테스트] 메이커랩 코리아',
+      'company.business_no': '123-45-67890',
+      'company.bio': '테스트용 더미 업체 소개입니다. 3D 출력·후가공 전문.',
+      'company.note': '테스트용 더미 업체 소개입니다. 3D 출력·후가공 전문.',
+      'company.homepage_url': 'https://example.com',
+      'company.portfolio_url': 'https://example.com/portfolio',
+      'company.manager_name': '박매니저',
+      'company.phone': '02-1234-5678',
+      'company.email': 'company.test@example.com',
+      'company.zipcode': '04147',
+      'company.address': '서울특별시 마포구 월드컵북로 396',
+      'company.address_detail': '누리꿈스퀘어 비즈니스타워 5층',
+      'company.job_type_print_3d': true,
+      'company.job_type_modeling_3d': true
+    };
+    setLocal(map);
+    fillNamed('name', map['company.name']);
+    fillNamed('business_no', map['company.business_no']);
+    fillNamed('bio', map['company.bio']);
+    fillNamed('homepage_url', map['company.homepage_url']);
+    fillNamed('portfolio_url', map['company.portfolio_url']);
+    fillNamed('manager_name', map['company.manager_name']);
+    fillNamed('phone', map['company.phone']);
+    fillNamed('email', map['company.email']);
+    fillNamed('zipcode', map['company.zipcode']);
+    fillNamed('address', map['company.address']);
+    fillNamed('address_detail', map['company.address_detail']);
+    fillCheckboxNamed('job_type_print_3d', true);
+    fillCheckboxNamed('job_type_modeling_3d', true);
+    if (typeof setG7Select === 'function') {
+      setG7Select('kind', 'company');
+    } else {
+      paintSelectTrigger('kind', 'company', '업체');
+    }
+    try {
+      dispatch('toast', { type: 'success', message: '더미 입력(테스트) — 제출되지 않았습니다. 값을 확인하세요.' });
+    } catch (e) {}
+  }
+
+  function ensureDummyFillButton(root, kind) {
+    if (!root) return;
+    if (root.querySelector('[data-cmb-dummy-fill="' + kind + '"]')) return;
+    var anchor =
+      root.querySelector('.cmb-order-submit') ||
+      root.querySelector('[data-cmb-company-submit]') ||
+      root.querySelector('button');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('data-cmb-dummy-fill', kind);
+    btn.textContent = '더미 입력 (테스트)';
+    btn.className =
+      'cmb-dummy-fill w-full mb-2 px-4 py-2 rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 text-sm font-medium bg-amber-50/40 dark:bg-amber-950/30';
+    btn.title = '테스트 채우기 — 서버로 제출하지 않습니다';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (kind === 'company') applyCompanyDummyFill();
+      else applyJobDummyFill();
+    });
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(btn, anchor);
+    } else {
+      root.appendChild(btn);
+    }
+  }
+
+  function bindDummyFill() {
+    document.querySelectorAll('[data-cmb-dummy-fill]').forEach(function (btn) {
+      if (btn.getAttribute('data-cmb-dummy-bound')) return;
+      btn.setAttribute('data-cmb-dummy-bound', '1');
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var kind = btn.getAttribute('data-cmb-dummy-fill') || 'job';
+        if (kind === 'company') applyCompanyDummyFill();
+        else applyJobDummyFill();
+      });
+    });
+    ensureDummyFillButton(document.querySelector('.cmb-order-card'), 'job');
+    ensureDummyFillButton(document.querySelector('[data-cmb-company-form], .cmb-company-form'), 'company');
+  }
+
   function bind() {
     ensureThemeCss();
     var btn = document.querySelector('[data-cmb-postcode]');
@@ -1709,6 +1906,7 @@
     syncCompanySubmit();
     bindCompanyJobTypes();
     bindLogoLimit();
+    bindDummyFill();
   }
 
   bind();

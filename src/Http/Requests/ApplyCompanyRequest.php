@@ -25,22 +25,41 @@ class ApplyCompanyRequest extends FormRequest
             'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email',
             'zipcode', 'address', 'address_detail',
         ]);
-        $this->nullBlankFields([
-            'type', 'note', 'bio', 'business_no', 'homepage_url', 'portfolio_url',
+        // Profile PATCH (incl. logo-only): blank = unchanged, not clear.
+        $this->dropBlankKeys([
+            'name', 'kind', 'type', 'note', 'bio', 'business_no', 'homepage_url', 'portfolio_url',
             'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
-            'kind', 'upload_token',
+            'upload_token',
         ]);
         if ($this->exists('kind')) {
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);
         }
-        $this->dropBlankKeys(['type']);
-        $this->merge(['job_types' => CompanyRules::collectJobTypes($this->all())]);
+        $hasJobTypeFlags = false;
+        foreach ($this->all() as $key => $_) {
+            if (is_string($key) && str_starts_with($key, 'job_type_')) {
+                $hasJobTypeFlags = true;
+                break;
+            }
+        }
+        if ($this->exists('job_types') || $hasJobTypeFlags) {
+            $this->merge(['job_types' => CompanyRules::collectJobTypes($this->all())]);
+        }
         $this->offsetUnset('is_designated');
         $this->offsetUnset('designated');
     }
 
     public function rules(): array
     {
+        $user = $this->user();
+        if ($user) {
+            try {
+                if (\Modules\Custom\MakerBids\Models\MakerCompany::query()->where('user_id', (int) $user->id)->exists()) {
+                    return CompanyRules::applyUpdateRules();
+                }
+            } catch (\Throwable) {
+            }
+        }
+
         return CompanyRules::applyRules();
     }
 

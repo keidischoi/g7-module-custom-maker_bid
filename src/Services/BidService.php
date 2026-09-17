@@ -40,7 +40,7 @@ class BidService
             if (! BidRules::canUpdateOwn($userId, (int) $existing->user_id, true, (string) $existing->status)) {
                 throw new DomainException('수정할 수 없는 입찰입니다.', 422);
             }
-            $existing->fill($this->writeAttributes($payload, $company));
+            $existing->fill($this->writeAttributes($payload, $company, true));
             $existing->save();
 
             return ['bid' => $existing->fresh() ?? $existing, 'created' => false];
@@ -92,7 +92,7 @@ class BidService
 
         $company = $this->approvedCompany($userId);
         $this->assertEligible($userId, $job, $company, $isAdmin);
-        $bid->fill($this->writeAttributes($payload, $company));
+        $bid->fill($this->writeAttributes($payload, $company, true));
         $bid->save();
 
         return $bid->fresh() ?? $bid;
@@ -149,12 +149,20 @@ class BidService
         $bid = MakerBid::query()->findOrFail($id);
         $allowed = [];
         foreach (['amount', 'days', 'message', 'status'] as $key) {
-            if (array_key_exists($key, $payload)) {
-                $allowed[$key] = $payload[$key];
+            if (! array_key_exists($key, $payload)) {
+                continue;
             }
+            $val = $payload[$key];
+            // Blank days/message on partial admin update = unchanged.
+            if (($val === null || $val === '') && in_array($key, ['days', 'message'], true)) {
+                continue;
+            }
+            $allowed[$key] = $val;
         }
-        $bid->fill($allowed);
-        $bid->save();
+        if ($allowed !== []) {
+            $bid->fill($allowed);
+            $bid->save();
+        }
 
         return $this->findAdmin($id);
     }
@@ -225,14 +233,37 @@ class BidService
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function writeAttributes(array $payload, ?MakerCompany $company): array
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function writeAttributes(array $payload, ?MakerCompany $company, bool $partial = false): array
     {
-        $attrs = [
-            'amount' => (int) $payload['amount'],
-            'days' => $payload['days'] ?? null,
-            'message' => $payload['message'] ?? null,
-            'status' => 'pending',
-        ];
+        $attrs = [];
+        if (array_key_exists('amount', $payload) && $payload['amount'] !== null && $payload['amount'] !== '') {
+            $attrs['amount'] = (int) $payload['amount'];
+        } elseif (! $partial) {
+            $attrs['amount'] = (int) $payload['amount'];
+        }
+        if (array_key_exists('days', $payload)) {
+            if (! $partial || ($payload['days'] !== null && $payload['days'] !== '')) {
+                $attrs['days'] = $payload['days'];
+            }
+        } elseif (! $partial) {
+            $attrs['days'] = null;
+        }
+        if (array_key_exists('message', $payload)) {
+            if (! $partial || ($payload['message'] !== null && $payload['message'] !== '')) {
+                $attrs['message'] = $payload['message'];
+            }
+        } elseif (! $partial) {
+            $attrs['message'] = null;
+        }
+        if (! $partial) {
+            $attrs['status'] = 'pending';
+        } elseif (array_key_exists('status', $payload) && $payload['status'] !== null && $payload['status'] !== '') {
+            $attrs['status'] = $payload['status'];
+        }
         if ($company) {
             $attrs['company_id'] = $company->id;
         }

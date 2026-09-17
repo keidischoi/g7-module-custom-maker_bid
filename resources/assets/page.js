@@ -247,6 +247,17 @@
     } else if (job.audience_label) {
       job.audience_label = audienceLabel(job.audience_label);
     }
+    if ((job.contact_hours == null || job.contact_hours === '') && (job.contact_hours_from || job.contact_hours_to)) {
+      job.contact_hours = String(job.contact_hours_from || '') + ' ~ ' + String(job.contact_hours_to || '');
+    }
+    if ((!job.provided_extensions || !job.provided_extensions.length)) {
+      var built = [];
+      [['ext_stl', 'STL'], ['ext_3mf', '3MF'], ['ext_obj', 'OBJ'], ['ext_step', 'STEP'],
+        ['ext_stp', 'STP'], ['ext_gcode', 'GCODE'], ['ext_fbx', 'FBX'], ['ext_dwg', 'DWG']].forEach(function (pair) {
+        if (job[pair[0]] === true || job[pair[0]] === 1 || job[pair[0]] === '1') built.push(pair[1]);
+      });
+      if (built.length) job.provided_extensions = built;
+    }
     return job;
   }
 
@@ -416,10 +427,12 @@
 
   var CATALOG = [
     { section: '의뢰 정보' },
-    { label: '유형', value: function (job) { return job.type_name || job.type; } },
+    { label: '제목', key: 'title', wide: true },
+    { label: '유형', value: function (job) { return job.type_name || job.type_label || job.type; } },
+    { label: '예산', value: function (job) { return job.budget_label || null; }, format: function (v) { return isEmpty(v) ? NONE : String(v); } },
     { label: '예산 최소', key: 'budget_min', format: money },
     { label: '예산 최대', value: function (job) { return job.budget_max == null ? job.budget : job.budget_max; }, format: money },
-    { label: '마감 시각', value: function (job) { return job.closes_at || job.closes_at_local; } },
+    { label: '마감 시각', value: function (job) { return job.closes_at_local || job.closes_at || job.deadline; } },
     { label: '급행비 가능', key: 'rush_fee_enabled', format: function (v) { return booleanLabel(v, '가능', '불가'); } },
     { label: '급행 적용 조건', value: function (job) { return job.rush_deadline_label || job.rush_deadline; } },
     { label: '스케줄 선점비 가능', key: 'schedule_premium_enabled', format: function (v) { return booleanLabel(v, '가능', '불가'); } },
@@ -431,7 +444,19 @@
     } },
     { section: '제작 사양' },
     { label: '최종 크기', value: sizeValue, wide: true },
-    { label: '제공 확장자', key: 'provided_extensions', applies: includesModeling, wide: true },
+    { label: '제공 확장자', value: function (job) {
+      var ext = job.provided_extensions;
+      if (Array.isArray(ext) && ext.length) return ext;
+      var flags = [];
+      [['ext_stl', 'STL'], ['ext_3mf', '3MF'], ['ext_obj', 'OBJ'], ['ext_step', 'STEP'],
+        ['ext_stp', 'STP'], ['ext_gcode', 'GCODE'], ['ext_fbx', 'FBX'], ['ext_dwg', 'DWG']].forEach(function (pair) {
+        if (job[pair[0]] === true || job[pair[0]] === 1 || job[pair[0]] === '1') flags.push(pair[1]);
+      });
+      return flags.length ? flags : null;
+    }, applies: includesModeling, wide: true, format: function (v) {
+      if (isEmpty(v)) return NONE;
+      return Array.isArray(v) ? v.join(', ') : String(v);
+    } },
     { label: '소유권한', key: 'ownership_requested', format: function (v) { return booleanLabel(v, '요청함', '요청 안 함'); } },
     { label: '수정 횟수 적용', key: 'revision_enabled', format: function (v) { return booleanLabel(v, '적용', '미적용'); } },
     { label: '최소 수정 횟수', key: 'revision_count', format: count },
@@ -441,7 +466,14 @@
     { section: '개인정보', privacyCard: true },
     { label: '주문자명 또는 업체명', key: 'contact_name', private: true },
     { label: '연락처', key: 'contact_phone', private: true },
-    { label: '연락 가능시간', key: 'contact_hours', private: true },
+    { label: '연락 가능시간', value: function (job, privacy) {
+      var h = privateValue(job, privacy, 'contact_hours');
+      if (!isEmpty(h)) return h;
+      var from = privateValue(job, privacy, 'contact_hours_from') || job.contact_hours_from;
+      var to = privateValue(job, privacy, 'contact_hours_to') || job.contact_hours_to;
+      if (!isEmpty(from) || !isEmpty(to)) return String(from || '') + ' ~ ' + String(to || '');
+      return null;
+    }, private: true },
     { label: '이메일', key: 'contact_email', private: true },
     { label: '우편번호', key: 'zipcode', private: true, applies: requiresAddress },
     { label: '주소', key: 'address', private: true, applies: requiresAddress, wide: true },
@@ -461,14 +493,24 @@
     ['budget_max', '예산 최대'],
     ['closes_at_local', '마감 시각'],
     ['closes_at', '마감 시각'],
+    ['rush_fee_enabled', '급행비 가능'],
+    ['rush_deadline_label', '급행 적용 조건'],
+    ['schedule_premium_enabled', '스케줄 선점비 가능'],
     ['status_label', '상태'],
     ['status', '상태'],
     ['audience_label', '입찰 권한'],
     ['audience', '입찰 권한'],
     ['size_label', '최종 크기'],
+    ['provided_extensions', '제공 확장자'],
+    ['ownership_requested', '소유권한'],
+    ['revision_enabled', '수정 횟수 적용'],
+    ['revision_count', '최소 수정 횟수'],
+    ['revision_cost', '회당 / 최대 수정비용'],
     ['description', '설명'],
-    ['rush_deadline_label', '급행 적용 조건'],
-    ['provided_extensions', '제공 확장자']
+    ['contact_name', '주문자명 또는 업체명'],
+    ['contact_phone', '연락처'],
+    ['contact_hours', '연락 가능시간'],
+    ['contact_email', '이메일']
   ];
 
   function privateValue(job, privacy, key) {
@@ -678,7 +720,16 @@
       if (key === 'audience' || key === 'audience_label') {
         raw = job.audience_label || audienceLabel(job.audience);
       }
-      var value = key.indexOf('budget') >= 0 && key !== 'budget_label' ? money(raw) : valueOrNone(raw);
+      var value;
+      if (key.indexOf('budget') >= 0 && key !== 'budget_label') value = money(raw);
+      else if (key === 'rush_fee_enabled' || key === 'schedule_premium_enabled' || key === 'ownership_requested' || key === 'revision_enabled') {
+        value = booleanLabel(raw, key === 'ownership_requested' ? '요청함' : (key.indexOf('revision') === 0 ? '적용' : '가능'),
+          key === 'ownership_requested' ? '요청 안 함' : (key.indexOf('revision') === 0 ? '미적용' : '불가'));
+      } else if (key === 'revision_count') value = count(raw);
+      else if (key === 'revision_cost') value = money(raw);
+      else if (key === 'provided_extensions') value = Array.isArray(raw) ? (raw.length ? raw.join(', ') : NONE) : valueOrNone(raw);
+      else if (key === 'audience' || key === 'audience_label') value = valueOrNone(raw);
+      else value = valueOrNone(raw);
       addField(host, { label: label, wide: key === 'description', multiline: key === 'description' }, value);
     });
   }
@@ -1336,13 +1387,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.12';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.13';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.12') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.13') < 0) {
         existing.href = FORM_CSS;
       }
       return;

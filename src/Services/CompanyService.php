@@ -42,24 +42,29 @@ class CompanyService
     public function apply(int $userId, array $payload): array
     {
         $existing = MakerCompany::query()->where('user_id', $userId)->first();
-        $attrs = CompanyRules::applicantAttributes($payload);
-        $attrs['user_id'] = $userId;
-
-        if ($existing && $existing->status === 'approved') {
-            $attrs['status'] = 'approved';
-        } else {
-            $attrs['status'] = 'pending';
-            $attrs['rejected_reason'] = null;
-            $attrs['hold_reason'] = null;
-            $attrs['reviewed_at'] = null;
-        }
 
         if ($existing) {
+            // Partial update: blank/missing keys keep DB values (logo-only save safe).
+            $attrs = CompanyRules::applicantUpdateAttributes($payload, $existing->toArray());
+            if ($existing->status === 'approved') {
+                $attrs['status'] = 'approved';
+            } else {
+                $attrs['status'] = 'pending';
+                $attrs['rejected_reason'] = null;
+                $attrs['hold_reason'] = null;
+                $attrs['reviewed_at'] = null;
+            }
             $this->assertBusinessNo($attrs, (int) $existing->id);
             $existing->fill($attrs);
             $existing->save();
             $row = $existing->fresh() ?? $existing;
         } else {
+            $attrs = CompanyRules::applicantAttributes($payload);
+            $attrs['user_id'] = $userId;
+            $attrs['status'] = 'pending';
+            $attrs['rejected_reason'] = null;
+            $attrs['hold_reason'] = null;
+            $attrs['reviewed_at'] = null;
             $this->assertBusinessNo($attrs);
             $row = MakerCompany::query()->create($attrs);
         }
@@ -155,8 +160,8 @@ class CompanyService
                 continue;
             }
             $val = $payload[$key];
-            if ($val === '') {
-                continue; // blank means unchanged on partial admin update
+            if ($val === '' || $val === null) {
+                continue; // blank/null means unchanged on partial admin update
             }
             $attrs[$key] = $val;
         }
@@ -343,19 +348,29 @@ class CompanyService
         if (! array_key_exists('business_no', $attrs)) {
             return;
         }
-        $digits = CompanyRules::normalizeBusinessNo($attrs['business_no']);
+        $raw = $attrs['business_no'];
+        // Blank on update payload → leave unchanged (do not null out existing).
+        if ($raw === null || $raw === '') {
+            unset($attrs['business_no']);
+
+            return;
+        }
+        $digits = CompanyRules::normalizeBusinessNo($raw);
         if ($digits !== null && $digits !== '' && ! CompanyRules::isValidBusinessNo($digits)) {
             throw new DomainException('사업자등록번호 형식이 올바르지 않습니다. (10자리)', 422);
         }
+        if ($digits === null || $digits === '') {
+            unset($attrs['business_no']);
+
+            return;
+        }
         $attrs['business_no'] = $digits;
-        if ($digits) {
-            $q = MakerCompany::query()->where('business_no', $digits);
-            if ($ignoreId) {
-                $q->where('id', '!=', $ignoreId);
-            }
-            if ($q->exists()) {
-                throw new DomainException('이미 등록된 사업자등록번호입니다.', 422);
-            }
+        $q = MakerCompany::query()->where('business_no', $digits);
+        if ($ignoreId) {
+            $q->where('id', '!=', $ignoreId);
+        }
+        if ($q->exists()) {
+            throw new DomainException('이미 등록된 사업자등록번호입니다.', 422);
         }
     }
 

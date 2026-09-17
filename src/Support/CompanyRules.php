@@ -336,6 +336,74 @@ class CompanyRules
     }
 
     /**
+     * Partial member profile update: omit blank/missing keys so logo-only saves keep profile.
+     *
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>  $existing
+     * @return array<string, mixed>
+     */
+    public static function applicantUpdateAttributes(array $payload, array $existing = []): array
+    {
+        $attrs = [];
+        $scalarKeys = [
+            'name', 'business_no', 'homepage_url', 'portfolio_url', 'manager_name',
+            'zipcode', 'address', 'address_detail', 'upload_token',
+        ];
+        foreach ($scalarKeys as $key) {
+            if (! array_key_exists($key, $payload)) {
+                continue;
+            }
+            $val = $payload[$key];
+            if ($val === null || $val === '') {
+                continue;
+            }
+            $attrs[$key] = $val;
+        }
+        if (array_key_exists('kind', $payload) && $payload['kind'] !== null && $payload['kind'] !== '') {
+            $attrs['kind'] = self::normalizeKind($payload['kind']);
+        } elseif (array_key_exists('entity_type', $payload) && $payload['entity_type'] !== null && $payload['entity_type'] !== '') {
+            $attrs['kind'] = self::normalizeKind($payload['entity_type']);
+        }
+        if (array_key_exists('bio', $payload) && $payload['bio'] !== null && $payload['bio'] !== '') {
+            $attrs['bio'] = $payload['bio'];
+            $attrs['note'] = $payload['bio'];
+        } elseif (array_key_exists('note', $payload) && $payload['note'] !== null && $payload['note'] !== '') {
+            $attrs['bio'] = $payload['note'];
+            $attrs['note'] = $payload['note'];
+        }
+        if (array_key_exists('phone', $payload) && $payload['phone'] !== null && $payload['phone'] !== '') {
+            $attrs['phone'] = $payload['phone'];
+        } elseif (array_key_exists('contact_phone', $payload) && $payload['contact_phone'] !== null && $payload['contact_phone'] !== '') {
+            $attrs['phone'] = $payload['contact_phone'];
+        }
+        if (array_key_exists('email', $payload) && $payload['email'] !== null && $payload['email'] !== '') {
+            $attrs['email'] = $payload['email'];
+        } elseif (array_key_exists('contact_email', $payload) && $payload['contact_email'] !== null && $payload['contact_email'] !== '') {
+            $attrs['email'] = $payload['contact_email'];
+        }
+
+        $hasJobTypeFlags = false;
+        foreach ($payload as $key => $_) {
+            if (is_string($key) && str_starts_with($key, 'job_type_')) {
+                $hasJobTypeFlags = true;
+                break;
+            }
+        }
+        if (array_key_exists('job_types', $payload) || $hasJobTypeFlags) {
+            $jobTypes = self::collectJobTypes($payload);
+            // Unbound checkboxes (all false, no job_types key) → keep existing types.
+            if ($jobTypes !== [] || array_key_exists('job_types', $payload)) {
+                $attrs['job_types'] = $jobTypes;
+                $attrs['type'] = $jobTypes[0] ?? ($payload['type'] ?? ($existing['type'] ?? null));
+            }
+        } elseif (array_key_exists('type', $payload) && $payload['type'] !== null && $payload['type'] !== '') {
+            $attrs['type'] = $payload['type'];
+        }
+
+        return $attrs;
+    }
+
+    /**
      * @return array<string, list<string>>
      */
     public static function applyRules(): array
@@ -349,6 +417,20 @@ class CompanyRules
             'note' => ['nullable', 'string', 'max:5000'],
             'upload_token' => ['nullable', 'string', 'max:64'],
         ]);
+    }
+
+    /**
+     * Existing company profile PATCH (logo-only safe): name/kind optional when omitted.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function applyUpdateRules(): array
+    {
+        $rules = self::applyRules();
+        $rules['name'] = ['sometimes', 'string', 'max:120'];
+        $rules['kind'] = ['sometimes', 'string', 'in:'.implode(',', self::KINDS)];
+
+        return $rules;
     }
 
     /**

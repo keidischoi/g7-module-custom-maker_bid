@@ -201,8 +201,11 @@ class JobService
             throw new DomainException('이 상태의 의뢰는 수정할 수 없습니다.', 422);
         }
         $job = MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->findOrFail($job->id);
+        // Owner edit must always receive real contact/address for re-save (never privacy-null).
+        $ctx = $this->ownerContext($userId);
+        $ctx['isAdmin'] = true; // present() treats admin as privacy-visible
 
-        return $this->present($job, $this->ownerContext($userId), true, true);
+        return $this->present($job, $ctx, true, true);
     }
 
     /**
@@ -240,13 +243,14 @@ class JobService
         }
 
         $payload = $this->resolveTypePayload($payload, $job);
+        $existing = $job->toArray();
         if (isset($payload['type'])) {
             $type = $this->types->requireEnabled((string) $payload['type']);
             $payload['type_id'] = $type->id;
             $payload['type'] = $type->slug;
-            $this->assertAddress($type->toOptionArray(), array_merge($job->toArray(), $payload));
+            $this->assertAddress($type->toOptionArray(), $payload, $existing);
         } elseif ($job->jobType) {
-            $this->assertAddress($job->jobType->toOptionArray(), array_merge($job->toArray(), $payload));
+            $this->assertAddress($job->jobType->toOptionArray(), $payload, $existing);
         }
 
         $attrs = $this->jobAttributes($payload, $payload['type_id'] ?? $job->type_id, (string) ($payload['type'] ?? $job->type), false);
@@ -593,12 +597,23 @@ class JobService
      * @param  array<string, mixed>  $type
      * @param  array<string, mixed>  $payload
      */
-    private function assertAddress(array $type, array $payload): void
+    /**
+     * @param  array<string, mixed>  $type
+     * @param  array<string, mixed>  $payload
+     * @param  array<string, mixed>|null  $existing  Job row on update; blank payload address keeps existing.
+     */
+    private function assertAddress(array $type, array $payload, ?array $existing = null): void
     {
-        if (! TypeCatalog::requiresAddress($type, (string) ($payload['type'] ?? ''))) {
+        if (! TypeCatalog::requiresAddress($type, (string) ($payload['type'] ?? $existing['type'] ?? ''))) {
             return;
         }
         $address = trim((string) ($payload['address'] ?? ''));
+        if ($address === '' && $existing !== null) {
+            // Omitted/blank on update = unchanged (partial form / privacy-unbound fields).
+            if (! array_key_exists('address', $payload) || $payload['address'] === null || $payload['address'] === '') {
+                $address = trim((string) ($existing['address'] ?? ''));
+            }
+        }
         if ($address === '') {
             throw new DomainException('이 유형은 주소가 필요합니다.', 422);
         }
@@ -692,13 +707,18 @@ class JobService
 
         if (! $creating) {
             $attrs = array_filter($attrs, static function (mixed $value, string $key) use ($payload): bool {
-                if (in_array($key, ['rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'provided_extensions', 'ownership_requested'], true)) {
-                    return array_key_exists($key, $payload)
-                        || array_key_exists('ext_stl', $payload)
-                        || array_key_exists('type', $payload)
-                        || ($key === 'rush_fee_enabled' && array_key_exists('rush_fee_enabled', $payload))
-                        || ($key === 'revision_enabled' && array_key_exists('revision_enabled', $payload))
-                        || ($key === 'schedule_premium_enabled' && array_key_exists('schedule_premium_enabled', $payload));
+                if (in_array($key, ['rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested'], true)) {
+                    return array_key_exists($key, $payload);
+                }
+                if ($key === 'provided_extensions') {
+                    // Only when ext flags / list posted — not merely because type was included.
+                    foreach (['provided_extensions', 'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg'] as $extKey) {
+                        if (array_key_exists($extKey, $payload)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
                 }
                 if ($key === 'type' || $key === 'type_id') {
                     return array_key_exists('type', $payload);
@@ -748,7 +768,22 @@ class JobService
             }, ARRAY_FILTER_USE_BOTH);
         }
 
-        return array_filter($attrs, static fn (mixed $value): bool => $value !== null || true);
+        if (! $creating) {
+            // Defense in depth: never apply null/empty-string scalars on update
+            // unless the key was intentionally kept (booleans/arrays already gated above).
+            $attrs = array_filter($attrs, static function (mixed $value, string $key): bool {
+                if (is_bool($value) || is_array($value)) {
+                    return true;
+                }
+                if ($value === null || $value === '') {
+                    return false;
+                }
+
+                return true;
+            }, ARRAY_FILTER_USE_BOTH);
+        }
+
+        return $attrs;
     }
 
     /**

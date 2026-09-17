@@ -28,19 +28,28 @@ class UpdateOwnedJobRequest extends FormRequest
             'zipcode', 'address', 'address_detail',
             'manager_name', 'manager_phone', 'manager_email',
         ]);
-        $this->nullBlankFields([
-            'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
-            'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
-            'zipcode', 'address', 'address_detail', 'upload_token',
-            'manager_name', 'manager_phone', 'manager_email',
-        ]);
         $this->coerceBooleanFields([
             'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',
             'ext_stl', 'ext_3mf', 'ext_obj', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_fbx', 'ext_dwg',
         ]);
-        $this->dropBlankKeys(['type', 'status', 'audience']);
+        // Partial updates: blank/unbound fields must NOT overwrite existing DB values
+        // (same class of bug as empty type slug). Prefer drop over nullBlank.
+        $this->dropBlankKeys([
+            'type', 'status', 'audience', 'title', 'description',
+            'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
+            'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
+            'contact_hours_from', 'contact_hours_to',
+            'contact_name', 'contact_phone', 'contact_email',
+            'zipcode', 'address', 'address_detail', 'upload_token',
+            'manager_name', 'manager_phone', 'manager_email', 'sizes_json',
+        ]);
         if ($this->exists('sizes')) {
-            $this->merge(['sizes' => JobRules::decodeSizesInput($this->input('sizes'))]);
+            $decoded = JobRules::decodeSizesInput($this->input('sizes'));
+            if ($decoded === [] || $decoded === null || $decoded === '') {
+                $this->offsetUnset('sizes');
+            } else {
+                $this->merge(['sizes' => $decoded]);
+            }
         }
     }
 
