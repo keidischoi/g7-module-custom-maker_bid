@@ -218,3 +218,11 @@ expectTrue('zip uploader payload wrapped', $zipPayload['success'] === true && $z
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);
+
+expect('korean 견적요청 -> quote_request', JobRules::normalizeListingStatus('견적요청'), 'quote_request');
+expect('korean 의뢰 -> request', JobRules::normalizeListingStatus('의뢰'), 'request');
+expect('korean 보류 -> hold', JobRules::normalizeListingStatus('보류'), 'hold');
+expect('open alias -> quote_request', JobRules::normalizeListingStatus('open'), 'quote_request');
+expect('invalid korean status falls back', JobRules::normalizeListingStatus('알수없음'), 'quote_request');
+expectTrue('PDF in provided defaults', in_array('PDF', UploadRules::PROVIDED_EXTENSIONS, true));
+

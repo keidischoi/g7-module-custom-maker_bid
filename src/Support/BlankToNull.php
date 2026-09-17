@@ -99,4 +99,61 @@ trait BlankToNull
             $this->merge($merge);
         }
     }
+/**
+     * Map Korean / legacy status labels to listing slugs and fold ext_* flags
+     * into provided_extensions before validation (validated() strips unknown keys).
+     */
+    protected function normalizeJobStatusAndExtensions(): void
+    {
+        if ($this->exists('status')) {
+            $this->merge(['status' => JobRules::normalizeListingStatus($this->input('status'))]);
+        }
+        // Coerce any ext_* checkbox (including settings-driven ones like ext_pdf).
+        $boolMerge = [];
+        foreach ($this->all() as $key => $value) {
+            if (is_string($key) && str_starts_with($key, 'ext_')) {
+                $boolMerge[$key] = $this->isTruthyExt($value);
+            }
+        }
+        if ($boolMerge !== []) {
+            $this->merge($boolMerge);
+        }
+        // Allow settings-driven ext_* beyond built-in defaults (e.g. PDF already default).
+        $allowed = UploadRules::PROVIDED_EXTENSIONS;
+        foreach ($this->all() as $key => $_) {
+            if (is_string($key) && str_starts_with($key, 'ext_')) {
+                $tok = strtoupper(substr($key, 4));
+                if ($tok !== '' && ! in_array($tok, $allowed, true)) {
+                    $allowed[] = $tok;
+                }
+            }
+        }
+        if (is_array($this->input('provided_extensions'))) {
+            foreach (UploadRules::parseExtensionList($this->input('provided_extensions')) as $tok) {
+                if (! in_array($tok, $allowed, true)) {
+                    $allowed[] = $tok;
+                }
+            }
+        }
+        $collected = JobRules::collectProvidedExtensions($this->all(), $allowed);
+        if ($collected !== []) {
+            $this->merge(['provided_extensions' => $collected]);
+        }
+    }
+
+    private function isTruthyExt(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value) || is_float($value)) {
+            return (int) $value === 1;
+        }
+        if (! is_string($value)) {
+            return false;
+        }
+        $value = strtolower(trim($value));
+
+        return in_array($value, ['1', 'true', 'on', 'yes'], true);
+    }
 }

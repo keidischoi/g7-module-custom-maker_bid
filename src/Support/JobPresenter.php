@@ -139,6 +139,15 @@ class JobPresenter
             'created_at' => optional($job->created_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('created_at'),
             'updated_at' => optional($job->updated_at)?->format('Y-m-d H:i:s') ?? $job->getRawOriginal('updated_at'),
         ];
+        $extList = is_array($job->provided_extensions) ? $job->provided_extensions : [];
+        foreach ($extList as $extToken) {
+            $extToken = strtoupper(ltrim((string) $extToken, '.'));
+            if ($extToken === '') {
+                continue;
+            }
+            $payload['ext_'.strtolower($extToken)] = true;
+        }
+
 
         if ($canViewPersonal) {
             foreach (PrivacyRules::personalKeys() as $key) {

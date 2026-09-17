@@ -700,7 +700,7 @@ class JobService
             $attrs['terms_agreed'] = (bool) $payload['terms_agreed'];
         }
         if (isset($payload['status']) && $payload['status'] !== '') {
-            $attrs['status'] = $payload['status'] === 'open' ? 'quote_request' : $payload['status'];
+            $attrs['status'] = JobRules::normalizeListingStatus($payload['status']);
         } elseif ($creating) {
             $attrs['status'] = 'quote_request';
         }

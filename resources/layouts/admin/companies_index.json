@@ -893,7 +893,11 @@
                                       "edit.report_count": "{{$co.report_count}}",
                                       "edit.is_recommended": "{{$co.is_recommended}}",
                                       "edit.is_designated": "{{$co.is_designated}}",
-                                      "edit.priority": "{{$co.priority}}"
+                                      "edit.priority": "{{$co.priority}}",
+                                      "edit.upload_token": "{{$co.upload_token || ''}}",
+                                      "edit.logo_files": "{{$co.logo_files || []}}",
+                                      "edit.logo_hash": "{{$co.logo_hash || ''}}",
+                                      "edit.logo_url": "{{$co.logo_url || ''}}"
                                     }
                                   }
                                 ]
