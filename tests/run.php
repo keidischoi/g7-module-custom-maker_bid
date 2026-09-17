@@ -7,6 +7,7 @@ $files = [
     __DIR__.'/domain_rules.php',
     __DIR__.'/job_form.php',
     __DIR__.'/company_form.php',
+    __DIR__.'/partial_update.php',
     __DIR__.'/api_contracts.php',
     __DIR__.'/layouts.php',
     __DIR__.'/settings.php',

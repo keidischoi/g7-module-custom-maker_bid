@@ -228,7 +228,7 @@
                           "options": [
                             {
                               "value": "pending",
-                              "label": "대기"
+                              "label": "검토중"
                             },
                             {
                               "value": "accepted",

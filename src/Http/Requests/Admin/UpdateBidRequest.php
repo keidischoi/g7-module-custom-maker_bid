@@ -20,7 +20,7 @@ class UpdateBidRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['form', 'edit']);
-        $this->nullBlankFields(['days', 'message']);
+        $this->dropBlankKeys(['days', 'message', 'amount', 'status']);
     }
 
     /**

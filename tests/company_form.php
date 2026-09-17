@@ -72,5 +72,12 @@ expectTrue('512 square ok', UploadRules::isWithinLogoDimensions(512, 512));
 expectFalse('513 too wide', UploadRules::isWithinLogoDimensions(513, 200));
 expectTrue('logo max files is 1', UploadRules::LOGO_MAX_FILES === 1);
 
+$upd = CompanyRules::applicantUpdateAttributes([
+    'upload_token' => 't1',
+], ['name' => '기존', 'type' => 'print_3d', 'address' => '서울']);
+expectFalse('update attrs skip blank profile', array_key_exists('name', $upd));
+expect('update attrs keep token', $upd['upload_token'], 't1');
+expectTrue('applyUpdateRules exists', method_exists(CompanyRules::class, 'applyUpdateRules'));
+
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

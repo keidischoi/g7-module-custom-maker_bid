@@ -245,17 +245,26 @@
     if (!root) return {};
     var map = {};
     var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
+    var cur = {};
+    try {
+      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
+        cur = window.G7Core.state.get('_local.' + prefix) || {};
+      }
+    } catch (e) { cur = {}; }
     root.querySelectorAll('[name]').forEach(function (el) {
       var name = el.getAttribute('name');
       if (!name || el.type === 'file') return;
       if (el.type === 'checkbox') {
-        map[prefix + '.' + name] = !!el.checked;
+        if (cur && typeof cur[name] === 'boolean') map[prefix + '.' + name] = cur[name];
+        else map[prefix + '.' + name] = !!el.checked;
         return;
       }
       var tag = (el.tagName || '').toUpperCase();
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
       var val = el.value;
       if (selectKeys[name] && String(val || '').trim() === '') return;
+      // Empty DOM must not zero partial admin edits (logo / image upload saves).
+      if (String(val || '').trim() === '') return;
       map[prefix + '.' + name] = val;
     });
     return map;

@@ -212,7 +212,7 @@ class BidRules
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            'pending' => '대기',
+            'pending' => '검토중',
             'accepted' => '낙찰',
             'rejected' => '거절',
             default => $status,
