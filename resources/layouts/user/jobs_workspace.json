@@ -217,7 +217,7 @@
                     "id": "mrow",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-bid-card" },
+                    "props": { "className": "cmb-bid-card cmb-list-item" },
                     "iteration": { "source": "{{msgs?.data?.data ?? msgs?.data ?? []}}", "item_var": "$item" },
                     "children": [
                       { "id": "mt", "type": "basic", "name": "P", "props": { "className": "cmb-job-card-title" }, "text": "회원 {{$item.user_id}} · {{$item.created_at}}" },
@@ -340,7 +340,7 @@
                     "id": "cmpL",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-bid-card" },
+                    "props": { "className": "cmb-bid-card cmb-list-item" },
                     "iteration": { "source": "{{cmp?.data?.data ?? cmp?.data ?? []}}", "item_var": "$item" },
                     "children": [
                       { "id": "ct", "type": "basic", "name": "P", "props": { "className": "cmb-job-card-title" }, "text": "#{{$item.id}} {{$item.amount}}원 / {{$item.days}}일" },

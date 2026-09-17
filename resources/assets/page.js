@@ -255,3 +255,63 @@
     try { window.__cmbPagerObs.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-page', 'data-total', 'data-last-page'] }); } catch (e) {}
   }
 })();
+
+/* cmb-list-cards: ensure form.css + visible card classes on list rows */
+(function () {
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.14';
+  var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
+
+  function ensureFormCss() {
+    var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
+    if (existing) {
+      if (existing.href && existing.href.indexOf('v=0.9.14') < 0) {
+        existing.href = FORM_CSS;
+      }
+      return;
+    }
+    if (document.getElementById('cmb-form-css-page')) return;
+    var link = document.createElement('link');
+    link.id = 'cmb-form-css-page';
+    link.rel = 'stylesheet';
+    link.href = FORM_CSS;
+    document.head.appendChild(link);
+  }
+
+  function ensureItemClass(el) {
+    if (!el || el.nodeType !== 1) return;
+    var cls = el.getAttribute('class') || '';
+    if (ITEM_RE.test(cls)) {
+      if (cls.indexOf('cmb-list-item') < 0 && /(cmb-job-card|cmb-bid-card|cmb-company-card)/.test(cls)) {
+        el.classList.add('cmb-list-item');
+      }
+      return;
+    }
+    // Bare row inside a card list → force a job-card box
+    el.classList.add('cmb-job-card', 'cmb-list-item');
+  }
+
+  function scan() {
+    ensureFormCss();
+    document.querySelectorAll('.cmb-card-list').forEach(function (list) {
+      Array.prototype.forEach.call(list.children, ensureItemClass);
+    });
+    document.querySelectorAll('.cmb-section-card').forEach(function (sec) {
+      var cls = sec.getAttribute('class') || '';
+      if (cls.indexOf('cmb-section-card') >= 0) {
+        /* already boxed via CSS */
+      }
+    });
+  }
+
+  scan();
+  document.addEventListener('DOMContentLoaded', scan);
+  setTimeout(scan, 200);
+  setTimeout(scan, 800);
+  setTimeout(scan, 1600);
+  if (!window.__cmbListCardObs) {
+    window.__cmbListCardObs = new MutationObserver(function () { scan(); });
+    try {
+      window.__cmbListCardObs.observe(document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+  }
+})();

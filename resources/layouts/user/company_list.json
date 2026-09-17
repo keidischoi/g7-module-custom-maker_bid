@@ -340,7 +340,7 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-company-card"
+                      "className": "cmb-company-card cmb-list-item"
                     },
                     "iteration": {
                       "source": "{{companies?.data?.data ?? companies?.data ?? []}}",

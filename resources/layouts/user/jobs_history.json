@@ -241,7 +241,7 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-bid-card"
+                      "className": "cmb-bid-card cmb-list-item"
                     },
                     "iteration": {
                       "source": "{{notices?.data?.data ?? notices?.data ?? []}}",
@@ -420,7 +420,7 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-job-card"
+                      "className": "cmb-job-card cmb-list-item"
                     },
                     "iteration": {
                       "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",

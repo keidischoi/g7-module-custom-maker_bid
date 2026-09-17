@@ -527,7 +527,7 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-bid-card"
+              "className": "cmb-bid-card cmb-list-item"
             },
             "iteration": {
               "source": "{{job.data.bids}}",
