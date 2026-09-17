@@ -1,0 +1,311 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_notices",
+  "extends": "_user_base",
+  "meta": {
+    "title": "알림"
+  },
+  "errorHandling": {
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
+  },
+  "data_sources": [
+    {
+      "id": "notices",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/notices",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true,
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "503": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": {
+          "className": "cmb-page"
+        },
+        "children": [
+          {
+            "id": "head",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-page-head"
+            },
+            "children": [
+              {
+                "id": "h",
+                "type": "basic",
+                "name": "H1",
+                "props": {
+                  "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
+                },
+                "text": "알림"
+              },
+              {
+                "id": "tabs",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-maker-subnav flex items-center gap-1 ml-auto flex-wrap",
+                  "data-cmb-subnav": "1"
+                },
+                "children": [
+                  {
+                    "id": "t1",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/new",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "의뢰서 작성"
+                  },
+                  {
+                    "id": "t2",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "의뢰목록"
+                  },
+                  {
+                    "id": "t3",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰현황"
+                  },
+                  {
+                    "id": "t4",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/history",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "이력"
+                  },
+                  {
+                    "id": "t_notices",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/notices",
+                      "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                    },
+                    "text": "알림"
+                  },
+                  {
+                    "id": "t5",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/company",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 등록"
+                  },
+                  {
+                    "id": "t6",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/companies",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 목록"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "notices_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card"
+            },
+            "children": [
+              {
+                "id": "nh",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "알림"
+              },
+              {
+                "id": "nempty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(notices?.data?.data ?? notices?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-page-guide mt-2"
+                },
+                "text": "알림이 없습니다."
+              },
+              {
+                "id": "nlist",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list mt-3"
+                },
+                "children": [
+                  {
+                    "id": "nrow",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-bid-card"
+                    },
+                    "iteration": {
+                      "source": "{{notices?.data?.data ?? notices?.data ?? []}}",
+                      "item_var": "$n"
+                    },
+                    "children": [
+                      {
+                        "id": "nt",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-job-card-title"
+                        },
+                        "text": "{{$n.title}}"
+                      },
+                      {
+                        "id": "nm",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide mt-1"
+                        },
+                        "text": "{{$n.body || ''}} · {{$n.created_at}}"
+                      },
+                      {
+                        "id": "nacts",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-actions mt-2"
+                        },
+                        "children": [
+                          {
+                            "id": "njob",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$n.job_id}}",
+                            "props": {
+                              "href": "/maker-bids/{{$n.job_id}}",
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "text": "의뢰 보기"
+                          },
+                          {
+                            "id": "nread",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "읽음",
+                            "if": "{{!$n.read_at}}",
+                            "props": {
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/notices/{{$n.id}}/read",
+                                "params": {
+                                  "method": "POST"
+                                },
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "읽음 처리했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "notices"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

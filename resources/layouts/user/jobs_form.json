@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "layout_name": "jobs_edit",
+  "layout_name": "jobs_form",
   "extends": "_user_base",
   "meta": {
-    "title": "의뢰서 수정"
+    "title": "의뢰서"
   },
   "errorHandling": {
     "401": {
@@ -40,6 +40,7 @@
       "title": "",
       "type": "",
       "requires_address": "1",
+      "includes_modeling": "0",
       "budget_min": "",
       "budget_max": "",
       "closes_at": "",
@@ -52,6 +53,9 @@
       "size_d": "",
       "size_h": "",
       "sizes": "",
+      "manager_name": "",
+      "manager_phone": "",
+      "manager_email": "",
       "ext_stl": false,
       "ext_3mf": false,
       "ext_obj": false,
@@ -73,13 +77,9 @@
       "zipcode": "",
       "address": "",
       "address_detail": "",
-      "manager_name": "",
-      "manager_phone": "",
-      "manager_email": "",
       "upload_token": "",
       "image_count": 0,
-      "archive_count": 0,
-      "includes_modeling": "0"
+      "archive_count": 0
     }
   },
   "data_sources": [
@@ -134,10 +134,20 @@
             "form.ext_stp": "{{response.data.ext_stp}}",
             "form.ext_gcode": "{{response.data.ext_gcode}}",
             "form.ext_fbx": "{{response.data.ext_fbx}}",
-            "form.ext_dwg": "{{response.data.ext_dwg}}"
+            "form.ext_dwg": "{{response.data.ext_dwg}}",
+            "form.contact_hours_from": "{{response.data.contact_hours_from || _local.form.contact_hours_from || '09:00'}}",
+            "form.contact_hours_to": "{{response.data.contact_hours_to || _local.form.contact_hours_to || '18:00'}}"
           }
         }
-      ]
+      ],
+      "errorHandling": {
+        "404": {
+          "handler": "suppress"
+        },
+        "401": {
+          "handler": "suppress"
+        }
+      }
     },
     {
       "id": "types",
@@ -163,6 +173,8 @@
           "types": [],
           "upload_token": "",
           "contact_name": "",
+          "profile_contact_name": "",
+          "company_name": "",
           "contact_phone": "",
           "contact_email": "",
           "zipcode": "",
@@ -170,8 +182,9 @@
           "address_detail": "",
           "contact_hours_from": "09:00",
           "contact_hours_to": "18:00",
-          "profile_contact_name": "",
-          "company_name": ""
+          "manager_name": "",
+          "manager_phone": "",
+          "manager_email": ""
         }
       },
       "onSuccess": [
@@ -200,7 +213,8 @@
         "type": "basic",
         "name": "Div",
         "props": {
-          "className": "cmb-page max-w-5xl mx-auto px-4 py-8 space-y-6"
+          "className": "cmb-page max-w-5xl mx-auto px-4 py-8 space-y-6",
+          "data-cmb-job-form": "1"
         },
         "children": [
           {
@@ -212,13 +226,24 @@
             },
             "children": [
               {
-                "id": "h",
+                "id": "h_create",
                 "type": "basic",
                 "name": "H1",
                 "props": {
                   "className": "text-2xl font-semibold text-gray-900 dark:text-white"
                 },
-                "text": "의뢰서 수정"
+                "text": "의뢰서 작성",
+                "if": "{{!route.id}}"
+              },
+              {
+                "id": "h_edit",
+                "type": "basic",
+                "name": "H1",
+                "props": {
+                  "className": "text-2xl font-semibold text-gray-900 dark:text-white"
+                },
+                "text": "의뢰서 수정",
+                "if": "{{!!route.id}}"
               },
               {
                 "id": "tabs",
@@ -294,9 +319,20 @@
             ]
           },
           {
-            "id": "cmb_notice",
+            "id": "cmb_notice_create",
             "type": "basic",
             "name": "Div",
+            "if": "{{!route.id}}",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "create"
+            }
+          },
+          {
+            "id": "cmb_notice_edit",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{!!route.id}}",
             "props": {
               "className": "cmb-notice hidden",
               "data-cmb-notice": "edit"
@@ -321,13 +357,24 @@
                 },
                 "children": [
                   {
-                    "id": "card_title",
+                    "id": "card_title_create",
                     "type": "basic",
                     "name": "H2",
                     "props": {
                       "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white"
                     },
-                    "text": "제작 주문서 수정"
+                    "text": "제작 주문서",
+                    "if": "{{!route.id}}"
+                  },
+                  {
+                    "id": "card_title_edit",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "text-xl font-semibold tracking-tight text-gray-900 dark:text-white"
+                    },
+                    "text": "제작 주문서 수정",
+                    "if": "{{!!route.id}}"
                   },
                   {
                     "id": "card_sub",
@@ -463,11 +510,32 @@
                         "name": "Input",
                         "props": {
                           "name": "budget_min",
+                          "value": "{{_local.form.budget_min}}",
                           "type": "number",
                           "min": "0",
                           "placeholder": "10000",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_min": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_min": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "budget_tilde",
@@ -484,11 +552,32 @@
                         "name": "Input",
                         "props": {
                           "name": "budget_max",
+                          "value": "{{_local.form.budget_max}}",
                           "type": "number",
                           "min": "0",
                           "placeholder": "100000",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_max": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.budget_max": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "budget_won",
@@ -516,9 +605,30 @@
                     "name": "Input",
                     "props": {
                       "name": "closes_at",
+                      "value": "{{_local.form.closes_at}}",
                       "type": "datetime-local",
                       "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.closes_at": "{{$event.target.value}}"
+                        }
+                      },
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.closes_at": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
                   },
                   {
                     "id": "rush_row",
@@ -559,8 +669,20 @@
                                 "name": "Checkbox",
                                 "props": {
                                   "className": "cmb-order-check",
-                                  "name": "rush_fee_enabled"
-                                }
+                                  "name": "rush_fee_enabled",
+                                  "checked": "{{_local.form.rush_fee_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.rush_fee_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "rush_fee_enabled_txt",
@@ -598,9 +720,30 @@
                             "name": "Input",
                             "props": {
                               "name": "rush_deadline",
+                              "value": "{{_local.form.rush_deadline}}",
                               "type": "datetime-local",
                               "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                            }
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.rush_deadline": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.rush_deadline": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       }
@@ -628,7 +771,7 @@
                         "type": "basic",
                         "name": "Label",
                         "props": {
-                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer"
+                          "className": "cmb-order-check-label inline-flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 cursor-pointer shrink-0"
                         },
                         "children": [
                           {
@@ -637,8 +780,20 @@
                             "name": "Checkbox",
                             "props": {
                               "className": "cmb-order-check",
-                              "name": "schedule_premium_enabled"
-                            }
+                              "name": "schedule_premium_enabled",
+                              "checked": "{{_local.form.schedule_premium_enabled}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.schedule_premium_enabled": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
                           },
                           {
                             "id": "schedule_premium_enabled_txt",
@@ -676,6 +831,8 @@
                         "name": "Select",
                         "props": {
                           "name": "status",
+                          "value": "{{_local.form.status}}",
+                          "disabled": false,
                           "options": [
                             {
                               "value": "quote_request",
@@ -690,9 +847,7 @@
                               "label": "보류"
                             }
                           ],
-                          "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white",
-                          "value": "{{_local.form.status}}",
-                          "disabled": false
+                          "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
                         },
                         "actions": [
                           {
@@ -1164,8 +1319,20 @@
                                 "name": "Checkbox",
                                 "props": {
                                   "className": "cmb-order-check",
-                                  "name": "revision_enabled"
-                                }
+                                  "name": "revision_enabled",
+                                  "checked": "{{_local.form.revision_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "revision_enabled_txt",
@@ -1211,11 +1378,23 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "revision_count",
+                                  "value": "{{_local.form.revision_count}}",
                                   "type": "number",
                                   "min": "0",
                                   "placeholder": "1",
                                   "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                                }
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_count": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -1242,11 +1421,23 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "revision_cost",
+                                  "value": "{{_local.form.revision_cost}}",
                                   "type": "number",
                                   "min": "0",
                                   "placeholder": "10000",
                                   "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                                }
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.revision_cost": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           }
@@ -1269,9 +1460,21 @@
                     "name": "Textarea",
                     "props": {
                       "name": "description",
+                      "value": "{{_local.form.description}}",
                       "placeholder": "수량, 재질, 색상, 후가공, 참고 사항",
                       "className": "cmb-order-field w-full min-h-[120px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.description": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
                   },
                   {
                     "id": "img_label",
@@ -1284,6 +1487,49 @@
                   },
                   {
                     "id": "cmb_images_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "images",
+                      "maxFiles": 10,
+                      "maxSize": 10,
+                      "accept": ".jpg,.jpeg,.png,.gif,.webp",
+                      "autoUpload": false,
+                      "className": "cmb-order-uploader mt-1",
+                      "uploadTriggerEvent": "upload:maker_bids_images",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bids/uploads",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "images",
+                        "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
+                        "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
+                      }
+                    },
+                    "actions": [
+                      {
+                        "event": "onFilesChange",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.image_count": "{{($args[0] && $args[0].length) || 0}}"
+                        }
+                      },
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
+                      }
+                    ],
+                    "if": "{{!route.id}}"
+                  },
+                  {
+                    "id": "cmb_images_uploader_edit",
                     "type": "composite",
                     "name": "FileUploader",
                     "props": {
@@ -1323,7 +1569,8 @@
                           "message": "{{$args[0]}}"
                         }
                       }
-                    ]
+                    ],
+                    "if": "{{!!route.id}}"
                   },
                   {
                     "id": "file_label",
@@ -1336,6 +1583,49 @@
                   },
                   {
                     "id": "cmb_archives_uploader",
+                    "type": "composite",
+                    "name": "FileUploader",
+                    "props": {
+                      "collection": "archives",
+                      "maxFiles": 5,
+                      "maxSize": 50,
+                      "accept": ".zip,.tar,.gz,.tgz,.7z,.rar,.bz2,.xz",
+                      "autoUpload": false,
+                      "className": "cmb-order-uploader mt-1",
+                      "uploadTriggerEvent": "upload:maker_bids_archives",
+                      "apiEndpoints": {
+                        "upload": "/api/modules/custom-maker_bids/uploads",
+                        "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                        "reorder": ""
+                      },
+                      "uploadParams": {
+                        "collection": "archives",
+                        "token": "{{_local.form.upload_token || defaults.data.upload_token}}",
+                        "upload_token": "{{_local.form.upload_token || defaults.data.upload_token}}"
+                      }
+                    },
+                    "actions": [
+                      {
+                        "event": "onFilesChange",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.archive_count": "{{($args[0] && $args[0].length) || 0}}"
+                        }
+                      },
+                      {
+                        "event": "onUploadError",
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{$args[0]}}"
+                        }
+                      }
+                    ],
+                    "if": "{{!route.id}}"
+                  },
+                  {
+                    "id": "cmb_archives_uploader_edit",
                     "type": "composite",
                     "name": "FileUploader",
                     "props": {
@@ -1375,7 +1665,8 @@
                           "message": "{{$args[0]}}"
                         }
                       }
-                    ]
+                    ],
+                    "if": "{{!!route.id}}"
                   }
                 ]
               },
@@ -1459,9 +1750,21 @@
                     "name": "Input",
                     "props": {
                       "name": "contact_name",
+                      "value": "{{_local.form.contact_name}}",
                       "placeholder": "이름 / 업체명",
                       "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_name": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
                   },
                   {
                     "id": "cphone_label",
@@ -1478,9 +1781,21 @@
                     "name": "Input",
                     "props": {
                       "name": "contact_phone",
+                      "value": "{{_local.form.contact_phone}}",
                       "placeholder": "010-0000-0000",
                       "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_phone": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
                   },
                   {
                     "id": "chours_head",
@@ -1543,9 +1858,30 @@
                         "name": "Input",
                         "props": {
                           "name": "contact_hours_from",
+                          "value": "{{_local.form.contact_hours_from}}",
                           "type": "time",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_from": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_from": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "chours_tilde",
@@ -1562,9 +1898,30 @@
                         "name": "Input",
                         "props": {
                           "name": "contact_hours_to",
+                          "value": "{{_local.form.contact_hours_to}}",
                           "type": "time",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_to": "{{$event.target.value}}"
+                            }
+                          },
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.contact_hours_to": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       }
                     ]
                   },
@@ -1583,10 +1940,22 @@
                     "name": "Input",
                     "props": {
                       "name": "contact_email",
+                      "value": "{{_local.form.contact_email}}",
                       "type": "email",
                       "placeholder": "name@example.com",
                       "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                    }
+                    },
+                    "actions": [
+                      {
+                        "type": "input",
+                        "event": "input",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "form.contact_email": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
                   },
                   {
                     "id": "addr_block",
@@ -1620,9 +1989,21 @@
                             "name": "Input",
                             "props": {
                               "name": "zipcode",
+                              "value": "{{_local.form.zipcode}}",
                               "placeholder": "우편번호",
                               "className": "cmb-order-field flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                            }
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.zipcode": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           },
                           {
                             "id": "postcode_btn",
@@ -1643,9 +2024,21 @@
                         "name": "Input",
                         "props": {
                           "name": "address",
+                          "value": "{{_local.form.address}}",
                           "placeholder": "기본 주소",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.address": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "address_detail",
@@ -1653,9 +2046,21 @@
                         "name": "Input",
                         "props": {
                           "name": "address_detail",
+                          "value": "{{_local.form.address_detail}}",
                           "placeholder": "상세 주소",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.address_detail": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       }
                     ]
                   },
@@ -1691,9 +2096,21 @@
                         "name": "Input",
                         "props": {
                           "name": "manager_name",
+                          "value": "{{_local.form.manager_name}}",
                           "placeholder": "담당자 이름",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_name": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "manager_phone_label",
@@ -1710,9 +2127,21 @@
                         "name": "Input",
                         "props": {
                           "name": "manager_phone",
+                          "value": "{{_local.form.manager_phone}}",
                           "placeholder": "010-0000-0000",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_phone": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       },
                       {
                         "id": "manager_email_label",
@@ -1729,10 +2158,22 @@
                         "name": "Input",
                         "props": {
                           "name": "manager_email",
+                          "value": "{{_local.form.manager_email}}",
                           "type": "email",
                           "placeholder": "name@example.com",
                           "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
-                        }
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.manager_email": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
                       }
                     ]
                   }
@@ -1822,7 +2263,73 @@
                 ]
               },
               {
-                "id": "submit",
+                "id": "submit_create",
+                "type": "basic",
+                "name": "Button",
+                "text": "주문서 등록",
+                "props": {
+                  "type": "button",
+                  "className": "cmb-order-submit w-full px-4 py-3 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-medium"
+                },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "sequence",
+                    "params": {
+                      "actions": [
+                        {
+                          "handler": "emitEvent",
+                          "params": {
+                            "event": "upload:maker_bids_images"
+                          }
+                        },
+                        {
+                          "handler": "emitEvent",
+                          "params": {
+                            "event": "upload:maker_bids_archives"
+                          }
+                        },
+                        {
+                          "handler": "apiCall",
+                          "auth_required": true,
+                          "target": "/api/modules/custom-maker_bids/jobs",
+                          "params": {
+                            "method": "POST",
+                            "body": "{{_local.form}}"
+                          },
+                          "onSuccess": [
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "success",
+                                "message": "의뢰가 등록되었습니다."
+                              }
+                            },
+                            {
+                              "handler": "navigate",
+                              "params": {
+                                "path": "/maker-bids/{{response.data.id || response.id}}"
+                              }
+                            }
+                          ],
+                          "onError": [
+                            {
+                              "handler": "toast",
+                              "params": {
+                                "type": "error",
+                                "message": "{{error.message || error.data.message}}"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "if": "{{!route.id}}"
+              },
+              {
+                "id": "submit_edit",
                 "type": "basic",
                 "name": "Button",
                 "text": "주문서 저장",
@@ -1884,7 +2391,8 @@
                       ]
                     }
                   }
-                ]
+                ],
+                "if": "{{!!route.id}}"
               }
             ]
           }

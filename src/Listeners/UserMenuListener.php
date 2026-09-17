@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.9';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.9';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.9';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.9';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.9';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.9';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.9.10';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.9.10';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.9.10';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.9.10';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.9.10';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.9.10';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
@@ -44,7 +44,7 @@ class UserMenuListener implements HookListenerInterface
         try {
             if (! is_array($layout)) return $layout;
             $name = (string) ($layout['layout_name'] ?? '');
-            if (in_array($name, ['jobs_edit', 'jobs_show'], true) || str_contains($name, 'jobs_show') || str_contains($name, 'jobs_edit')) {
+            if (in_array($name, ['jobs_form', 'jobs_edit', 'jobs_show'], true) || str_contains($name, 'jobs_show') || str_contains($name, 'jobs_edit') || str_contains($name, 'jobs_form')) {
                 $layout = $this->bindNamedValues($layout, self::JOB_FIELDS, 'job.data');
             }
             if ($name === 'company_apply') {
@@ -71,14 +71,14 @@ class UserMenuListener implements HookListenerInterface
             $scripts = $this->upsertScript($scripts, 'cmb_maker_nav', self::NAV_SRC);
             $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
             $publicLayouts = [
-                'jobs_create', 'jobs_edit', 'jobs_list', 'jobs_show', 'jobs_bids', 'jobs_history',
+                'jobs_form', 'jobs_list', 'jobs_show', 'jobs_bids', 'jobs_history', 'jobs_notices',
                 'jobs_workspace', 'company_apply', 'company_list',
             ];
             if (in_array($name, $publicLayouts, true)) {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
                 $layout['styles'] = $this->upsertStyle($styles, 'cmb_maker_form_css', self::FORM_CSS);
             }
-            if (in_array($name, ['jobs_create', 'jobs_edit', 'company_apply', 'jobs_show'], true)) {
+            if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show'], true)) {
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_form', self::FORM_SRC);
             }
             $layout['scripts'] = $scripts;

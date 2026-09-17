@@ -4,6 +4,18 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.10] - 2026-09-17
+
+### Changed
+
+- 공개 **의뢰서 작성/수정** 레이아웃을 `jobs_form` 하나로 통합합니다. `/maker-bids/new`·`/maker-bids/:id/edit` 모두 공유 레이아웃을 쓰며, `route.id`로 제목·안내문·업로더·제출(POST/PATCH)을 분기합니다. 수정 시 job 데이터소스 `auto_fetch`를 켭니다.
+- 회원 **알림** 전용 라우트 `/maker-bids/notices` (`jobs_notices`)를 추가합니다. 이력 화면의 알림 패널과 동일 API(`GET/POST notices`)를 사용합니다.
+- 버전·캐시 버스트 **0.9.10**.
+
+### Left for later
+
+- 관리자 **신고 종결** API·ops UI (클레임 종결만 연결됨; `resolveReport` 없음).
+
 ## [0.9.9] - 2026-09-17
 
 ### Changed
@@ -17,7 +29,7 @@
 
 ### Left for later
 
-- 공개 create/edit 레이아웃 통합, 알림 전용 라우트, 신고 관리자 종결 API.
+- 신고 관리자 종결 API (0.9.10에서 create/edit 통합·알림 라우트 완료).
 
 ## [0.9.8] - 2026-09-17
 
