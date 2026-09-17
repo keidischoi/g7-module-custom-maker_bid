@@ -110,6 +110,41 @@ class TypeCatalog
     }
 
     /**
+     * Coerce API/form type input (string|array|object junk) into a slug string.
+     * Returns '' for missing / "[object Object]" / "Array".
+     */
+    public static function coerceTypeInput(mixed $raw): string
+    {
+        if ($raw === null || $raw === '') {
+            return '';
+        }
+        if (is_array($raw)) {
+            foreach (['value', 'slug', 'id', 'type', 'name', 'label'] as $k) {
+                if (isset($raw[$k]) && ! is_array($raw[$k]) && ! is_object($raw[$k]) && (string) $raw[$k] !== '') {
+                    return self::coerceTypeInput($raw[$k]);
+                }
+            }
+            if (array_is_list($raw) && isset($raw[0])) {
+                return self::coerceTypeInput($raw[0]);
+            }
+
+            return '';
+        }
+        if (is_object($raw)) {
+            return self::coerceTypeInput((array) $raw);
+        }
+        if (is_bool($raw) || is_int($raw) || is_float($raw)) {
+            return trim((string) $raw);
+        }
+        $s = trim((string) $raw);
+        if ($s === '' || $s === '[object Object]' || $s === 'Array' || str_starts_with(strtolower($s), '[object ')) {
+            return '';
+        }
+
+        return self::normalizeSlug($s);
+    }
+
+    /**
      * @param  array{is_design_only?: bool, requires_address?: bool, slug?: string}|null  $type
      */
     public static function requiresAddress(?array $type, ?string $slug = null): bool

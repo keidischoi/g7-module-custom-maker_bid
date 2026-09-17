@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.15] - 2026-09-18
+
+### Fixed
+- **의뢰 유형 `[object Object]`**: G7 Select가 option 객체를 `form.type`에 넣으면 `String(obj)` → `[object Object]`가 API로 전송되던 문제를 수정. `asTypeSlug`로 value/slug/id만 추출하고, 트리거·페이로드·카탈로그 전 경로에서 문자열 슬러그만 사용합니다.
+- **제공 확장자 `[OBJECT` / `OBJECT]`**: `provided_extensions`가 객체/객체배열일 때 `String(obj).split` 하던 경로를 `normalizeExtList`/`asExtToken`으로 교체(Object.values, value|label|ext|slug). 명세(`page.js`)도 동일 정규화.
+- **PHP 안전장치**: 유형이 배열이면 value/slug 추출, `[object Object]`/`Array` 문자열은 누락 처리 후 명확한 422. 확장자 항목이 객체/배열이면 문자열로 정규화.
+
+### Changed
+- 버전·캐시 버스트 **0.10.15**.
+
 ## [0.10.14] - 2026-09-18
 
 ### Fixed

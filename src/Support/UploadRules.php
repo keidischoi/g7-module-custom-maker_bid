@@ -138,11 +138,23 @@ class UploadRules
             return [];
         }
         foreach ($raw as $item) {
-            if (! is_string($item) && ! is_int($item)) {
+            if (is_array($item)) {
+                $item = $item['value'] ?? $item['label'] ?? $item['ext'] ?? $item['slug'] ?? null;
+                if (is_array($item)) {
+                    continue;
+                }
+            } elseif (is_object($item)) {
+                $item = (array) $item;
+                $item = $item['value'] ?? $item['label'] ?? $item['ext'] ?? $item['slug'] ?? null;
+                if (is_array($item) || is_object($item)) {
+                    continue;
+                }
+            }
+            if (! is_string($item) && ! is_int($item) && ! is_float($item)) {
                 continue;
             }
             $value = strtoupper(ltrim(trim((string) $item), '.'));
-            if ($value === '' || ! preg_match('/^[A-Z0-9]{1,16}$/', $value)) {
+            if ($value === '' || str_starts_with($value, '[OBJECT') || $value === 'OBJECT]' || ! preg_match('/^[A-Z0-9]{1,16}$/', $value)) {
                 continue;
             }
             if (! in_array($value, $items, true)) {

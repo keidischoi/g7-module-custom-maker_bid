@@ -286,10 +286,31 @@
       });
       if (built.length) job.provided_extensions = built;
     }
-    if (Array.isArray(job.provided_extensions) && job.provided_extensions.length) {
-      job.provided_extensions = job.provided_extensions.map(function (x) {
-        return String(x).replace(/^\./, '').toUpperCase();
-      }).filter(Boolean);
+    if (job.provided_extensions != null) {
+      job.provided_extensions = (function normalizeExtListPage(raw) {
+        var out = [];
+        var seen = {};
+        var push = function (tok) {
+          if (tok == null || tok === '') return;
+          var s = '';
+          if (typeof tok === 'object') {
+            var v = tok.value != null ? tok.value : tok.label != null ? tok.label : tok.ext != null ? tok.ext : tok.slug != null ? tok.slug : '';
+            if (typeof v === 'object') return;
+            s = String(v == null ? '' : v);
+          } else {
+            s = String(tok);
+          }
+          s = s.replace(/^\./, '').trim().toUpperCase();
+          if (!s || s.indexOf('[OBJECT') === 0 || s === 'OBJECT]' || !/^[A-Z0-9]{1,16}$/.test(s)) return;
+          if (seen[s]) return;
+          seen[s] = 1;
+          out.push(s);
+        };
+        if (Array.isArray(raw)) raw.forEach(push);
+        else if (typeof raw === 'string') String(raw).split(/[\s,;|]+/).forEach(push);
+        else if (typeof raw === 'object') Object.keys(raw).forEach(function (k) { push(raw[k]); });
+        return out;
+      })(job.provided_extensions);
     }
     return job;
   }
@@ -1420,13 +1441,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.14';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.15';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.14') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.15') < 0) {
         existing.href = FORM_CSS;
       }
       return;

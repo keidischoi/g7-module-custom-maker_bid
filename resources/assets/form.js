@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.14';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.15';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -71,18 +71,9 @@
       return '';
     }
     if (typeof row !== 'object') {
-      return String(row);
+      return asTypeSlug(row);
     }
-    if (row.value != null && String(row.value).trim() !== '') {
-      return String(row.value);
-    }
-    if (row.slug != null && String(row.slug).trim() !== '') {
-      return String(row.slug);
-    }
-    if (row.id != null && String(row.id).trim() !== '') {
-      return String(row.id);
-    }
-    return '';
+    return asTypeSlug(row.value != null ? row.value : row.slug != null ? row.slug : row.id);
   }
 
   function typeLabelOf(row, fallback) {
@@ -90,6 +81,81 @@
       return String(row.label || row.name || fallback || typeToken(row) || '');
     }
     return String(fallback || row || '');
+  }
+
+  function asTypeSlug(raw) {
+    if (raw == null || raw === '') return '';
+    if (typeof raw === 'object') {
+      var v = raw.value != null ? raw.value : raw.slug != null ? raw.slug : raw.id != null ? raw.id : '';
+      if (typeof v === 'object') return asTypeSlug(v);
+      return String(v == null ? '' : v).trim();
+    }
+    var s = String(raw).trim();
+    if (!s || s === '[object Object]' || s === 'Array' || /^\[object\s/i.test(s)) return '';
+    return s;
+  }
+
+  function asExtToken(raw) {
+    if (raw == null || raw === '') return '';
+    var s = '';
+    if (typeof raw === 'object') {
+      var v = raw.value != null ? raw.value : raw.label != null ? raw.label : raw.ext != null ? raw.ext : raw.slug != null ? raw.slug : '';
+      if (typeof v === 'object') return asExtToken(v);
+      s = String(v == null ? '' : v);
+    } else {
+      s = String(raw);
+    }
+    s = s.replace(/^\./, '').trim().toUpperCase();
+    if (!s || s.indexOf('[OBJECT') === 0 || s === 'OBJECT]' || s === '[OBJECT OBJECT]' || /^\[OBJECT/.test(s)) return '';
+    if (!/^[A-Z0-9]{1,16}$/.test(s)) return '';
+    return s;
+  }
+
+  var EXT_FALLBACK = ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
+
+  function normalizeExtList(raw) {
+    var out = [];
+    var seen = {};
+    var push = function (tok) {
+      tok = asExtToken(tok);
+      if (!tok || seen[tok]) return;
+      seen[tok] = 1;
+      out.push(tok);
+    };
+    if (raw == null || raw === '') return EXT_FALLBACK.slice();
+    if (Array.isArray(raw)) {
+      raw.forEach(push);
+    } else if (typeof raw === 'string') {
+      String(raw).split(/[\s,;|]+/).forEach(push);
+    } else if (typeof raw === 'object') {
+      Object.keys(raw).forEach(function (k) { push(raw[k]); });
+    } else {
+      push(raw);
+    }
+    return out.length ? out : EXT_FALLBACK.slice();
+  }
+
+  function normalizeTypeOption(row) {
+    if (row == null) return null;
+    if (typeof row !== 'object') {
+      var s = asTypeSlug(row);
+      if (!s) return null;
+      return { value: s, slug: s, label: s, name: s };
+    }
+    var value = asTypeSlug(row.value != null ? row.value : row.slug != null ? row.slug : row.id);
+    var label = String(row.label || row.name || value || '').trim();
+    if (!value && label) value = asTypeSlug(label);
+    if (!value && !label) return null;
+    var out = {};
+    var k;
+    for (k in row) {
+      if (Object.prototype.hasOwnProperty.call(row, k)) out[k] = row[k];
+    }
+    out.value = value || '';
+    out.slug = asTypeSlug(row.slug) || value || '';
+    out.label = label || value || '';
+    out.name = String(row.name || label || value || '');
+    return out;
   }
 
   function setNativeValue(el, value) {
@@ -238,10 +304,10 @@
     var form = g7Get('_local.form') || {};
     var status = normalizeStatusSlug(form.status || readNamedValue('status') || 'quote_request');
     var audience = normalizeAudienceSlug(form.audience || readNamedValue('audience') || 'all');
-    var type = String(form.type || readNamedValue('type') || '').trim();
+    var type = asTypeSlug(form.type) || asTypeSlug(readNamedValue('type')) || '';
     var typeRow = findTypeRow(type);
-    if (typeRow && (typeRow.value || typeRow.slug)) {
-      type = String(typeRow.value || typeRow.slug);
+    if (typeRow) {
+      type = asTypeSlug(typeRow.value || typeRow.slug) || type;
     }
     var exts = collectCheckedExtensions();
     var map = {
@@ -305,12 +371,17 @@
       }
     }
     // Prefer live select value / G7 state for critical slugs.
-    ['type', 'status', 'audience', 'kind'].forEach(function (k) {
+        ['type', 'status', 'audience', 'kind'].forEach(function (k) {
       var live = readNamedValue(k);
+      var curVal = cur && cur[k] != null ? cur[k] : '';
+      if (k === 'type') {
+        live = asTypeSlug(live);
+        curVal = asTypeSlug(curVal);
+      }
       if (live && String(live).trim() !== '') {
         map[prefix + '.' + k] = live;
-      } else if (cur && cur[k] != null && String(cur[k]).trim() !== '') {
-        map[prefix + '.' + k] = cur[k];
+      } else if (curVal !== '' && String(curVal).trim() !== '') {
+        map[prefix + '.' + k] = curVal;
       }
     });
     if (prefix === 'form') {
@@ -322,9 +393,11 @@
       if (map['form.audience'] != null) {
         map['form.audience'] = normalizeAudienceSlug(map['form.audience']);
       }
-      var row = findTypeRow(map['form.type'] || (cur && cur.type) || '');
-      if (row && (row.value || row.slug)) {
-        map['form.type'] = String(row.value || row.slug);
+      var row = findTypeRow(asTypeSlug(map['form.type']) || asTypeSlug(cur && cur.type) || '');
+      if (row) {
+        map['form.type'] = asTypeSlug(row.value || row.slug) || asTypeSlug(map['form.type']) || '';
+      } else if (map['form.type'] != null) {
+        map['form.type'] = asTypeSlug(map['form.type']);
       }
       try {
         var exts = collectCheckedExtensions();
@@ -356,7 +429,11 @@
         return;
       }
       var map = {};
-      map[localFormKey() + '.' + name] = el.value;
+      var syncVal = el.value;
+      if (name === 'type') {
+        syncVal = asTypeSlug(syncVal) || asTypeSlug(g7Get('_local.form.type')) || syncVal;
+      }
+      map[localFormKey() + '.' + name] = syncVal;
       setLocal(map);
     };
     card.addEventListener('input', on, true);
@@ -544,12 +621,9 @@
     var row;
     var key;
     for (i = 0; i < list.length; i++) {
-      row = list[i];
+      row = normalizeTypeOption(list[i]);
       if (!row) {
         continue;
-      }
-      if (typeof row !== 'object') {
-        row = { value: String(row), label: String(row) };
       }
       key = typeToken(row) + '|' + typeLabelOf(row);
       if (!key || seen[key]) {
@@ -559,7 +633,6 @@
       out.push(row);
     }
   }
-
   function catalogTypes() {
     var out = [];
     var seen = {};
@@ -677,7 +750,22 @@
 
   function paintSelectTrigger(name, value, label) {
     var wrap = findSelectWrap(name);
-    var text = label || optionLabelFor(name, value);
+    if (name === 'type') {
+      value = asTypeSlug(value);
+    } else if (value != null && typeof value === 'object') {
+      value = asTypeSlug(value) || '';
+    } else {
+      value = value == null ? '' : String(value);
+    }
+    var text = label;
+    if (text != null && typeof text === 'object') {
+      text = typeLabelOf(text) || asTypeSlug(text);
+    }
+    text = text || optionLabelFor(name, value);
+    if (text != null && typeof text === 'object') {
+      text = String(text.label || text.name || asTypeSlug(text) || '');
+    }
+    text = text == null ? '' : String(text);
     if (!wrap || !text) {
       return;
     }
@@ -722,10 +810,12 @@
   function optionLabelFor(name, value) {
     var row;
     if (name === 'type') {
+      value = asTypeSlug(value);
       row = findTypeRow(value);
       if (row) {
-        return row.label || row.name || value;
+        return String(row.label || row.name || value || '');
       }
+      return value;
     }
     if (name === 'status') {
       if (value === 'hold') {
@@ -758,7 +848,7 @@
 
   function setG7Select(name, value, done) {
     var prefix = localFormKey();
-    var chosen = String(value || '');
+    var chosen = name === 'type' ? asTypeSlug(value) : String(value == null || typeof value === 'object' ? asTypeSlug(value) || '' : value);
     var label = optionLabelFor(name, chosen);
     var map = {};
     var finish = function () {
@@ -768,7 +858,7 @@
       }
     };
     var writeState = function (next) {
-      chosen = String(next || chosen);
+      chosen = name === 'type' ? asTypeSlug(next || chosen) : String(next || chosen);
       map = {};
       map[prefix + '.' + name] = chosen;
       setLocal(map);
@@ -926,7 +1016,7 @@
     var list = catalogTypes();
     var i;
     var row;
-    var s = String(slug || '');
+    var s = asTypeSlug(slug);
     for (i = 0; i < list.length; i++) {
       row = list[i];
       if (
@@ -975,6 +1065,7 @@
   }
 
   function applyTypeFlags(slug) {
+    slug = asTypeSlug(slug);
     if (!slug) {
       syncExtVisibility(false);
       return;
@@ -1152,22 +1243,38 @@
       '_data.defaults.data.provided_extensions',
       'defaults.data.provided_extensions',
       '_data.settings.data.general.provided_extensions',
+      'settings.data.general.provided_extensions',
+      '_data.defaults.data.provided_extensions',
+      'defaults.data.provided_extensions',
+      '_data.settings.data.general.provided_extensions',
       'settings.data.general.provided_extensions'
     ];
-    var i, v, list;
+    var i, v, extracted;
     for (i = 0; i < paths.length; i++) {
       v = g7Get(paths[i]);
-      if (Array.isArray(v) && v.length) {
-        return v.map(function (x) { return String(x).replace(/^\./, '').toUpperCase(); }).filter(Boolean);
+      if (v == null || v === '') continue;
+      extracted = [];
+      if (Array.isArray(v)) {
+        v.forEach(function (x) {
+          var t = asExtToken(x);
+          if (t) extracted.push(t);
+        });
+      } else if (typeof v === 'string') {
+        String(v).split(/[,\s;|]+/).forEach(function (x) {
+          var t = asExtToken(x);
+          if (t) extracted.push(t);
+        });
+      } else if (typeof v === 'object') {
+        Object.keys(v).forEach(function (k) {
+          var t = asExtToken(v[k]);
+          if (t) extracted.push(t);
+        });
       }
-      if (v != null && String(v).trim() !== '') {
-        list = String(v).split(/[,\s;|]+/).map(function (x) {
-          return String(x).replace(/^\./, '').trim().toUpperCase();
-        }).filter(Boolean);
-        if (list.length) return list;
+      if (extracted.length) {
+        return normalizeExtList(extracted);
       }
     }
-    return ['STL', 'OBJ', '3MF', 'FBX', 'PDF', 'STEP', 'STP', 'GCODE', 'DWG'];
+    return EXT_FALLBACK.slice();
   }
 
   function extFieldKey(ext) {
@@ -1351,7 +1458,10 @@
       typeHost.addEventListener(
         'change',
         function (e) {
-          var v = (e && e.target && e.target.value) || readNamedValue('type');
+          var v = asTypeSlug((e && e.target && e.target.value) || readNamedValue('type') || g7Get('_local.form.type'));
+          if (v) {
+            setLocal({ 'form.type': v });
+          }
           loadTypes(function () {
             applyTypeFlags(v);
           });
@@ -1359,8 +1469,9 @@
         true
       );
     }
-    var current = readNamedValue('type');
+    var current = asTypeSlug(readNamedValue('type') || g7Get('_local.form.type'));
     if (current) {
+      setLocal({ 'form.type': current });
       loadTypes(function () {
         applyTypeFlags(current);
       });
@@ -1383,11 +1494,13 @@
             for (i = 0; i < list.length; i++) {
               row = list[i];
               if (row.label === label || row.name === label || String(row.value) === label || String(row.slug) === label || (row.label && label.indexOf(row.label) !== -1)) {
-                slug = row.value || row.slug;
+                slug = asTypeSlug(row.value || row.slug);
                 break;
               }
             }
             if (slug) {
+              setLocal({ 'form.type': slug });
+              paintSelectTrigger('type', slug, optionLabelFor('type', slug));
               applyTypeFlags(slug);
             }
           });
@@ -1612,7 +1725,7 @@
     if (!document.querySelector('.cmb-order-card, [data-cmb-job-form]')) return;
     typesCache = null;
     loadTypes(function () {
-      var list = catalogTypes();
+      var list = catalogTypes().map(normalizeTypeOption).filter(Boolean);
       try {
         dispatch('setState', { target: 'data', 'defaults.data.types': list });
       } catch (e1) {}
@@ -1623,12 +1736,12 @@
         }
       } catch (e2) {}
       // Re-paint current select values so empty triggers recover
-      var curType = readNamedValue('type') || (g7Get('_local.form.type') || '');
+      var curType = asTypeSlug(readNamedValue('type') || g7Get('_local.form.type') || '');
       var curStatus = normalizeStatusSlug(readNamedValue('status') || g7Get('_local.form.status') || 'quote_request');
       var curAud = normalizeAudienceSlug(readNamedValue('audience') || g7Get('_local.form.audience') || 'all');
       if (curType) {
         var row = findTypeRow(curType);
-        if (row && (row.value || row.slug)) curType = String(row.value || row.slug);
+        if (row) curType = asTypeSlug(row.value || row.slug) || curType;
         setLocal({ 'form.type': curType, 'form.status': curStatus, 'form.audience': curAud });
         paintSelectTrigger('type', curType, optionLabelFor('type', curType));
         paintSelectTrigger('status', curStatus, optionLabelFor('status', curStatus));
@@ -1649,12 +1762,12 @@
         var data = body && body.data ? body.data : body;
         if (!data) return;
         if (data.types && data.types.length) {
-          typesCache = extractTypesList(data.types);
+          typesCache = extractTypesList(data.types).map(normalizeTypeOption).filter(Boolean);
         }
         if (data.provided_extensions) {
           try {
             if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.set === 'function') {
-              window.G7Core.state.set('defaults.data.provided_extensions', data.provided_extensions);
+              window.G7Core.state.set('defaults.data.provided_extensions', normalizeExtList(data.provided_extensions));
             }
           } catch (e3) {}
         }
