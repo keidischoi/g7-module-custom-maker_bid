@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.6] - 2026-09-17
+
+### Fixed
+- **관리자 다크 테마 흰 박스**: 의뢰 목록 행·필터 카드·운영(신고 종결) 폼 등 컨테이너가 `white`/`#fff`/`rgb(255…)`로 남던 문제를 수정. `html.dark`뿐 아니라 `data-theme="dark"` / `cmb-dark-boot` / 런타임 `cmb-admin-dark`(밝기 감지)에서도 `rgba(255,255,255,0.06~0.08)` 반투명 표면·`0.12` 테두리·`1rem` 라운드를 강제. `form.css`의 `.cmb-list-item`/`.cmb-section-card` 화이트 폴백이 관리자(`.cmb-page` 없음)에 먹히지 않게 덮어씀.
+
+### Changed
+- 버전·캐시 버스트 **0.10.6**.
+
 ## [0.10.5] - 2026-09-17
 
 ### Added

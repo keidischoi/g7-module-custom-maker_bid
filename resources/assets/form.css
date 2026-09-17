@@ -319,12 +319,15 @@ html.dark .cmb-notice,
 }
 
 html.dark .cmb-admin,
-.dark .cmb-admin {
-  --cmb-admin-fg: rgb(243 244 246);
+.dark .cmb-admin,
+html[data-theme="dark"] .cmb-admin,
+html.cmb-dark-boot .cmb-admin,
+html.cmb-admin-dark .cmb-admin {
+  --cmb-admin-fg: #e5e7eb;
   --cmb-admin-muted: rgb(156 163 175);
-  --cmb-admin-border: rgb(107 114 128);
-  --cmb-admin-card: rgb(30 41 59);
-  --cmb-admin-check: rgb(243 244 246);
+  --cmb-admin-border: rgba(255, 255, 255, 0.12);
+  --cmb-admin-card: rgba(255, 255, 255, 0.08);
+  --cmb-admin-check: #e5e7eb;
 }
 
 .cmb-admin-nav {
@@ -363,7 +366,7 @@ html.dark .cmb-admin-nav a:hover,
 
 .cmb-admin-card {
   border: 1px solid var(--cmb-admin-border);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background: var(--cmb-admin-card);
   padding: 1rem 1.1rem;
 }
@@ -464,10 +467,13 @@ html.cmb-admin-ui [role="option"] { white-space: nowrap; word-break: keep-all; w
 }
 
 html.dark .cmb-admin-check-label,
-.dark .cmb-admin-check-label {
-  background: rgb(31 41 55);
-  border-color: rgb(75 85 99);
-  color: rgb(249 250 251) !important;
+.dark .cmb-admin-check-label,
+html[data-theme="dark"] .cmb-admin-check-label,
+html.cmb-dark-boot .cmb-admin-check-label,
+html.cmb-admin-dark .cmb-admin-check-label {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #e5e7eb !important;
 }
 
 .cmb-admin-check-text {
@@ -498,7 +504,7 @@ html.dark .cmb-admin-check-text,
   gap: 0.75rem 1.15rem;
   padding: 1rem 1.15rem;
   border: 1px solid rgb(156 163 175);
-  border-radius: 0.75rem;
+  border-radius: 1rem;
   background: var(--cmb-admin-card);
   width: 100%;
   max-width: none;
@@ -769,7 +775,9 @@ html.dark .cmb-page,
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-/* Dark: explicit translucent panels so boxes stay visible on navy/slate pages */
+/* Dark: explicit translucent panels so boxes stay visible on navy/slate pages.
+   Include admin (.cmb-admin) — admin.js also adds cmb-list-item to rows, and
+   ops uses cmb-section-card without .cmb-page. */
 html.dark .cmb-page .cmb-job-card,
 .dark .cmb-page .cmb-job-card,
 html.dark .cmb-page .cmb-company-card,
@@ -779,11 +787,37 @@ html.dark .cmb-page .cmb-bid-card,
 html.dark .cmb-page .cmb-list-item,
 .dark .cmb-page .cmb-list-item,
 html.dark .cmb-page .cmb-section-card,
-.dark .cmb-page .cmb-section-card {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.12);
+.dark .cmb-page .cmb-section-card,
+html.dark .cmb-admin .cmb-list-item,
+.dark .cmb-admin .cmb-list-item,
+html.dark .cmb-admin .cmb-section-card,
+.dark .cmb-admin .cmb-section-card,
+html.dark .cmb-admin .cmb-admin-card,
+.dark .cmb-admin .cmb-admin-card,
+html.dark .cmb-admin .cmb-admin-row,
+.dark .cmb-admin .cmb-admin-row,
+html[data-theme="dark"] .cmb-admin .cmb-list-item,
+html[data-theme="dark"] .cmb-admin .cmb-section-card,
+html[data-theme="dark"] .cmb-admin .cmb-admin-card,
+html[data-theme="dark"] .cmb-admin .cmb-admin-row,
+html.cmb-dark-boot .cmb-admin .cmb-list-item,
+html.cmb-dark-boot .cmb-admin .cmb-section-card,
+html.cmb-dark-boot .cmb-admin .cmb-admin-card,
+html.cmb-dark-boot .cmb-admin .cmb-admin-row,
+html.cmb-admin-dark .cmb-admin .cmb-list-item,
+html.cmb-admin-dark .cmb-admin .cmb-section-card,
+html.cmb-admin-dark .cmb-admin .cmb-admin-card,
+html.cmb-admin-dark .cmb-admin .cmb-admin-row,
+html[data-theme="dark"] .cmb-page .cmb-list-item,
+html[data-theme="dark"] .cmb-page .cmb-section-card,
+html[data-theme="dark"] .cmb-page .cmb-job-card,
+html.cmb-dark-boot .cmb-page .cmb-list-item,
+html.cmb-dark-boot .cmb-page .cmb-section-card,
+html.cmb-dark-boot .cmb-page .cmb-job-card {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  color: var(--cmb-card-fg, rgb(243 244 246));
+  color: var(--cmb-card-fg, #e5e7eb);
 }
 
 a.cmb-job-card:hover,
