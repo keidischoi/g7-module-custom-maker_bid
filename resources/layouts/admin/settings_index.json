@@ -2,13 +2,41 @@
   "version": "1.0.0",
   "layout_name": "settings_index",
   "extends": "_admin_base",
-  "meta": { "title": "설정" },
-  "permissions": ["custom-maker_bids.settings.read"],
+  "meta": {
+    "title": "설정"
+  },
+  "permissions": [
+    "custom-maker_bids.settings.read"
+  ],
   "errorHandling": {
-    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
   },
   "state": {
     "form": {
@@ -110,276 +138,794 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5" },
+        "props": {
+          "className": "admin-page-content cmb-admin space-y-5"
+        },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "설정" },
           {
-            "id": "nav",
+            "id": "h",
+            "type": "basic",
+            "name": "H1",
+            "props": {
+              "className": "page-title"
+            },
+            "text": "설정"
+          },
+          {
+            "id": "cmb_admin_nav",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-nav text-sm" },
-            "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
-            ]
+            "props": {
+              "className": "cmb-admin-nav text-sm",
+              "data-cmb-admin-nav": "1"
+            },
+            "children": []
           },
           {
             "id": "form",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "space-y-5", "dataKey": "form", "trackChanges": true },
+            "props": {
+              "className": "space-y-5",
+              "dataKey": "form",
+              "trackChanges": true
+            },
             "children": [
               {
                 "id": "top_grid",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-section-grid" },
+                "props": {
+                  "className": "cmb-admin-section-grid"
+                },
                 "children": [
-              {
-                "id": "menu_box",
-                "type": "basic",
-                "name": "Div",
-                "props": { "className": "cmb-admin-card space-y-3" },
-                "children": [
-                  { "id": "menu_h", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "회원 메뉴 위치" },
-                  { "id": "menu_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "헤더의 「의뢰/입찰」 버튼은 nav.js가 샵/홈 버튼 옆에 넣습니다. 삽입 위치를 고르면 회원 화면에 바로 반영됩니다(캐시 삭제·하드 리프레시). 레이아웃 확장은 G7이 허용하는 슬롯(_user_base·home 의 header append)에 A 링크를 붙입니다. 테마 헤더 id가 header가 아니면 resources/extensions/*.json 의 target_id를 바꿔야 합니다. JS 삽입과 레이아웃 확장을 동시에 켜면 링크가 두 번 보일 수 있습니다." },
                   {
-                    "id": "nav_js_wrap",
-                    "type": "basic",
-                    "name": "Label",
-                    "props": { "className": "cmb-admin-check-label" },
-                    "children": [
-                      { "id": "nav_js_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "nav_js_enabled" } },
-                      { "id": "nav_js_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "헤더 버튼 삽입 (nav.js)" }
-                    ]
-                  },
-                  { "id": "nav_insert_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "삽입 위치" },
-                  {
-                    "id": "nav_insert_host",
+                    "id": "menu_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-md" },
-                    "children": [
-                  {
-                    "id": "nav_insert",
-                    "type": "basic",
-                    "name": "Select",
                     "props": {
-                      "name": "nav_insert",
-                      "value": "{{_local.form.nav_insert}}",
-                      "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
-                      "options": [
-                        { "value": "append_row", "label": "샵/홈 줄 맨 뒤" },
-                        { "value": "prepend_row", "label": "샵/홈 줄 맨 앞" },
-                        { "value": "after_shop", "label": "샵 버튼 바로 뒤" },
-                        { "value": "after_home", "label": "홈 버튼 바로 뒤" }
-                      ]
+                      "className": "cmb-admin-card space-y-3"
                     },
-                    "actions": [
-                      { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.nav_insert": "{{$event.target.value}}" } }
-                    ]
-                  }
+                    "children": [
+                      {
+                        "id": "menu_h",
+                        "type": "basic",
+                        "name": "H2",
+                        "props": {
+                          "className": "cmb-admin-card-title"
+                        },
+                        "text": "회원 메뉴 위치"
+                      },
+                      {
+                        "id": "menu_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "헤더의 「의뢰/입찰」 버튼은 nav.js가 샵/홈 버튼 옆에 넣습니다. 삽입 위치를 고르면 회원 화면에 바로 반영됩니다(캐시 삭제·하드 리프레시). 레이아웃 확장은 G7이 허용하는 슬롯(_user_base·home 의 header append)에 A 링크를 붙입니다. 테마 헤더 id가 header가 아니면 resources/extensions/*.json 의 target_id를 바꿔야 합니다. JS 삽입과 레이아웃 확장을 동시에 켜면 링크가 두 번 보일 수 있습니다."
+                      },
+                      {
+                        "id": "nav_js_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "nav_js_enabled",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "nav_js_enabled"
+                            }
+                          },
+                          {
+                            "id": "nav_js_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "헤더 버튼 삽입 (nav.js)"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "nav_insert_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "삽입 위치"
+                      },
+                      {
+                        "id": "nav_insert_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-md"
+                        },
+                        "children": [
+                          {
+                            "id": "nav_insert",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "nav_insert",
+                              "value": "{{_local.form.nav_insert}}",
+                              "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "append_row",
+                                  "label": "샵/홈 줄 맨 뒤"
+                                },
+                                {
+                                  "value": "prepend_row",
+                                  "label": "샵/홈 줄 맨 앞"
+                                },
+                                {
+                                  "value": "after_shop",
+                                  "label": "샵 버튼 바로 뒤"
+                                },
+                                {
+                                  "value": "after_home",
+                                  "label": "홈 버튼 바로 뒤"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.nav_insert": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "nav_label_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "메뉴 라벨"
+                      },
+                      {
+                        "id": "nav_label",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "nav_label",
+                          "placeholder": "의뢰/입찰",
+                          "className": "cmb-admin-w-md"
+                        }
+                      },
+                      {
+                        "id": "ext_checks",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-checks"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_user_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "extension_user_base",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "extension_user_base"
+                                }
+                              },
+                              {
+                                "id": "ext_user_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "_user_base 헤더에 레이아웃 확장 링크"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ext_home_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "extension_home",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "extension_home"
+                                }
+                              },
+                              {
+                                "id": "ext_home_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "home 레이아웃 헤더에 레이아웃 확장 링크"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     ]
                   },
-                  { "id": "nav_label_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "메뉴 라벨" },
-                  { "id": "nav_label", "type": "basic", "name": "Input", "props": { "name": "nav_label", "placeholder": "의뢰/입찰", "className": "cmb-admin-w-md" } },
                   {
-                    "id": "ext_checks",
+                    "id": "gen_box",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-checks" },
-                    "children": [
-                  {
-                    "id": "ext_user_wrap",
-                    "type": "basic",
-                    "name": "Label",
-                    "props": { "className": "cmb-admin-check-label" },
-                    "children": [
-                      { "id": "extension_user_base", "type": "basic", "name": "Checkbox", "props": { "name": "extension_user_base" } },
-                      { "id": "ext_user_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "_user_base 헤더에 레이아웃 확장 링크" }
-                    ]
-                  },
-                  {
-                    "id": "ext_home_wrap",
-                    "type": "basic",
-                    "name": "Label",
-                    "props": { "className": "cmb-admin-check-label" },
-                    "children": [
-                      { "id": "extension_home", "type": "basic", "name": "Checkbox", "props": { "name": "extension_home" } },
-                      { "id": "ext_home_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "home 레이아웃 헤더에 레이아웃 확장 링크" }
-                    ]
-                  }
-                    ]
-                  }
-                ]
-              },
-              {
-                "id": "gen_box",
-                "type": "basic",
-                "name": "Div",
-                "props": { "className": "cmb-admin-card space-y-3" },
-                "children": [
-                  { "id": "gen_h", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "모듈 동작" },
-                  { "id": "status_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "의뢰 등록 기본 상태 (작성자가 고르지 않았을 때)" },
-                  {
-                    "id": "default_job_status_host",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-md" },
-                    "children": [
-                  {
-                    "id": "default_job_status",
-                    "type": "basic",
-                    "name": "Select",
                     "props": {
-                      "name": "default_job_status",
-                      "value": "{{_local.form.default_job_status}}",
-                      "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
-                      "options": [
-                        { "value": "quote_request", "label": "견적요청" },
-                        { "value": "request", "label": "의뢰" },
-                        { "value": "hold", "label": "보류 (비공개)" }
-                      ]
+                      "className": "cmb-admin-card space-y-3"
                     },
-                    "actions": [
-                      { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.default_job_status": "{{$event.target.value}}" } }
+                    "children": [
+                      {
+                        "id": "gen_h",
+                        "type": "basic",
+                        "name": "H2",
+                        "props": {
+                          "className": "cmb-admin-card-title"
+                        },
+                        "text": "모듈 동작"
+                      },
+                      {
+                        "id": "status_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "의뢰 등록 기본 상태 (작성자가 고르지 않았을 때)"
+                      },
+                      {
+                        "id": "default_job_status_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-md"
+                        },
+                        "children": [
+                          {
+                            "id": "default_job_status",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "default_job_status",
+                              "value": "{{_local.form.default_job_status}}",
+                              "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "quote_request",
+                                  "label": "견적요청"
+                                },
+                                {
+                                  "value": "request",
+                                  "label": "의뢰"
+                                },
+                                {
+                                  "value": "hold",
+                                  "label": "보류 (비공개)"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.default_job_status": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "guests_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "guests_see_list",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "guests_see_list"
+                            }
+                          },
+                          {
+                            "id": "guests_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "비회원에게 의뢰목록 공개"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "guests_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "끄면 로그인 회원만 목록을 봅니다. 작성자 본인 의뢰는 0.6.1과 같이 로그인 후 보입니다."
+                      },
+                      {
+                        "id": "bid_allow_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "입찰 허용 권한"
+                      },
+                      {
+                        "id": "bid_allow_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-lg"
+                        },
+                        "children": [
+                          {
+                            "id": "bid_allow",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "bid_allow",
+                              "value": "{{_local.form.bid_allow}}",
+                              "className": "cmb-admin-select cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "all",
+                                  "label": "모두"
+                                },
+                                {
+                                  "value": "admin",
+                                  "label": "관리자"
+                                },
+                                {
+                                  "value": "designated",
+                                  "label": "지정업체"
+                                },
+                                {
+                                  "value": "approved_company",
+                                  "label": "모든 등록된 업체"
+                                },
+                                {
+                                  "value": "approved_individual",
+                                  "label": "등록된 개인회원"
+                                },
+                                {
+                                  "value": "approved_bidders",
+                                  "label": "모든 등록된 업체 & 등록된 개인회원"
+                                },
+                                {
+                                  "value": "member",
+                                  "label": "일반회원"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.bid_allow": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "bid_allow_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "사이트 전체 기본입니다. 비회원(게스트)은 입찰할 수 없어 「모두」는 로그인 회원 전체입니다. 「일반회원」은 업체/개인 입찰자 등록이 없는 로그인 회원입니다. 의뢰 공개 설정(전체/업체만/개인만)과 함께 적용됩니다. 지정업체는 회사 목록에서 관리자가 표시한 승인 업체만 해당합니다. 관리자 입찰 수정(관리자 API)은 이 제한을 타지 않습니다."
+                      }
                     ]
                   }
-                    ]
-                  },
-                  {
-                    "id": "guests_wrap",
-                    "type": "basic",
-                    "name": "Label",
-                    "props": { "className": "cmb-admin-check-label" },
-                    "children": [
-                      { "id": "guests_see_list", "type": "basic", "name": "Checkbox", "props": { "name": "guests_see_list" } },
-                      { "id": "guests_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "비회원에게 의뢰목록 공개" }
-                    ]
-                  },
-                  { "id": "guests_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "끄면 로그인 회원만 목록을 봅니다. 작성자 본인 의뢰는 0.6.1과 같이 로그인 후 보입니다." },
-                  { "id": "bid_allow_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "입찰 허용 권한" },
-                  {
-                    "id": "bid_allow_host",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": { "className": "cmb-admin-select-host cmb-admin-select-host-lg" },
-                    "children": [
-                  {
-                    "id": "bid_allow",
-                    "type": "basic",
-                    "name": "Select",
-                    "props": {
-                      "name": "bid_allow",
-                      "value": "{{_local.form.bid_allow}}",
-                      "className": "cmb-admin-select cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
-                      "options": [
-                        { "value": "all", "label": "모두" },
-                        { "value": "admin", "label": "관리자" },
-                        { "value": "designated", "label": "지정업체" },
-                        { "value": "approved_company", "label": "모든 등록된 업체" },
-                        { "value": "approved_individual", "label": "등록된 개인회원" },
-                        { "value": "approved_bidders", "label": "모든 등록된 업체 & 등록된 개인회원" },
-                        { "value": "member", "label": "일반회원" }
-                      ]
-                    },
-                    "actions": [
-                      { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "form.bid_allow": "{{$event.target.value}}" } }
-                    ]
-                  }
-                    ]
-                  },
-                  { "id": "bid_allow_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "사이트 전체 기본입니다. 비회원(게스트)은 입찰할 수 없어 「모두」는 로그인 회원 전체입니다. 「일반회원」은 업체/개인 입찰자 등록이 없는 로그인 회원입니다. 의뢰 공개 설정(전체/업체만/개인만)과 함께 적용됩니다. 지정업체는 회사 목록에서 관리자가 표시한 승인 업체만 해당합니다. 관리자 입찰 수정(관리자 API)은 이 제한을 타지 않습니다." }
-                ]
-              }
                 ]
               },
               {
                 "id": "notice_box",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-card space-y-3" },
+                "props": {
+                  "className": "cmb-admin-card space-y-3"
+                },
                 "children": [
-                  { "id": "notice_h", "type": "basic", "name": "H2", "props": { "className": "cmb-admin-card-title" }, "text": "페이지 안내문" },
-                  { "id": "notice_help", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "켜 둔 페이지의 안내문이 회원 화면 상단에 표시됩니다. 일반 텍스트 또는 간단한 HTML(문단·링크·강조)을 넣을 수 있습니다. script/iframe은 저장 시 제거됩니다." },
+                  {
+                    "id": "notice_h",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-admin-card-title"
+                    },
+                    "text": "페이지 안내문"
+                  },
+                  {
+                    "id": "notice_help",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-muted"
+                    },
+                    "text": "켜 둔 페이지의 안내문이 회원 화면 상단에 표시됩니다. 일반 텍스트 또는 간단한 HTML(문단·링크·강조)을 넣을 수 있습니다. script/iframe은 저장 시 제거됩니다."
+                  },
                   {
                     "id": "notice_grid",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-section-grid" },
+                    "props": {
+                      "className": "cmb-admin-section-grid"
+                    },
                     "children": [
                       {
                         "id": "n_list",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_list_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "list_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "list_enabled" } }, { "id": "n_list_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "의뢰목록 안내문 표시" } ] },
-                          { "id": "list_body", "type": "basic", "name": "Textarea", "props": { "name": "list_body", "placeholder": "의뢰목록 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_list_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "list_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "list_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_list_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "의뢰목록 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "list_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "list_body",
+                              "placeholder": "의뢰목록 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_create",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_create_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "create_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "create_enabled" } }, { "id": "n_create_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "의뢰서 작성 안내문 표시" } ] },
-                          { "id": "create_body", "type": "basic", "name": "Textarea", "props": { "name": "create_body", "placeholder": "의뢰서 작성 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_create_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "create_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "create_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_create_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "의뢰서 작성 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "create_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "create_body",
+                              "placeholder": "의뢰서 작성 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_bids",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_bids_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "bids_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "bids_enabled" } }, { "id": "n_bids_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "입찰현황 안내문 표시" } ] },
-                          { "id": "bids_body", "type": "basic", "name": "Textarea", "props": { "name": "bids_body", "placeholder": "입찰현황 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_bids_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "bids_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "bids_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_bids_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "입찰현황 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "bids_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "bids_body",
+                              "placeholder": "입찰현황 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_hist",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_hist_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "history_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "history_enabled" } }, { "id": "n_hist_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "이력 안내문 표시" } ] },
-                          { "id": "history_body", "type": "basic", "name": "Textarea", "props": { "name": "history_body", "placeholder": "이력 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_hist_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "history_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "history_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_hist_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "이력 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "history_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "history_body",
+                              "placeholder": "이력 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_co",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_co_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "company_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "company_enabled" } }, { "id": "n_co_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "입찰자 등록 안내문 표시" } ] },
-                          { "id": "company_body", "type": "basic", "name": "Textarea", "props": { "name": "company_body", "placeholder": "입찰자 등록 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_co_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "company_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "company_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_co_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "입찰자 등록 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "company_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "company_body",
+                              "placeholder": "입찰자 등록 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_show",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_show_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "show_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "show_enabled" } }, { "id": "n_show_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "의뢰 상세 안내문 표시" } ] },
-                          { "id": "show_body", "type": "basic", "name": "Textarea", "props": { "name": "show_body", "placeholder": "의뢰 상세 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_show_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "show_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "show_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_show_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "의뢰 상세 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "show_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "show_body",
+                              "placeholder": "의뢰 상세 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       },
                       {
                         "id": "n_edit",
                         "type": "basic",
                         "name": "Div",
-                        "props": { "className": "cmb-admin-notice-item" },
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
                         "children": [
-                          { "id": "n_edit_en_wrap", "type": "basic", "name": "Label", "props": { "className": "cmb-admin-check-label" }, "children": [ { "id": "edit_enabled", "type": "basic", "name": "Checkbox", "props": { "name": "edit_enabled" } }, { "id": "n_edit_en_txt", "type": "basic", "name": "Span", "props": { "className": "cmb-admin-check-text" }, "text": "의뢰서 수정 안내문 표시" } ] },
-                          { "id": "edit_body", "type": "basic", "name": "Textarea", "props": { "name": "edit_body", "placeholder": "의뢰서 수정 안내문", "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } }
+                          {
+                            "id": "n_edit_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "edit_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "edit_enabled"
+                                }
+                              },
+                              {
+                                "id": "n_edit_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "의뢰서 수정 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edit_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "edit_body",
+                              "placeholder": "의뢰서 수정 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            }
+                          }
                         ]
                       }
                     ]
@@ -390,31 +936,55 @@
                 "id": "save_row",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-toolbar" },
+                "props": {
+                  "className": "cmb-admin-toolbar"
+                },
                 "children": [
-              {
-                "id": "save",
-                "type": "basic",
-                "name": "Button",
-                "text": "설정 저장",
-                "props": { "className": "px-4 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
-                "actions": [
                   {
-                    "type": "click",
-                    "handler": "apiCall",
-                    "auth_required": true,
-                    "target": "/api/modules/custom-maker_bids/admin/settings",
-                    "params": { "method": "PUT", "body": "{{_local.form}}" },
-                    "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "설정을 저장했습니다. 회원 화면은 캐시 삭제 후 하드 리프레시하세요." } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "settings" } }
-                    ],
-                    "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                    "id": "save",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "설정 저장",
+                    "props": {
+                      "className": "px-4 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/admin/settings",
+                        "params": {
+                          "method": "PUT",
+                          "body": "{{_local.form}}"
+                        },
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "설정을 저장했습니다. 회원 화면은 캐시 삭제 후 하드 리프레시하세요."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "settings"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
                     ]
                   }
-                ]
-              }
                 ]
               }
             ]
@@ -424,4 +994,3 @@
     ]
   }
 }
-

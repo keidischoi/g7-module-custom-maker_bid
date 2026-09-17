@@ -177,12 +177,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.9.8', str_contains($nav, 'nav.js?v=0.9.8'));
-expectTrue('form.js cache bust 0.9.8', str_contains($nav, 'form.js?v=0.9.8'));
-expectTrue('form.css cache bust 0.9.8', str_contains($nav, 'form.css?v=0.9.8'));
-expectTrue('admin.css cache bust 0.9.8', str_contains($nav, 'admin.css?v=0.9.8'));
-expectTrue('admin.js cache bust 0.9.8', str_contains($nav, 'admin.js?v=0.9.8'));
-expectTrue('cmb_maker_nav cache bust 0.9.8', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.9.8'));
+expectTrue('nav cache bust 0.9.9', str_contains($nav, 'nav.js?v=0.9.9'));
+expectTrue('form.js cache bust 0.9.9', str_contains($nav, 'form.js?v=0.9.9'));
+expectTrue('form.css cache bust 0.9.9', str_contains($nav, 'form.css?v=0.9.9'));
+expectTrue('admin.css cache bust 0.9.9', str_contains($nav, 'admin.css?v=0.9.9'));
+expectTrue('admin.js cache bust 0.9.9', str_contains($nav, 'admin.js?v=0.9.9'));
+expectTrue('cmb_maker_nav cache bust 0.9.9', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.9.9'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -232,7 +232,7 @@ expectTrue('form.css styles company submit on sub-nav', str_contains($css, '.cmb
 expectTrue('form.css can collapse company form until 등록', str_contains($css, '.cmb-company-form.is-collapsed'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.8'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.9.9'));
 expectTrue('form.js company submit hides only when approved', str_contains($formJs, 'function syncCompanySubmit') && str_contains($formJs, "st === 'approved'") && str_contains($formJs, "querySelector('[data-cmb-company-submit]')"));
 expectTrue('form.js 등록 reveals company form', str_contains($formJs, 'function revealCompanyForm') && str_contains($formJs, 'function bindCompanySubmit') && str_contains($formJs, 'data-cmb-form-revealed'));
 expectTrue('form.js pending collapses form until 등록 click', str_contains($formJs, "st === 'pending'") && str_contains($formJs, 'is-collapsed'));
@@ -328,8 +328,8 @@ expectTrue('admin settings Selects sit in host wrappers', str_contains($adminSet
 expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($adminJobs, 'cmb-admin-select-host') && str_contains($adminJobsShow, 'cmb-admin-select-host cmb-admin-select-host-md') && str_contains($adminCos, 'cmb-admin-select-host cmb-admin-select-host-sm'));
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
 expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.8'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.8'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.9.9'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.9.9'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js does not use body:has', ! str_contains($adminJs, 'body:has'));
@@ -346,6 +346,31 @@ expectTrue('admin bids row is single-line card', str_contains($adminBidsLayout, 
 expectTrue('admin companies row is single-line card', str_contains($adminCos, 'flex-nowrap') && str_contains($adminCos, 'cmb-admin-row-actions shrink-0'));
 expectTrue('admin types row is single-line card', str_contains($adminTypes, 'flex-nowrap') && str_contains($adminTypes, 'cmb-admin-row-actions shrink-0'));
 expectTrue('admin activity rows are single-line cards', str_contains($adminActivity, 'flex-nowrap') && str_contains($adminActivity, 'cmb-admin-row-actions shrink-0'));
+
+
+
+$ops = (string) file_get_contents($root.'/resources/layouts/admin/ops_index.json');
+expectTrue('admin ops route registered', in_array('*/admin/maker-bids/ops', $adminPaths, true));
+expectTrue('admin ops uses row cards not raw P dump', str_contains($ops, 'cmb-admin-row') && str_contains($ops, 'admin/claims/{{$item.id}}'));
+expectTrue('admin ops has claims reports audits sections', str_contains($ops, '클레임') && str_contains($ops, '신고') && str_contains($ops, '감사 로그'));
+expectTrue('admin jobs uses shared nav stub', str_contains($adminJobs, 'cmb_admin_nav') && str_contains($adminJobs, 'data-cmb-admin-nav'));
+expectTrue('admin jobs nav stub has no hardcoded 6 links', ! str_contains($adminJobs, '"id": "ntypes"') && ! str_contains($adminJobs, '"id": "nset"'));
+expectTrue('listener fills shared admin nav with ops', str_contains($nav, 'ensureAdminNav') && str_contains($nav, '/admin/maker-bids/ops') && str_contains($nav, "'운영'"));
+$modulePhpFile = (string) file_get_contents($root.'/module.php');
+expectTrue('module getAdminMenus includes ops', str_contains($modulePhpFile, "/admin/maker-bids/ops") && str_contains($modulePhpFile, "'ops'"));
+expectTrue('getDynamicTables includes marketplace extras', str_contains($modulePhpFile, 'maker_messages') && str_contains($modulePhpFile, 'maker_claims'));
+expectTrue('jobs lead typo fixed', ! str_contains($adminJobs, '색이 치며니다') && str_contains($adminJobs, '색이 칠해집니다'));
+
+$ws = (string) file_get_contents($root.'/resources/layouts/user/jobs_workspace.json');
+expectTrue('workspace message compose', str_contains($ws, 'jobs/{{route.id}}/messages') && str_contains($ws, 'dataKey": "msg"'));
+expectTrue('workspace complete uses local score/comment', str_contains($ws, '_local.complete') && ! str_contains($ws, '좋은 거래였습니다.'));
+expectTrue('workspace claim and report', str_contains($ws, '/claim') && str_contains($ws, '/report'));
+
+$hist = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
+expectTrue('history notices panel', str_contains($hist, '/notices') && str_contains($hist, 'notices_card'));
+
+$market = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
+expectTrue('marketplace guards messages claims reports', str_contains($market, "hasTable('maker_messages')") && str_contains($market, "hasTable('maker_claims')") && str_contains($market, "hasTable('maker_reports')"));
 
 $oldIdHits = [];
 $scan = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));

@@ -4,6 +4,21 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.9.9] - 2026-09-17
+
+### Changed
+
+- 관리자 **공통 내비**를 `UserMenuListener`가 `#cmb_admin_nav` 스텁에 채워 넣도록 통일합니다. 의뢰·유형·입찰·회사·**운영**·활동·설정 7링크. `getAdminMenus`에도 운영 메뉴를 추가합니다.
+- `/admin/maker-bids/ops` 를 클레임/신고/감사 로그 **카드+행 UI**로 재구성하고 클레임 종결/재오픈(`POST admin/claims/{id}`)을 연결합니다.
+- 회사 편집·의뢰 상세 수정 폼을 카드/필드 그리드 패턴으로 정리합니다. 「색이 치며니다」 오타를 고칩니다.
+- 작업실에 **메시지 작성**, **점수/후기 완료**, **클레임·신고** UI를 연결합니다. 이력에 **알림(notices)** 목록·읽음을 둡니다.
+- marketplace extras(`maker_messages` 등)에 `Schema::hasTable` 가드와 `getDynamicTables` 등록을 보강합니다. migration 015 미적용 시 insert 500을 막습니다.
+- 버전·캐시 버스트 **0.9.9**. `admin.js`의 `injectPortalCss` / `html.cmb-admin-ui` 를 복구합니다.
+
+### Left for later
+
+- 공개 create/edit 레이아웃 통합, 알림 전용 라우트, 신고 관리자 종결 API.
+
 ## [0.9.8] - 2026-09-17
 
 ### Fixed

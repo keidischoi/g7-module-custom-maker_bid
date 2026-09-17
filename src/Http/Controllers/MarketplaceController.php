@@ -94,12 +94,24 @@ class MarketplaceController extends Controller
 
     public function claim(Request $request, int $id): JsonResponse
     {
-        return response()->json(['data' => $this->market->claim((int) $request->user()->id, $id, (string) $request->input('reason', ''))], 201);
+        try {
+            $data = $this->market->claim((int) $request->user()->id, $id, (string) $request->input('reason', ''));
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+
+        return response()->json(['data' => $data], 201);
     }
 
     public function report(Request $request, int $id): JsonResponse
     {
-        return response()->json(['data' => $this->market->report((int) $request->user()->id, $id, (string) $request->input('reason', ''))], 201);
+        try {
+            $data = $this->market->report((int) $request->user()->id, $id, (string) $request->input('reason', ''));
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+
+        return response()->json(['data' => $data], 201);
     }
 
     public function export(int $id): JsonResponse

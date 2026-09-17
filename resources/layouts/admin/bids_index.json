@@ -2,17 +2,55 @@
   "version": "1.0.0",
   "layout_name": "bids_index",
   "extends": "_admin_base",
-  "meta": { "title": "입찰 관리" },
-  "permissions": ["custom-maker_bids.bids.read"],
+  "meta": {
+    "title": "입찰 관리"
+  },
+  "permissions": [
+    "custom-maker_bids.bids.read"
+  ],
   "errorHandling": {
-    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
-    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
-    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
   },
   "state": {
-    "filter": { "job_id": "", "user_id": "", "status": "" },
-    "edit": { "id": "", "amount": "", "days": "", "message": "", "status": "pending" }
+    "filter": {
+      "job_id": "",
+      "user_id": "",
+      "status": ""
+    },
+    "edit": {
+      "id": "",
+      "amount": "",
+      "days": "",
+      "message": "",
+      "status": "pending"
+    }
   },
   "data_sources": [
     {
@@ -28,7 +66,9 @@
         "user_id": "{{_local.filter.user_id}}",
         "status": "{{_local.filter.status}}"
       },
-      "fallback": { "data": [] }
+      "fallback": {
+        "data": []
+      }
     }
   ],
   "slots": {
@@ -37,57 +77,123 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": { "className": "admin-page-content cmb-admin space-y-5 w-full" },
+        "props": {
+          "className": "admin-page-content cmb-admin space-y-5 w-full"
+        },
         "children": [
-          { "id": "h", "type": "basic", "name": "H1", "props": { "className": "page-title" }, "text": "입찰 관리" },
           {
-            "id": "nav",
+            "id": "h",
+            "type": "basic",
+            "name": "H1",
+            "props": {
+              "className": "page-title"
+            },
+            "text": "입찰 관리"
+          },
+          {
+            "id": "cmb_admin_nav",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-nav text-sm" },
-            "children": [
-              { "id": "n1", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids" }, "text": "의뢰 목록" },
-              { "id": "ntypes", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/types" }, "text": "유형 관리" },
-              { "id": "n2", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids" }, "text": "입찰 관리" },
-              { "id": "n3", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/companies" }, "text": "회사 목록" },
-              { "id": "n4", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/activity" }, "text": "회원 활동" },
-              { "id": "nset", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/settings" }, "text": "설정" }
-            ]
+            "props": {
+              "className": "cmb-admin-nav text-sm",
+              "data-cmb-admin-nav": "1"
+            },
+            "children": []
           },
-          { "id": "d", "type": "basic", "name": "P", "props": { "className": "cmb-admin-lead" }, "text": "의뢰 ID, 회원 ID, 상태로 필터합니다. 상세에서 금액·기간·메시지·상태를 수정합니다." },
+          {
+            "id": "d",
+            "type": "basic",
+            "name": "P",
+            "props": {
+              "className": "cmb-admin-lead"
+            },
+            "text": "의뢰 ID, 회원 ID, 상태로 필터합니다. 상세에서 금액·기간·메시지·상태를 수정합니다."
+          },
           {
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-card cmb-admin-filter w-full", "dataKey": "filter", "trackChanges": true },
+            "props": {
+              "className": "cmb-admin-card cmb-admin-filter w-full",
+              "dataKey": "filter",
+              "trackChanges": true
+            },
             "children": [
               {
                 "id": "fjob_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-id" },
+                "props": {
+                  "className": "cmb-admin-filter-field cmb-admin-filter-id"
+                },
                 "children": [
-                  { "id": "fjob_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "의뢰 ID" },
-                  { "id": "fjob", "type": "basic", "name": "Input", "props": { "name": "job_id", "placeholder": "의뢰 ID", "className": "cmb-admin-filter-control" } }
+                  {
+                    "id": "fjob_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "의뢰 ID"
+                  },
+                  {
+                    "id": "fjob",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "job_id",
+                      "placeholder": "의뢰 ID",
+                      "className": "cmb-admin-filter-control"
+                    }
+                  }
                 ]
               },
               {
                 "id": "fuser_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-id" },
+                "props": {
+                  "className": "cmb-admin-filter-field cmb-admin-filter-id"
+                },
                 "children": [
-                  { "id": "fuser_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "회원 ID" },
-                  { "id": "fuser", "type": "basic", "name": "Input", "props": { "name": "user_id", "placeholder": "회원 ID", "className": "cmb-admin-filter-control" } }
+                  {
+                    "id": "fuser_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "회원 ID"
+                  },
+                  {
+                    "id": "fuser",
+                    "type": "basic",
+                    "name": "Input",
+                    "props": {
+                      "name": "user_id",
+                      "placeholder": "회원 ID",
+                      "className": "cmb-admin-filter-control"
+                    }
+                  }
                 ]
               },
               {
                 "id": "fstatus_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host" },
+                "props": {
+                  "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host"
+                },
                 "children": [
-                  { "id": "fstatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
+                  {
+                    "id": "fstatus_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label"
+                    },
+                    "text": "상태"
+                  },
                   {
                     "id": "fstatus",
                     "type": "basic",
@@ -97,14 +203,34 @@
                       "value": "{{_local.filter.status}}",
                       "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
                       "options": [
-                        { "value": "", "label": "전체 상태" },
-                        { "value": "pending", "label": "대기" },
-                        { "value": "accepted", "label": "낙찰" },
-                        { "value": "rejected", "label": "거절" }
+                        {
+                          "value": "",
+                          "label": "전체 상태"
+                        },
+                        {
+                          "value": "pending",
+                          "label": "대기"
+                        },
+                        {
+                          "value": "accepted",
+                          "label": "낙찰"
+                        },
+                        {
+                          "value": "rejected",
+                          "label": "거절"
+                        }
                       ]
                     },
                     "actions": [
-                      { "type": "change", "event": "change", "handler": "setState", "params": { "target": "local", "filter.status": "{{$event.target.value}}" } }
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "filter.status": "{{$event.target.value}}"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -114,50 +240,105 @@
                 "type": "basic",
                 "name": "Button",
                 "text": "필터",
-                "props": { "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "cmb-admin-filter-go px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                },
                 "actions": [
-                  { "type": "click", "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
+                  {
+                    "type": "click",
+                    "handler": "refetchDataSource",
+                    "params": {
+                      "dataSourceId": "bids"
+                    }
+                  }
                 ]
               }
             ]
           },
-          { "id": "empty", "type": "basic", "name": "P", "if": "{{!(bids.data && bids.data.length)}}", "props": { "className": "cmb-admin-empty" }, "text": "입찰이 없습니다." },
+          {
+            "id": "empty",
+            "type": "basic",
+            "name": "P",
+            "if": "{{!(bids.data && bids.data.length)}}",
+            "props": {
+              "className": "cmb-admin-empty"
+            },
+            "text": "입찰이 없습니다."
+          },
           {
             "id": "blist",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-admin-list w-full" },
+            "props": {
+              "className": "cmb-admin-list w-full"
+            },
             "children": [
               {
                 "id": "brow",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between" },
-                "iteration": { "source": "{{bids.data}}", "item_var": "$item" },
+                "props": {
+                  "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
+                },
+                "iteration": {
+                  "source": "{{bids.data}}",
+                  "item_var": "$item"
+                },
                 "children": [
                   {
                     "id": "bmain",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center" },
+                    "props": {
+                      "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center"
+                    },
                     "children": [
-                      { "id": "btxt", "type": "basic", "name": "P", "props": { "className": "cmb-admin-row-title" }, "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status_label || $item.status}}" },
-                      { "id": "bmeta", "type": "basic", "name": "P", "props": { "className": "cmb-admin-muted" }, "text": "의뢰 {{$item.job_id}} {{$item.job.title ?? ''}} · 회원 {{$item.user_id}} · 업체 {{$item.company_id ?? '-'}}" }
+                      {
+                        "id": "btxt",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-row-title"
+                        },
+                        "text": "#{{$item.id}} {{$item.amount}}원 · {{$item.status_label || $item.status}}"
+                      },
+                      {
+                        "id": "bmeta",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "의뢰 {{$item.job_id}} {{$item.job.title ?? ''}} · 회원 {{$item.user_id}} · 업체 {{$item.company_id ?? '-'}}"
+                      }
                     ]
                   },
                   {
                     "id": "bacts",
                     "type": "basic",
                     "name": "Div",
-                    "props": { "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center" },
+                    "props": {
+                      "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row flex-nowrap items-center"
+                    },
                     "children": [
-                      { "id": "blink", "type": "basic", "name": "A", "props": { "href": "/admin/maker-bids/bids/{{$item.id}}", "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" }, "text": "상세/수정" },
+                      {
+                        "id": "blink",
+                        "type": "basic",
+                        "name": "A",
+                        "props": {
+                          "href": "/admin/maker-bids/bids/{{$item.id}}",
+                          "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                        },
+                        "text": "상세/수정"
+                      },
                       {
                         "id": "bload",
                         "type": "basic",
                         "name": "Button",
                         "text": "불러오기",
-                        "props": { "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600" },
+                        "props": {
+                          "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                        },
                         "actions": [
                           {
                             "type": "click",
@@ -178,21 +359,42 @@
                         "type": "basic",
                         "name": "Button",
                         "text": "삭제",
-                        "props": { "className": "px-3 py-1 text-sm rounded-lg text-red-600" },
+                        "props": {
+                          "className": "px-3 py-1 text-sm rounded-lg text-red-600"
+                        },
                         "actions": [
                           {
                             "type": "click",
                             "handler": "apiCall",
                             "auth_required": true,
                             "target": "/api/modules/custom-maker_bids/admin/bids/{{$item.id}}",
-                            "params": { "method": "DELETE" },
+                            "params": {
+                              "method": "DELETE"
+                            },
                             "confirm": "이 입찰을 삭제할까요?",
                             "onSuccess": [
-                              { "handler": "toast", "params": { "type": "success", "message": "삭제했습니다." } },
-                              { "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "success",
+                                  "message": "삭제했습니다."
+                                }
+                              },
+                              {
+                                "handler": "refetchDataSource",
+                                "params": {
+                                  "dataSourceId": "bids"
+                                }
+                              }
                             ],
                             "onError": [
-                              { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                              {
+                                "handler": "toast",
+                                "params": {
+                                  "type": "error",
+                                  "message": "{{error.message}}"
+                                }
+                              }
                             ]
                           }
                         ]
@@ -208,22 +410,55 @@
             "type": "basic",
             "name": "Div",
             "if": "{{_local.edit.id}}",
-            "props": { "className": "cmb-admin-card space-y-3", "dataKey": "edit", "trackChanges": true },
+            "props": {
+              "className": "cmb-admin-card space-y-3",
+              "dataKey": "edit",
+              "trackChanges": true
+            },
             "children": [
-              { "id": "eh", "type": "basic", "name": "P", "props": { "className": "cmb-admin-card-title" }, "text": "입찰 수정 #{{_local.edit.id}}" },
+              {
+                "id": "eh",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-card-title"
+                },
+                "text": "입찰 수정 #{{_local.edit.id}}"
+              },
               {
                 "id": "efields",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-admin-fields" },
+                "props": {
+                  "className": "cmb-admin-fields"
+                },
                 "children": [
                   {
                     "id": "eamount_wrap",
                     "type": "basic",
                     "name": "Div",
                     "children": [
-                      { "id": "eamount_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "금액" },
-                      { "id": "eamount", "type": "basic", "name": "Input", "props": { "name": "amount", "type": "number", "min": "1", "placeholder": "금액", "className": "cmb-admin-w-sm" } }
+                      {
+                        "id": "eamount_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "금액"
+                      },
+                      {
+                        "id": "eamount",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "amount",
+                          "type": "number",
+                          "min": "1",
+                          "placeholder": "금액",
+                          "className": "cmb-admin-w-sm"
+                        }
+                      }
                     ]
                   },
                   {
@@ -231,8 +466,27 @@
                     "type": "basic",
                     "name": "Div",
                     "children": [
-                      { "id": "edays_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "기간(일)" },
-                      { "id": "edays", "type": "basic", "name": "Input", "props": { "name": "days", "type": "number", "min": "1", "placeholder": "일", "className": "cmb-admin-w-xs" } }
+                      {
+                        "id": "edays_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "기간(일)"
+                      },
+                      {
+                        "id": "edays",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "days",
+                          "type": "number",
+                          "min": "1",
+                          "placeholder": "일",
+                          "className": "cmb-admin-w-xs"
+                        }
+                      }
                     ]
                   },
                   {
@@ -240,33 +494,89 @@
                     "type": "basic",
                     "name": "Div",
                     "children": [
-                      { "id": "estatus_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "상태" },
-                      { "id": "estatus", "type": "basic", "name": "Input", "props": { "name": "status", "placeholder": "pending", "className": "cmb-admin-w-sm" } }
+                      {
+                        "id": "estatus_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "상태"
+                      },
+                      {
+                        "id": "estatus",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "status",
+                          "placeholder": "pending",
+                          "className": "cmb-admin-w-sm"
+                        }
+                      }
                     ]
                   }
                 ]
               },
-              { "id": "emsg_l", "type": "basic", "name": "P", "props": { "className": "cmb-admin-label" }, "text": "메시지" },
-              { "id": "emsg", "type": "basic", "name": "Textarea", "props": { "name": "message", "placeholder": "메시지", "className": "cmb-admin-w-lg min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm" } },
+              {
+                "id": "emsg_l",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-label"
+                },
+                "text": "메시지"
+              },
+              {
+                "id": "emsg",
+                "type": "basic",
+                "name": "Textarea",
+                "props": {
+                  "name": "message",
+                  "placeholder": "메시지",
+                  "className": "cmb-admin-w-lg min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                }
+              },
               {
                 "id": "esave",
                 "type": "basic",
                 "name": "Button",
                 "text": "입찰 저장",
-                "props": { "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900" },
+                "props": {
+                  "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                },
                 "actions": [
                   {
                     "type": "click",
                     "handler": "apiCall",
                     "auth_required": true,
                     "target": "/api/modules/custom-maker_bids/admin/bids/{{_local.edit.id}}",
-                    "params": { "method": "PATCH", "body": "{{_local.edit}}" },
+                    "params": {
+                      "method": "PATCH",
+                      "body": "{{_local.edit}}"
+                    },
                     "onSuccess": [
-                      { "handler": "toast", "params": { "type": "success", "message": "입찰을 저장했습니다." } },
-                      { "handler": "refetchDataSource", "params": { "dataSourceId": "bids" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "입찰을 저장했습니다."
+                        }
+                      },
+                      {
+                        "handler": "refetchDataSource",
+                        "params": {
+                          "dataSourceId": "bids"
+                        }
+                      }
                     ],
                     "onError": [
-                      { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message}}"
+                        }
+                      }
                     ]
                   }
                 ]
@@ -278,4 +588,3 @@
     ]
   }
 }
-
