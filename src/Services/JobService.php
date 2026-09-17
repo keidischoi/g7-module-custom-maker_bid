@@ -592,7 +592,7 @@ class JobService
 
     private function awardedBidderUserId(MakerJob $job): ?int
     {
-        if ($job->status !== 'awarded') {
+        if (! in_array((string) $job->status, ['awarded', 'done'], true)) {
             return null;
         }
         if ($job->relationLoaded('awardedBid') && $job->awardedBid) {

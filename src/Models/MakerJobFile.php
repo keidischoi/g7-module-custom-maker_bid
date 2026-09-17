@@ -13,6 +13,7 @@ class MakerJobFile extends Model
     protected $fillable = [
         'job_id', 'user_id', 'upload_token', 'collection', 'disk', 'path',
         'original_filename', 'mime_type', 'size', 'hash', 'sort_order',
+        'expires_at', 'purged_at',
     ];
 
     protected $casts = [
@@ -20,6 +21,8 @@ class MakerJobFile extends Model
         'user_id' => 'integer',
         'size' => 'integer',
         'sort_order' => 'integer',
+        'expires_at' => 'datetime',
+        'purged_at' => 'datetime',
     ];
 
     public function job(): BelongsTo
@@ -33,19 +36,50 @@ class MakerJobFile extends Model
             || str_starts_with((string) $this->mime_type, 'image/');
     }
 
+    public function isExpired(): bool
+    {
+        $purged = $this->attributes['purged_at'] ?? null;
+        if ($purged) {
+            return true;
+        }
+        $expires = $this->attributes['expires_at'] ?? null;
+        if (! $expires) {
+            return false;
+        }
+        if (is_object($expires) && method_exists($expires, 'isPast')) {
+            return $expires->isPast();
+        }
+
+        return strtotime((string) $expires) < time();
+    }
+
+    public function isPurged(): bool
+    {
+        $purged = $this->attributes['purged_at'] ?? null;
+        $path = (string) ($this->attributes['path'] ?? $this->path ?? '');
+
+        return $purged !== null || $path === '';
+    }
+
     /**
      * Attachment-shaped payload for G7 FileUploader.
-     *
-     * G7 reads `response.data.data ?? response.data` after unwrapping the HTTP
-     * body, so callers should wrap this with {@see toUploaderPayload()}.
      *
      * @return array<string, mixed>
      */
     public function toAttachmentArray(): array
     {
-        $url = '/api/modules/custom-maker_bids/files/'.$this->hash;
+        $expired = $this->isExpired();
+        $url = $expired ? '' : '/api/modules/custom-maker_bids/files/'.$this->hash;
         $isImage = $this->isImage();
         $size = (int) $this->size;
+        $expiresRaw = $this->attributes['expires_at'] ?? null;
+        if (is_object($expiresRaw) && method_exists($expiresRaw, 'format')) {
+            $expiresStr = $expiresRaw->format('Y-m-d H:i:s');
+        } elseif ($expiresRaw) {
+            $expiresStr = (string) $expiresRaw;
+        } else {
+            $expiresStr = null;
+        }
 
         return [
             'id' => (int) $this->id,
@@ -58,17 +92,17 @@ class MakerJobFile extends Model
             'order' => (int) $this->sort_order,
             'download_url' => $url,
             'url' => $url,
-            'thumbnail_url' => $isImage ? $url : '',
+            'thumbnail_url' => ($isImage && ! $expired) ? $url : '',
             'is_image' => $isImage,
+            'is_expired' => $expired,
+            'is_purged' => $this->isPurged(),
+            'expires_at' => $expiresStr,
             'meta' => [],
             'job_id' => $this->job_id,
         ];
     }
 
     /**
-     * Dual-shaped body so FileUploader accepts both axios-style and
-     * already-unwrapped G7Core.api.post results.
-     *
      * @return array<string, mixed>
      */
     public function toUploaderPayload(): array

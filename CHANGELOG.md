@@ -4,6 +4,18 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.1] - 2026-09-17
+
+### Added
+- **1:1 쪽지 스레드**: 작업실 메시지 UX 강화(말풍선·역할 라벨). 외부 G7 쪽지/`g7_send_memo`/`MemoService` soft hook 유지·확장. 하드 모듈 없어도 낙찰 후 앱 내 대화 가능.
+- **인쇄/PDF 문서**: 의뢰서·견적서 HTML 양식 export (`format=html` 또는 JSON `documents[].html`). 작업실에서 열어 인쇄→PDF 저장.
+- **납품 파일 만료**: `delivery` 컬렉션 + `expires_at`(기본 30일), 만료 숨김/410, 스케줄 `purgeExpired`로 스토리지 비움(다운로드 로그 유지).
+
+### Changed
+- 낙찰자(제작자)도 낙찰/완료 후 아카이브·납품 파일 조회·업로드 가능. `done` 상태에서도 낙찰자 식별.
+- 파일 다운로드 시 `maker_file_logs` 기록.
+- 버전·캐시 버스트 **0.10.1**.
+
 ## [0.10.0] - 2026-09-17
 
 ### Added

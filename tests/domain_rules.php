@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Custom\MakerBids\Support\AwardRules;
 use Modules\Custom\MakerBids\Support\BidRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\UploadRules;
 use Modules\Custom\MakerBids\Support\JobRules;
 
 require __DIR__.'/bootstrap.php';
@@ -112,7 +113,7 @@ expectFalse('cannot reject already rejected', CompanyRules::canReject('rejected'
 expectTrue('can approve pending', CompanyRules::canApprove('pending'));
 expectFalse('cannot approve already approved', CompanyRules::canApprove('approved'));
 
-// --- 0.10.0 marketplace must-haves ---
+// --- 0.10.1 marketplace must-haves ---
 $marketSrc = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
 expectTrue('closeExpired notifies owner', str_contains($marketSrc, 'deadline_closed') && str_contains($marketSrc, 'function closeExpired'));
 expectTrue('notifyDeadlineSoon exists', str_contains($marketSrc, 'function notifyDeadlineSoon'));
@@ -149,6 +150,19 @@ expectTrue('business_no normalize helper', method_exists(CompanyRules::class, 'n
 expectTrue('business_no rejects short', CompanyRules::isValidBusinessNo('123') === false);
 expectTrue('business_no normalize strips dashes', CompanyRules::normalizeBusinessNo('123-45-67890') === '1234567890');
 expectTrue('empty business_no allowed', CompanyRules::isValidBusinessNo(null) && CompanyRules::isValidBusinessNo(''));
+
+
+// --- 0.10.1 follow-ups ---
+expectTrue('export builds html forms', str_contains($marketSrc, 'buildRequestFormHtml') && str_contains($marketSrc, 'buildQuoteFormHtml'));
+expectTrue('exportHtml helper', str_contains($marketSrc, 'function exportHtml'));
+expectTrue('messages enrich author_label', str_contains($marketSrc, 'author_label') && str_contains($marketSrc, 'is_mine'));
+expectTrue('runSchedule purges files', str_contains($marketSrc, 'files_purged') && str_contains($marketSrc, 'purgeExpired'));
+$filesSrc = (string) file_get_contents($root.'/src/Services/JobFileService.php');
+expectTrue('job files purgeExpired', str_contains($filesSrc, 'function purgeExpired'));
+expectTrue('delivery collection supported', str_contains($filesSrc, 'COLLECTION_DELIVERY') || str_contains((string) file_get_contents($root.'/src/Support/UploadRules.php'), "COLLECTION_DELIVERY"));
+expectTrue('delivery ttl constant', UploadRules::DELIVERY_TTL_DAYS >= 1);
+$privacy = (string) file_get_contents($root.'/src/Support/PrivacyRules.php');
+expectTrue('archives allow awarded maker', str_contains($privacy, "'awarded', 'done'"));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

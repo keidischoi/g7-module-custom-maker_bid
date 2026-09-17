@@ -185,12 +185,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.10.0', str_contains($nav, 'nav.js?v=0.10.0'));
-expectTrue('form.js cache bust 0.10.0', str_contains($nav, 'form.js?v=0.10.0'));
-expectTrue('form.css cache bust 0.10.0', str_contains($nav, 'form.css?v=0.10.0'));
-expectTrue('admin.css cache bust 0.10.0', str_contains($nav, 'admin.css?v=0.10.0'));
-expectTrue('admin.js cache bust 0.10.0', str_contains($nav, 'admin.js?v=0.10.0'));
-expectTrue('cmb_maker_nav cache bust 0.10.0', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.0'));
+expectTrue('nav cache bust 0.10.1', str_contains($nav, 'nav.js?v=0.10.1'));
+expectTrue('form.js cache bust 0.10.1', str_contains($nav, 'form.js?v=0.10.1'));
+expectTrue('form.css cache bust 0.10.1', str_contains($nav, 'form.css?v=0.10.1'));
+expectTrue('admin.css cache bust 0.10.1', str_contains($nav, 'admin.css?v=0.10.1'));
+expectTrue('admin.js cache bust 0.10.1', str_contains($nav, 'admin.js?v=0.10.1'));
+expectTrue('cmb_maker_nav cache bust 0.10.1', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.1'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -240,7 +240,7 @@ expectTrue('form.css styles company submit on sub-nav', str_contains($css, '.cmb
 expectTrue('form.css can collapse company form until 등록', str_contains($css, '.cmb-company-form.is-collapsed'));
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.0'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.1'));
 
 $history = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
 expectTrue('jobs_history notices section card', str_contains($history, 'notices_card') && str_contains($history, 'cmb-section-card'));
@@ -273,7 +273,7 @@ expectTrue('form.css pager styles', str_contains($formCss, '.cmb-pager') && str_
 expectTrue('subnav right aligned in css', str_contains($formCss, '.cmb-maker-subnav') && str_contains($formCss, 'justify-content: flex-end !important'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
-expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.0'));
+expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.1'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
 expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
@@ -380,8 +380,8 @@ expectTrue('admin settings Selects sit in host wrappers', str_contains($adminSet
 expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($adminJobs, 'cmb-admin-select-host') && str_contains($adminJobsShow, 'cmb-admin-select-host cmb-admin-select-host-md') && str_contains($adminCos, 'cmb-admin-select-host cmb-admin-select-host-sm'));
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, '--cmb-admin-row-border: rgb(156 163 175)') && str_contains($adminCss, 'border-color: rgb(156 163 175)'));
 expectTrue('admin.css dark chrome border is gray-500', str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.0'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.0'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.1'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.1'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js does not use body:has', ! str_contains($adminJs, 'body:has'));
@@ -468,6 +468,16 @@ expectTrue('list search q param', str_contains($list, 'q='));
 $ops = (string) file_get_contents($root.'/resources/layouts/admin/ops_index.json');
 expectTrue('ops report resolve UI', str_contains($ops, 'reports_resolve_help') && str_contains($ops, 'admin/reports/'));
 expectTrue('module schedules in module.php', str_contains((string) file_get_contents($root.'/module.php'), 'maker-bids:run-schedule'));
+
+
+$workspace = (string) file_get_contents($root.'/resources/layouts/user/jobs_workspace.json');
+expectTrue('workspace 1:1 thread classes', str_contains($workspace, 'cmb-msg-thread') && str_contains($workspace, 'cmb-msg-bubble'));
+expectTrue('workspace docs export buttons', str_contains($workspace, 'data-cmb-export') && str_contains($workspace, 'docs_card'));
+expectTrue('workspace delivery collection', str_contains($workspace, '"collection": "delivery"'));
+$pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
+expectTrue('page.js export binder', str_contains($pageJs, 'data-cmb-export') && str_contains($pageJs, 'cmb-export'));
+$mig = (string) file_get_contents($root.'/database/migrations/2026_09_16_000016_delivery_file_expiry.php');
+expectTrue('expiry migration expires_at', str_contains($mig, 'expires_at') && str_contains($mig, 'purged_at'));
 
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

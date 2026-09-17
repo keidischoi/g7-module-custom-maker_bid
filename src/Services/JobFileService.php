@@ -3,7 +3,9 @@
 namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Models\MakerJobFile;
 use Modules\Custom\MakerBids\Support\DomainException;
@@ -23,18 +25,12 @@ class JobFileService
         ?string $token = null,
         ?int $jobId = null,
     ): MakerJobFile {
-        if ($collection === UploadRules::COLLECTION_ARCHIVES) {
-            $collection = UploadRules::COLLECTION_ARCHIVES;
-        } elseif ($collection === UploadRules::COLLECTION_LOGOS) {
-            $collection = UploadRules::COLLECTION_LOGOS;
-        } else {
-            $collection = UploadRules::COLLECTION_IMAGES;
-        }
+        $collection = $this->normalizeCollection($collection);
 
         $name = (string) $file->getClientOriginalName();
         if (! UploadRules::isAllowedExtension($collection, $name)) {
-            $hint = $collection === UploadRules::COLLECTION_ARCHIVES
-                ? '압축 파일만 올릴 수 있습니다. (zip/tar/gz 등)'
+            $hint = UploadRules::isProtectedCollection($collection)
+                ? '허용되지 않는 납품/첨부 확장자입니다.'
                 : '이미지 파일만 올릴 수 있습니다.';
             throw new DomainException($hint, 422);
         }
@@ -42,7 +38,7 @@ class JobFileService
             $this->assertLogoDimensions($file);
         }
 
-        $job = $this->resolveJob($userId, $token, $jobId);
+        $job = $this->resolveJob($userId, $token, $jobId, $collection);
         if ($collection === UploadRules::COLLECTION_LOGOS) {
             $this->replaceExistingLogos($userId, $token, $job?->id);
         }
@@ -61,7 +57,7 @@ class JobFileService
             ->where('collection', $collection)
             ->max('sort_order');
 
-        return MakerJobFile::query()->create([
+        $attrs = [
             'job_id' => $job?->id,
             'user_id' => $userId,
             'upload_token' => $token,
@@ -73,7 +69,13 @@ class JobFileService
             'size' => (int) $file->getSize(),
             'hash' => $this->uniqueHash(),
             'sort_order' => $sort + 1,
-        ]);
+        ];
+
+        if ($this->shouldExpire($collection, $job) && Schema::hasColumn('maker_job_files', 'expires_at')) {
+            $attrs['expires_at'] = UploadRules::deliveryExpiresAt();
+        }
+
+        return MakerJobFile::query()->create($attrs);
     }
 
     public function claimToken(int $userId, string $token, int $jobId): void
@@ -108,11 +110,16 @@ class JobFileService
     /**
      * @return \Illuminate\Support\Collection<int, MakerJobFile>
      */
-    public function forJob(int $jobId, ?string $collection = null)
+    public function forJob(int $jobId, ?string $collection = null, bool $includeExpired = false)
     {
         $q = MakerJobFile::query()->where('job_id', $jobId)->orderBy('sort_order')->orderBy('id');
         if ($collection) {
             $q->where('collection', $collection);
+        }
+        if (! $includeExpired && Schema::hasColumn('maker_job_files', 'expires_at')) {
+            $q->where(function ($qq) {
+                $qq->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })->whereNull('purged_at');
         }
 
         return $q->get();
@@ -120,6 +127,9 @@ class JobFileService
 
     public function absolutePath(MakerJobFile $file): ?string
     {
+        if ($file->isPurged() || (string) $file->path === '') {
+            return null;
+        }
         try {
             $path = Storage::disk($file->disk ?: 'public')->path($file->path);
         } catch (\Throwable) {
@@ -129,13 +139,79 @@ class JobFileService
         return is_string($path) && is_file($path) ? $path : null;
     }
 
-    private function resolveJob(int $userId, ?string $token, ?int $jobId): ?MakerJob
+    /** Delete storage for expired delivery files; keep DB rows + download logs. */
+    public function purgeExpired(): int
+    {
+        if (! Schema::hasTable('maker_job_files') || ! Schema::hasColumn('maker_job_files', 'expires_at')) {
+            return 0;
+        }
+        $rows = MakerJobFile::query()
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->whereNull('purged_at')
+            ->where('path', '!=', '')
+            ->limit(200)
+            ->get();
+        $count = 0;
+        foreach ($rows as $row) {
+            try {
+                Storage::disk($row->disk ?: 'public')->delete($row->path);
+            } catch (\Throwable) {
+            }
+            $row->path = '';
+            if (Schema::hasColumn('maker_job_files', 'purged_at')) {
+                $row->purged_at = now();
+            }
+            $row->save();
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function normalizeCollection(string $collection): string
+    {
+        if ($collection === UploadRules::COLLECTION_ARCHIVES) {
+            return UploadRules::COLLECTION_ARCHIVES;
+        }
+        if ($collection === UploadRules::COLLECTION_DELIVERY || $collection === 'deliveries') {
+            return UploadRules::COLLECTION_DELIVERY;
+        }
+        if ($collection === UploadRules::COLLECTION_LOGOS) {
+            return UploadRules::COLLECTION_LOGOS;
+        }
+
+        return UploadRules::COLLECTION_IMAGES;
+    }
+
+    private function shouldExpire(string $collection, ?MakerJob $job): bool
+    {
+        if ($collection === UploadRules::COLLECTION_DELIVERY) {
+            return true;
+        }
+        // Archives uploaded after award (workspace delivery via archives) also expire.
+        return $collection === UploadRules::COLLECTION_ARCHIVES
+            && $job
+            && in_array((string) $job->status, ['awarded', 'done'], true);
+    }
+
+    private function resolveJob(int $userId, ?string $token, ?int $jobId, string $collection = ''): ?MakerJob
     {
         if ($jobId) {
             $job = MakerJob::query()->find($jobId);
-            if ($job && (int) $job->user_id === $userId) {
+            if (! $job) {
+                return null;
+            }
+            if ((int) $job->user_id === $userId) {
                 return $job;
             }
+            if (UploadRules::isProtectedCollection($collection)
+                && in_array((string) $job->status, ['awarded', 'done'], true)
+                && $this->isAwardedUser($job, $userId)) {
+                return $job;
+            }
+
+            return null;
         }
         if ($token) {
             return MakerJob::query()
@@ -145,6 +221,18 @@ class JobFileService
         }
 
         return null;
+    }
+
+    private function isAwardedUser(MakerJob $job, int $userId): bool
+    {
+        if (! $job->awarded_bid_id) {
+            return false;
+        }
+        $bid = $job->relationLoaded('awardedBid') && $job->awardedBid
+            ? $job->awardedBid
+            : MakerBid::query()->find($job->awarded_bid_id);
+
+        return $bid && (int) $bid->user_id === $userId;
     }
 
     private function uniqueHash(): string
@@ -190,7 +278,9 @@ class JobFileService
     private function deleteRow(MakerJobFile $row): void
     {
         try {
-            Storage::disk($row->disk ?: 'public')->delete($row->path);
+            if ((string) $row->path !== '') {
+                Storage::disk($row->disk ?: 'public')->delete($row->path);
+            }
         } catch (\Throwable) {
         }
         $row->delete();
