@@ -236,107 +236,136 @@
             ]
           },
           {
-            "id": "empty",
-            "type": "basic",
-            "name": "P",
-            "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
-            "props": {
-              "className": "cmb-empty"
-            },
-            "text": "등록된 의뢰가 없습니다."
-          },
-          {
-            "id": "list",
+            "id": "list_card",
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-card-list"
+              "className": "cmb-section-card"
             },
             "children": [
               {
-                "id": "item",
+                "id": "lh_row",
                 "type": "basic",
-                "name": "A",
+                "name": "Div",
                 "props": {
-                  "href": "/maker-bids/{{$item.id}}",
-                  "className": "cmb-job-card"
-                },
-                "iteration": {
-                  "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
-                  "item_var": "$item"
+                  "className": "cmb-section-head"
                 },
                 "children": [
                   {
-                    "id": "top",
+                    "id": "lh",
                     "type": "basic",
-                    "name": "Div",
+                    "name": "H2",
                     "props": {
-                      "className": "cmb-job-card-top"
+                      "className": "cmb-section-title"
+                    },
+                    "text": "등록된 의뢰"
+                  }
+                ]
+              },
+              {
+                "id": "empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-empty"
+                },
+                "text": "등록된 의뢰가 없습니다."
+              },
+              {
+                "id": "list",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list"
+                },
+                "children": [
+                  {
+                    "id": "item",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/{{$item.id}}",
+                      "className": "cmb-job-card"
+                    },
+                    "iteration": {
+                      "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
+                      "item_var": "$item"
                     },
                     "children": [
                       {
-                        "id": "title",
+                        "id": "top",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-top"
+                        },
+                        "children": [
+                          {
+                            "id": "title",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-job-card-title"
+                            },
+                            "text": "{{$item.title}}"
+                          },
+                          {
+                            "id": "badge",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-badge cmb-badge-{{$item.status}}"
+                            },
+                            "text": "{{$item.status_label || $item.status}}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "meta",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-meta"
+                        },
+                        "children": [
+                          {
+                            "id": "m1",
+                            "type": "basic",
+                            "name": "Span",
+                            "text": "{{$item.type_name || $item.type}}"
+                          },
+                          {
+                            "id": "m2",
+                            "type": "basic",
+                            "name": "Span",
+                            "text": "견적 {{$item.bids_count ?? 0}}건"
+                          },
+                          {
+                            "id": "m3",
+                            "type": "basic",
+                            "name": "Span",
+                            "if": "{{$item.closes_at}}",
+                            "text": "마감 {{$item.closes_at}}"
+                          },
+                          {
+                            "id": "m_aud",
+                            "type": "basic",
+                            "name": "Span",
+                            "text": "{{$item.audience_label || ''}}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "budget",
                         "type": "basic",
                         "name": "P",
                         "props": {
-                          "className": "cmb-job-card-title"
+                          "className": "cmb-job-card-budget"
                         },
-                        "text": "{{$item.title}}"
-                      },
-                      {
-                        "id": "badge",
-                        "type": "basic",
-                        "name": "Span",
-                        "props": {
-                          "className": "cmb-badge cmb-badge-{{$item.status}}"
-                        },
-                        "text": "{{$item.status_label || $item.status}}"
+                        "text": "예산 {{$item.budget_label || '미정'}}"
                       }
                     ]
-                  },
-                  {
-                    "id": "meta",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-job-card-meta"
-                    },
-                    "children": [
-                      {
-                        "id": "m1",
-                        "type": "basic",
-                        "name": "Span",
-                        "text": "{{$item.type_name || $item.type}}"
-                      },
-                      {
-                        "id": "m2",
-                        "type": "basic",
-                        "name": "Span",
-                        "text": "견적 {{$item.bids_count ?? 0}}건"
-                      },
-                      {
-                        "id": "m3",
-                        "type": "basic",
-                        "name": "Span",
-                        "if": "{{$item.closes_at}}",
-                        "text": "마감 {{$item.closes_at}}"
-                      },
-                      {
-                        "id": "m_aud",
-                        "type": "basic",
-                        "name": "Span",
-                        "text": "{{$item.audience_label || ''}}"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "budget",
-                    "type": "basic",
-                    "name": "P",
-                    "props": {
-                      "className": "cmb-job-card-budget"
-                    },
-                    "text": "예산 {{$item.budget_label || '미정'}}"
                   }
                 ]
               }

@@ -176,13 +176,23 @@
             },
             "children": [
               {
-                "id": "nh",
+                "id": "nh_row",
                 "type": "basic",
-                "name": "H2",
+                "name": "Div",
                 "props": {
-                  "className": "cmb-section-title"
+                  "className": "cmb-section-head"
                 },
-                "text": "알림"
+                "children": [
+                  {
+                    "id": "nh",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-section-title"
+                    },
+                    "text": "알림"
+                  }
+                ]
               },
               {
                 "id": "nempty",

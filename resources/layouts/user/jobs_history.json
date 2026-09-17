@@ -182,13 +182,33 @@
             },
             "children": [
               {
-                "id": "nh",
+                "id": "nh_row",
                 "type": "basic",
-                "name": "H2",
+                "name": "Div",
                 "props": {
-                  "className": "cmb-section-title"
+                  "className": "cmb-section-head"
                 },
-                "text": "알림"
+                "children": [
+                  {
+                    "id": "nh",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-section-title"
+                    },
+                    "text": "알림"
+                  },
+                  {
+                    "id": "nh_more",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/notices",
+                      "className": "cmb-section-link"
+                    },
+                    "text": "전체 보기"
+                  }
+                ]
               },
               {
                 "id": "nempty",
@@ -320,130 +340,159 @@
             }
           },
           {
-            "id": "guide",
-            "type": "basic",
-            "name": "P",
-            "props": {
-              "className": "cmb-page-guide"
-            },
-            "text": "내가 등록한 의뢰의 진행·내정·완료·보류·취소 이력입니다."
-          },
-          {
-            "id": "empty",
-            "type": "basic",
-            "name": "P",
-            "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
-            "props": {
-              "className": "cmb-empty"
-            },
-            "text": "내 의뢰 이력이 없습니다. 로그인 후 의뢰서를 등록하면 여기에 표시됩니다."
-          },
-          {
-            "id": "list",
+            "id": "jobs_card",
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-card-list"
+              "className": "cmb-section-card"
             },
             "children": [
               {
-                "id": "item_wrap",
+                "id": "jh_row",
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-job-card"
-                },
-                "iteration": {
-                  "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
-                  "item_var": "$item"
+                  "className": "cmb-section-head"
                 },
                 "children": [
                   {
-                    "id": "top",
+                    "id": "jh",
                     "type": "basic",
-                    "name": "Div",
+                    "name": "H2",
                     "props": {
-                      "className": "cmb-job-card-top"
+                      "className": "cmb-section-title"
                     },
-                    "children": [
-                      {
-                        "id": "title",
-                        "type": "basic",
-                        "name": "A",
-                        "props": {
-                          "href": "/maker-bids/{{$item.id}}",
-                          "className": "cmb-job-card-title"
-                        },
-                        "text": "{{$item.title}}"
-                      },
-                      {
-                        "id": "badge",
-                        "type": "basic",
-                        "name": "Span",
-                        "props": {
-                          "className": "cmb-badge cmb-badge-{{$item.status}}"
-                        },
-                        "text": "{{$item.status_label || $item.status}}"
-                      }
-                    ]
-                  },
+                    "text": "내 의뢰"
+                  }
+                ]
+              },
+              {
+                "id": "guide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "내가 등록한 의뢰의 진행·내정·완료·보류·취소 이력입니다."
+              },
+              {
+                "id": "empty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-empty"
+                },
+                "text": "내 의뢰 이력이 없습니다. 로그인 후 의뢰서를 등록하면 여기에 표시됩니다."
+              },
+              {
+                "id": "list",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list"
+                },
+                "children": [
                   {
-                    "id": "meta",
+                    "id": "item_wrap",
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-job-card-meta"
+                      "className": "cmb-job-card"
+                    },
+                    "iteration": {
+                      "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
+                      "item_var": "$item"
                     },
                     "children": [
                       {
-                        "id": "m1",
+                        "id": "top",
                         "type": "basic",
-                        "name": "Span",
-                        "text": "{{$item.budget_label || '예산 미정'}}"
-                      },
-                      {
-                        "id": "m2",
-                        "type": "basic",
-                        "name": "Span",
-                        "text": "{{$item.updated_at}}"
-                      },
-                      {
-                        "id": "m3",
-                        "type": "basic",
-                        "name": "Span",
-                        "if": "{{$item.work_status}}",
-                        "text": "작업 {{$item.work_status}}"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "actions",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-job-card-actions"
-                    },
-                    "children": [
-                      {
-                        "id": "a1",
-                        "type": "basic",
-                        "name": "A",
+                        "name": "Div",
                         "props": {
-                          "href": "/maker-bids/{{$item.id}}",
-                          "className": "cmb-btn cmb-btn-secondary"
+                          "className": "cmb-job-card-top"
                         },
-                        "text": "상세"
+                        "children": [
+                          {
+                            "id": "title",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "/maker-bids/{{$item.id}}",
+                              "className": "cmb-job-card-title"
+                            },
+                            "text": "{{$item.title}}"
+                          },
+                          {
+                            "id": "badge",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-badge cmb-badge-{{$item.status}}"
+                            },
+                            "text": "{{$item.status_label || $item.status}}"
+                          }
+                        ]
                       },
                       {
-                        "id": "a2",
+                        "id": "meta",
                         "type": "basic",
-                        "name": "A",
-                        "if": "{{$item.status === 'awarded' || $item.status === 'done'}}",
+                        "name": "Div",
                         "props": {
-                          "href": "/maker-bids/{{$item.id}}/work",
-                          "className": "cmb-btn cmb-btn-primary"
+                          "className": "cmb-job-card-meta"
                         },
-                        "text": "작업실"
+                        "children": [
+                          {
+                            "id": "m1",
+                            "type": "basic",
+                            "name": "Span",
+                            "text": "{{$item.budget_label || '예산 미정'}}"
+                          },
+                          {
+                            "id": "m2",
+                            "type": "basic",
+                            "name": "Span",
+                            "text": "{{$item.updated_at}}"
+                          },
+                          {
+                            "id": "m3",
+                            "type": "basic",
+                            "name": "Span",
+                            "if": "{{$item.work_status}}",
+                            "text": "작업 {{$item.work_status}}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "actions",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-actions"
+                        },
+                        "children": [
+                          {
+                            "id": "a1",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "/maker-bids/{{$item.id}}",
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "text": "상세"
+                          },
+                          {
+                            "id": "a2",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$item.status === 'awarded' || $item.status === 'done'}}",
+                            "props": {
+                              "href": "/maker-bids/{{$item.id}}/work",
+                              "className": "cmb-btn cmb-btn-primary"
+                            },
+                            "text": "작업실"
+                          }
+                        ]
                       }
                     ]
                   }
