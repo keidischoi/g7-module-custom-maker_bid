@@ -98,7 +98,9 @@ $data = $this->jobs->listPublic($request);
             $this->jobs->findPublic($id, $request);
             $job = $this->jobs->rawFind($id);
             $ctx = $this->jobs->viewerFromRequest($request);
-            return response()->json(['data' => $this->jobs->viewerContext((int) $request->user()->id, $job, $ctx['isAdmin'], $ctx)]);
+            $userId = (int) ($ctx['userId'] ?? 0);
+
+            return response()->json(['data' => $this->jobs->viewerContext($userId, $job, (bool) ($ctx['isAdmin'] ?? false), $ctx)]);
         } catch (DomainException $e) {
             return $this->domainError($e);
         }

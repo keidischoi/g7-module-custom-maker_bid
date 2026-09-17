@@ -18,7 +18,7 @@ expectTrue('default provided extensions csv', is_string($defaults['general']['pr
 expectTrue('list notice off by default', $defaults['notices']['list_enabled'] === false);
 
 $pages = SettingsRules::pages();
-expectTrue('notice pages include list and show', isset($pages['list'], $pages['create'], $pages['bids'], $pages['history'], $pages['company'], $pages['show'], $pages['edit']));
+expectTrue('notice pages include list and show', isset($pages['list'], $pages['create'], $pages['bids'], $pages['history'], $pages['company'], $pages['companies'], $pages['show'], $pages['edit']));
 
 $saved = SettingsRules::fromInput([
     'nav_js_enabled' => '0',

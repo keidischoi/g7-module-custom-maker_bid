@@ -326,6 +326,8 @@
     }
   }
 
+  var cachedNotices = {};
+
   function noticePage() {
     var p = location.pathname || '';
     if (/\/maker-bids\/new\/?$/.test(p)) return 'create';
@@ -350,6 +352,11 @@
   }
 
   function applyNotice(notices) {
+    if (notices && typeof notices === 'object') {
+      cachedNotices = notices;
+    } else {
+      notices = cachedNotices;
+    }
     var page = noticePage();
     var nodes = document.querySelectorAll('[data-cmb-notice]');
     if (!nodes.length) return;
@@ -377,6 +384,13 @@
     syncActive();
   }
 
+  function reapplyNotice() {
+    applyNotice(cachedNotices);
+    setTimeout(function () { applyNotice(cachedNotices); }, 0);
+    setTimeout(function () { applyNotice(cachedNotices); }, 80);
+    setTimeout(function () { applyNotice(cachedNotices); }, 300);
+  }
+
   function patchHistory() {
     if (history.pushState && !history.pushState._cmbNav) {
       var push = history.pushState;
@@ -385,6 +399,7 @@
         setTimeout(syncActive, 0);
         setTimeout(syncActive, 80);
         setTimeout(syncActive, 300);
+        reapplyNotice();
         return ret;
       };
       history.pushState._cmbNav = true;
@@ -395,6 +410,7 @@
         var ret = replace.apply(this, arguments);
         setTimeout(syncActive, 0);
         setTimeout(syncActive, 80);
+        reapplyNotice();
         return ret;
       };
       history.replaceState._cmbNav = true;
@@ -408,11 +424,13 @@
     window.addEventListener('popstate', function () {
       setTimeout(syncActive, 0);
       setTimeout(syncActive, 80);
+      reapplyNotice();
     });
     document.addEventListener('click', function () {
       setTimeout(syncActive, 0);
       setTimeout(syncActive, 200);
       setTimeout(syncActive, 600);
+      reapplyNotice();
     }, true);
   }
 

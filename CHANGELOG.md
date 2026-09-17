@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.17] - 2026-09-18
+
+### Fixed
+- **페이지 안내문**: `company_apply` / `company_list`에 `data-cmb-notice` 슬롯 추가. `SettingsRules::pages()`에 `companies`(입찰자 목록) 추가, 관리자 설정에 안내문 토글 복제. `nav.js`가 안내문을 캐시하고 SPA 이동(pushState/popstate/click) 시 0/80/300ms로 재적용.
+- **견적 넣기 로그인 토스트**: `GET jobs/{id}/viewer`를 `optional.sanctum`으로 이동. 비로그인 시 `authenticated: false` / `can_bid: false` 반환(401 없음). 상세 로그인 안내에 `/login` 링크 추가. 입찰 POST는 `auth:sanctum` 유지.
+- **수정 화면 업로더 기존 파일**: 회원 `company_apply`는 `me` 응답의 `logo_files`를 `_local.company.logo_files`에 넣고 `initialFiles`에 바인딩. 회원 `jobs_form`·관리자 `jobs_show`는 onSuccess에서 `image_files`/`archive_files`(+`upload_token`)를 로컬에 복사해 FileUploader `initialFiles`에 연결. 관리자 의뢰에 첨부(archives) 업로더 추가. `findForEdit`/`findAdmin`이 `upload_token`을 발급.
+
+### Changed
+- 버전·캐시 버스트 **0.10.17**.
+
 ## [0.10.16] - 2026-09-18
 
 ### Fixed

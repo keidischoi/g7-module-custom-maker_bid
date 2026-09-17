@@ -62,7 +62,9 @@
       "default_job_status": "quote_request",
       "guests_see_list": true,
       "bid_allow": "all",
-      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG"
+      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+      "companies_enabled": false,
+      "companies_body": ""
     }
   },
   "data_sources": [
@@ -99,7 +101,9 @@
           "default_job_status": "quote_request",
           "guests_see_list": true,
           "bid_allow": "all",
-          "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG"
+          "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+          "companies_enabled": false,
+          "companies_body": ""
         }
       },
       "onSuccess": [
@@ -129,7 +133,9 @@
             "form.default_job_status": "{{response.data.default_job_status || settings.data.default_job_status || 'quote_request'}}",
             "form.guests_see_list": "{{response.data.guests_see_list ?? settings.data.guests_see_list}}",
             "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}",
-            "form.provided_extensions": "{{response.data.provided_extensions || settings.data.provided_extensions || 'STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG'}}"
+            "form.provided_extensions": "{{response.data.provided_extensions || settings.data.provided_extensions || 'STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG'}}",
+            "form.companies_enabled": "{{response.data.companies_enabled ?? settings.data.companies_enabled}}",
+            "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}"
           }
         }
       ]
@@ -1054,6 +1060,77 @@
                               "placeholder": "입찰자 등록 안내문",
                               "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
                               "value": "{{_local.form.company_body}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.company_body": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "n_cos",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-notice-item"
+                        },
+                        "children": [
+                          {
+                            "id": "n_cos_en_wrap",
+                            "type": "basic",
+                            "name": "Label",
+                            "props": {
+                              "className": "cmb-admin-check-label"
+                            },
+                            "children": [
+                              {
+                                "id": "companies_enabled",
+                                "type": "basic",
+                                "name": "Checkbox",
+                                "props": {
+                                  "name": "companies_enabled",
+                                  "checked": "{{_local.form.companies_enabled}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "form.company_enabled": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "n_cos_en_txt",
+                                "type": "basic",
+                                "name": "Span",
+                                "props": {
+                                  "className": "cmb-admin-check-text"
+                                },
+                                "text": "입찰자 목록 안내문 표시"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "companies_body",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "companies_body",
+                              "placeholder": "입찰자 목록 안내문",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "value": "{{_local.form.companies_body}}"
                             },
                             "actions": [
                               {

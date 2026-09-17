@@ -171,6 +171,15 @@
             ]
           },
           {
+            "id": "cmb_notice",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-notice hidden",
+              "data-cmb-notice": "companies"
+            }
+          },
+          {
             "id": "guide",
             "type": "basic",
             "name": "P",

@@ -205,7 +205,7 @@ class JobService
         $ctx = $this->ownerContext($userId);
         $ctx['isAdmin'] = true; // present() treats admin as privacy-visible
 
-        return $this->present($job, $ctx, true, true);
+        return $this->withUploadToken($this->present($job, $ctx, true, true));
     }
 
     /**
@@ -294,7 +294,7 @@ class JobService
     {
         $job = MakerJob::query()->with(['bids.company', 'jobType', 'files'])->withCount('bids')->findOrFail($id);
 
-        return $this->present($job, ['userId' => 0, 'isAdmin' => true], true, true);
+        return $this->withUploadToken($this->present($job, ['userId' => 0, 'isAdmin' => true], true, true));
     }
 
     /**
@@ -793,6 +793,18 @@ class JobService
      * @param  array{userId:int,isAdmin:bool}  $ctx
      * @return array<string, mixed>
      */
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function withUploadToken(array $payload): array
+    {
+        $payload['upload_token'] = $this->files->newUploadToken();
+
+        return $payload;
+    }
+
     private function present(MakerJob $job, array $ctx, bool $includeBids, bool $includeFiles): array
     {
         $awardedUserId = $this->awardedBidderUserId($job);
