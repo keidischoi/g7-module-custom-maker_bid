@@ -101,8 +101,16 @@ class JobController extends Controller
             $job = $this->jobs->rawFind($id);
             $ctx = $this->jobs->viewerFromRequest($request);
             $userId = (int) ($ctx['userId'] ?? 0);
+            $data = $this->jobs->viewerContext($userId, $job, (bool) ($ctx['isAdmin'] ?? false), $ctx);
+            if ($userId > 0) {
+                $data['bid_token'] = encrypt(json_encode([
+                    'uid' => $userId,
+                    'jid' => $id,
+                    'exp' => time() + 3600,
+                ]));
+            }
 
-            return response()->json(['data' => $this->jobs->viewerContext($userId, $job, (bool) ($ctx['isAdmin'] ?? false), $ctx)]);
+            return response()->json(['data' => $data]);
         } catch (DomainException $e) {
             return $this->domainError($e);
         }
