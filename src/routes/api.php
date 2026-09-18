@@ -28,9 +28,7 @@ Route::get('job-types', [JobTypeController::class, 'index'])->middleware(['throt
 Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware(['throttle:600,1'])->name('files.download');
 Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
-Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['web', 'optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
-Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.store');
-Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.update');
+Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
@@ -46,6 +44,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('jobs/{id}/files', [JobFileController::class, 'store'])->whereNumber('id')->name('jobs.files.store');
     Route::delete('uploads/{hash}', [JobFileController::class, 'destroy'])->name('uploads.destroy');
     Route::get('bids/mine', [BidController::class, 'mine'])->name('bids.mine');
+    Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->name('jobs.bids.store');
+    Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->name('jobs.bids.update');
     Route::post('jobs/{id}/award', [JobController::class, 'award'])->whereNumber('id')->name('jobs.award');
     Route::get('companies/form-defaults', [CompanyController::class, 'formDefaults'])->name('companies.form-defaults');
     Route::post('companies', [CompanyController::class, 'store'])->name('companies.apply');
