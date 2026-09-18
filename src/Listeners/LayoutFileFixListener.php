@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21h';
+    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21i';
 
     public static function getSubscribedHooks(): array
     {
@@ -89,6 +89,30 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($props['key']);
         }
 
+        if (str_contains($cls, 'cmb-bid-form')) {
+            $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
+            $has = false;
+            foreach ($kids as $child) {
+                if (is_array($child) && ($child['id'] ?? '') === 'cmb_bid_token') {
+                    $has = true;
+                    break;
+                }
+            }
+            if (! $has) {
+                array_unshift($kids, [
+                    'id' => 'cmb_bid_token',
+                    'type' => 'basic',
+                    'name' => 'Input',
+                    'props' => [
+                        'type' => 'hidden',
+                        'name' => 'bid_token',
+                        'value' => '{{viewer.data.bid_token}}',
+                    ],
+                ]);
+                $node['children'] = $kids;
+            }
+        }
+
         $isSubmit = $name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send') || str_contains($cls, 'cmb-bid-g7'));
         $isUpdate = $name === 'Button' && (str_contains($cls, 'cmb-bid-update') || str_contains($cls, 'cmb-bid-send-update'));
         if ($isSubmit || $isUpdate) {
@@ -108,7 +132,7 @@ class LayoutFileFixListener implements HookListenerInterface
                         'amount' => '{{_local.bid.amount}}',
                         'days' => '{{_local.bid.days}}',
                         'message' => '{{_local.bid.message}}',
-                        'bid_token' => '{{viewer.data.bid_token}}',
+                        'bid_token' => '{{_local.bid.bid_token || viewer.data.bid_token}}',
                     ],
                 ],
                 'onSuccess' => [
