@@ -30,12 +30,12 @@ class AssetController extends Controller
     public function page(): Response
     {
         return $this->asset('page.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
-            $body = str_replace('.cmb-bid-submit, [data-cmb-bid-submit]', '.cmb-bid-submit-off, [data-cmb-bid-submit-off]', $body);
-            $body = str_replace('.cmb-bid-update, [data-cmb-bid-update]', '.cmb-bid-update-off, [data-cmb-bid-update-off]', $body);
-            $body = str_replace('.cmb-open-bid-toggle', '.cmb-open-bid-toggle-off', $body);
-            $body = str_replace('cmb-open-bid-form', 'cmb-open-bid-form-off', $body);
-            $body = str_replace("if (r.status === 401) msg = '로그인이 필요합니다.", "if (false) msg = '로그인이 필요합니다.", $body);
-            return $body;
+            $extra = '';
+            $path = dirname(__DIR__, 3).'/resources/assets/list-fix.js';
+            if (is_file($path)) {
+                $extra = "\n".(string) file_get_contents($path);
+            }
+            return $body.$extra;
         });
     }
 
