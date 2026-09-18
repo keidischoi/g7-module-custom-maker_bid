@@ -11,6 +11,7 @@ class CompanyThumbListener implements HookListenerInterface
         return [
             'core.layout.filter_child_data' => ['method' => 'patch', 'priority' => 90, 'type' => 'filter', 'sync' => true],
             'core.layout.filter_merged' => ['method' => 'patch', 'priority' => 90, 'type' => 'filter', 'sync' => true],
+            'core.layout_extension.after_apply' => ['method' => 'patch', 'priority' => 90, 'type' => 'filter', 'sync' => true],
         ];
     }
 
@@ -18,26 +19,21 @@ class CompanyThumbListener implements HookListenerInterface
 
     public function patch(mixed $layout = null): mixed
     {
-        if (! is_array($layout)) {
-            return $layout;
-        }
-        $name = (string) ($layout['layout_name'] ?? '');
-
-        return $this->walk($layout, $name);
+        return is_array($layout) ? $this->walk($layout) : $layout;
     }
 
-    private function walk(mixed $node, string $layoutName): mixed
+    private function walk(mixed $node): mixed
     {
         if (! is_array($node)) {
             return $node;
         }
-        $node = $this->touch($node, $layoutName);
+        $node = $this->touch($node);
         foreach (['children', 'injections', 'components'] as $key) {
             if (! isset($node[$key]) || ! is_array($node[$key])) {
                 continue;
             }
             foreach ($node[$key] as $i => $child) {
-                $node[$key][$i] = $this->walk($child, $layoutName);
+                $node[$key][$i] = $this->walk($child);
             }
         }
         if (isset($node['slots']) && is_array($node['slots'])) {
@@ -46,7 +42,7 @@ class CompanyThumbListener implements HookListenerInterface
                     continue;
                 }
                 foreach ($items as $i => $child) {
-                    $node['slots'][$slot][$i] = $this->walk($child, $layoutName);
+                    $node['slots'][$slot][$i] = $this->walk($child);
                 }
             }
         }
@@ -54,24 +50,24 @@ class CompanyThumbListener implements HookListenerInterface
         return $node;
     }
 
-    private function touch(array $node, string $layoutName): array
+    private function touch(array $node): array
     {
         $name = (string) ($node['name'] ?? '');
         $id = (string) ($node['id'] ?? '');
         $props = is_array($node['props'] ?? null) ? $node['props'] : [];
         $cls = (string) ($props['className'] ?? '');
 
-        if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
+        if (str_contains($cls, 'cmb-card-list')) {
             $props['className'] = trim($cls.' cmb-company-gallery');
             $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:start';
         }
         $node['props'] = $props;
 
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
-            $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64', false);
+            $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url}}', '64', false);
         }
-        if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top') || str_contains($cls, 'cmb-company-card'))) {
-            $node = $this->ensureChild($node, 'cmb_co_logo', '{{$item.thumbnail_url || $item.logo_url || ""}}', '120', true);
+        if ($id === 'ctop' || $id === 'citem' || $id === 'me_top' || str_contains($cls, 'cmb-company-card')) {
+            $node = $this->ensureChild($node, 'cmb_co_logo', '{{$item.thumbnail_url}}', '96', true);
         }
 
         return $node;
@@ -96,12 +92,12 @@ class CompanyThumbListener implements HookListenerInterface
 
     private function thumb(string $id, string $src, string $size, bool $round): array
     {
-        $style = 'width:'.$size.'px;height:'.$size.'px;max-width:100%;object-fit:cover;flex-shrink:0;';
-        $style .= $round ? 'border-radius:9999px;border:1px solid rgba(255,255,255,0.18);' : 'border-radius:8px;';
+        $style = 'width:'.$size.'px;height:'.$size.'px;object-fit:cover;flex-shrink:0;';
+        $style .= $round ? 'border-radius:9999px;' : 'border-radius:8px;';
 
         return ['id' => $id, 'type' => 'basic', 'name' => 'Img', 'props' => [
             'src' => $src,
-            'alt' => '{{$item.name || $item.title || ""}}',
+            'alt' => '',
             'className' => $round ? 'cmb-list-thumb cmb-list-thumb-round' : 'cmb-list-thumb',
             'width' => $size,
             'height' => $size,
