@@ -1,4 +1,6 @@
 (function () {
+  if (window.__cmbAdminJs26) return;
+  window.__cmbAdminJs26 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -13,8 +15,8 @@
     text = String(text || '');
     if (text.indexOf('거절') >= 0 || /\brejected\b/i.test(text)) return 'rejected';
     if (text.indexOf('보류') >= 0 || /\bhold\b/i.test(text)) return 'hold';
-    if (text.indexOf('승인대기') >= 0) return 'pending';
-    if (text.indexOf('견적') >= 0 || /\bopen\b/i.test(text) || /\bquote_request\b/i.test(text)) return 'quote_request';
+    if (text.indexOf('승인대기') >= 0 || text.indexOf('draft') >= 0) return 'pending';
+    if (text.indexOf('견적') >= 0 || text.indexOf('입찰중') >= 0 || /\bopen\b/i.test(text) || /\bquote_request\b/i.test(text)) return 'quote_request';
     if (/\bapproved\b/i.test(text) || text.indexOf('승인') >= 0) return 'approved';
     if (/\bpending\b/i.test(text)) return 'pending';
     if (text.indexOf('의뢰') >= 0 || /\brequest\b/i.test(text)) return 'request';
@@ -66,10 +68,57 @@
     return t;
   }
 
+  var PALETTE = {
+    approve: {
+      on: { bg: 'rgb(5, 150, 105)', fg: '#fff', bd: 'rgb(4, 120, 87)' },
+      off: { bg: 'transparent', fg: 'rgb(167, 243, 208)', bd: 'rgba(52, 211, 153, 0.55)' }
+    },
+    hold: {
+      on: { bg: 'rgb(217, 119, 6)', fg: '#fff', bd: 'rgb(180, 83, 9)' },
+      off: { bg: 'transparent', fg: 'rgb(253, 230, 138)', bd: 'rgba(251, 191, 36, 0.55)' }
+    },
+    reject: {
+      on: { bg: 'rgb(220, 38, 38)', fg: '#fff', bd: 'rgb(185, 28, 28)' },
+      off: { bg: 'transparent', fg: 'rgb(254, 202, 202)', bd: 'rgba(252, 165, 165, 0.55)' }
+    }
+  };
+
+  function applyPalette(el, pal) {
+    if (!el || !el.style) return;
+    el.style.setProperty('background', pal.bg, 'important');
+    el.style.setProperty('background-color', pal.bg, 'important');
+    el.style.setProperty('color', pal.fg, 'important');
+    el.style.setProperty('border-color', pal.bd, 'important');
+    el.style.setProperty('border-style', 'solid', 'important');
+    el.style.setProperty('border-width', '1px', 'important');
+    if (pal.bg === 'transparent') {
+      el.style.setProperty('box-shadow', 'none', 'important');
+      el.style.setProperty('font-weight', '500', 'important');
+    } else {
+      el.style.setProperty('box-shadow', '0 0 0 2px rgba(0,0,0,0.18)', 'important');
+      el.style.setProperty('font-weight', '700', 'important');
+    }
+  }
+
+  function kindFromEl(b) {
+    if (!b) return '';
+    var kind = b.getAttribute && b.getAttribute('data-cmb-kind');
+    if (kind) return kind;
+    if (b.classList && b.classList.contains('cmb-btn-approve')) return 'approve';
+    if (b.classList && b.classList.contains('cmb-btn-hold')) return 'hold';
+    if (b.classList && b.classList.contains('cmb-btn-reject')) return 'reject';
+    var t = baseLabel(b);
+    if (t === '승인') return 'approve';
+    if (t === '보류') return 'hold';
+    if (t === '거절') return 'reject';
+    return '';
+  }
+
   function paintBtn(btn, on, kind) {
     if (!btn) return;
     var cls = kind === 'approve' ? 'cmb-btn-approve' : kind === 'hold' ? 'cmb-btn-hold' : 'cmb-btn-reject';
     btn.classList.add(cls);
+    btn.setAttribute('data-cmb-kind', kind);
     btn.classList.toggle('is-active', !!on);
     if (on) {
       btn.setAttribute('data-cmb-active', '1');
@@ -78,9 +127,12 @@
       btn.removeAttribute('data-cmb-active');
       btn.setAttribute('aria-pressed', 'false');
     }
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.style.borderColor = '';
+    var pal = (PALETTE[kind] || PALETTE.approve)[on ? 'on' : 'off'];
+    applyPalette(btn, pal);
+    var wrap = btn.parentElement;
+    if (wrap && wrap !== document.body && (wrap.classList.contains(cls) || (wrap.getAttribute && wrap.getAttribute('data-cmb-kind') === kind))) {
+      applyPalette(wrap, pal);
+    }
     var base = baseLabel(btn);
     if (base && (btn.textContent || '').indexOf(ACTIVE_SUFFIX) >= 0) {
       btn.textContent = base;
@@ -88,23 +140,20 @@
   }
 
   function buttonsIn(root) {
-    var out = { approve: null, hold: null, reject: null };
+    var out = { approve: [], hold: [], reject: [] };
     if (!root || !root.querySelectorAll) return out;
-    root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject').forEach(function (b) {
-      var t = baseLabel(b);
-      var kind = b.getAttribute && b.getAttribute('data-cmb-kind');
-      if (kind === 'approve' || t === '승인' || b.classList.contains('cmb-btn-approve')) out.approve = b;
-      else if (kind === 'hold' || t === '보류' || b.classList.contains('cmb-btn-hold')) out.hold = b;
-      else if (kind === 'reject' || t === '거절' || b.classList.contains('cmb-btn-reject')) out.reject = b;
+    root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject, [data-cmb-kind]').forEach(function (b) {
+      var k = kindFromEl(b);
+      if (k && out[k].indexOf(b) < 0) out[k].push(b);
     });
     return out;
   }
 
   function paintGroup(root, st, entity) {
     var btns = buttonsIn(root);
-    paintBtn(btns.approve, isApproveOn(st), 'approve');
-    paintBtn(btns.hold, isHoldOn(st, entity), 'hold');
-    paintBtn(btns.reject, st === 'rejected', 'reject');
+    btns.approve.forEach(function (b) { paintBtn(b, isApproveOn(st), 'approve'); });
+    btns.hold.forEach(function (b) { paintBtn(b, isHoldOn(st, entity), 'hold'); });
+    btns.reject.forEach(function (b) { paintBtn(b, st === 'rejected', 'reject'); });
   }
 
   function companyIdFromEdit() {
@@ -159,19 +208,40 @@
     }
   }
 
+  function statusGroups() {
+    var rows = [];
+    document.querySelectorAll('.cmb-admin-row, .cmb-admin-toolbar').forEach(function (el) {
+      if (el && rows.indexOf(el) < 0) rows.push(el);
+    });
+    return rows;
+  }
+
+  function statusFromRow(root) {
+    if (!root) return '';
+    var raw = '';
+    if (root.getAttribute) raw = normalizeStatus(root.getAttribute('data-cmb-status') || '');
+    if (raw) return raw;
+    var cls = (root.className && String(root.className)) || '';
+    var m = cls.match(/(?:^|\s)cmb-status-([a-z0-9_]+)/i);
+    if (m) return normalizeStatus(m[1]);
+    var meta = root.querySelector && root.querySelector('.cmb-admin-muted, .cmb-admin-meta, .cmb-admin-row-title');
+    if (meta && String(meta.textContent || '').trim()) return statusFromText(meta.textContent);
+    return '';
+  }
+
   function paintStatusButtons() {
     if (painting) return;
     painting = true;
     try {
-      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
-        var st = statusFromRoot(row);
+      statusGroups().forEach(function (row) {
+        var st = statusFromRow(row);
         var entity = inferEntity(row, st);
         markRoot(row, st, entity);
         paintGroup(row, st, entity);
       });
       var bar = document.querySelector('.cmb-admin-toolbar');
       if (bar) {
-        var st = statusFromRoot(bar);
+        var st = statusFromRow(bar);
         if (!st) {
           var meta = document.querySelector('.cmb-admin-meta');
           st = statusFromText(meta && meta.textContent);
@@ -202,6 +272,122 @@
     } finally {
       painting = false;
     }
+  }
+
+  function hideVisually(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') === '1')) return;
+    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('[data-cmb-filter-wrap]'))) return;
+    el.style.setProperty('position', 'absolute', 'important');
+    el.style.setProperty('width', '1px', 'important');
+    el.style.setProperty('height', '1px', 'important');
+    el.style.setProperty('opacity', '0', 'important');
+    el.style.setProperty('overflow', 'hidden', 'important');
+    el.style.setProperty('pointer-events', 'none', 'important');
+    el.style.setProperty('display', 'none', 'important');
+    el.setAttribute('aria-hidden', 'true');
+    el.tabIndex = -1;
+  }
+
+  function isCompanyAdminPage() {
+    var path = location.pathname || '';
+    if (/\/admin\/maker-bids\/companies/.test(path)) return true;
+    if (/\/admin\/maker-bids\/jobs/.test(path)) return false;
+    var marked = document.querySelector('.cmb-admin-filter[data-cmb-filter-entity], .cmb-admin[data-cmb-filter-entity]');
+    if (marked) return marked.getAttribute('data-cmb-filter-entity') === 'company';
+    if (document.querySelector('.cmb-entity-company') && !document.querySelector('.cmb-entity-job')) return true;
+    return false;
+  }
+
+  function filterDsId(company) {
+    if (company) return 'companies';
+    if (/\/admin\/maker-bids\/bids/.test(location.pathname || '')) return 'bids';
+    return 'jobs';
+  }
+
+  function currentFilterStatus() {
+    try {
+      if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
+        return String((window.G7Core.state.get('_local.filter.status')) || '');
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function bindNativeFilter(sel, company) {
+    if (sel.getAttribute('data-cmb-filter-bound') === '1') return;
+    sel.setAttribute('data-cmb-filter-bound', '1');
+    sel.addEventListener('change', function () {
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: filterDsId(company) } });
+      }
+    });
+  }
+
+  function ensureAdminFilterSelect() {
+    document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
+      var company = (bar.getAttribute('data-cmb-filter-entity') === 'company') ||
+        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && isCompanyAdminPage());
+      var opts = company
+        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
+        : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
+      bar.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-select-host').forEach(function (host) {
+        if (host.getAttribute('data-cmb-filter-wrap') === '1') return;
+        hideVisually(host);
+      });
+      bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
+        if (el.closest && el.closest('[data-cmb-filter-wrap]')) return;
+        hideVisually(el);
+      });
+      var wrap = bar.querySelector('[data-cmb-filter-wrap]');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.setAttribute('data-cmb-filter-wrap', '1');
+        wrap.className = 'cmb-admin-filter-native-wrap';
+        var lab = document.createElement('p');
+        lab.className = 'cmb-admin-label';
+        lab.textContent = '상태';
+        var sel = document.createElement('select');
+        sel.setAttribute('data-cmb-filter-free', '1');
+        sel.setAttribute('name', 'status');
+        sel.className = 'cmb-admin-filter-native';
+        opts.forEach(function (o) {
+          var op = document.createElement('option');
+          op.value = o[0];
+          op.textContent = o[1];
+          sel.appendChild(op);
+        });
+        var cur = currentFilterStatus();
+        if (cur) sel.value = cur;
+        wrap.appendChild(lab);
+        wrap.appendChild(sel);
+        var go = bar.querySelector('.cmb-admin-filter-go');
+        bar.insertBefore(wrap, go || bar.firstChild);
+      }
+      var native = wrap.querySelector('[data-cmb-filter-free]');
+      bindNativeFilter(native, company);
+    });
+  }
+
+  function injectStatusPaintCss() {
+    if (document.getElementById('cmb-admin-status-inline')) return;
+    var s = document.createElement('style');
+    s.id = 'cmb-admin-status-inline';
+    s.textContent =
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"]{' +
+      'background:rgb(5,150,105)!important;background-color:rgb(5,150,105)!important;color:#fff!important;border-color:rgb(4,120,87)!important}' +
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"]{' +
+      'background:rgb(217,119,6)!important;background-color:rgb(217,119,6)!important;color:#fff!important;border-color:rgb(180,83,9)!important}' +
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"]{' +
+      'background:rgb(220,38,38)!important;background-color:rgb(220,38,38)!important;color:#fff!important;border-color:rgb(185,28,28)!important}' +
+      '.cmb-admin-filter-field.cmb-admin-select-host select.cmb-admin-filter-native,' +
+      '.cmb-admin-filter select[data-cmb-filter-free]{display:block!important;appearance:auto!important;-webkit-appearance:menulist!important;' +
+      'width:12rem!important;min-width:12rem!important;max-width:14rem!important;height:2.25rem!important;opacity:1!important;pointer-events:auto!important}';
+    (document.head || document.documentElement).appendChild(s);
   }
 
   function hideLegacySizes() {
@@ -253,6 +439,7 @@
         paintStatusButtons();
         hideLegacySizes();
         ensureListBoxes();
+        ensureAdminFilterSelect();
       }, 60);
     });
     window.__cmbAdminStatusObs.observe(root, { childList: true, subtree: true });
@@ -457,6 +644,20 @@
     paintSettingsControls();
   }
 
+  function bindFilterGo() {
+    if (document.documentElement.getAttribute('data-cmb-filter-go')) return;
+    document.documentElement.setAttribute('data-cmb-filter-go', '1');
+    document.addEventListener('click', function (e) {
+      var go = e.target && e.target.closest ? e.target.closest('.cmb-admin-filter-go, .cmb-admin-filter > button') : null;
+      if (!go || (go.textContent || '').indexOf('필터') < 0) return;
+      var sel = document.querySelector('.cmb-admin-filter [data-cmb-filter-free]');
+      if (!sel) return;
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+      }
+    }, true);
+  }
+
   function bindCompanyHarvest() {
     if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
     if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
@@ -561,22 +762,33 @@
     document.documentElement.classList.add('cmb-admin-ui');
     syncAdminDark();
     injectPortalCss();
+    injectStatusPaintCss();
     enhanceSizes();
     hideLegacySizes();
     bindStatusPress();
     paintStatusButtons();
+    ensureAdminFilterSelect();
     ensureCompanyEditButtons();
     ensureListBoxes();
     bindSettingsHarvest();
     bindCompanyHarvest();
+    bindFilterGo();
     paintSettingsControls();
     observeAdminStatus();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
   setTimeout(start, 400);
-  setTimeout(paintStatusButtons, 1200);
+  setTimeout(paintStatusButtons, 800);
+  setTimeout(paintStatusButtons, 1600);
+  setTimeout(ensureAdminFilterSelect, 500);
   setTimeout(ensureListBoxes, 800);
   setTimeout(paintSettingsControls, 900);
   setTimeout(ensureCompanyEditButtons, 600);
+  setInterval(function () {
+    if (document.querySelector('.cmb-admin')) {
+      paintStatusButtons();
+      ensureAdminFilterSelect();
+    }
+  }, 700);
 })();
