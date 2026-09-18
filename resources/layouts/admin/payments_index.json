@@ -143,7 +143,7 @@
                               "href": "/admin/maker-bids/jobs/{{$item.job_id}}",
                               "className": "cmb-admin-row-title"
                             },
-                            "text": "결제 #{{$item.id}} · {{$item.amount_label}} · {{$item.status_label}}"
+                            "text": "결제 #{{$item.id}} · {{$item.kind_label || '전액'}} {{$item.amount_label}} · {{$item.status_label}}"
                           },
                           {
                             "id": "pmeta",

@@ -26,6 +26,7 @@ class UserMenuListener implements HookListenerInterface
     private const COMPANY_FIELDS = [
         'kind', 'name', 'business_no', 'bio', 'homepage_url', 'portfolio_url',
         'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
+        'bank_name', 'account_no', 'account_holder', 'deposit_percent', 'deposit_terms',
     ];
 
     public static function getSubscribedHooks(): array

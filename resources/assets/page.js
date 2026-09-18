@@ -118,13 +118,15 @@
   function applyUserCompany(d) {
     applyPrefixed('company', d, [
       'kind','name','business_no','bio','homepage_url','portfolio_url',
-      'manager_name','phone','email','zipcode','address','address_detail'
+      'manager_name','phone','email','zipcode','address','address_detail',
+      'bank_name','account_no','account_holder','deposit_percent','deposit_terms'
     ], []);
   }
   function applyAdminCompany(d) {
     applyPrefixed('edit', d, [
       'id','status','admin_memo','hold_reason','rating_score','rating_count',
-      'claim_count','claim_history','report_count','priority','rejected_reason'
+      'claim_count','claim_history','report_count','priority','rejected_reason',
+      'bank_name','account_no','account_holder','deposit_percent','deposit_terms'
     ], ['is_recommended','is_designated']);
   }
 

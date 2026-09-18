@@ -20,6 +20,8 @@ class AwardRules
     {
         return [
             'bid_id' => ['required', 'integer', 'min:1'],
+            'deposit_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'deposit_terms' => ['nullable', 'string', 'max:500'],
         ];
     }
 

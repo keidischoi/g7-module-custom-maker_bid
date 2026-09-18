@@ -55,7 +55,8 @@ class PaymentController extends Controller
                 (int) $request->user()->id,
                 $id,
                 (string) $request->input('depositor_name', ''),
-                (string) $request->input('memo', '')
+                (string) $request->input('memo', ''),
+                (string) $request->input('kind', '')
             );
         } catch (DomainException $e) {
             return $this->domainError($e);
@@ -71,7 +72,9 @@ class PaymentController extends Controller
             $data = $this->payments->confirm(
                 (int) ($ctx['userId'] ?? 0),
                 $id,
-                (bool) ($ctx['isAdmin'] ?? false)
+                (bool) ($ctx['isAdmin'] ?? false),
+                null,
+                (string) $request->input('kind', '')
             );
         } catch (DomainException $e) {
             return $this->domainError($e);

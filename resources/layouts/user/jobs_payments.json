@@ -245,7 +245,7 @@
                         "props": {
                           "className": "cmb-job-card-title"
                         },
-                        "text": "{{$p.status_label}} · {{$p.amount_label}} · {{$p.job_title}}"
+                        "text": "{{$p.status_label}} · {{$p.kind_label || '전액'}} {{$p.amount_label}} · {{$p.job_title}}"
                       },
                       {
                         "id": "pm",

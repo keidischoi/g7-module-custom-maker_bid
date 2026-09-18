@@ -182,4 +182,108 @@ class PaymentRules
 
         return number_format($n).'원';
     }
+
+    public const KIND_FULL = 'full';
+
+    public const KIND_DEPOSIT = 'deposit';
+
+    public const KIND_BALANCE = 'balance';
+
+    public const KINDS = [
+        'full' => '전액',
+        'deposit' => '계약금',
+        'balance' => '잔금',
+    ];
+
+    public const DEFAULT_DEPOSIT_PERCENT = 30;
+
+    public static function normalizeKind(mixed $raw): string
+    {
+        $value = strtolower(trim((string) $raw));
+        if (isset(self::KINDS[$value])) {
+            return $value;
+        }
+        $aliases = [
+            '전액' => self::KIND_FULL,
+            '전체' => self::KIND_FULL,
+            '일시불' => self::KIND_FULL,
+            '계약금' => self::KIND_DEPOSIT,
+            '착수금' => self::KIND_DEPOSIT,
+            '선금' => self::KIND_DEPOSIT,
+            '잔금' => self::KIND_BALANCE,
+            '잔액' => self::KIND_BALANCE,
+            '후금' => self::KIND_BALANCE,
+        ];
+
+        return $aliases[$value] ?? ($aliases[(string) $raw] ?? self::KIND_FULL);
+    }
+
+    public static function kindLabel(mixed $raw): string
+    {
+        $kind = self::normalizeKind($raw);
+
+        return self::KINDS[$kind] ?? self::KINDS[self::KIND_FULL];
+    }
+
+    public static function normalizeDepositPercent(mixed $raw, int $fallback = self::DEFAULT_DEPOSIT_PERCENT): int
+    {
+        if ($raw === null || $raw === '') {
+            return max(0, min(100, $fallback));
+        }
+        if (is_string($raw) && str_ends_with(trim($raw), '%')) {
+            $raw = rtrim(trim($raw), '% ');
+        }
+        $n = is_numeric($raw) ? (int) $raw : $fallback;
+        if ($n < 0) {
+            return 0;
+        }
+        if ($n > 100) {
+            return 100;
+        }
+
+        return $n;
+    }
+
+    /**
+     * @return array{0:int,1:int} deposit amount, balance amount
+     */
+    public static function splitAmounts(int $total, int $percent): array
+    {
+        $total = max(0, $total);
+        $percent = max(0, min(100, $percent));
+        if ($total < 1 || $percent <= 0) {
+            return [0, $total];
+        }
+        if ($percent >= 100) {
+            return [$total, 0];
+        }
+        $deposit = (int) floor($total * $percent / 100);
+        if ($deposit < 1) {
+            $deposit = 1;
+        }
+        if ($deposit >= $total) {
+            return [$total, 0];
+        }
+
+        return [$deposit, $total - $deposit];
+    }
+
+    public static function kindSort(string $kind): int
+    {
+        return match (self::normalizeKind($kind)) {
+            self::KIND_DEPOSIT => 1,
+            self::KIND_FULL => 2,
+            default => 3,
+        };
+    }
+
+    public static function kindOptions(): array
+    {
+        $out = [];
+        foreach (self::KINDS as $value => $label) {
+            $out[] = ['value' => $value, 'label' => $label];
+        }
+
+        return $out;
+    }
 }

@@ -87,7 +87,10 @@ Prefix: `/api/modules/custom-maker_bids`
 | GET | `/bids/mine` | sanctum | 내 입찰 |
 | POST | `/jobs/{id}/bids` | sanctum | 입찰 생성/수정 |
 | PATCH | `/jobs/{id}/bids/{bidId}` | sanctum | 본인 입찰 수정 |
-| POST | `/jobs/{id}/award` | sanctum | 낙찰. 이후 상대에게 개인정보 공개 |
+| POST | `/jobs/{id}/award` | sanctum | 낙찰. `bid_id`와 선택 `deposit_percent`/`deposit_terms`. 계약금·잔금 입금 안내 생성 |
+| GET | `/payments` | sanctum | 내 계좌이체 (계약금/잔금 행) |
+| POST | `/jobs/{id}/payment/report` | sanctum | 입금 신고 (`kind` 선택) |
+| POST | `/jobs/{id}/payment/confirm` | sanctum | 입금 확인 (제작자 계좌일 때 낙찰자) |
 | GET | `/companies` | 없음 | 공개 입찰자 목록 (추천·우선순위 순) |
 | GET | `/settings` | 없음 | 공개 모듈 설정 (메뉴·안내문) |
 | GET | `/companies/form-defaults` | sanctum | 입찰자 등록 기본값 |
@@ -95,6 +98,8 @@ Prefix: `/api/modules/custom-maker_bids`
 | GET | `/companies/me` | sanctum | 내 입찰자 신청 |
 
 입찰 가능: 설정 **입찰 허용 권한**과 의뢰 공개 설정을 모두 통과한 로그인 회원. 기본(모두)은 로그인 회원입니다. 본인 의뢰에는 입찰 불가. 상태가 의뢰/견적요청이고 `closes_at` 이 없거나 미래일 때만 입찰/수정/낙찰. 공개 설정이 업체만/개인만이면 대상만 목록에 보이고 입찰할 수 있습니다. 허용되지 않으면 한국어 403입니다.
+
+**결제:** 기본은 계좌이체입니다. 입찰자 등록에 은행·계좌·예금주와 기본 계약금 비율(기본 30%)·조건을 넣습니다. 계좌번호는 본인·관리자에게만 보입니다. 낙찰 시 요청 비율 > 업체 기본 > 설정 기본 순으로 계약금·잔금이 나뉘고, 잔금은 계약금 확인 뒤에만 신고합니다. 완료는 모든 입금 확인 뒤입니다.
 
 의뢰 상태: `hold`(보류, 비공개) / `request`(의뢰) / `quote_request`(견적요청) / `awarded` / `done` / `cancelled`.
 공개 설정 `audience`: `all`(전체) / `company`(업체만) / `individual`(개인만) / `admin`(관리자).

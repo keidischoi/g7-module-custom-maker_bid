@@ -65,6 +65,22 @@ expect('kind stored as company', $attrs['kind'], 'company');
 expect('type from first job type', $attrs['type'], 'print_3d');
 expect('bio copied to note', $attrs['note'], '소개');
 expectFalse('applicant attributes omit is_designated', array_key_exists('is_designated', $attrs));
+expect('default deposit percent on apply', $attrs['deposit_percent'], 30);
+
+$payAttrs = CompanyRules::applicantAttributes([
+    'name' => '테스트랩',
+    'kind' => 'company',
+    'bank_name' => '국민은행',
+    'account_no' => '111-22-3333',
+    'account_holder' => '홍길동',
+    'deposit_percent' => '40',
+    'deposit_terms' => '계약금 확인 후 시작',
+]);
+expect('applicant bank_name', $payAttrs['bank_name'], '국민은행');
+expect('applicant account_no', $payAttrs['account_no'], '111-22-3333');
+expect('applicant deposit percent', $payAttrs['deposit_percent'], 40);
+expect('applicant deposit terms', $payAttrs['deposit_terms'], '계약금 확인 후 시작');
+expectTrue('profile rules include bank_name', isset(CompanyRules::profileFieldRules()['bank_name'], CompanyRules::profileFieldRules()['deposit_percent']));
 
 expectTrue('logos collection allowed', UploadRules::isAllowedCollection('logos'));
 expectTrue('png allowed as logo', UploadRules::isAllowedExtension('logos', 'mark.png'));

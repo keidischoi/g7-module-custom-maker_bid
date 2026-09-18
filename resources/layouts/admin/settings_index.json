@@ -72,7 +72,8 @@
       "account_holder": "",
       "transfer_note": "의뢰 #{job_id}",
       "instructions": "낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.",
-      "require_confirmed": true
+      "require_confirmed": true,
+      "default_deposit_percent": 30
     }
   },
   "data_sources": [
@@ -119,7 +120,8 @@
           "account_holder": "",
           "transfer_note": "의뢰 #{job_id}",
           "instructions": "낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.",
-          "require_confirmed": true
+          "require_confirmed": true,
+          "default_deposit_percent": 30
         }
       },
       "onSuccess": [
@@ -151,7 +153,16 @@
             "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}",
             "form.provided_extensions": "{{response.data.provided_extensions || settings.data.provided_extensions || 'STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG'}}",
             "form.companies_enabled": "{{response.data.companies_enabled ?? settings.data.companies_enabled}}",
-            "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}"
+            "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}",
+            "form.method": "{{response.data.method || settings.data.method || 'bank_transfer'}}",
+            "form.destination": "{{response.data.destination || settings.data.destination || 'platform'}}",
+            "form.bank_name": "{{response.data.bank_name || settings.data.bank_name || ''}}",
+            "form.account_no": "{{response.data.account_no || settings.data.account_no || ''}}",
+            "form.account_holder": "{{response.data.account_holder || settings.data.account_holder || ''}}",
+            "form.transfer_note": "{{response.data.transfer_note || settings.data.transfer_note || '의뢰 #{job_id}'}}",
+            "form.instructions": "{{response.data.instructions || settings.data.instructions || ''}}",
+            "form.require_confirmed": "{{response.data.require_confirmed ?? settings.data.require_confirmed}}",
+            "form.default_deposit_percent": "{{response.data.default_deposit_percent ?? settings.data.default_deposit_percent ?? 30}}"
           }
         }
       ]
@@ -1044,6 +1055,50 @@
                             "params": {
                               "target": "local",
                               "form.instructions": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "deposit_pct_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "deposit_pct_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "기본 계약금 비율 (%)"
+                      },
+                      {
+                        "id": "default_deposit_percent",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "default_deposit_percent",
+                          "type": "number",
+                          "min": "0",
+                          "max": "100",
+                          "value": "{{_local.form.default_deposit_percent}}",
+                          "placeholder": "30",
+                          "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.default_deposit_percent": "{{$event.target.value}}"
                             }
                           }
                         ]

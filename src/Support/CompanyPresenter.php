@@ -40,6 +40,11 @@ class CompanyPresenter
             'is_recommended' => (bool) $row->is_recommended,
             'is_designated' => CompanyRules::isDesignated($row),
             'priority' => CompanyRules::clampPriority($row->priority),
+            'deposit_percent' => $row->deposit_percent !== null
+                ? PaymentRules::normalizeDepositPercent($row->deposit_percent)
+                : PaymentRules::DEFAULT_DEPOSIT_PERCENT,
+            'deposit_terms' => (string) ($row->deposit_terms ?? ''),
+            'deposit_label' => PaymentRules::normalizeDepositPercent($row->deposit_percent ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT).'%',
             'created_at' => optional($row->created_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('created_at'),
             'updated_at' => optional($row->updated_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('updated_at'),
         ];
@@ -56,6 +61,10 @@ class CompanyPresenter
             $payload['reviewed_at'] = optional($row->reviewed_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('reviewed_at');
             $payload['note'] = $row->note;
             $payload['upload_token'] = $row->upload_token;
+            $payload['bank_name'] = (string) ($row->bank_name ?? '');
+            $payload['account_no'] = (string) ($row->account_no ?? '');
+            $payload['account_holder'] = (string) ($row->account_holder ?? '');
+            $payload['account_label'] = trim((string) ($row->bank_name ?? '').' '.(string) ($row->account_no ?? '').' '.(string) ($row->account_holder ?? ''));
         }
 
         if ($audience === 'admin') {
@@ -87,6 +96,13 @@ class CompanyPresenter
             'company_priority' => CompanyRules::listingPriority($company),
             'company_rating_score' => $company ? CompanyRules::clampRatingScore($company->rating_score) : null,
             'company_rating_count' => $company ? (int) ($company->rating_count ?? 0) : null,
+            'deposit_percent' => $company && $company->deposit_percent !== null
+                ? PaymentRules::normalizeDepositPercent($company->deposit_percent)
+                : PaymentRules::DEFAULT_DEPOSIT_PERCENT,
+            'deposit_terms' => $company ? (string) ($company->deposit_terms ?? '') : '',
+            'deposit_label' => $company
+                ? (PaymentRules::normalizeDepositPercent($company->deposit_percent ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT).'%')
+                : (PaymentRules::DEFAULT_DEPOSIT_PERCENT.'%'),
             'company' => $company ? self::present($company, 'public') : null,
             'created_at' => optional($bid->created_at)?->format('Y-m-d H:i:s') ?? $bid->getRawOriginal('created_at'),
         ];

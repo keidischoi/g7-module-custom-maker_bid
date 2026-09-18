@@ -28,6 +28,7 @@ class PaymentAdminController extends Controller
                 'statuses' => PaymentRules::statusOptions(),
                 'methods' => PaymentRules::methodOptions(),
                 'destinations' => PaymentRules::destinationOptions(),
+                'kinds' => PaymentRules::kindOptions(),
                 'require_confirmed' => $this->payments->requireConfirmed(),
             ],
         ]);
@@ -38,7 +39,7 @@ class PaymentAdminController extends Controller
         try {
             $jobId = $this->jobIdFromPayment($id);
             $actor = $request->user() ? (int) $request->user()->id : 0;
-            $data = $this->payments->confirm($actor, $jobId, true);
+            $data = $this->payments->confirm($actor, $jobId, true, $id);
         } catch (DomainException $e) {
             return $this->domainError($e);
         }
@@ -54,7 +55,8 @@ class PaymentAdminController extends Controller
             $data = $this->payments->refund(
                 $actor,
                 $jobId,
-                (string) $request->input('refund_note', $request->input('note', ''))
+                (string) $request->input('refund_note', $request->input('note', '')),
+                $id
             );
         } catch (DomainException $e) {
             return $this->domainError($e);

@@ -15,6 +15,7 @@ class MakerCompany extends Model
         'user_id', 'name', 'kind', 'type', 'business_no', 'job_types', 'logo_hash',
         'status', 'note', 'bio', 'homepage_url', 'portfolio_url',
         'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
+        'bank_name', 'account_no', 'account_holder', 'deposit_percent', 'deposit_terms',
         'admin_memo', 'hold_reason', 'rejected_reason', 'reviewed_at',
         'rating_score', 'rating_count', 'claim_count', 'claim_history', 'report_count',
         'is_recommended', 'is_designated', 'priority', 'upload_token',
@@ -32,6 +33,7 @@ class MakerCompany extends Model
         'is_recommended' => 'boolean',
         'is_designated' => 'boolean',
         'priority' => 'integer',
+        'deposit_percent' => 'integer',
     ];
 
     public function bids(): HasMany

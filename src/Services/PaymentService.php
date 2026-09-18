@@ -2,6 +2,7 @@
 
 namespace Modules\Custom\MakerBids\Services;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
@@ -13,24 +14,27 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class PaymentService
 {
+    private ?bool $kindColumn = null;
+
     public function enabled(): bool
     {
         return Schema::hasTable('maker_payments');
     }
 
     /**
-     * Create (or return) the due payment snapshot when a bid is awarded.
+     * Create (or return) due payment snapshot(s) when a bid is awarded.
      *
+     * @param  array<string, mixed>  $terms
      * @return array<string, mixed>|null
      */
-    public function ensureDue(MakerJob $job, MakerBid $bid): ?array
+    public function ensureDue(MakerJob $job, MakerBid $bid, array $terms = []): ?array
     {
         if (! $this->enabled()) {
             return null;
         }
-        $existing = MakerPayment::query()->where('job_id', (int) $job->id)->first();
-        if ($existing) {
-            return $this->presentRow($existing, 0, true);
+        $existing = $this->rowsForJob((int) $job->id);
+        if ($existing->isNotEmpty()) {
+            return $this->presentBundle($existing, 0, true);
         }
         $cfg = $this->settings();
         $destination = PaymentRules::normalizeDestination($cfg['destination'] ?? PaymentRules::DEST_PLATFORM);
@@ -40,12 +44,15 @@ class PaymentService
             (int) $job->id,
             (string) $job->title
         );
-        $row = MakerPayment::query()->create([
+        $percent = $this->resolveDepositPercent($terms, $bid, $cfg);
+        $depositTerms = $this->resolveDepositTerms($terms, $bid);
+        $total = max(0, (int) $bid->amount);
+        [$depositAmt, $balanceAmt] = PaymentRules::splitAmounts($total, $percent);
+        $base = [
             'job_id' => (int) $job->id,
             'bid_id' => (int) $bid->id,
             'payer_user_id' => (int) $job->user_id,
             'payee_user_id' => $destination === PaymentRules::DEST_MAKER ? (int) $bid->user_id : null,
-            'amount' => max(0, (int) $bid->amount),
             'method' => PaymentRules::normalizeMethod($cfg['method'] ?? PaymentRules::METHOD_BANK),
             'status' => PaymentRules::STATUS_DUE,
             'destination' => $destination,
@@ -54,12 +61,24 @@ class PaymentService
             'account_holder' => $account['account_holder'],
             'transfer_note' => $note !== '' ? $note : ('의뢰 #'.(int) $job->id),
             'instructions' => (string) ($cfg['instructions'] ?? ''),
-        ]);
+        ];
+        $split = $this->hasKindColumn() && $depositAmt > 0 && $balanceAmt > 0;
+        if ($split) {
+            $this->createRow($base, PaymentRules::KIND_DEPOSIT, $depositAmt, $percent, $depositTerms);
+            $this->createRow($base, PaymentRules::KIND_BALANCE, $balanceAmt, $percent, $depositTerms);
+        } else {
+            $kind = $this->hasKindColumn()
+                ? ($percent >= 100 && $depositAmt > 0 ? PaymentRules::KIND_DEPOSIT : PaymentRules::KIND_FULL)
+                : PaymentRules::KIND_FULL;
+            $this->createRow($base, $kind, $total, $percent, $depositTerms);
+        }
 
-        return $this->presentRow($row, 0, true);
+        return $this->presentBundle($this->rowsForJob((int) $job->id), 0, true);
     }
 
     /**
+     * Job detail / workspace bundle. Flattened current row keeps older layouts working.
+     *
      * @return array<string, mixed>|null
      */
     public function forJob(int $jobId, int $actorId = 0, bool $isAdmin = false): ?array
@@ -67,15 +86,16 @@ class PaymentService
         if (! $this->enabled()) {
             return null;
         }
-        $row = MakerPayment::query()->where('job_id', $jobId)->first();
-        if (! $row) {
+        $rows = $this->rowsForJob($jobId);
+        if ($rows->isEmpty()) {
             return null;
         }
-        if (! $this->canSee($row, $actorId, $isAdmin)) {
+        $visible = $rows->filter(fn (MakerPayment $row) => $this->canSee($row, $actorId, $isAdmin));
+        if ($visible->isEmpty()) {
             return null;
         }
 
-        return $this->presentRow($row, $actorId, $isAdmin);
+        return $this->presentBundle($visible->values(), $actorId, $isAdmin);
     }
 
     /**
@@ -126,12 +146,13 @@ class PaymentService
      *
      * @return array<string, mixed>
      */
-    public function report(int $actorId, int $jobId, string $depositorName, string $memo = ''): array
+    public function report(int $actorId, int $jobId, string $depositorName, string $memo = '', string $kind = ''): array
     {
-        $row = $this->requireRow($jobId);
+        $row = $this->requireRow($jobId, null, $kind);
         if ((int) $row->payer_user_id !== $actorId) {
             throw new DomainException('의뢰자만 입금을 신고할 수 있습니다.', 403);
         }
+        $this->assertBalanceUnlocked($row, $jobId);
         $status = (string) $row->status;
         if ($status === PaymentRules::STATUS_CONFIRMED) {
             throw new DomainException('이미 입금이 확인된 결제입니다.', 422);
@@ -148,10 +169,15 @@ class PaymentService
         $row->status = PaymentRules::STATUS_REPORTED;
         $row->reported_at = now();
         $row->save();
-        $this->notifyParties($row, 'payment.reported', '입금이 신고되었습니다.', $name);
-        $this->audit($actorId, 'payment.report', $jobId, ['depositor_name' => $name]);
+        $label = PaymentRules::kindLabel($this->rowKind($row));
+        $this->notifyParties($row, 'payment.reported', $label.' 입금이 신고되었습니다.', $name);
+        $this->audit($actorId, 'payment.report', $jobId, [
+            'depositor_name' => $name,
+            'kind' => $this->rowKind($row),
+            'payment_id' => (int) $row->id,
+        ]);
 
-        return $this->presentRow($row->fresh() ?? $row, $actorId, false);
+        return $this->presentBundle($this->rowsForJob($jobId), $actorId, false);
     }
 
     /**
@@ -159,15 +185,16 @@ class PaymentService
      *
      * @return array<string, mixed>
      */
-    public function confirm(int $actorId, int $jobId, bool $isAdmin): array
+    public function confirm(int $actorId, int $jobId, bool $isAdmin, ?int $paymentId = null, string $kind = ''): array
     {
-        $row = $this->requireRow($jobId);
+        $row = $this->requireRow($jobId, $paymentId, $kind);
         if (! $this->canConfirm($row, $actorId, $isAdmin)) {
             throw new DomainException('입금을 확인할 권한이 없습니다.', 403);
         }
+        $this->assertBalanceUnlocked($row, $jobId);
         $status = (string) $row->status;
         if ($status === PaymentRules::STATUS_CONFIRMED) {
-            return $this->presentRow($row, $actorId, $isAdmin);
+            return $this->presentBundle($this->rowsForJob($jobId), $actorId, $isAdmin);
         }
         if ($status === PaymentRules::STATUS_REFUNDED) {
             throw new DomainException('환불된 결제는 확인할 수 없습니다.', 422);
@@ -179,10 +206,15 @@ class PaymentService
         $row->confirmed_at = now();
         $row->confirmed_by = $actorId;
         $row->save();
-        $this->notifyParties($row, 'payment.confirmed', '입금이 확인되었습니다.', PaymentRules::amountLabel($row->amount));
-        $this->audit($actorId, 'payment.confirm', $jobId, ['status' => PaymentRules::STATUS_CONFIRMED]);
+        $label = PaymentRules::kindLabel($this->rowKind($row));
+        $this->notifyParties($row, 'payment.confirmed', $label.' 입금이 확인되었습니다.', PaymentRules::amountLabel($row->amount));
+        $this->audit($actorId, 'payment.confirm', $jobId, [
+            'status' => PaymentRules::STATUS_CONFIRMED,
+            'kind' => $this->rowKind($row),
+            'payment_id' => (int) $row->id,
+        ]);
 
-        return $this->presentRow($row->fresh() ?? $row, $actorId, $isAdmin);
+        return $this->presentBundle($this->rowsForJob($jobId), $actorId, $isAdmin);
     }
 
     /**
@@ -190,21 +222,26 @@ class PaymentService
      *
      * @return array<string, mixed>
      */
-    public function refund(int $actorId, int $jobId, string $note = ''): array
+    public function refund(int $actorId, int $jobId, string $note = '', ?int $paymentId = null): array
     {
-        $row = $this->requireRow($jobId);
+        $row = $this->requireRow($jobId, $paymentId, '');
         $status = (string) $row->status;
         if ($status === PaymentRules::STATUS_REFUNDED) {
-            return $this->presentRow($row, $actorId, true);
+            return $this->presentBundle($this->rowsForJob($jobId), $actorId, true);
         }
         $row->status = PaymentRules::STATUS_REFUNDED;
         $row->refunded_at = now();
         $row->refund_note = mb_substr(trim($note), 0, 500);
         $row->save();
-        $this->notifyParties($row, 'payment.refunded', '결제가 환불 처리되었습니다.', (string) $row->refund_note);
-        $this->audit($actorId, 'payment.refund', $jobId, ['note' => (string) $row->refund_note]);
+        $label = PaymentRules::kindLabel($this->rowKind($row));
+        $this->notifyParties($row, 'payment.refunded', $label.'이(가) 환불 처리되었습니다.', (string) $row->refund_note);
+        $this->audit($actorId, 'payment.refund', $jobId, [
+            'note' => (string) $row->refund_note,
+            'kind' => $this->rowKind($row),
+            'payment_id' => (int) $row->id,
+        ]);
 
-        return $this->presentRow($row->fresh() ?? $row, $actorId, true);
+        return $this->presentBundle($this->rowsForJob($jobId), $actorId, true);
     }
 
     public function assertCompleteAllowed(MakerJob $job): void
@@ -215,16 +252,22 @@ class PaymentService
         if (! $this->enabled()) {
             return;
         }
-        $row = MakerPayment::query()->where('job_id', (int) $job->id)->first();
-        if ($row === null && $job->awarded_bid_id) {
+        $rows = $this->rowsForJob((int) $job->id);
+        if ($rows->isEmpty() && $job->awarded_bid_id) {
             $bid = MakerBid::query()->find($job->awarded_bid_id);
             if ($bid) {
                 $this->ensureDue($job, $bid);
-                $row = MakerPayment::query()->where('job_id', (int) $job->id)->first();
+                $rows = $this->rowsForJob((int) $job->id);
             }
         }
-        if ($row && (string) $row->status !== PaymentRules::STATUS_CONFIRMED) {
-            throw new DomainException('입금 확인 후에 완료할 수 있습니다.', 422);
+        foreach ($rows as $row) {
+            $status = (string) $row->status;
+            if ($status === PaymentRules::STATUS_REFUNDED) {
+                continue;
+            }
+            if ($status !== PaymentRules::STATUS_CONFIRMED) {
+                throw new DomainException('입금 확인 후에 완료할 수 있습니다. ('.PaymentRules::kindLabel($this->rowKind($row)).')', 422);
+            }
         }
     }
 
@@ -233,9 +276,21 @@ class PaymentService
         if (! $this->enabled()) {
             return true;
         }
-        $row = MakerPayment::query()->where('job_id', $jobId)->first();
+        $rows = $this->rowsForJob($jobId);
+        if ($rows->isEmpty()) {
+            return true;
+        }
+        foreach ($rows as $row) {
+            $status = (string) $row->status;
+            if ($status === PaymentRules::STATUS_REFUNDED) {
+                continue;
+            }
+            if ($status !== PaymentRules::STATUS_CONFIRMED) {
+                return false;
+            }
+        }
 
-        return $row === null || (string) $row->status === PaymentRules::STATUS_CONFIRMED;
+        return true;
     }
 
     public function requireConfirmed(): bool
@@ -246,9 +301,71 @@ class PaymentService
     }
 
     /**
+     * @param  Collection<int, MakerPayment>|iterable<MakerPayment>  $rows
      * @return array<string, mixed>
      */
-    public function presentRow(MakerPayment $row, int $actorId, bool $isAdmin): array
+    public function presentBundle(iterable $rows, int $actorId, bool $isAdmin): array
+    {
+        $list = [];
+        foreach ($rows as $row) {
+            $list[] = $row;
+        }
+        usort($list, function (MakerPayment $a, MakerPayment $b) {
+            $ka = PaymentRules::kindSort($this->rowKind($a));
+            $kb = PaymentRules::kindSort($this->rowKind($b));
+            if ($ka !== $kb) {
+                return $ka <=> $kb;
+            }
+
+            return (int) $a->id <=> (int) $b->id;
+        });
+        $deposit = null;
+        $balance = null;
+        $total = 0;
+        $percent = PaymentRules::DEFAULT_DEPOSIT_PERCENT;
+        $terms = '';
+        foreach ($list as $row) {
+            $kind = $this->rowKind($row);
+            if ($kind === PaymentRules::KIND_DEPOSIT) {
+                $deposit = $row;
+            }
+            if ($kind === PaymentRules::KIND_BALANCE) {
+                $balance = $row;
+            }
+            $total += (int) $row->amount;
+            if (isset($row->deposit_percent) && $row->deposit_percent !== null && $row->deposit_percent !== '') {
+                $percent = PaymentRules::normalizeDepositPercent($row->deposit_percent);
+            }
+            if (isset($row->deposit_terms) && trim((string) $row->deposit_terms) !== '') {
+                $terms = (string) $row->deposit_terms;
+            }
+        }
+        $items = [];
+        foreach ($list as $row) {
+            $items[] = $this->presentRow($row, $actorId, $isAdmin, $deposit);
+        }
+        $currentRow = $this->currentRow($list) ?? ($list[0] ?? null);
+        $current = $currentRow
+            ? $this->presentRow($currentRow, $actorId, $isAdmin, $deposit)
+            : [];
+
+        return array_merge($current, [
+            'items' => $items,
+            'deposit' => $deposit ? $this->presentRow($deposit, $actorId, $isAdmin, $deposit) : null,
+            'balance' => $balance ? $this->presentRow($balance, $actorId, $isAdmin, $deposit) : null,
+            'current' => $current !== [] ? $current : null,
+            'total_amount' => $total,
+            'total_amount_label' => PaymentRules::amountLabel($total),
+            'deposit_percent' => $percent,
+            'deposit_terms' => $terms,
+            'split' => $deposit !== null && $balance !== null,
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function presentRow(MakerPayment $row, int $actorId, bool $isAdmin, ?MakerPayment $deposit = null): array
     {
         $job = null;
         try {
@@ -257,10 +374,26 @@ class PaymentService
             $job = null;
         }
         $title = $job ? (string) $job->title : '';
+        $kind = $this->rowKind($row);
         $canConfirm = $this->canConfirm($row, $actorId, $isAdmin);
         $canReport = $actorId > 0 && (int) $row->payer_user_id === $actorId
             && in_array((string) $row->status, [PaymentRules::STATUS_DUE, PaymentRules::STATUS_REPORTED], true);
+        if ($canReport && $kind === PaymentRules::KIND_BALANCE) {
+            $dep = $deposit ?? $this->rowByKind((int) $row->job_id, PaymentRules::KIND_DEPOSIT);
+            if ($dep && (string) $dep->status !== PaymentRules::STATUS_CONFIRMED) {
+                $canReport = false;
+            }
+        }
+        if ($canConfirm && $kind === PaymentRules::KIND_BALANCE && ! $isAdmin) {
+            $dep = $deposit ?? $this->rowByKind((int) $row->job_id, PaymentRules::KIND_DEPOSIT);
+            if ($dep && (string) $dep->status !== PaymentRules::STATUS_CONFIRMED) {
+                $canConfirm = false;
+            }
+        }
         $canRefund = $isAdmin && (string) $row->status !== PaymentRules::STATUS_REFUNDED;
+        $percent = isset($row->deposit_percent) && $row->deposit_percent !== null
+            ? PaymentRules::normalizeDepositPercent($row->deposit_percent)
+            : null;
 
         return [
             'id' => (int) $row->id,
@@ -271,6 +404,10 @@ class PaymentService
             'payee_user_id' => $row->payee_user_id !== null ? (int) $row->payee_user_id : null,
             'amount' => (int) $row->amount,
             'amount_label' => PaymentRules::amountLabel($row->amount),
+            'kind' => $kind,
+            'kind_label' => PaymentRules::kindLabel($kind),
+            'deposit_percent' => $percent,
+            'deposit_terms' => (string) ($row->deposit_terms ?? ''),
             'method' => PaymentRules::normalizeMethod($row->method),
             'method_label' => PaymentRules::methodLabel($row->method),
             'status' => PaymentRules::normalizeStatus($row->status),
@@ -299,17 +436,186 @@ class PaymentService
         ];
     }
 
-    private function requireRow(int $jobId): MakerPayment
+    /**
+     * @return Collection<int, MakerPayment>
+     */
+    private function rowsForJob(int $jobId): Collection
+    {
+        return MakerPayment::query()->where('job_id', $jobId)->orderBy('id')->get();
+    }
+
+    private function requireRow(int $jobId, ?int $paymentId = null, string $kind = ''): MakerPayment
     {
         if (! $this->enabled()) {
             throw new DomainException('결제 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
         }
-        $row = MakerPayment::query()->where('job_id', $jobId)->first();
-        if ($row === null) {
+        if ($paymentId !== null && $paymentId > 0) {
+            $row = MakerPayment::query()->find($paymentId);
+            if ($row === null || (int) $row->job_id !== $jobId) {
+                throw new DomainException('결제 내역이 없습니다.', 404);
+            }
+
+            return $row;
+        }
+        $kind = trim($kind);
+        if ($kind !== '' && $this->hasKindColumn()) {
+            $row = $this->rowByKind($jobId, PaymentRules::normalizeKind($kind));
+            if ($row === null) {
+                throw new DomainException('결제 내역이 없습니다. 낙찰 후 생성됩니다.', 404);
+            }
+
+            return $row;
+        }
+        $rows = $this->rowsForJob($jobId);
+        if ($rows->isEmpty()) {
             throw new DomainException('결제 내역이 없습니다. 낙찰 후 생성됩니다.', 404);
         }
+        $current = $this->currentRow($rows->all());
 
-        return $row;
+        return $current ?? $rows->first();
+    }
+
+    /**
+     * @param  list<MakerPayment>  $rows
+     */
+    private function currentRow(array $rows): ?MakerPayment
+    {
+        if ($rows === []) {
+            return null;
+        }
+        usort($rows, function (MakerPayment $a, MakerPayment $b) {
+            $ka = PaymentRules::kindSort($this->rowKind($a));
+            $kb = PaymentRules::kindSort($this->rowKind($b));
+            if ($ka !== $kb) {
+                return $ka <=> $kb;
+            }
+
+            return (int) $a->id <=> (int) $b->id;
+        });
+        foreach ($rows as $row) {
+            $status = (string) $row->status;
+            if (in_array($status, [PaymentRules::STATUS_DUE, PaymentRules::STATUS_REPORTED], true)) {
+                return $row;
+            }
+        }
+        foreach (array_reverse($rows) as $row) {
+            if ((string) $row->status === PaymentRules::STATUS_CONFIRMED) {
+                return $row;
+            }
+        }
+
+        return $rows[0];
+    }
+
+    private function rowByKind(int $jobId, string $kind): ?MakerPayment
+    {
+        if (! $this->hasKindColumn()) {
+            return MakerPayment::query()->where('job_id', $jobId)->first();
+        }
+
+        return MakerPayment::query()->where('job_id', $jobId)->where('kind', $kind)->first();
+    }
+
+    private function rowKind(MakerPayment $row): string
+    {
+        if (! $this->hasKindColumn() || ! isset($row->kind) || $row->kind === null || $row->kind === '') {
+            return PaymentRules::KIND_FULL;
+        }
+
+        return PaymentRules::normalizeKind($row->kind);
+    }
+
+    private function assertBalanceUnlocked(MakerPayment $row, int $jobId): void
+    {
+        if ($this->rowKind($row) !== PaymentRules::KIND_BALANCE) {
+            return;
+        }
+        $deposit = $this->rowByKind($jobId, PaymentRules::KIND_DEPOSIT);
+        if ($deposit && (string) $deposit->status !== PaymentRules::STATUS_CONFIRMED) {
+            throw new DomainException('계약금 입금 확인 후에 잔금을 처리할 수 있습니다.', 422);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $base
+     */
+    private function createRow(array $base, string $kind, int $amount, int $percent, string $depositTerms): MakerPayment
+    {
+        $attrs = $base;
+        $attrs['amount'] = max(0, $amount);
+        if ($this->hasKindColumn()) {
+            $attrs['kind'] = $kind;
+            $attrs['deposit_percent'] = $percent;
+            $attrs['deposit_terms'] = $depositTerms !== '' ? $depositTerms : null;
+        }
+
+        return MakerPayment::query()->create($attrs);
+    }
+
+    private function hasKindColumn(): bool
+    {
+        if ($this->kindColumn !== null) {
+            return $this->kindColumn;
+        }
+        try {
+            $this->kindColumn = Schema::hasColumn('maker_payments', 'kind');
+        } catch (\Throwable) {
+            $this->kindColumn = false;
+        }
+
+        return $this->kindColumn;
+    }
+
+    /**
+     * @param  array<string, mixed>  $terms
+     * @param  array<string, mixed>  $cfg
+     */
+    private function resolveDepositPercent(array $terms, MakerBid $bid, array $cfg): int
+    {
+        $fallback = PaymentRules::normalizeDepositPercent(
+            $cfg['default_deposit_percent'] ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT
+        );
+        $company = $this->companyForBid($bid);
+        if ($company && isset($company->deposit_percent) && $company->deposit_percent !== null && $company->deposit_percent !== '') {
+            $fallback = PaymentRules::normalizeDepositPercent($company->deposit_percent, $fallback);
+        }
+        if (array_key_exists('deposit_percent', $terms) && $terms['deposit_percent'] !== null && $terms['deposit_percent'] !== '') {
+            return PaymentRules::normalizeDepositPercent($terms['deposit_percent'], $fallback);
+        }
+
+        return $fallback;
+    }
+
+    /**
+     * @param  array<string, mixed>  $terms
+     */
+    private function resolveDepositTerms(array $terms, MakerBid $bid): string
+    {
+        if (array_key_exists('deposit_terms', $terms) && $terms['deposit_terms'] !== null && trim((string) $terms['deposit_terms']) !== '') {
+            return mb_substr(trim((string) $terms['deposit_terms']), 0, 500);
+        }
+        $company = $this->companyForBid($bid);
+        if ($company && isset($company->deposit_terms)) {
+            return mb_substr(trim((string) $company->deposit_terms), 0, 500);
+        }
+
+        return '';
+    }
+
+    private function companyForBid(MakerBid $bid): ?MakerCompany
+    {
+        try {
+            if ($bid->company_id) {
+                $company = MakerCompany::query()->find($bid->company_id);
+                if ($company) {
+                    return $company;
+                }
+            }
+
+            return MakerCompany::query()->where('user_id', (int) $bid->user_id)->first();
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function canSee(MakerPayment $row, int $actorId, bool $isAdmin): bool
@@ -357,17 +663,7 @@ class PaymentService
         if ($destination !== PaymentRules::DEST_MAKER) {
             return $platform;
         }
-        $company = null;
-        try {
-            if ($bid->company_id) {
-                $company = MakerCompany::query()->find($bid->company_id);
-            }
-            if ($company === null) {
-                $company = MakerCompany::query()->where('user_id', (int) $bid->user_id)->first();
-            }
-        } catch (\Throwable) {
-            $company = null;
-        }
+        $company = $this->companyForBid($bid);
         $maker = [
             'bank_name' => $company && isset($company->bank_name) ? trim((string) $company->bank_name) : '',
             'account_no' => $company && isset($company->account_no) ? trim((string) $company->account_no) : '',

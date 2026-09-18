@@ -68,6 +68,7 @@ class SettingsRules
                 'transfer_note' => '의뢰 #{job_id}',
                 'instructions' => '낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.',
                 'require_confirmed' => true,
+                'default_deposit_percent' => PaymentRules::DEFAULT_DEPOSIT_PERCENT,
             ],
         ];
     }
@@ -247,6 +248,9 @@ class SettingsRules
                 'transfer_note' => $transferNote !== '' ? $transferNote : '의뢰 #{job_id}',
                 'instructions' => $instructions,
                 'require_confirmed' => self::boolish($paymentIn['require_confirmed'] ?? true),
+                'default_deposit_percent' => PaymentRules::normalizeDepositPercent(
+                    $paymentIn['default_deposit_percent'] ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT
+                ),
             ],
         ];
     }
@@ -285,6 +289,9 @@ class SettingsRules
                 'transfer_note' => $all['payment']['transfer_note'],
                 'instructions' => $all['payment']['instructions'],
                 'require_confirmed' => $all['payment']['require_confirmed'],
+                'default_deposit_percent' => PaymentRules::normalizeDepositPercent(
+                    $all['payment']['default_deposit_percent'] ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT
+                ),
             ],
         ];
     }
@@ -368,6 +375,7 @@ class SettingsRules
             'transfer_note' => ['nullable', 'string', 'max:120'],
             'instructions' => ['nullable', 'string', 'max:2000'],
             'require_confirmed' => ['nullable'],
+            'default_deposit_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
             'menu' => ['nullable', 'array'],
             'notices' => ['nullable', 'array'],
             'general' => ['nullable', 'array'],

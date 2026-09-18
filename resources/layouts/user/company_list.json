@@ -181,6 +181,7 @@
                             "props": { "className": "flex gap-1 flex-wrap" },
                             "children": [
                               { "id": "ckind", "type": "basic", "name": "Span", "props": { "className": "cmb-badge" }, "text": "{{$item.kind_label || $item.kind}}" },
+                              { "id": "cdep", "type": "basic", "name": "Span", "if": "{{$item.deposit_label}}", "props": { "className": "cmb-badge" }, "text": "계약금 {{$item.deposit_label}}" },
                               { "id": "crec", "type": "basic", "name": "Span", "if": "{{$item.is_recommended}}", "props": { "className": "cmb-badge cmb-badge-rec" }, "text": "추천" }
                             ]
                           }

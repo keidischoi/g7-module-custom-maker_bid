@@ -679,7 +679,7 @@
                     "props": {
                       "className": "cmb-page-guide"
                     },
-                    "text": "{{job.data.payment.status_label}} · {{job.data.payment.amount_label}} · {{job.data.payment.destination_label}}"
+                    "text": "{{job.data.payment.status_label}} · {{job.data.payment.kind_label || '전액'}} {{job.data.payment.amount_label}}{{job.data.payment.split ? (' / 합계 ' + job.data.payment.total_amount_label + ' · 계약금 ' + job.data.payment.deposit_percent + '%') : ''}} · {{job.data.payment.destination_label}}"
                   },
                   {
                     "id": "pay_acct",
@@ -689,6 +689,41 @@
                       "className": "cmb-page-guide"
                     },
                     "text": "{{job.data.payment.bank_name}} {{job.data.payment.account_no}} {{job.data.payment.account_holder}} · 메모 {{job.data.payment.transfer_note}}"
+                  },
+                  {
+                    "id": "pay_terms",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.deposit_terms}}",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "계약금 조건: {{job.data.payment.deposit_terms}}"
+                  },
+                  {
+                    "id": "pay_items",
+                    "type": "basic",
+                    "name": "Div",
+                    "if": "{{job.data.payment.split}}",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "pay_item_{{idx}}",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide"
+                        },
+                        "iteration": {
+                          "source": "{{job.data.payment.items}}",
+                          "item_var": "$pay",
+                          "index_var": "idx"
+                        },
+                        "text": "{{$pay.kind_label}} {{$pay.amount_label}} · {{$pay.status_label}}"
+                      }
+                    ]
                   },
                   {
                     "id": "pay_inst",
@@ -759,7 +794,11 @@
                         "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/payment/report",
                         "params": {
                           "method": "POST",
-                          "body": "{{_local.pay}}"
+                          "body": {
+                            "depositor_name": "{{_local.pay.depositor_name}}",
+                            "memo": "{{_local.pay.memo}}",
+                            "kind": "{{job.data.payment.kind}}"
+                          }
                         },
                         "confirm": "입금을 신고할까요?",
                         "onSuccess": [
@@ -806,7 +845,9 @@
                         "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/payment/confirm",
                         "params": {
                           "method": "POST",
-                          "body": {}
+                          "body": {
+                            "kind": "{{job.data.payment.kind}}"
+                          }
                         },
                         "confirm": "입금을 확인할까요?",
                         "onSuccess": [
