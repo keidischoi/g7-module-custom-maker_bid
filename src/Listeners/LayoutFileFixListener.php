@@ -22,8 +22,8 @@ class LayoutFileFixListener implements HookListenerInterface
         if (! is_array($layout)) {
             return $layout;
         }
-        $name = (string) ($layout['layout_name'] ?? '');
-        return $this->walk($this->scrub($layout), $name);
+
+        return $this->walk($this->scrub($layout), (string) ($layout['layout_name'] ?? ''));
     }
 
     private function walk(mixed $node, string $layoutName): mixed
@@ -60,6 +60,7 @@ class LayoutFileFixListener implements HookListenerInterface
         $id = (string) ($node['id'] ?? '');
         $props = is_array($node['props'] ?? null) ? $node['props'] : [];
         $cls = (string) ($props['className'] ?? '');
+        $text = (string) ($node['text'] ?? $props['text'] ?? '');
 
         if ($name === 'FileUploader') {
             $collection = (string) ($props['collection'] ?? '');
@@ -73,9 +74,17 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($props['key']);
         }
 
-        if (str_contains($cls, 'cmb-open-bid-panel')) {
-            $node = $this->expandOpenPanel($node);
-            $props = is_array($node['props'] ?? null) ? $node['props'] : $props;
+        $goBid = str_contains($cls, 'cmb-open-bid-toggle')
+            || $text === '견적 넣기'
+            || $id === 'obid_btn'
+            || ($layoutName === 'jobs_show' && str_contains($cls, 'cmb-bid-submit'));
+        if ($goBid && in_array($name, ['Button', 'A'], true)) {
+            $node['name'] = 'A';
+            $node['text'] = '견적 넣기';
+            $job = '{{$item.id || route.id}}';
+            $props['href'] = '/maker-bids/bid?job='.$job;
+            $props['className'] = 'cmb-btn cmb-btn-primary';
+            unset($node['actions'], $props['type'], $props['data-cmb-open-bid'], $props['data-cmb-bid-submit']);
         }
 
         if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
@@ -90,45 +99,6 @@ class LayoutFileFixListener implements HookListenerInterface
         if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top'))) {
             $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '120', true);
         }
-
-        return $node;
-    }
-
-    private function expandOpenPanel(array $node): array
-    {
-        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $i => $child) {
-            if (($child['id'] ?? '') === 'obid_msg') {
-                $p = is_array($child['props'] ?? null) ? $child['props'] : [];
-                $p['placeholder'] = '포함 범위, 후가공, 배송, 수정 횟수, 유의사항';
-                $p['rows'] = '6';
-                $p['className'] = trim(($p['className'] ?? '').' min-h-[140px]');
-                $kids[$i]['props'] = $p;
-            }
-        }
-        $has = false;
-        foreach ($kids as $child) {
-            if (($child['id'] ?? '') === 'obid_mat') {
-                $has = true;
-            }
-        }
-        if (! $has) {
-            $extra = [
-                ['id' => 'obid_mat_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['className' => 'text-sm font-medium', 'text' => '소재 / 공정']],
-                ['id' => 'obid_mat', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'material', 'placeholder' => '예: PLA, 0.2mm, 무후가공', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm']],
-                ['id' => 'obid_scope_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['className' => 'text-sm font-medium', 'text' => '포함 범위']],
-                ['id' => 'obid_scope', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'scope', 'placeholder' => '예: 출력+후가공+포장 (모델링 별도)', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm']],
-            ];
-            $at = count($kids);
-            foreach ($kids as $i => $child) {
-                if (($child['id'] ?? '') === 'obid_msg') {
-                    $at = $i + 1;
-                    break;
-                }
-            }
-            array_splice($kids, $at, 0, $extra);
-        }
-        $node['children'] = $kids;
 
         return $node;
     }
