@@ -5,6 +5,7 @@ namespace Modules\Custom\MakerBids\Services;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Modules\Custom\MakerBids\Models\MakerBid;
+use Modules\Custom\MakerBids\Models\MakerBidRevision;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\BidRules;
@@ -38,8 +39,10 @@ class BidService
             }
             $existing->fill($this->writeAttributes($payload, $company, true));
             $existing->save();
+            $fresh = $existing->fresh() ?? $existing;
+            $this->snapshot($fresh, 'update');
 
-            return ['bid' => $existing->fresh() ?? $existing, 'created' => false];
+            return ['bid' => $fresh, 'created' => false];
         }
 
         $bid = MakerBid::query()->create([
@@ -51,6 +54,7 @@ class BidService
             'message' => $payload['message'] ?? null,
             'status' => 'pending',
         ]);
+        $this->snapshot($bid, 'create');
 
         try {
             $market = app(MarketplaceService::class);
@@ -87,8 +91,28 @@ class BidService
         $this->assertEligible($userId, $job, $company, $isAdmin);
         $bid->fill($this->writeAttributes($payload, $company, true));
         $bid->save();
+        $fresh = $bid->fresh() ?? $bid;
+        $this->snapshot($fresh, 'update');
 
-        return $bid->fresh() ?? $bid;
+        return $fresh;
+    }
+
+    public function listRevisions(int $jobId, int $userId, bool $isAdmin = false): array
+    {
+        $q = MakerBidRevision::query()->where('job_id', $jobId)->latest();
+        if (! $isAdmin) {
+            $q->where('user_id', $userId);
+        }
+        return $q->limit(50)->get()->map(fn (MakerBidRevision $row) => [
+            'id' => (int) $row->id,
+            'event' => (string) $row->event,
+            'event_label' => $row->event === 'create' ? '초회 등록' : '수정',
+            'amount' => (int) $row->amount,
+            'days' => $row->days !== null ? (int) $row->days : null,
+            'message' => $row->message,
+            'status' => $row->status,
+            'created_at' => optional($row->created_at)?->toDateTimeString(),
+        ])->all();
     }
 
     public function listMine(int $userId): Collection
@@ -141,6 +165,7 @@ class BidService
         if ($allowed !== []) {
             $bid->fill($allowed);
             $bid->save();
+            $this->snapshot($bid->fresh() ?? $bid, 'update');
         }
 
         return $this->findAdmin($id);
@@ -156,6 +181,7 @@ class BidService
             'status' => (string) $job->status,
             'status_label' => JobRules::statusLabel((string) $job->status),
         ] : null;
+        $row['revisions'] = $this->listRevisions((int) $bid->job_id, (int) $bid->user_id, true);
 
         return $row;
     }
@@ -171,7 +197,25 @@ class BidService
             }
             $job->save();
         }
+        MakerBidRevision::query()->where('bid_id', $bid->id)->delete();
         $bid->delete();
+    }
+
+    private function snapshot(MakerBid $bid, string $event): void
+    {
+        try {
+            MakerBidRevision::query()->create([
+                'bid_id' => (int) $bid->id,
+                'job_id' => (int) $bid->job_id,
+                'user_id' => (int) $bid->user_id,
+                'event' => $event,
+                'amount' => (int) $bid->amount,
+                'days' => $bid->days,
+                'message' => $bid->message,
+                'status' => $bid->status,
+            ]);
+        } catch (\Throwable) {
+        }
     }
 
     private function assertCanWrite(int $userId, MakerJob $job, bool $isAdmin = false): void
