@@ -29,8 +29,8 @@ Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware([
 Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
 Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
-Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:60,1'])->name('jobs.bids.store');
-Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['optional.sanctum', 'throttle:60,1'])->name('jobs.bids.update');
+Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.store');
+Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.update');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
@@ -63,37 +63,4 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::get('jobs/{id}/export', [MarketplaceController::class, 'export'])->whereNumber('id')->name('jobs.export');
     Route::get('jobs/{id}/reviews', [MarketplaceController::class, 'reviews'])->whereNumber('id')->name('jobs.reviews');
     Route::get('companies/{id}/reviews', [MarketplaceController::class, 'companyReviews'])->whereNumber('id')->name('companies.reviews');
-});
-
-Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(function () {
-    Route::get('jobs', [JobAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.jobs.index');
-    Route::get('jobs/{id}', [JobAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.jobs.show');
-    Route::patch('jobs/{id}', [JobAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.update');
-    Route::post('jobs/{id}/approve', [JobAdminController::class, 'approve'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.approve');
-    Route::post('jobs/{id}/hold', [JobAdminController::class, 'hold'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.hold');
-    Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.cancel');
-    Route::delete('jobs/{id}', [JobAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.delete')->name('admin.jobs.destroy');
-    Route::get('job-types', [JobTypeAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.job-types.index');
-    Route::post('job-types', [JobTypeAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.store');
-    Route::patch('job-types/{id}', [JobTypeAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.update');
-    Route::post('job-types/{id}/move', [JobTypeAdminController::class, 'move'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.move');
-    Route::delete('job-types/{id}', [JobTypeAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.destroy');
-    Route::get('bids', [BidAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.index');
-    Route::get('bids/{id}', [BidAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.read')->name('admin.bids.show');
-    Route::patch('bids/{id}', [BidAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.update')->name('admin.bids.update');
-    Route::delete('bids/{id}', [BidAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.bids.delete')->name('admin.bids.destroy');
-    Route::get('companies', [CompanyAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.companies.read')->name('admin.companies.index');
-    Route::get('companies/{id}', [CompanyAdminController::class, 'show'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.read')->name('admin.companies.show');
-    Route::post('companies', [CompanyAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.companies.create')->name('admin.companies.store');
-    Route::patch('companies/{id}', [CompanyAdminController::class, 'update'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.update');
-    Route::post('companies/{id}/approve', [CompanyAdminController::class, 'approve'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.approve');
-    Route::post('companies/{id}/hold', [CompanyAdminController::class, 'hold'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.hold');
-    Route::post('companies/{id}/reject', [CompanyAdminController::class, 'reject'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.update')->name('admin.companies.reject');
-    Route::delete('companies/{id}', [CompanyAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.companies.delete')->name('admin.companies.destroy');
-    Route::get('settings', [SettingsAdminController::class, 'show'])->middleware('permission:admin,custom-maker_bids.settings.read')->name('admin.settings.show');
-    Route::put('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.update');
-    Route::patch('settings', [SettingsAdminController::class, 'update'])->middleware('permission:admin,custom-maker_bids.settings.update')->name('admin.settings.patch');
-    Route::get('ops', [MarketplaceAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.ops');
-    Route::post('claims/{id}', [MarketplaceAdminController::class, 'resolveClaim'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.claims.resolve');
-    Route::post('reports/{id}', [MarketplaceAdminController::class, 'resolveReport'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.reports.resolve');
 });
