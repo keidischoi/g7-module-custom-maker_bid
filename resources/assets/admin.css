@@ -776,7 +776,23 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-admin-row[data-cmb-status="open"] .cmb-btn-approve,
 .cmb-admin-row[data-cmb-status="approved"] .cmb-btn-approve,
 .cmb-admin-toolbar[data-cmb-status="quote_request"] .cmb-btn-approve,
-.cmb-admin-toolbar[data-cmb-status="open"] .cmb-btn-approve {
+.cmb-admin-toolbar[data-cmb-status="open"] .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin .cmb-btn-approve.is-active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-approve[data-cmb-active="1"],
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve.is-active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve[data-cmb-active="1"],
+html.cmb-admin-ui .cmb-admin .cmb-status-quote_request .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin .cmb-status-open .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin .cmb-status-approved .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin .cmb-status-quote_request .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin .cmb-status-open .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin .cmb-status-approved .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin-row[data-cmb-status="quote_request"] .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin-row[data-cmb-status="open"] .cmb-btn-approve,
+html.cmb-admin-ui .cmb-admin-row[data-cmb-status="approved"] .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin-row[data-cmb-status="quote_request"] .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin-row[data-cmb-status="open"] .cmb-btn-approve,
+html.cmb-admin-dark .cmb-admin-row[data-cmb-status="approved"] .cmb-btn-approve {
   background: rgb(5 150 105) !important;
   color: #fff !important;
   border-color: rgb(4 120 87) !important;
@@ -792,7 +808,19 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-entity-company.cmb-status-pending .cmb-btn-hold,
 .cmb-admin-row[data-cmb-status="hold"] .cmb-btn-hold,
 .cmb-admin-row[data-cmb-entity="company"][data-cmb-status="pending"] .cmb-btn-hold,
-.cmb-admin-toolbar[data-cmb-status="hold"] .cmb-btn-hold {
+.cmb-admin-toolbar[data-cmb-status="hold"] .cmb-btn-hold,
+html.cmb-admin-ui .cmb-admin .cmb-btn-hold.is-active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-hold[data-cmb-active="1"],
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold.is-active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold[data-cmb-active="1"],
+html.cmb-admin-ui .cmb-admin .cmb-status-hold .cmb-btn-hold,
+html.cmb-admin-ui .cmb-admin .cmb-entity-company.cmb-status-pending .cmb-btn-hold,
+html.cmb-admin-dark .cmb-admin .cmb-status-hold .cmb-btn-hold,
+html.cmb-admin-dark .cmb-admin .cmb-entity-company.cmb-status-pending .cmb-btn-hold,
+html.cmb-admin-ui .cmb-admin-row[data-cmb-status="hold"] .cmb-btn-hold,
+html.cmb-admin-dark .cmb-admin-row[data-cmb-status="hold"] .cmb-btn-hold,
+html.cmb-admin-ui .cmb-admin-row[data-cmb-entity="company"][data-cmb-status="pending"] .cmb-btn-hold,
+html.cmb-admin-dark .cmb-admin-row[data-cmb-entity="company"][data-cmb-status="pending"] .cmb-btn-hold {
   background: rgb(217 119 6) !important;
   color: #fff !important;
   border-color: rgb(180 83 9) !important;
@@ -805,7 +833,11 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-btn-reject.is-active,
 .cmb-btn-reject[data-cmb-active="1"],
 .cmb-status-rejected .cmb-btn-reject,
-.cmb-admin-row[data-cmb-status="rejected"] .cmb-btn-reject {
+.cmb-admin-row[data-cmb-status="rejected"] .cmb-btn-reject,
+html.cmb-admin-ui .cmb-admin .cmb-btn-reject.is-active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-reject.is-active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-reject[data-cmb-active="1"],
+html.cmb-admin-dark .cmb-admin .cmb-btn-reject[data-cmb-active="1"] {
   background: rgb(220 38 38) !important;
   color: #fff !important;
   border-color: rgb(185 28 28) !important;
@@ -819,8 +851,14 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-admin .cmb-btn-approve[data-cmb-pressed="1"],
 .cmb-btn-approve:active,
 .cmb-btn-approve.is-pressed,
-.cmb-btn-approve[data-cmb-pressed="1"] {
-  transform: scale(0.94) translateY(1px);
+.cmb-btn-approve[data-cmb-pressed="1"],
+html.cmb-admin-ui .cmb-admin .cmb-btn-approve:active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-approve.is-pressed,
+html.cmb-admin-ui .cmb-admin .cmb-btn-approve[data-cmb-pressed="1"],
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve:active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve.is-pressed,
+html.cmb-admin-dark .cmb-admin .cmb-btn-approve[data-cmb-pressed="1"] {
+  transform: scale(0.9) translateY(1px);
   background: rgb(5 150 105) !important;
   color: #fff !important;
   border-color: rgb(4 120 87) !important;
@@ -832,8 +870,14 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-admin .cmb-btn-hold[data-cmb-pressed="1"],
 .cmb-btn-hold:active,
 .cmb-btn-hold.is-pressed,
-.cmb-btn-hold[data-cmb-pressed="1"] {
-  transform: scale(0.94) translateY(1px);
+.cmb-btn-hold[data-cmb-pressed="1"],
+html.cmb-admin-ui .cmb-admin .cmb-btn-hold:active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-hold.is-pressed,
+html.cmb-admin-ui .cmb-admin .cmb-btn-hold[data-cmb-pressed="1"],
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold:active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold.is-pressed,
+html.cmb-admin-dark .cmb-admin .cmb-btn-hold[data-cmb-pressed="1"] {
+  transform: scale(0.9) translateY(1px);
   background: rgb(217 119 6) !important;
   color: #fff !important;
   border-color: rgb(180 83 9) !important;
@@ -845,8 +889,12 @@ html.cmb-admin-dark .cmb-btn-reject {
 .cmb-admin .cmb-btn-reject[data-cmb-pressed="1"],
 .cmb-btn-reject:active,
 .cmb-btn-reject.is-pressed,
-.cmb-btn-reject[data-cmb-pressed="1"] {
-  transform: scale(0.94) translateY(1px);
+.cmb-btn-reject[data-cmb-pressed="1"],
+html.cmb-admin-ui .cmb-admin .cmb-btn-reject:active,
+html.cmb-admin-dark .cmb-admin .cmb-btn-reject:active,
+html.cmb-admin-ui .cmb-admin .cmb-btn-reject.is-pressed,
+html.cmb-admin-dark .cmb-admin .cmb-btn-reject.is-pressed {
+  transform: scale(0.9) translateY(1px);
   background: rgb(220 38 38) !important;
   color: #fff !important;
   border-color: rgb(185 28 28) !important;

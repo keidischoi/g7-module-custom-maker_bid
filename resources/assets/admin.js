@@ -233,7 +233,7 @@
       btn.__cmbPressT = setTimeout(function () {
         btn.removeAttribute('data-cmb-pressed');
         btn.classList.remove('is-pressed');
-      }, 220);
+      }, 360);
     }
     document.addEventListener('pointerdown', function (e) { press(targetBtn(e)); }, true);
     document.addEventListener('keydown', function (e) {
