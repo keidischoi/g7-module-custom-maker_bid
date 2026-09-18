@@ -4,6 +4,17 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.24] - 2026-09-18
+
+### Fixed
+- **의뢰목록 검색 백스페이스**: G7 Input을 숨기고 네이티브 입력만 쓰며, 포커스 중에는 URL 값으로 덮지 않음.
+- **유형·상태 필터 무반응**: 같은 경로 G7 `navigate` 대신 jobs API를 직접 조회해 카드를 갱신. 칩 클릭은 soft-nav에서 제외.
+- **정렬 셀렉트 빈 화살표**: G7 Select 트리거를 숨기고 네이티브 `<select>`를 표시.
+- **입찰현황 「견적 넣기」 큰 버튼**: `jobs_bids`에서는 인라인 토글을 유지하고, 카드는 세로 배치 + 작은 버튼.
+
+### Changed
+- 버전·캐시 버스트 **0.10.24**.
+
 ## [0.10.23] - 2026-09-18
 
 ### Fixed

@@ -64,11 +64,39 @@
   white-space: normal !important;
 }
 
-.cmb-page .cmb-job-card.cmb-list-item {
+.cmb-page a.cmb-job-card.cmb-list-item {
   display: flex !important;
   flex-direction: row !important;
   align-items: flex-start;
   gap: 0.75rem;
+}
+
+.cmb-page .cmb-open-bid-card,
+.cmb-page .cmb-card-list > .cmb-job-card.cmb-open-bid-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+
+.cmb-page .cmb-open-bid-card .cmb-job-card-actions {
+  display: flex !important;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.cmb-page .cmb-open-bid-card .cmb-job-card-actions .cmb-btn,
+.cmb-page .cmb-job-card-actions .cmb-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  min-height: 2rem;
+  height: auto;
 }
 
 .cmb-page .cmb-job-card-main {
@@ -139,17 +167,36 @@
 
 .cmb-search-sort,
 [data-cmb-sort-wrap] {
+  position: relative;
   flex: 0 0 auto !important;
   width: 8.5rem !important;
   min-width: 8.5rem !important;
 }
 
+.cmb-search-sort > *:not([data-cmb-sort-free]),
+[data-cmb-sort-wrap] > *:not([data-cmb-sort-free]) {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
 .cmb-search-sort select,
 [data-cmb-sort-free],
-[data-cmb-sort-select] {
+.cmb-search-sort-free {
+  display: block !important;
   width: 8.5rem !important;
   min-width: 8.5rem !important;
   height: 2.5rem !important;
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  color: inherit !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 0.5rem !important;
+  padding: 0 0.6rem !important;
 }
 
 .cmb-status-chips,
