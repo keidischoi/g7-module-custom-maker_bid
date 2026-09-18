@@ -11,7 +11,6 @@ use Modules\Custom\MakerBids\Support\CompanyRules;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobPresenter;
 use Modules\Custom\MakerBids\Support\JobRules;
-use Modules\Custom\MakerBids\Support\PrivacyRules;
 use Modules\Custom\MakerBids\Support\SettingsRules;
 use Modules\Custom\MakerBids\Support\TypeCatalog;
 use Modules\Custom\MakerBids\Support\UploadRules;
@@ -25,7 +24,7 @@ class JobService
 
     public function listPublic(Request $request): array
     {
-        $q = MakerJob::query()->with(['jobType'])->withCount('bids');
+        $q = MakerJob::query()->with(['jobType', 'files'])->withCount('bids');
         $ctx = $this->viewerFromRequest($request);
         if (! $ctx['isAdmin'] && ! $ctx['isMember'] && ! $this->settingBool('general.guests_see_list', true)) {
             return [];
@@ -39,7 +38,7 @@ class JobService
             });
         }
         return $q->orderByDesc('id')->limit(100)->get()
-            ->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
+            ->map(fn (MakerJob $job) => $this->present($job, $ctx, false, true))->all();
     }
 
     public function listMine(int $userId): array
@@ -50,7 +49,7 @@ class JobService
 
     public function listAdmin(Request $request): array
     {
-        $q = MakerJob::query()->with(['jobType'])->withCount('bids')->latest();
+        $q = MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->latest();
         if ($status = $request->query('status')) {
             $q->where('status', $status);
         }
@@ -147,7 +146,8 @@ class JobService
     {
         $job = MakerJob::query()->findOrFail($id);
         if (isset($payload['status']) && $payload['status'] !== '') {
-            $job->status = JobRules::normalizeListingStatus($payload['status']);
+            $st = (string) $payload['status'];
+            $job->status = in_array($st, JobRules::STATUSES, true) ? $st : JobRules::normalizeListingStatus($st);
         }
         if (isset($payload['title'])) {
             $job->title = $payload['title'];
@@ -244,7 +244,12 @@ class JobService
     private function present(MakerJob $job, array $ctx, bool $includeBids, bool $includeFiles): array
     {
         $files = $includeFiles ? ($job->relationLoaded('files') ? $job->files : $this->files->forJob((int) $job->id)) : [];
-        return JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        $payload = JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        $first = $payload['images'][0] ?? null;
+        if (is_array($first)) {
+            $payload['image_url'] = $first['thumbnail_url'] ?? $first['url'] ?? $first['download_url'] ?? null;
+        }
+        return $payload;
     }
 
     private function ownerContext(int $userId): array
