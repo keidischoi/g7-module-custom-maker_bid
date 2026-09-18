@@ -6,8 +6,6 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const EXISTING_SRC = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21';
-
     public static function getSubscribedHooks(): array
     {
         return [
@@ -24,55 +22,23 @@ class LayoutFileFixListener implements HookListenerInterface
         if (! is_array($layout)) {
             return $layout;
         }
-        $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->scrub($layout);
-        $layout = $this->bindUploaders($layout, $name);
-        if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show', 'jobs_edit'], true)
-            || str_contains($name, 'jobs_form')
-            || str_contains($name, 'company_apply')) {
-            $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
-            $found = false;
-            foreach ($scripts as $i => $script) {
-                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'existing-files.js')) {
-                    $scripts[$i]['src'] = self::EXISTING_SRC;
-                    $found = true;
-                }
-            }
-            if (! $found) {
-                $scripts[] = [
-                    'id' => 'cmb_maker_existing',
-                    'src' => self::EXISTING_SRC,
-                    'async' => true,
-                    'optional' => true,
-                    'required' => false,
-                    'failOnError' => false,
-                ];
-            }
-            $layout['scripts'] = $scripts;
-        }
 
-        return $layout;
+        return $this->bindUploaders($layout);
     }
 
-    private function bindUploaders(array $node, string $layoutName): array
+    private function bindUploaders(array $node): array
     {
-        $name = (string) ($node['name'] ?? '');
-        $id = (string) ($node['id'] ?? '');
-        if ($name === 'FileUploader') {
+        if (($node['name'] ?? '') === 'FileUploader') {
             $props = is_array($node['props'] ?? null) ? $node['props'] : [];
             $collection = (string) ($props['collection'] ?? '');
-            $endpoints = is_array($props['apiEndpoints'] ?? null) ? $props['apiEndpoints'] : [];
+            $id = (string) ($node['id'] ?? '');
             if ($collection === 'images' || str_contains($id, 'images')) {
                 $props['initialFiles'] = '{{job.data.images || []}}';
-                $endpoints['upload'] = '/api/modules/custom-maker_bids/jobs/{{route.id}}/files';
             } elseif ($collection === 'archives' || str_contains($id, 'archives')) {
                 $props['initialFiles'] = '{{job.data.archives || []}}';
-                $endpoints['upload'] = '/api/modules/custom-maker_bids/jobs/{{route.id}}/files';
             } elseif ($collection === 'logos' || str_contains($id, 'logo')) {
-                $props['initialFiles'] = '{{me.data.logo_files || company.data.logo_files || []}}';
-            }
-            if ($endpoints !== []) {
-                $props['apiEndpoints'] = $endpoints;
+                $props['initialFiles'] = '{{me.data.logo_files || me.data.logo_file || []}}';
             }
             unset($props['key']);
             $node['props'] = $props;
@@ -83,7 +49,7 @@ class LayoutFileFixListener implements HookListenerInterface
             }
             foreach ($node[$key] as $i => $child) {
                 if (is_array($child)) {
-                    $node[$key][$i] = $this->bindUploaders($child, $layoutName);
+                    $node[$key][$i] = $this->bindUploaders($child);
                 }
             }
         }
@@ -94,7 +60,7 @@ class LayoutFileFixListener implements HookListenerInterface
                 }
                 foreach ($items as $i => $child) {
                     if (is_array($child)) {
-                        $node['slots'][$slot][$i] = $this->bindUploaders($child, $layoutName);
+                        $node['slots'][$slot][$i] = $this->bindUploaders($child);
                     }
                 }
             }
@@ -105,12 +71,8 @@ class LayoutFileFixListener implements HookListenerInterface
 
     private function scrub(mixed $node): mixed
     {
-        if (is_string($node)) {
-            if (str_contains($node, 'Date.now()')) {
-                return '1';
-            }
-
-            return $node;
+        if (is_string($node) && str_contains($node, 'Date.now()')) {
+            return '1';
         }
         if (! is_array($node)) {
             return $node;
