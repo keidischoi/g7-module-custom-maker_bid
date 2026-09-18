@@ -36,22 +36,45 @@ class LayoutFileFixListener implements HookListenerInterface
             if (! isset($node[$key]) || ! is_array($node[$key])) {
                 continue;
             }
-            foreach ($node[$key] as $i => $child) {
-                $node[$key][$i] = $this->walk($child, $layoutName);
+            $kept = [];
+            foreach ($node[$key] as $child) {
+                $child = $this->walk($child, $layoutName);
+                if ($this->isInlineBidPanel($child)) {
+                    continue;
+                }
+                $kept[] = $child;
             }
+            $node[$key] = $kept;
         }
         if (isset($node['slots']) && is_array($node['slots'])) {
             foreach ($node['slots'] as $slot => $items) {
                 if (! is_array($items)) {
                     continue;
                 }
-                foreach ($items as $i => $child) {
-                    $node['slots'][$slot][$i] = $this->walk($child, $layoutName);
+                $kept = [];
+                foreach ($items as $child) {
+                    $child = $this->walk($child, $layoutName);
+                    if ($this->isInlineBidPanel($child)) {
+                        continue;
+                    }
+                    $kept[] = $child;
                 }
+                $node['slots'][$slot] = $kept;
             }
         }
 
         return $node;
+    }
+
+    private function isInlineBidPanel(mixed $node): bool
+    {
+        if (! is_array($node)) {
+            return false;
+        }
+        $id = (string) ($node['id'] ?? '');
+        $cls = (string) (($node['props']['className'] ?? ''));
+
+        return str_contains($cls, 'cmb-open-bid-panel') || $id === 'obid_panel';
     }
 
     private function touch(array $node, string $layoutName): array
