@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.38] - 2026-09-18
+
+### Added
+- **업체 신고**: 작업실 분쟁·신고 카드와 분쟁 메뉴에 업체신고 폼을 둡니다. `POST /companies/{id}/report`로 접수하면 `maker_companies.report_count`가 올라갑니다.
+- 작업실 의뢰 신고(`POST /jobs/{id}/report`)도 낙찰 업체의 신고 건수에 반영합니다.
+- `maker_reports.company_id`로 업체와 신고를 연결합니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.38**.
+
 ## [0.10.37] - 2026-09-18
 
 ### Fixed

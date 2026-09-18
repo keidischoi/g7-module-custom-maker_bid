@@ -35,6 +35,13 @@
       }
     }
   },
+  "state": {
+    "company_report": {
+      "company_id": "",
+      "factor": "fraud",
+      "reason": ""
+    }
+  },
   "data_sources": [
     {
       "id": "disputes",
@@ -58,6 +65,21 @@
       "params": {
         "page": "{{query.page || 1}}",
         "per_page": "{{query.per_page || 10}}"
+      }
+    },
+    {
+      "id": "companies",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/companies",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "fallback": {
+        "data": []
+      },
+      "params": {
+        "page": 1,
+        "per_page": 100
       }
     }
   ],
@@ -182,6 +204,206 @@
             ]
           },
           {
+            "id": "company_report_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card",
+              "data-cmb-company-report": "disputes"
+            },
+            "children": [
+              {
+                "id": "crh",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "업체 신고"
+              },
+              {
+                "id": "crg",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide mt-1"
+                },
+                "text": "업체를 고르고 요인을 남겨 주세요. 접수하면 업체정보 신고 건수에 반영됩니다."
+              },
+              {
+                "id": "company_report_box",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-order-card mt-3 space-y-2",
+                  "dataKey": "company_report",
+                  "trackChanges": true
+                },
+                "children": [
+                  {
+                    "id": "cr_co_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "신고 업체"
+                  },
+                  {
+                    "id": "cr_co_host",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-company-report-host",
+                      "data-cmb-company-report-host": "1"
+                    }
+                  },
+                  {
+                    "id": "cr_factor_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "신고 요인"
+                  },
+                  {
+                    "id": "cr_factor",
+                    "type": "basic",
+                    "name": "Select",
+                    "props": {
+                      "name": "factor",
+                      "value": "{{_local.company_report.factor}}",
+                      "className": "cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm",
+                      "options": [
+                        {
+                          "value": "fraud",
+                          "label": "사기·허위"
+                        },
+                        {
+                          "value": "quality",
+                          "label": "제품 품질 문제"
+                        },
+                        {
+                          "value": "shipping",
+                          "label": "배송 문제"
+                        },
+                        {
+                          "value": "delay",
+                          "label": "납기 지연"
+                        },
+                        {
+                          "value": "damage",
+                          "label": "파손·분실"
+                        },
+                        {
+                          "value": "spec",
+                          "label": "사양·수량 불일치"
+                        },
+                        {
+                          "value": "communication",
+                          "label": "소통 불량"
+                        },
+                        {
+                          "value": "payment",
+                          "label": "결제·대금 문제"
+                        },
+                        {
+                          "value": "other",
+                          "label": "기타"
+                        }
+                      ]
+                    },
+                    "actions": [
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "company_report.factor": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "cr_reason_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "신고 내용"
+                  },
+                  {
+                    "id": "cr_reason",
+                    "type": "basic",
+                    "name": "Textarea",
+                    "props": {
+                      "name": "reason",
+                      "placeholder": "구체적인 내용을 적어 주세요",
+                      "className": "cmb-order-field w-full min-h-[64px] rounded-lg border px-3 py-2 text-sm"
+                    }
+                  },
+                  {
+                    "id": "cr_btn",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "업체 신고",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-secondary",
+                      "data-cmb-company-report-submit": "1"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/companies/{{_local.company_report.company_id}}/report",
+                        "params": {
+                          "method": "POST",
+                          "body": "{{_local.company_report}}"
+                        },
+                        "confirm": "이 업체를 신고할까요? 업체정보 신고 건수에 반영됩니다.",
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "업체 신고를 접수했습니다."
+                            }
+                          },
+                          {
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "company_report.reason": ""
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "disputes"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "id": "disputes_card",
             "type": "basic",
             "name": "Div",
@@ -216,7 +438,7 @@
                 "props": {
                   "className": "cmb-page-guide mt-2"
                 },
-                "text": "접수한 분쟁·신고가 없습니다. 낙찰된 의뢰의 작업실에서 사유를 골라 접수하세요."
+                "text": "접수한 분쟁·신고가 없습니다. 위에서 업체를 신고하거나, 낙찰된 의뢰의 작업실에서 사유를 골라 접수하세요."
               },
               {
                 "id": "nlist",
@@ -245,7 +467,7 @@
                         "props": {
                           "className": "cmb-job-card-title"
                         },
-                        "text": "{{$d.kind_label}} · {{$d.factor_label}} · {{$d.job_title}}"
+                        "text": "{{$d.kind_label}} · {{$d.factor_label}} · {{$d.company_name || $d.job_title}}"
                       },
                       {
                         "id": "nm",
@@ -264,6 +486,17 @@
                           "className": "cmb-job-card-actions mt-2"
                         },
                         "children": [
+                          {
+                            "id": "nco",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$d.company_id}}",
+                            "props": {
+                              "href": "/maker-bids/companies",
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "text": "업체 목록"
+                          },
                           {
                             "id": "njob",
                             "type": "basic",

@@ -595,6 +595,7 @@ class MarketplaceService
         $job = MakerJob::query()->findOrFail($jobId);
         $factor = DisputeRules::normalizeFactor($factor !== '' ? $factor : $reason);
         $stored = DisputeRules::composeReason($factor, $reason);
+        $company = $this->awardedCompany($job);
         $row = [
             'job_id' => $jobId,
             'user_id' => $userId,
@@ -606,15 +607,84 @@ class MarketplaceService
         if (Schema::hasColumn('maker_reports', 'factor')) {
             $row['factor'] = $factor;
         }
+        if (Schema::hasColumn('maker_reports', 'company_id') && $company['id'] > 0) {
+            $row['company_id'] = $company['id'];
+        }
         $id = DB::table('maker_reports')->insertGetId($row);
-        $this->audit($userId, 'report.open', 'job', $jobId, ['factor' => $factor, 'report_id' => $id]);
+        $this->touchCompanyReport($company['id'], $userId, $stored);
+        $this->audit($userId, 'report.open', 'job', $jobId, ['factor' => $factor, 'report_id' => $id, 'company_id' => $company['id']]);
         $this->notify((int) $job->user_id, 'report.open', '신고가 접수되었습니다.', DisputeRules::factorLabel($factor).' · '.(string) $job->title, $jobId);
+        if ($company['user_id'] > 0 && $company['user_id'] !== $userId && $company['user_id'] !== (int) $job->user_id) {
+            $this->notify($company['user_id'], 'report.open', '업체 신고가 접수되었습니다.', DisputeRules::factorLabel($factor).' · '.$company['name'], $jobId);
+        }
 
         return $this->presentDisputeRow((object) array_merge($row, [
             'id' => $id,
             'job_title' => (string) $job->title,
             'job_status' => (string) $job->status,
+            'company_name' => $company['name'],
         ]), 'report');
+    }
+
+    public function reportCompany(int $userId, int $companyId, string $reason, string $factor = 'fraud', int $jobId = 0): array
+    {
+        if (! Schema::hasTable('maker_reports')) {
+            throw new DomainException('신고 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
+        }
+        if ($userId < 1) {
+            throw new DomainException('로그인이 필요합니다.', 401);
+        }
+        if ($companyId < 1) {
+            throw new DomainException('신고할 업체를 선택하세요.', 422);
+        }
+        $company = MakerCompany::query()->find($companyId);
+        if ($company === null) {
+            throw new DomainException('업체를 찾을 수 없습니다.', 404);
+        }
+        if ((int) $company->user_id === $userId) {
+            throw new DomainException('본인 업체는 신고할 수 없습니다.', 403);
+        }
+        $job = null;
+        $jobId = max(0, $jobId);
+        if ($jobId > 0) {
+            $job = MakerJob::query()->find($jobId);
+            if ($job === null) {
+                $jobId = 0;
+            }
+        }
+        $factor = DisputeRules::normalizeFactor($factor !== '' ? $factor : $reason);
+        $stored = DisputeRules::composeReason($factor, $reason);
+        $row = [
+            'job_id' => $jobId,
+            'user_id' => $userId,
+            'reason' => $stored,
+            'status' => 'open',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+        if (Schema::hasColumn('maker_reports', 'factor')) {
+            $row['factor'] = $factor;
+        }
+        if (Schema::hasColumn('maker_reports', 'company_id')) {
+            $row['company_id'] = $companyId;
+        }
+        $id = DB::table('maker_reports')->insertGetId($row);
+        $this->touchCompanyReport($companyId, $userId, $stored);
+        $this->audit($userId, 'report.company', 'company', $companyId, [
+            'factor' => $factor,
+            'report_id' => $id,
+            'job_id' => $jobId,
+        ]);
+        if ((int) $company->user_id > 0 && (int) $company->user_id !== $userId) {
+            $this->notify((int) $company->user_id, 'report.open', '업체 신고가 접수되었습니다.', DisputeRules::factorLabel($factor).' · '.(string) $company->name, $jobId);
+        }
+
+        return $this->presentDisputeRow((object) array_merge($row, [
+            'id' => $id,
+            'job_title' => $job ? (string) $job->title : '',
+            'job_status' => $job ? (string) $job->status : '',
+            'company_name' => (string) $company->name,
+        ]), 'company_report');
     }
 
     public function listMineDisputes(int $userId): array
@@ -627,7 +697,7 @@ class MarketplaceService
         }
         if (Schema::hasTable('maker_reports')) {
             foreach ($this->disputeQuery('maker_reports')->where('c.user_id', $userId)->orderByDesc('c.id')->limit(100)->get() as $row) {
-                $items[] = $this->presentDisputeRow($row, 'report');
+                $items[] = $this->presentDisputeRow($row, $this->reportKind($row));
             }
         }
         usort($items, static fn (array $a, array $b) => ((int) ($b['id'] ?? 0)) <=> ((int) ($a['id'] ?? 0)));
@@ -835,7 +905,7 @@ class MarketplaceService
         $reports = [];
         if (Schema::hasTable('maker_reports')) {
             foreach ($this->disputeQuery('maker_reports')->orderByDesc('c.id')->limit(100)->get() as $row) {
-                $reports[] = $this->presentDisputeRow($row, 'report');
+                $reports[] = $this->presentDisputeRow($row, $this->reportKind($row));
             }
         }
 
@@ -946,23 +1016,33 @@ class MarketplaceService
 
     private function disputeQuery(string $table)
     {
-        return DB::table($table.' as c')
-            ->leftJoin('maker_jobs as j', 'j.id', '=', 'c.job_id')
-            ->select('c.*', 'j.title as job_title', 'j.status as job_status');
+        $q = DB::table($table.' as c')
+            ->leftJoin('maker_jobs as j', 'j.id', '=', 'c.job_id');
+        $select = ['c.*', 'j.title as job_title', 'j.status as job_status'];
+        if ($table === 'maker_reports' && Schema::hasColumn('maker_reports', 'company_id') && Schema::hasTable('maker_companies')) {
+            $q->leftJoin('maker_companies as co', 'co.id', '=', 'c.company_id');
+            $select[] = 'co.name as company_name';
+        }
+
+        return $q->select($select);
     }
 
     public function presentDisputeRow(object $row, string $kind): array
     {
         $factor = DisputeRules::normalizeFactor($row->factor ?? '');
+        $jobId = (int) ($row->job_id ?? 0);
+        $companyId = (int) ($row->company_id ?? 0);
 
         return [
             'id' => (int) ($row->id ?? 0),
             'kind' => $kind,
             'kind_label' => DisputeRules::kindLabel($kind),
-            'job_id' => (int) ($row->job_id ?? 0),
+            'job_id' => $jobId,
             'job_title' => (string) ($row->job_title ?? ''),
             'job_status' => (string) ($row->job_status ?? ''),
             'job_status_label' => JobRules::statusLabel((string) ($row->job_status ?? '')),
+            'company_id' => $companyId,
+            'company_name' => (string) ($row->company_name ?? ''),
             'user_id' => (int) ($row->user_id ?? 0),
             'factor' => $factor,
             'factor_label' => DisputeRules::factorLabel($factor),
@@ -972,9 +1052,50 @@ class MarketplaceService
             'admin_note' => (string) ($row->admin_note ?? ''),
             'created_at' => (string) ($row->created_at ?? ''),
             'updated_at' => (string) ($row->updated_at ?? ''),
-            'job_href' => '/maker-bids/'.(int) ($row->job_id ?? 0),
-            'work_href' => '/maker-bids/'.(int) ($row->job_id ?? 0).'/work',
+            'job_href' => $jobId > 0 ? '/maker-bids/'.$jobId : '',
+            'work_href' => $jobId > 0 ? '/maker-bids/'.$jobId.'/work' : '',
+            'company_href' => $companyId > 0 ? '/maker-bids/companies' : '',
         ];
+    }
+
+    private function reportKind(object $row): string
+    {
+        $jobId = (int) ($row->job_id ?? 0);
+        $companyId = (int) ($row->company_id ?? 0);
+
+        return ($companyId > 0 && $jobId < 1) ? 'company_report' : 'report';
+    }
+
+    /**
+     * @return array{id: int, name: string, user_id: int}
+     */
+    private function awardedCompany(MakerJob $job): array
+    {
+        $empty = ['id' => 0, 'name' => '', 'user_id' => 0];
+        if (! $job->awarded_bid_id) {
+            return $empty;
+        }
+        try {
+            $bid = $job->relationLoaded('awardedBid') ? $job->awardedBid : MakerBid::query()->find($job->awarded_bid_id);
+            $companyId = (int) ($bid->company_id ?? 0);
+            if ($companyId < 1) {
+                return $empty;
+            }
+            $company = ($bid && $bid->relationLoaded('company') && $bid->company)
+                ? $bid->company
+                : MakerCompany::query()->find($companyId);
+            if ($company === null) {
+                return ['id' => $companyId, 'name' => '', 'user_id' => 0];
+            }
+
+            return [
+                'id' => (int) $company->id,
+                'name' => (string) $company->name,
+                'user_id' => (int) $company->user_id,
+            ];
+        } catch (\Throwable) {
+            return $empty;
+        }
     }
 
     private function touchCompanyClaim(MakerJob $job, string $text): void
@@ -996,6 +1117,25 @@ class MarketplaceService
             $history = CompanyRules::normalizeClaimHistory($company->claim_history ?? []);
             $history[] = ['at' => date('Y-m-d H:i:s'), 'text' => mb_substr($text, 0, 2000)];
             $company->claim_history = $history;
+            $company->save();
+        } catch (\Throwable) {
+        }
+    }
+
+    private function touchCompanyReport(int $companyId, int $reporterId, string $text): void
+    {
+        if ($companyId < 1) {
+            return;
+        }
+        try {
+            $company = MakerCompany::query()->find($companyId);
+            if ($company === null) {
+                return;
+            }
+            if ($reporterId > 0 && (int) $company->user_id === $reporterId) {
+                return;
+            }
+            $company->report_count = max(0, (int) $company->report_count) + 1;
             $company->save();
         } catch (\Throwable) {
         }

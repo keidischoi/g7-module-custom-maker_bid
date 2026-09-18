@@ -100,6 +100,8 @@ class JobPresenter
             'audience' => JobRules::normalizeAudience($job->audience ?? 'all'),
             'audience_label' => JobRules::audienceLabel($job->audience ?? 'all'),
             'awarded_bid_id' => $job->awarded_bid_id !== null ? (int) $job->awarded_bid_id : null,
+            'awarded_company_id' => self::awardedCompanyId($job),
+            'awarded_company_name' => self::awardedCompanyName($job),
             'is_open' => $job->isOpen(),
             'work_status' => $job->work_status,
             'tracking_no' => $job->tracking_no,
@@ -191,6 +193,48 @@ class JobPresenter
             'success' => true,
             'data' => $payload,
         ]);
+    }
+
+    private static function awardedBid(MakerJob $job): mixed
+    {
+        if ($job->awarded_bid_id === null) {
+            return null;
+        }
+        if ($job->relationLoaded('awardedBid') && $job->awardedBid) {
+            return $job->awardedBid;
+        }
+        if ($job->relationLoaded('bids')) {
+            foreach ($job->bids as $bid) {
+                if ((int) $bid->id === (int) $job->awarded_bid_id) {
+                    return $bid;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static function awardedCompanyId(MakerJob $job): ?int
+    {
+        $bid = self::awardedBid($job);
+        if ($bid === null || $bid->company_id === null) {
+            return null;
+        }
+
+        return (int) $bid->company_id;
+    }
+
+    public static function awardedCompanyName(MakerJob $job): ?string
+    {
+        $bid = self::awardedBid($job);
+        if ($bid === null) {
+            return null;
+        }
+        if ($bid->relationLoaded('company') && $bid->company) {
+            return (string) $bid->company->name;
+        }
+
+        return null;
     }
 
     private static function contactHoursPart(mixed $hours, int $index): ?string

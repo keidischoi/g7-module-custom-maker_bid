@@ -1742,13 +1742,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.37';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.38';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.37') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.38') < 0) {
         existing.href = FORM_CSS;
       }
       return;
@@ -1854,6 +1854,98 @@
   }
   if (!window.__cmbExportBound) {
     window.__cmbExportBound = true;
+    document.addEventListener('click', onClick, true);
+  }
+})();
+
+/* cmb-company-report: native company picker on disputes */
+(function () {
+  function toast(type, message) {
+    if (window.G7Core && window.G7Core.dispatch) {
+      window.G7Core.dispatch({ handler: 'toast', params: { type: type, message: message } });
+    }
+  }
+  function setCompanyId(id) {
+    if (window.G7Core && window.G7Core.dispatch) {
+      window.G7Core.dispatch({
+        handler: 'setState',
+        params: { target: 'local', 'company_report.company_id': id ? String(id) : '' }
+      });
+    }
+  }
+  function unwrapList(payload) {
+    var d = payload;
+    if (d && d.data !== undefined) d = d.data;
+    if (d && !Array.isArray(d) && d.data && Array.isArray(d.data)) d = d.data;
+    return Array.isArray(d) ? d : [];
+  }
+  function fillSelect(sel, items) {
+    var current = sel.value;
+    sel.innerHTML = '';
+    var blank = document.createElement('option');
+    blank.value = '';
+    blank.textContent = '업체를 선택하세요';
+    sel.appendChild(blank);
+    (items || []).forEach(function (c) {
+      if (!c || !c.id) return;
+      var o = document.createElement('option');
+      o.value = String(c.id);
+      o.textContent = c.name ? String(c.name) : ('업체 #' + c.id);
+      sel.appendChild(o);
+    });
+    if (current) sel.value = current;
+  }
+  function ensureSelect(host) {
+    var sel = host.querySelector('select[data-cmb-company-report-select]');
+    if (sel) return sel;
+    sel = document.createElement('select');
+    sel.setAttribute('data-cmb-company-report-select', '1');
+    sel.className = 'cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm';
+    sel.innerHTML = '<option value="">업체를 선택하세요</option>';
+    host.appendChild(sel);
+    sel.addEventListener('change', function () {
+      setCompanyId(sel.value);
+    });
+    return sel;
+  }
+  function loadCompanies(sel) {
+    fetch('/api/modules/custom-maker_bids/companies?per_page=100', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' }
+    }).then(function (r) { return r.json(); }).then(function (json) {
+      fillSelect(sel, unwrapList(json));
+    }).catch(function () {});
+  }
+  function bindCompanyReport() {
+    var host = document.querySelector('[data-cmb-company-report-host]');
+    if (!host) return;
+    var sel = ensureSelect(host);
+    if (host.getAttribute('data-cmb-company-report-ready') === '1') return;
+    host.setAttribute('data-cmb-company-report-ready', '1');
+    loadCompanies(sel);
+  }
+  function onClick(e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-cmb-company-report-submit]') : null;
+    if (!btn) return;
+    var host = document.querySelector('[data-cmb-company-report-host]');
+    var sel = host && host.querySelector('select[data-cmb-company-report-select]');
+    var id = sel && sel.value ? String(sel.value) : '';
+    if (!id) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      toast('warning', '신고할 업체를 선택하세요.');
+      return;
+    }
+    setCompanyId(id);
+  }
+  window.__cmbCompanyReport = true;
+  bindCompanyReport();
+  document.addEventListener('DOMContentLoaded', bindCompanyReport);
+  setTimeout(bindCompanyReport, 400);
+  setTimeout(bindCompanyReport, 1200);
+  if (!window.__cmbCompanyReportBound) {
+    window.__cmbCompanyReportBound = true;
     document.addEventListener('click', onClick, true);
   }
 })();

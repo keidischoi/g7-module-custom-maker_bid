@@ -2,7 +2,7 @@
 
 Gnuboard 7 모듈. 회원 의뢰 / 회원·승인 업체 입찰 / 관리자 의뢰·입찰·업체·유형·설정 관리.
 
-버전 **0.10.37**. 의뢰 작성·수정은 공유 `jobs_form` 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용·계좌이체 결제)이 포함됩니다.
+버전 **0.10.38**. 의뢰 작성·수정은 공유 `jobs_form` 주문서 카드이며, 다크 샵 테마(네이비)에 맞춰 어두운 서페이스로 표시됩니다. 유형은 DB 카탈로그(시드 6종)입니다. 입찰자 등록·공개 설정·소유권한 요청·관리자 의뢰/입찰 수정·모듈 설정(메뉴·안내문·입찰 허용·계좌이체 결제)이 포함됩니다.
 
 - 관리자: `/admin/maker-bids` `/admin/maker-bids/types` `/admin/maker-bids/jobs/{id}` `/admin/maker-bids/bids` `/admin/maker-bids/bids/{id}` `/admin/maker-bids/companies` `/admin/maker-bids/ops` `/admin/maker-bids/disputes` `/admin/maker-bids/payments` `/admin/maker-bids/activity` `/admin/maker-bids/settings`
 - 회원: `/maker-bids` `/maker-bids/new` `/maker-bids/bids` `/maker-bids/history` `/maker-bids/disputes` `/maker-bids/payments` `/maker-bids/company` `/maker-bids/companies` `/maker-bids/{id}` `/maker-bids/{id}/edit` `/maker-bids/{id}/work`
@@ -92,6 +92,10 @@ Prefix: `/api/modules/custom-maker_bids`
 | GET | `/payments` | sanctum | 내 계좌이체 (계약금/잔금 행) |
 | POST | `/jobs/{id}/payment/report` | sanctum | 입금 신고 (`kind` 선택) |
 | POST | `/jobs/{id}/payment/confirm` | sanctum | 입금 확인 (제작자 계좌일 때 낙찰자) |
+| POST | `/jobs/{id}/claim` | sanctum | 분쟁 접수. 낙찰 업체 `claim_count` 반영 |
+| POST | `/jobs/{id}/report` | sanctum | 의뢰 신고. 낙찰 업체 `report_count` 반영 |
+| POST | `/companies/{id}/report` | sanctum | 업체 신고. 업체정보 신고 건수 반영 |
+| GET | `/disputes` | sanctum | 내 분쟁·신고 목록 |
 | GET | `/companies` | 없음 | 공개 입찰자 목록 (추천·우선순위 순) |
 | GET | `/settings` | 없음 | 공개 모듈 설정 (메뉴·안내문) |
 | GET | `/companies/form-defaults` | sanctum | 입찰자 등록 기본값 |
