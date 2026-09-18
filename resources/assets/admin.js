@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs36) return;
-  window.__cmbAdminJs36 = true;
+  if (window.__cmbAdminJs37) return;
+  window.__cmbAdminJs37 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -161,29 +161,67 @@
     return h ? h[1] : '';
   }
 
+  function csrfHeaderMap() {
+    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = csrfToken();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    return headers;
+  }
+
   function postCompany(id, action) {
     if (!id) return;
+    var headers = csrfHeaderMap();
+    var body = null;
+    if (action === 'hold' || action === 'reject') {
+      headers['Content-Type'] = 'application/json';
+      var edit = g7Get('_local.edit') || {};
+      body = JSON.stringify({
+        hold_reason: edit.hold_reason || '',
+        rejected_reason: edit.rejected_reason || '',
+        admin_memo: edit.admin_memo || ''
+      });
+    }
     fetch('/api/modules/custom-maker_bids/admin/companies/' + id + '/' + action, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    }).then(function () { location.reload(); });
+      headers: headers,
+      body: body
+    }).then(function () {
+      if (window.G7Core && window.G7Core.dispatch) {
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'companies' } });
+      } else {
+        location.reload();
+      }
+    });
   }
 
   function ensureCompanyEditButtons() {
+    if (document.querySelector('.cmb-admin-company-toolbar[data-cmb-co-btns], [data-cmb-company-edit] [data-cmb-co-btns]')) {
+      return;
+    }
     var save = null;
     document.querySelectorAll('button').forEach(function (b) {
       if ((b.textContent || '').trim() === '선택 업체 저장') save = b;
     });
     if (!save || save.getAttribute('data-cmb-co-btns')) return;
     save.setAttribute('data-cmb-co-btns', '1');
-    var wrap = save.parentElement || save;
+    var wrap = document.createElement('div');
+    wrap.className = 'cmb-admin-toolbar cmb-admin-company-toolbar';
+    wrap.setAttribute('data-cmb-co-btns', '1');
+    wrap.setAttribute('data-cmb-entity', 'company');
+    var parent = save.parentElement || save;
+    parent.insertBefore(wrap, save);
+    wrap.appendChild(save);
     function add(label, action, confirmMsg) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
       var kind = label === '승인' ? 'cmb-btn-approve' : label === '보류' ? 'cmb-btn-hold' : label === '거절' ? 'cmb-btn-reject' : '';
-      b.className = (kind ? kind + ' ' : '') + 'px-3 py-1.5 text-sm rounded-lg border mr-2';
+      b.className = (kind ? kind + ' ' : '') + 'px-3 py-1.5 text-sm rounded-lg border';
+      b.setAttribute('data-cmb-kind', label === '승인' ? 'approve' : label === '보류' ? 'hold' : 'reject');
       b.addEventListener('click', function () {
         var id = companyIdFromEdit();
         if (!id) return alert('먼저 목록에서 업체를 불러오세요.');
@@ -718,13 +756,13 @@
 
   function injectPortalCss() {
     var s = document.getElementById('cmb-admin-select-portal-css');
-    if (s && s.getAttribute('data-cmb-v') === '36') return;
+    if (s && s.getAttribute('data-cmb-v') === '37') return;
     if (!s) {
       s = document.createElement('style');
       s.id = 'cmb-admin-select-portal-css';
       (document.head || document.documentElement).appendChild(s);
     }
-    s.setAttribute('data-cmb-v', '36');
+    s.setAttribute('data-cmb-v', '37');
       s.textContent =
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui .cmb-admin,html.cmb-admin-ui select{color-scheme:dark}' +
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
@@ -789,32 +827,38 @@
   }
 
   function harvestNamedInto(prefix) {
-    var root = document.querySelector('.cmb-admin');
+    var root = prefix === 'edit'
+      ? (document.querySelector('[data-cmb-company-edit]') || document.querySelector('.cmb-admin-company-edit') || document.querySelector('.cmb-admin'))
+      : document.querySelector('.cmb-admin');
     if (!root) return {};
     var map = {};
     var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
-    var cur = {};
-    try {
-      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
-        cur = window.G7Core.state.get('_local.' + prefix) || {};
-      }
-    } catch (e) { cur = {}; }
+    var jobTypes = [];
     root.querySelectorAll('[name]').forEach(function (el) {
       var name = el.getAttribute('name');
       if (!name || el.type === 'file') return;
+      if (name.indexOf('cmb_filter_') === 0) return;
+      if (name.indexOf('job_type_') === 0) {
+        if (el.type === 'checkbox' && el.checked) jobTypes.push(name.slice('job_type_'.length));
+        return;
+      }
       if (el.type === 'checkbox') {
-        if (cur && typeof cur[name] === 'boolean') map[prefix + '.' + name] = cur[name];
-        else map[prefix + '.' + name] = !!el.checked;
+        map[prefix + '.' + name] = !!el.checked;
         return;
       }
       var tag = (el.tagName || '').toUpperCase();
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
       var val = el.value;
-      if (selectKeys[name] && String(val || '').trim() === '') return;
-      // Empty DOM must not zero partial admin edits (logo / image upload saves).
-      if (String(val || '').trim() === '') return;
+      if (prefix !== 'edit' && selectKeys[name] && String(val || '').trim() === '') return;
+      if (prefix !== 'edit' && String(val || '').trim() === '') return;
       map[prefix + '.' + name] = val;
     });
+    root.querySelectorAll('[data-cmb-job-type]').forEach(function (el) {
+      if (el.checked) jobTypes.push(el.getAttribute('data-cmb-job-type'));
+    });
+    if (prefix === 'edit' && (jobTypes.length || root.querySelector('[data-cmb-job-type]'))) {
+      map[prefix + '.job_types'] = jobTypes;
+    }
     return map;
   }
 
@@ -999,18 +1043,164 @@
     if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
     if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
     document.documentElement.setAttribute('data-cmb-co-harvest', '1');
+    function pushDom() {
+      var map = harvestNamedInto('edit');
+      if (Object.keys(map).length) setLocal(map);
+    }
     document.addEventListener(
       'click',
       function (e) {
         var btn = e.target && e.target.closest ? e.target.closest('button') : null;
         if (!btn) return;
         var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
-        if (label.indexOf('선택 업체 저장') === -1) return;
-        var map = harvestNamedInto('edit');
-        if (Object.keys(map).length) setLocal(map);
+        if (label.indexOf('선택 업체 저장') === -1 && label.indexOf('승인') !== 0 && label.indexOf('보류') !== 0 && label.indexOf('거절') !== 0) return;
+        if (!btn.closest('[data-cmb-company-edit], .cmb-admin-company-toolbar')) return;
+        pushDom();
       },
       true
     );
+    document.addEventListener(
+      'input',
+      function (e) {
+        var el = e.target;
+        if (!el || !el.getAttribute || !el.closest) return;
+        if (!el.closest('[data-cmb-company-edit]')) return;
+        var name = el.getAttribute('name');
+        if (!name || name.indexOf('cmb_filter_') === 0) return;
+        var map = {};
+        if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
+        else map['edit.' + name] = el.value;
+        setLocal(map);
+      },
+      true
+    );
+    document.addEventListener(
+      'change',
+      function (e) {
+        var el = e.target;
+        if (!el || !el.getAttribute || !el.closest) return;
+        if (!el.closest('[data-cmb-company-edit]')) return;
+        var name = el.getAttribute('name') || '';
+        var map = {};
+        if (el.getAttribute('data-cmb-job-type')) {
+          var slugs = [];
+          document.querySelectorAll('[data-cmb-company-edit] [data-cmb-job-type]:checked').forEach(function (b) {
+            slugs.push(b.getAttribute('data-cmb-job-type'));
+          });
+          map['edit.job_types'] = slugs;
+          setLocal(map);
+          return;
+        }
+        if (!name || name.indexOf('cmb_filter_') === 0) return;
+        if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
+        else map['edit.' + name] = el.value;
+        setLocal(map);
+      },
+      true
+    );
+  }
+
+  function currentEditValue(key) {
+    try {
+      if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
+        var v = window.G7Core.state.get('_local.edit.' + key);
+        if (v != null && v !== '') return String(v);
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function bindEditNative(sel, key) {
+    if (!sel || sel.getAttribute('data-cmb-edit-bound') === '1') return;
+    sel.setAttribute('data-cmb-edit-bound', '1');
+    sel.addEventListener('change', function () {
+      var map = { target: 'local' };
+      map['edit.' + key] = sel.value;
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: map });
+      }
+    });
+  }
+
+  function ensureEditNativeSelects() {
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card) return;
+    function mount(key, opts) {
+      var host = card.querySelector('[data-cmb-edit-host="' + key + '"]');
+      if (!host) return;
+      var sel = host.querySelector('select[data-cmb-edit-free]');
+      if (!sel) {
+        sel = document.createElement('select');
+        sel.setAttribute('data-cmb-edit-free', '1');
+        sel.setAttribute('name', key);
+        sel.className = 'cmb-admin-filter-native cmb-admin-edit-native';
+        host.appendChild(sel);
+      }
+      fillSelect(sel, opts, currentEditValue(key) || sel.value);
+      bindEditNative(sel, key);
+    }
+    mount('kind', [['company', '업체'], ['individual', '개인']]);
+    mount('status', [['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]);
+  }
+
+  function renderCompanyEditJobTypes() {
+    var host = document.querySelector('[data-cmb-company-edit] [data-cmb-job-types]');
+    if (!host) return;
+    var selected = [];
+    try {
+      var cur = g7Get('_local.edit.job_types') || [];
+      if (typeof cur === 'string') {
+        try { cur = JSON.parse(cur); } catch (e1) { cur = cur ? [cur] : []; }
+      }
+      if (Array.isArray(cur)) selected = cur.map(String);
+    } catch (e2) {}
+    var id = currentEditValue('id');
+    function paint(opts) {
+      if (!host.getAttribute('data-cmb-job-types-ready')) {
+        host.innerHTML = '';
+        (opts || []).forEach(function (o) {
+          if (!o[0]) return;
+          var label = document.createElement('label');
+          label.className = 'cmb-admin-check-label';
+          var box = document.createElement('input');
+          box.type = 'checkbox';
+          box.setAttribute('data-cmb-job-type', o[0]);
+          box.name = 'job_type_' + o[0];
+          var span = document.createElement('span');
+          span.className = 'cmb-admin-check-text';
+          span.textContent = o[1] || o[0];
+          label.appendChild(box);
+          label.appendChild(span);
+          host.appendChild(label);
+        });
+        host.setAttribute('data-cmb-job-types-ready', '1');
+      }
+      if (host.getAttribute('data-cmb-job-types-for') === id && id) return;
+      host.setAttribute('data-cmb-job-types-for', id || '');
+      host.querySelectorAll('[data-cmb-job-type]').forEach(function (box) {
+        box.checked = selected.indexOf(box.getAttribute('data-cmb-job-type')) >= 0;
+      });
+    }
+    if (typeOptsCache) paint(typeOptsCache);
+    else {
+      paint(TYPE_FALLBACK);
+      loadTypeOpts(function (opts) {
+        host.removeAttribute('data-cmb-job-types-ready');
+        host.removeAttribute('data-cmb-job-types-for');
+        renderCompanyEditJobTypes();
+      });
+    }
+  }
+
+  function nestExistingIntoUploader() {
+    document.querySelectorAll('.cmb-admin-uploader, [data-cmb-admin-uploader]').forEach(function (box) {
+      var gallery = box.querySelector('.cmb-existing-files');
+      if (!gallery) return;
+      var dashed = box.querySelector('[class*="border-dashed"]');
+      if (dashed && gallery.parentElement !== dashed) {
+        dashed.insertBefore(gallery, dashed.firstChild);
+      }
+    });
   }
 
 
@@ -1105,6 +1295,9 @@
     bindStatusPress();
     paintStatusButtons();
     ensureAdminFilterSelect();
+    ensureEditNativeSelects();
+    renderCompanyEditJobTypes();
+    nestExistingIntoUploader();
     ensureCompanyEditButtons();
     ensureListBoxes();
     bindSettingsHarvest();
@@ -1123,6 +1316,9 @@
   setTimeout(paintStatusButtons, 800);
   setTimeout(paintStatusButtons, 1600);
   setTimeout(ensureAdminFilterSelect, 500);
+  setTimeout(ensureEditNativeSelects, 500);
+  setTimeout(renderCompanyEditJobTypes, 600);
+  setTimeout(nestExistingIntoUploader, 800);
   setTimeout(ensureListBoxes, 800);
   setTimeout(paintSettingsControls, 900);
   setTimeout(ensureCompanyEditButtons, 600);
@@ -1131,6 +1327,9 @@
     if (document.querySelector('.cmb-admin')) {
       paintStatusButtons();
       ensureAdminFilterSelect();
+      ensureEditNativeSelects();
+      renderCompanyEditJobTypes();
+      nestExistingIntoUploader();
       unlockAdminPointer();
       paintOpenAdminMenus();
     }

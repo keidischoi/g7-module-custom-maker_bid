@@ -123,12 +123,53 @@
       'bank_name','account_no','account_holder','deposit_percent','deposit_terms'
     ], []);
   }
+  function formatClaimHistory(v) {
+    if (v == null) return '';
+    if (Array.isArray(v)) {
+      return v.map(function (x) {
+        if (x && typeof x === 'object') return x.text || x.note || x.message || JSON.stringify(x);
+        return String(x);
+      }).join('\n');
+    }
+    if (typeof v === 'object') {
+      try { return JSON.stringify(v); } catch (e) { return ''; }
+    }
+    return String(v);
+  }
   function applyAdminCompany(d) {
-    applyPrefixed('edit', d, [
-      'id','status','admin_memo','hold_reason','rating_score','rating_count',
+    if (!d) return;
+    var copy = {};
+    var k;
+    for (k in d) {
+      if (Object.prototype.hasOwnProperty.call(d, k)) copy[k] = d[k];
+    }
+    copy.claim_history = formatClaimHistory(copy.claim_history);
+    if (copy.job_types && typeof copy.job_types !== 'string') {
+      try { copy.job_types_json = JSON.stringify(copy.job_types); } catch (e) { copy.job_types_json = ''; }
+    }
+    applyPrefixed('edit', copy, [
+      'id','status','kind','name','business_no','bio','homepage_url','portfolio_url',
+      'manager_name','phone','email','zipcode','address','address_detail',
+      'admin_memo','hold_reason','rating_score','rating_count',
       'claim_count','claim_history','report_count','priority','rejected_reason',
-      'bank_name','account_no','account_holder','deposit_percent','deposit_terms'
+      'bank_name','account_no','account_holder','deposit_percent','deposit_terms',
+      'upload_token'
     ], ['is_recommended','is_designated']);
+    var extra = {};
+    extra['edit.logo_files'] = copy.logo_files || [];
+    extra['edit.logo_hash'] = copy.logo_hash || '';
+    extra['edit.logo_url'] = copy.logo_url || '';
+    extra['edit.job_types'] = copy.job_types || [];
+    extra['edit.files_ready'] = false;
+    extra['edit.uploader_epoch'] = Date.now();
+    setLocal(extra);
+    fillNamed('job_types', copy.job_types_json || (Array.isArray(copy.job_types) ? JSON.stringify(copy.job_types) : ''));
+    document.querySelectorAll('[data-cmb-company-edit] [data-cmb-job-type]').forEach(function (box) {
+      var slug = box.getAttribute('data-cmb-job-type');
+      var on = Array.isArray(copy.job_types) && copy.job_types.indexOf(slug) >= 0;
+      box.checked = !!on;
+    });
+    setTimeout(function () { setLocal({ 'edit.files_ready': true }); }, 30);
   }
 
   function fromState(ids) {
@@ -1701,13 +1742,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.36';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.37';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.36') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.37') < 0) {
         existing.href = FORM_CSS;
       }
       return;

@@ -51,8 +51,22 @@
     "edit": {
       "id": "",
       "status": "pending",
+      "kind": "company",
+      "name": "",
+      "business_no": "",
+      "bio": "",
+      "homepage_url": "",
+      "portfolio_url": "",
+      "manager_name": "",
+      "phone": "",
+      "email": "",
+      "zipcode": "",
+      "address": "",
+      "address_detail": "",
+      "job_types": [],
       "admin_memo": "",
       "hold_reason": "",
+      "rejected_reason": "",
       "rating_score": "0",
       "rating_count": "0",
       "claim_count": "0",
@@ -185,7 +199,7 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-admin-split w-full"
+              "className": "cmb-admin-split cmb-admin-split-company w-full"
             },
             "children": [
               {
@@ -201,9 +215,10 @@
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-admin-card space-y-3",
+                      "className": "cmb-admin-card cmb-admin-company-edit space-y-3",
                       "dataKey": "edit",
-                      "trackChanges": true
+                      "trackChanges": true,
+                      "data-cmb-company-edit": "1"
                     },
                     "children": [
                       {
@@ -222,10 +237,10 @@
                         "props": {
                           "className": "cmb-admin-muted"
                         },
-                        "text": "목록에서 불러오기 후 저장합니다. 비어 있으면 업체를 선택하세요."
+                        "text": "목록에서 불러오기 후 왼쪽에서 수정하고 저장합니다. 업체명·연락처·주소·로고까지 한 화면에 보입니다."
                       },
                       {
-                        "id": "estatus_block",
+                        "id": "eprofile",
                         "type": "basic",
                         "name": "Div",
                         "props": {
@@ -233,61 +248,119 @@
                         },
                         "children": [
                           {
-                            "id": "estatus_wrap2",
+                            "id": "ekind_wrap",
                             "type": "basic",
                             "name": "Div",
                             "children": [
                               {
-                                "id": "estatus_l",
+                                "id": "ekind_l",
                                 "type": "basic",
                                 "name": "P",
                                 "props": {
                                   "className": "cmb-admin-label"
                                 },
-                                "text": "승인 여부"
+                                "text": "등록유형"
                               },
                               {
-                                "id": "estatus_host",
+                                "id": "ekind_host",
                                 "type": "basic",
                                 "name": "Div",
                                 "props": {
-                                  "className": "cmb-admin-select-host cmb-admin-select-host-sm"
+                                  "className": "cmb-admin-select-host cmb-admin-select-host-sm",
+                                  "data-cmb-edit-host": "kind"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ename_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "ename_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
                                 },
-                                "children": [
+                                "text": "업체/개인 이름"
+                              },
+                              {
+                                "id": "ename",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "name",
+                                  "placeholder": "이름",
+                                  "value": "{{_local.edit.name}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
                                   {
-                                    "id": "estatus",
-                                    "type": "basic",
-                                    "name": "Select",
-                                    "props": {
-                                      "name": "status",
-                                      "value": "{{_local.edit.status}}",
-                                      "className": "cmb-admin-select cmb-admin-w-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
-                                      "options": [
-                                        {
-                                          "value": "pending",
-                                          "label": "보류"
-                                        },
-                                        {
-                                          "value": "approved",
-                                          "label": "승인"
-                                        },
-                                        {
-                                          "value": "rejected",
-                                          "label": "거절"
-                                        }
-                                      ]
-                                    },
-                                    "actions": [
-                                      {
-                                        "type": "change",
-                                        "event": "change",
-                                        "handler": "setState",
-                                        "params": {
-                                          "target": "local",
-                                          "edit.status": "{{$event.target.value}}"
-                                        }
-                                      }
-                                    ]
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.name": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.name": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ebiz_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "ebiz_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "사업자 번호"
+                              },
+                              {
+                                "id": "ebiz",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "business_no",
+                                  "placeholder": "000-00-00000",
+                                  "value": "{{_local.edit.business_no}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.business_no": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.business_no": "{{$event.target.value}}"
+                                    }
                                   }
                                 ]
                               }
@@ -296,57 +369,622 @@
                         ]
                       },
                       {
-                        "id": "ememo_block",
+                        "id": "etypes_block",
                         "type": "basic",
                         "name": "Div",
-                        "props": {
-                          "className": "cmb-admin-field-span"
-                        },
                         "children": [
                           {
-                            "id": "ememo_l",
+                            "id": "etypes_l",
                             "type": "basic",
                             "name": "P",
                             "props": {
                               "className": "cmb-admin-label"
                             },
-                            "text": "관리자 메모"
+                            "text": "주력유형"
                           },
                           {
-                            "id": "ememo",
+                            "id": "etypes_host",
                             "type": "basic",
-                            "name": "Textarea",
+                            "name": "Div",
                             "props": {
-                              "name": "admin_memo",
-                              "placeholder": "관리자 메모",
-                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                              "className": "flex flex-wrap gap-2 cmb-admin-checks",
+                              "data-cmb-job-types": "edit"
+                            }
+                          },
+                          {
+                            "id": "etypes_hidden",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "type": "hidden",
+                              "name": "job_types",
+                              "value": "{{_local.edit.job_types}}"
                             }
                           }
                         ]
                       },
                       {
-                        "id": "ehold_block",
+                        "id": "elogo_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "로고 / 이미지 (1장, 최대 512×512)"
+                      },
+                      {
+                        "id": "elogo_box",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-order-uploader cmb-admin-uploader mt-1",
+                          "data-cmb-admin-uploader": "logo"
+                        },
+                        "children": [
+                          {
+                            "id": "cmb_admin_logo_existing",
+                            "type": "basic",
+                            "name": "Div",
+                            "if": "{{_local.edit.logo_files && _local.edit.logo_files.length}}",
+                            "props": {
+                              "className": "cmb-existing-files cmb-existing-in-uploader",
+                              "data-cmb-existing-files": "logo"
+                            },
+                            "children": [
+                              {
+                                "id": "cmb_admin_logo_existing_label",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                                },
+                                "text": "등록된 파일"
+                              },
+                              {
+                                "id": "cmb_admin_logo_existing_item_{{idx}}",
+                                "type": "basic",
+                                "name": "Div",
+                                "props": {
+                                  "className": "cmb-existing-item",
+                                  "data-cmb-existing-id": "{{$file.hash || $file.id}}",
+                                  "data-cmb-existing-kind": "logo"
+                                },
+                                "iteration": {
+                                  "source": "{{_local.edit.logo_files || []}}",
+                                  "item_var": "$file",
+                                  "index_var": "idx"
+                                },
+                                "children": [
+                                  {
+                                    "id": "cmb_admin_logo_thumb_{{idx}}",
+                                    "type": "basic",
+                                    "name": "A",
+                                    "props": {
+                                      "href": "{{$file.thumbnail_url || $file.url || $file.download_url}}",
+                                      "target": "_blank",
+                                      "rel": "noopener",
+                                      "className": "cmb-existing-thumb-link",
+                                      "title": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}",
+                                      "style": "background-image:url({{$file.thumbnail_url || $file.url || $file.download_url}});background-size:cover;background-position:center"
+                                    },
+                                    "text": ""
+                                  },
+                                  {
+                                    "id": "cmb_admin_logo_name_{{idx}}",
+                                    "type": "basic",
+                                    "name": "A",
+                                    "props": {
+                                      "href": "{{$file.download_url || $file.url || '#'}}",
+                                      "target": "_blank",
+                                      "className": "cmb-existing-name text-sm underline truncate"
+                                    },
+                                    "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                                  },
+                                  {
+                                    "id": "cmb_admin_logo_del_{{idx}}",
+                                    "type": "basic",
+                                    "name": "Button",
+                                    "props": {
+                                      "type": "button",
+                                      "className": "cmb-existing-del cmb-btn text-xs",
+                                      "data-cmb-existing-delete": "1",
+                                      "data-file-hash": "{{$file.hash || $file.id}}",
+                                      "data-file-kind": "logo"
+                                    },
+                                    "text": "삭제",
+                                    "actions": [
+                                      {
+                                        "type": "click",
+                                        "handler": "apiCall",
+                                        "auth_mode": "optional",
+                                        "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                                        "params": {
+                                          "method": "DELETE",
+                                          "credentials": "include"
+                                        },
+                                        "confirm": "이 파일을 삭제할까요?",
+                                        "onSuccess": [
+                                          {
+                                            "handler": "toast",
+                                            "params": {
+                                              "type": "success",
+                                              "message": "파일을 삭제했습니다."
+                                            }
+                                          },
+                                          {
+                                            "handler": "refetchDataSource",
+                                            "params": {
+                                              "dataSourceId": "companies"
+                                            }
+                                          }
+                                        ],
+                                        "onError": [
+                                          {
+                                            "handler": "toast",
+                                            "params": {
+                                              "type": "error",
+                                              "message": "{{error.message}}"
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "cmb_admin_logo_uploader",
+                            "type": "composite",
+                            "name": "FileUploader",
+                            "props": {
+                              "collection": "logos",
+                              "maxFiles": 1,
+                              "maxSize": 10,
+                              "maxWidth": 512,
+                              "maxHeight": 512,
+                              "accept": ".jpg,.jpeg,.png,.gif,.webp",
+                              "autoUpload": true,
+                              "className": "cmb-order-uploader-inner",
+                              "data-cmb-logo-uploader": "1",
+                              "uploadTriggerEvent": "upload:maker_bids_admin_logo",
+                              "apiEndpoints": {
+                                "upload": "/api/modules/custom-maker_bids/uploads",
+                                "delete": "/api/modules/custom-maker_bids/uploads/:id",
+                                "reorder": ""
+                              },
+                              "uploadParams": {
+                                "collection": "logos",
+                                "token": "{{_local.edit.upload_token}}",
+                                "upload_token": "{{_local.edit.upload_token}}"
+                              },
+                              "initialFiles": "{{_local.edit.logo_files || []}}",
+                              "key": "admin-logo-{{_local.edit.uploader_epoch}}"
+                            },
+                            "if": "{{!!_local.edit.id && _local.edit.files_ready}}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ebio_wrap",
                         "type": "basic",
                         "name": "Div",
                         "children": [
                           {
-                            "id": "ehold_l",
+                            "id": "ebio_l",
                             "type": "basic",
                             "name": "P",
                             "props": {
                               "className": "cmb-admin-label"
                             },
-                            "text": "보류 이유"
+                            "text": "소개 및 경력"
                           },
                           {
-                            "id": "ehold",
+                            "id": "ebio",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "bio",
+                              "placeholder": "장비, 경력, 소개",
+                              "value": "{{_local.edit.bio}}",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.bio": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.bio": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "eurls",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
+                        "children": [
+                          {
+                            "id": "ehome_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "ehome_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "운영 홈페이지 URL"
+                              },
+                              {
+                                "id": "ehome",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "homepage_url",
+                                  "placeholder": "https://",
+                                  "value": "{{_local.edit.homepage_url}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.homepage_url": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.homepage_url": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eport_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "eport_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "참고/포트폴리오 URL"
+                              },
+                              {
+                                "id": "eport",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "portfolio_url",
+                                  "placeholder": "https://",
+                                  "value": "{{_local.edit.portfolio_url}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.portfolio_url": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.portfolio_url": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "econtact",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
+                        "children": [
+                          {
+                            "id": "emanager_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "emanager_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "담당자"
+                              },
+                              {
+                                "id": "emanager",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "manager_name",
+                                  "placeholder": "담당자 이름",
+                                  "value": "{{_local.edit.manager_name}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.manager_name": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.manager_name": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ephone_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "ephone_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "연락처"
+                              },
+                              {
+                                "id": "ephone",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "phone",
+                                  "placeholder": "010-0000-0000",
+                                  "value": "{{_local.edit.phone}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.phone": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.phone": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eemail_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "eemail_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "이메일"
+                              },
+                              {
+                                "id": "eemail",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "email",
+                                  "placeholder": "name@example.com",
+                                  "value": "{{_local.edit.email}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                  "type": "email"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.email": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.email": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "eaddr_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "eaddr_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "주소"
+                          },
+                          {
+                            "id": "ezip_row",
+                            "type": "basic",
+                            "name": "Div",
+                            "props": {
+                              "className": "flex items-center gap-2"
+                            },
+                            "children": [
+                              {
+                                "id": "ezip",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "zipcode",
+                                  "placeholder": "우편번호",
+                                  "value": "{{_local.edit.zipcode}}",
+                                  "className": "cmb-admin-w-xs cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.zipcode": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.zipcode": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "eaddr",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "address",
+                                  "placeholder": "기본 주소",
+                                  "value": "{{_local.edit.address}}",
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.address": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.address": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eaddr2",
                             "type": "basic",
                             "name": "Input",
                             "props": {
-                              "name": "hold_reason",
-                              "placeholder": "보류 이유",
-                              "className": "cmb-admin-w-full"
-                            }
+                              "name": "address_detail",
+                              "placeholder": "상세 주소",
+                              "value": "{{_local.edit.address_detail}}",
+                              "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.address_detail": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.address_detail": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -380,9 +1018,18 @@
                                   "name": "bank_name",
                                   "placeholder": "은행명",
                                   "value": "{{_local.edit.bank_name}}",
-                                  "className": "cmb-admin-w-full"
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
                                 },
                                 "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.bank_name": "{{$event.target.value}}"
+                                    }
+                                  },
                                   {
                                     "type": "change",
                                     "event": "change",
@@ -418,9 +1065,18 @@
                                   "name": "account_no",
                                   "placeholder": "계좌번호",
                                   "value": "{{_local.edit.account_no}}",
-                                  "className": "cmb-admin-w-full"
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
                                 },
                                 "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.account_no": "{{$event.target.value}}"
+                                    }
+                                  },
                                   {
                                     "type": "change",
                                     "event": "change",
@@ -456,9 +1112,18 @@
                                   "name": "account_holder",
                                   "placeholder": "예금주",
                                   "value": "{{_local.edit.account_holder}}",
-                                  "className": "cmb-admin-w-full"
+                                  "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
                                 },
                                 "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.account_holder": "{{$event.target.value}}"
+                                    }
+                                  },
                                   {
                                     "type": "change",
                                     "event": "change",
@@ -492,14 +1157,23 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "deposit_percent",
-                                  "type": "number",
-                                  "min": "0",
-                                  "max": "100",
                                   "placeholder": "30",
                                   "value": "{{_local.edit.deposit_percent}}",
-                                  "className": "cmb-admin-w-xs"
+                                  "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                  "type": "number",
+                                  "min": "0",
+                                  "max": "100"
                                 },
                                 "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.deposit_percent": "{{$event.target.value}}"
+                                    }
+                                  },
                                   {
                                     "type": "change",
                                     "event": "change",
@@ -516,7 +1190,7 @@
                         ]
                       },
                       {
-                        "id": "edeposit_terms_block",
+                        "id": "edeposit_terms_wrap",
                         "type": "basic",
                         "name": "Div",
                         "children": [
@@ -532,14 +1206,23 @@
                           {
                             "id": "edeposit_terms",
                             "type": "basic",
-                            "name": "Input",
+                            "name": "Textarea",
                             "props": {
                               "name": "deposit_terms",
                               "placeholder": "계약금 입금 확인 후 제작 시작",
                               "value": "{{_local.edit.deposit_terms}}",
-                              "className": "cmb-admin-w-full"
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
                             },
                             "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.deposit_terms": "{{$event.target.value}}"
+                                }
+                              },
                               {
                                 "type": "change",
                                 "event": "change",
@@ -547,6 +1230,182 @@
                                 "params": {
                                   "target": "local",
                                   "edit.deposit_terms": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "estatus_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
+                        "children": [
+                          {
+                            "id": "estatus_wrap2",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "estatus_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "승인 여부"
+                              },
+                              {
+                                "id": "estatus_host",
+                                "type": "basic",
+                                "name": "Div",
+                                "props": {
+                                  "className": "cmb-admin-select-host cmb-admin-select-host-sm",
+                                  "data-cmb-edit-host": "status"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ehold_wrap",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "ehold_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "보류 이유"
+                          },
+                          {
+                            "id": "ehold",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "hold_reason",
+                              "placeholder": "보류 이유",
+                              "value": "{{_local.edit.hold_reason}}",
+                              "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.hold_reason": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.hold_reason": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ereject_wrap",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "ereject_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "거절 사유"
+                          },
+                          {
+                            "id": "ereject",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "rejected_reason",
+                              "placeholder": "거절 사유",
+                              "value": "{{_local.edit.rejected_reason}}",
+                              "className": "cmb-admin-w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.rejected_reason": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.rejected_reason": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ememo_wrap",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "ememo_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "관리자 메모"
+                          },
+                          {
+                            "id": "ememo",
+                            "type": "basic",
+                            "name": "Textarea",
+                            "props": {
+                              "name": "admin_memo",
+                              "placeholder": "관리자 메모",
+                              "value": "{{_local.edit.admin_memo}}",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.admin_memo": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.admin_memo": "{{$event.target.value}}"
                                 }
                               }
                             ]
@@ -594,8 +1453,29 @@
                                       "max": "5",
                                       "step": "0.1",
                                       "placeholder": "4.5",
-                                      "className": "cmb-admin-w-xs"
-                                    }
+                                      "value": "{{_local.edit.rating_score}}",
+                                      "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                    },
+                                    "actions": [
+                                      {
+                                        "type": "input",
+                                        "event": "input",
+                                        "handler": "setState",
+                                        "params": {
+                                          "target": "local",
+                                          "edit.rating_score": "{{$event.target.value}}"
+                                        }
+                                      },
+                                      {
+                                        "type": "change",
+                                        "event": "change",
+                                        "handler": "setState",
+                                        "params": {
+                                          "target": "local",
+                                          "edit.rating_score": "{{$event.target.value}}"
+                                        }
+                                      }
+                                    ]
                                   },
                                   {
                                     "id": "ecount",
@@ -606,8 +1486,29 @@
                                       "type": "number",
                                       "min": "0",
                                       "placeholder": "12",
-                                      "className": "cmb-admin-w-xs"
-                                    }
+                                      "value": "{{_local.edit.rating_count}}",
+                                      "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm"
+                                    },
+                                    "actions": [
+                                      {
+                                        "type": "input",
+                                        "event": "input",
+                                        "handler": "setState",
+                                        "params": {
+                                          "target": "local",
+                                          "edit.rating_count": "{{$event.target.value}}"
+                                        }
+                                      },
+                                      {
+                                        "type": "change",
+                                        "event": "change",
+                                        "handler": "setState",
+                                        "params": {
+                                          "target": "local",
+                                          "edit.rating_count": "{{$event.target.value}}"
+                                        }
+                                      }
+                                    ]
                                   }
                                 ]
                               }
@@ -633,11 +1534,32 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "claim_count",
-                                  "type": "number",
-                                  "min": "0",
                                   "placeholder": "0",
-                                  "className": "cmb-admin-w-xs"
-                                }
+                                  "value": "{{_local.edit.claim_count}}",
+                                  "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                  "type": "number",
+                                  "min": "0"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.claim_count": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.claim_count": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -661,11 +1583,32 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "report_count",
-                                  "type": "number",
-                                  "min": "0",
                                   "placeholder": "0",
-                                  "className": "cmb-admin-w-xs"
-                                }
+                                  "value": "{{_local.edit.report_count}}",
+                                  "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                  "type": "number",
+                                  "min": "0"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.report_count": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.report_count": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -689,18 +1632,39 @@
                                 "name": "Input",
                                 "props": {
                                   "name": "priority",
-                                  "type": "number",
-                                  "min": "0",
                                   "placeholder": "0",
-                                  "className": "cmb-admin-w-xs"
-                                }
+                                  "value": "{{_local.edit.priority}}",
+                                  "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
+                                  "type": "number",
+                                  "min": "0"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "input",
+                                    "event": "input",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.priority": "{{$event.target.value}}"
+                                    }
+                                  },
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.priority": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
                               }
                             ]
                           }
                         ]
                       },
                       {
-                        "id": "eclaimh_block",
+                        "id": "eclaimh_wrap",
                         "type": "basic",
                         "name": "Div",
                         "children": [
@@ -720,8 +1684,29 @@
                             "props": {
                               "name": "claim_history",
                               "placeholder": "한 줄에 하나씩, 또는 JSON",
-                              "className": "cmb-admin-w-full min-h-[64px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
-                            }
+                              "value": "{{_local.edit.claim_history}}",
+                              "className": "cmb-admin-w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                            },
+                            "actions": [
+                              {
+                                "type": "input",
+                                "event": "input",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.claim_history": "{{$event.target.value}}"
+                                }
+                              },
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.claim_history": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -746,8 +1731,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "is_recommended"
-                                }
+                                  "name": "is_recommended",
+                                  "checked": "{{_local.edit.is_recommended}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.is_recommended": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "erec_txt",
@@ -773,8 +1770,20 @@
                                 "type": "basic",
                                 "name": "Checkbox",
                                 "props": {
-                                  "name": "is_designated"
-                                }
+                                  "name": "is_designated",
+                                  "checked": "{{_local.edit.is_designated}}"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.is_designated": "{{$event.target.checked}}"
+                                    }
+                                  }
+                                ]
                               },
                               {
                                 "id": "edes_txt",
@@ -790,287 +1799,214 @@
                         ]
                       },
                       {
-                        "id": "elogo_l",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-admin-label"
-                        },
-                        "text": "로고 / 이미지 (1장, 최대 512×512)"
-                      },
-                      {
-                        "id": "cmb_admin_logo_existing",
+                        "id": "eacts",
                         "type": "basic",
                         "name": "Div",
-                        "if": "{{_local.edit.logo_files && _local.edit.logo_files.length}}",
                         "props": {
-                          "className": "cmb-existing-files",
-                          "data-cmb-existing-files": "logo"
+                          "className": "cmb-admin-toolbar cmb-admin-company-toolbar",
+                          "data-cmb-co-btns": "1",
+                          "data-cmb-entity": "company",
+                          "data-cmb-status": "{{_local.edit.status}}"
                         },
                         "children": [
                           {
-                            "id": "cmb_admin_logo_existing_label",
+                            "id": "eapprove",
                             "type": "basic",
-                            "name": "P",
+                            "name": "Button",
                             "props": {
-                              "className": "cmb-existing-files-label text-xs text-gray-500 dark:text-gray-400 mb-1"
+                              "type": "button",
+                              "className": "cmb-btn-approve px-3 py-1.5 text-sm rounded-lg border",
+                              "data-cmb-kind": "approve"
                             },
-                            "text": "등록된 파일"
+                            "text": "승인",
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}/approve",
+                                "params": {
+                                  "method": "POST"
+                                },
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "승인했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "companies"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ],
+                                "confirm": "이 업체를 승인할까요?"
+                              }
+                            ]
                           },
                           {
-                            "id": "cmb_admin_logo_existing_item_{{idx}}",
+                            "id": "eholdbtn",
                             "type": "basic",
-                            "name": "Div",
-                            "iteration": {
-                              "source": "{{_local.edit.logo_files || []}}",
-                              "item_var": "$file",
-                              "index_var": "idx"
-                            },
+                            "name": "Button",
                             "props": {
-                              "className": "cmb-existing-item",
-                              "data-cmb-existing-id": "{{$file.hash || $file.id}}",
-                              "data-cmb-existing-kind": "logo"
+                              "type": "button",
+                              "className": "cmb-btn-hold px-3 py-1.5 text-sm rounded-lg border",
+                              "data-cmb-kind": "hold"
                             },
-                            "children": [
+                            "text": "보류",
+                            "actions": [
                               {
-                                "id": "cmb_admin_logo_thumb_{{idx}}",
-                                "type": "basic",
-                                "name": "A",
-                                "props": {
-                                  "href": "{{$file.thumbnail_url || $file.url || $file.download_url}}",
-                                  "target": "_blank",
-                                  "rel": "noopener",
-                                  "className": "cmb-existing-thumb-link",
-                                  "title": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}/hold",
+                                "params": {
+                                  "method": "POST",
+                                  "body": "{{_local.edit}}"
                                 },
-                                "text": "🖼"
-                              },
-                              {
-                                "id": "cmb_admin_logo_name_{{idx}}",
-                                "type": "basic",
-                                "name": "A",
-                                "props": {
-                                  "href": "{{$file.download_url || $file.url || '#'}}",
-                                  "target": "_blank",
-                                  "className": "cmb-existing-name text-sm underline truncate"
-                                },
-                                "text": "{{$file.original_filename || $file.file_name || $file.name || 'file'}}"
-                              },
-                              {
-                                "id": "cmb_admin_logo_del_{{idx}}",
-                                "type": "basic",
-                                "name": "Button",
-                                "text": "삭제",
-                                "props": {
-                                  "type": "button",
-                                  "className": "cmb-existing-del cmb-btn text-xs",
-                                  "data-cmb-existing-delete": "1",
-                                  "data-file-hash": "{{$file.hash || $file.id}}",
-                                  "data-file-kind": "logo"
-                                },
-                                "actions": [
+                                "onSuccess": [
                                   {
-                                    "type": "click",
-                                    "handler": "apiCall",
-                                    "auth_mode": "optional",
-                                    "target": "/api/modules/custom-maker_bids/uploads/{{$file.hash || $file.id}}",
+                                    "handler": "toast",
                                     "params": {
-                                      "method": "DELETE",
-                                      "credentials": "include"
-                                    },
-                                    "confirm": "이 파일을 삭제할까요?",
-                                    "onSuccess": [
-                                      {
-                                        "handler": "toast",
-                                        "params": {
-                                          "type": "success",
-                                          "message": "파일을 삭제했습니다."
-                                        }
-                                      },
-                                      {
-                                        "handler": "refetchDataSource",
-                                        "params": {
-                                          "dataSourceId": "companies"
-                                        }
-                                      }
-                                    ],
-                                    "onError": [
-                                      {
-                                        "handler": "toast",
-                                        "params": {
-                                          "type": "error",
-                                          "message": "{{error.message}}"
-                                        }
-                                      }
-                                    ]
+                                      "type": "success",
+                                      "message": "보류했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "companies"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ],
+                                "confirm": "이 업체를 보류할까요?"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "erejectbtn",
+                            "type": "basic",
+                            "name": "Button",
+                            "props": {
+                              "type": "button",
+                              "className": "cmb-btn-reject px-3 py-1.5 text-sm rounded-lg border",
+                              "data-cmb-kind": "reject"
+                            },
+                            "text": "거절",
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}/reject",
+                                "params": {
+                                  "method": "POST",
+                                  "body": "{{_local.edit}}"
+                                },
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "거절했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "companies"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ],
+                                "confirm": "이 업체를 거절할까요?"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "esave",
+                            "type": "basic",
+                            "name": "Button",
+                            "props": {
+                              "type": "button",
+                              "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900",
+                              "data-cmb-co-btns": "1"
+                            },
+                            "text": "선택 업체 저장",
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "fireEvent",
+                                "params": {
+                                  "event": "upload:maker_bids_admin_logo"
+                                }
+                              },
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}",
+                                "params": {
+                                  "method": "PATCH",
+                                  "body": "{{_local.edit}}"
+                                },
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "저장했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "companies"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
                                   }
                                 ]
                               }
                             ]
                           }
                         ]
-                      },
-                      {
-                        "id": "cmb_admin_logo_uploader",
-                        "type": "composite",
-                        "name": "FileUploader",
-                        "props": {
-                          "collection": "logos",
-                          "maxFiles": 1,
-                          "maxSize": 10,
-                          "maxWidth": 512,
-                          "maxHeight": 512,
-                          "accept": ".jpg,.jpeg,.png,.gif,.webp",
-                          "autoUpload": true,
-                          "className": "cmb-order-uploader mt-1",
-                          "data-cmb-logo-uploader": "1",
-                          "uploadTriggerEvent": "upload:maker_bids_admin_logo",
-                          "apiEndpoints": {
-                            "upload": "/api/modules/custom-maker_bids/uploads",
-                            "delete": "/api/modules/custom-maker_bids/uploads/:id",
-                            "reorder": ""
-                          },
-                          "uploadParams": {
-                            "collection": "logos",
-                            "token": "{{_local.edit.upload_token}}",
-                            "upload_token": "{{_local.edit.upload_token}}"
-                          },
-                          "initialFiles": "{{_local.edit.logo_files || []}}",
-                          "key": "admin-logo-{{_local.edit.uploader_epoch}}"
-                        },
-                        "if": "{{!!_local.edit.id && _local.edit.files_ready}}"
-                      },
-                      {
-                        "id": "esave",
-                        "type": "basic",
-                        "name": "Button",
-                        "text": "선택 업체 저장",
-                        "props": {
-                          "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
-                        },
-                        "actions": [
-                          {
-                            "type": "click",
-                            "handler": "fireEvent",
-                            "params": {
-                              "event": "upload:maker_bids_admin_logo"
-                            }
-                          },
-                          {
-                            "type": "click",
-                            "handler": "apiCall",
-                            "auth_required": true,
-                            "target": "/api/modules/custom-maker_bids/admin/companies/{{_local.edit.id}}",
-                            "params": {
-                              "method": "PATCH",
-                              "body": "{{_local.edit}}"
-                            },
-                            "onSuccess": [
-                              {
-                                "handler": "toast",
-                                "params": {
-                                  "type": "success",
-                                  "message": "저장했습니다."
-                                }
-                              },
-                              {
-                                "handler": "refetchDataSource",
-                                "params": {
-                                  "dataSourceId": "companies"
-                                }
-                              }
-                            ],
-                            "onError": [
-                              {
-                                "handler": "toast",
-                                "params": {
-                                  "type": "error",
-                                  "message": "{{error.message}}"
-                                }
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "id": "reject_box",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-admin-card space-y-2",
-                      "dataKey": "reject",
-                      "trackChanges": true
-                    },
-                    "children": [
-                      {
-                        "id": "rl",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-admin-card-title"
-                        },
-                        "text": "거절 사유"
-                      },
-                      {
-                        "id": "rhelp",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-admin-muted"
-                        },
-                        "text": "거절 버튼과 함께 전송됩니다."
-                      },
-                      {
-                        "id": "rreason",
-                        "type": "basic",
-                        "name": "Input",
-                        "props": {
-                          "name": "rejected_reason",
-                          "placeholder": "거절 사유",
-                          "className": "cmb-admin-w-full"
-                        }
-                      }
-                    ]
-                  },
-                  {
-                    "id": "hold_box",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-admin-card space-y-2",
-                      "dataKey": "hold",
-                      "trackChanges": true
-                    },
-                    "children": [
-                      {
-                        "id": "hl",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-admin-card-title"
-                        },
-                        "text": "보류 이유"
-                      },
-                      {
-                        "id": "hhelp",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-admin-muted"
-                        },
-                        "text": "보류 버튼과 함께 전송됩니다."
-                      },
-                      {
-                        "id": "hreason",
-                        "type": "basic",
-                        "name": "Input",
-                        "props": {
-                          "name": "hold_reason",
-                          "placeholder": "보류 이유",
-                          "className": "cmb-admin-w-full"
-                        }
                       }
                     ]
                   }
@@ -1177,8 +2113,22 @@
                                       "target": "local",
                                       "edit.id": "{{$co.id}}",
                                       "edit.status": "{{$co.status}}",
+                                      "edit.kind": "{{$co.kind || 'company'}}",
+                                      "edit.name": "{{$co.name || ''}}",
+                                      "edit.business_no": "{{$co.business_no || ''}}",
+                                      "edit.bio": "{{$co.bio || $co.note || ''}}",
+                                      "edit.homepage_url": "{{$co.homepage_url || ''}}",
+                                      "edit.portfolio_url": "{{$co.portfolio_url || ''}}",
+                                      "edit.manager_name": "{{$co.manager_name || ''}}",
+                                      "edit.phone": "{{$co.phone || ''}}",
+                                      "edit.email": "{{$co.email || ''}}",
+                                      "edit.zipcode": "{{$co.zipcode || ''}}",
+                                      "edit.address": "{{$co.address || ''}}",
+                                      "edit.address_detail": "{{$co.address_detail || ''}}",
+                                      "edit.job_types": "{{$co.job_types || []}}",
                                       "edit.admin_memo": "{{$co.admin_memo || ''}}",
                                       "edit.hold_reason": "{{$co.hold_reason || ''}}",
+                                      "edit.rejected_reason": "{{$co.rejected_reason || ''}}",
                                       "edit.rating_score": "{{$co.rating_score}}",
                                       "edit.rating_count": "{{$co.rating_count}}",
                                       "edit.claim_count": "{{$co.claim_count}}",

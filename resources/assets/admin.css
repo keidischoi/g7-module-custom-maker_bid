@@ -558,8 +558,13 @@ html.cmb-admin-dark .cmb-admin .cmb-section-card {
   width: 100% !important;
 }
 
+.cmb-admin-split.cmb-admin-split-company {
+  grid-template-columns: minmax(22rem, 38rem) minmax(0, 1fr);
+}
+
 @media (max-width: 900px) {
-  .cmb-admin-split {
+  .cmb-admin-split,
+  .cmb-admin-split.cmb-admin-split-company {
     grid-template-columns: 1fr;
   }
 
@@ -591,6 +596,59 @@ html.cmb-admin-dark .cmb-admin .cmb-section-card {
   justify-content: flex-end;
   align-items: center;
   gap: 0.4rem;
+}
+
+.cmb-admin-company-toolbar {
+  justify-content: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.cmb-admin-edit-native,
+.cmb-admin [data-cmb-edit-host] select.cmb-admin-edit-native {
+  display: block !important;
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  width: 100% !important;
+  min-width: 8rem !important;
+  max-width: 100% !important;
+  height: 2.25rem !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  color-scheme: dark;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.cmb-admin-uploader,
+.cmb-admin .cmb-order-uploader.cmb-admin-uploader {
+  border: 1px dashed rgba(148, 163, 184, 0.55);
+  border-radius: 0.75rem;
+  padding: 0.7rem;
+  background: rgba(15, 23, 42, 0.28);
+  min-height: 7.5rem;
+}
+
+.cmb-admin-uploader .cmb-existing-files,
+.cmb-admin-uploader .cmb-existing-in-uploader {
+  border: none;
+  background: transparent;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.cmb-admin-uploader .cmb-existing-thumb-link {
+  width: 72px;
+  height: 72px;
+  background-size: cover;
+  background-position: center;
+}
+
+.cmb-admin-uploader [class*="border-dashed"] {
+  border-style: dashed !important;
 }
 
 .cmb-admin-inline {
