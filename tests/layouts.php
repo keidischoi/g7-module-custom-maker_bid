@@ -243,8 +243,8 @@ expectTrue('admin job has image uploader', str_contains((string) file_get_conten
 expectTrue('admin company has logo uploader', str_contains((string) file_get_contents($root.'/resources/layouts/admin/companies_index.json'), 'cmb_admin_logo_uploader'));
 expectTrue('jobs form audience section marker', str_contains($edit, 'data-cmb-audience-section'));
 $list = (string) file_get_contents($root.'/resources/layouts/user/jobs_list.json');
-expectTrue('list search binds search.q', str_contains($list, 'search.q') && str_contains($list, 'data-cmb-search-input'));
-expectTrue('list search soft refetch', str_contains($list, 'refetchDataSource') && str_contains($list, 'jobs'));
+expectTrue('list search uses query + search input', str_contains($list, 'data-cmb-search-input') && str_contains($list, 'route.query.q'));
+expectTrue('list search-fix navigates', str_contains((string) file_get_contents($root.'/resources/assets/search-fix.js'), "handler: 'navigate'") && str_contains($list, 'jobs'));
 expectTrue('page.js soft search', str_contains($pageJs, 'cmb-list-search') && str_contains($pageJs, 'runSearch'));
 expectTrue('list sort UI', str_contains($list, 'sort') && str_contains($list, '최신순') && str_contains($list, '등록순') && str_contains($list, '조회순'));
 expectTrue('page.js sort soft', str_contains($pageJs, 'cmb-list-sort') && str_contains($pageJs, 'applySort'));
