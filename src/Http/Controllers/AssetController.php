@@ -52,16 +52,11 @@ class AssetController extends Controller
       var m = a && (a.getAttribute('href') || '').match(/\/maker-bids\/(\d+)/);
       if (m) id = m[1];
     }
-    if (!id) {
-      var m2 = (location.search || '').match(/[?&]job=(\d+)/);
-      if (m2) id = m2[1];
-    }
     if (!id) return;
-    location.href = '/maker-bids/quote?job=' + encodeURIComponent(id);
+    location.href = '/maker-bids/bids?job=' + encodeURIComponent(id);
   }, true);
 })();
 JS;
-
             return $redirect.$body;
         });
     }
@@ -88,7 +83,6 @@ JS;
         if ($mutate !== null) {
             $body = $mutate($body);
         }
-
         return response($body, 200, [
             'Content-Type' => $contentType,
             'Cache-Control' => 'no-cache',
