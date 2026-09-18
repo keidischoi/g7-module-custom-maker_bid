@@ -1,15 +1,24 @@
-.cmb-page:has(.cmb-card-list) {
-  max-width: 100% !important;
-  width: 100% !important;
-}
-
 .cmb-page .cmb-card-list,
 .cmb-section-card > .cmb-card-list {
   display: grid !important;
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  grid-template-columns: 1fr !important;
   gap: 0.75rem !important;
   width: 100% !important;
   flex-direction: unset !important;
+}
+
+@media (min-width: 768px) {
+  .cmb-page .cmb-card-list,
+  .cmb-section-card > .cmb-card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .cmb-page .cmb-card-list,
+  .cmb-section-card > .cmb-card-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
 }
 
 .cmb-page .cmb-card-list > .cmb-job-card,
@@ -31,15 +40,28 @@
   overflow-wrap: anywhere;
 }
 
+.cmb-page-head {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+}
+
+.cmb-maker-subnav {
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+}
+
 .cmb-search-bar {
   display: flex !important;
   align-items: center !important;
+  flex-wrap: wrap !important;
   gap: 8px !important;
 }
 
 .cmb-search-bar .cmb-search-input,
 .cmb-search-bar [data-cmb-free] {
-  flex: 1 1 auto !important;
+  flex: 1 1 12rem !important;
   min-width: 0 !important;
 }
 
