@@ -5,13 +5,9 @@ namespace Modules\Custom\MakerBids\Support;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJobFile;
-use Modules\Custom\MakerBids\Support\BidRules;
 
 class CompanyPresenter
 {
-    /**
-     * @return array<string, mixed>
-     */
     public static function present(MakerCompany $row, string $audience = 'public'): array
     {
         $jobTypes = is_array($row->job_types) ? array_values($row->job_types) : CompanyRules::normalizeJobTypes($row->job_types);
@@ -52,7 +48,7 @@ class CompanyPresenter
             $payload['reviewed_at'] = optional($row->reviewed_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('reviewed_at');
             $payload['note'] = $row->note;
             $payload['upload_token'] = $row->upload_token;
-            $payload['logo_files'] = self::logoFiles($row->logo_hash);
+            $payload['logo_files'] = self::logoFilesFor($row);
         }
 
         if ($audience === 'admin') {
@@ -65,9 +61,6 @@ class CompanyPresenter
         return $payload;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public static function presentBid(MakerBid $bid): array
     {
         $company = $bid->relationLoaded('company') ? $bid->company : null;
@@ -103,16 +96,40 @@ class CompanyPresenter
         return '/api/modules/custom-maker_bids/files/'.$hash;
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public static function logoFiles(?string $hash): array
+    {
+        return self::logoFilesForHash($hash);
+    }
+
+    public static function logoFilesFor($row): array
+    {
+        $hash = is_object($row) ? (string) ($row->logo_hash ?? '') : '';
+        $files = self::logoFilesForHash($hash);
+        if ($files) {
+            return $files;
+        }
+        $userId = is_object($row) ? (int) ($row->user_id ?? 0) : 0;
+        if ($userId < 1) {
+            return [];
+        }
+        $found = MakerJobFile::query()
+            ->where('user_id', $userId)
+            ->where('collection', UploadRules::COLLECTION_LOGOS)
+            ->orderByDesc('id')
+            ->get();
+        if ($found->isEmpty()) {
+            return [];
+        }
+
+        return $found->map(static fn ($f) => $f->toAttachmentArray())->values()->all();
+    }
+
+    public static function logoFilesForHash(?string $hash): array
     {
         $url = self::logoUrl($hash);
         if ($url === null || $hash === null || $hash === '') {
             return [];
         }
-
         $row = MakerJobFile::query()->where('hash', $hash)->first();
         if ($row) {
             return [$row->toAttachmentArray()];
