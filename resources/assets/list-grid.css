@@ -226,13 +226,14 @@
   gap: 0.45rem;
 }
 
-.cmb-filter-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--cmb-muted-fg, #9ca3af);
-  margin: 0;
-  min-width: 4.2rem;
-  flex: 0 0 auto;
+.cmb-chip {
+  color: var(--cmb-card-fg, #e5e7eb);
+  border-color: var(--cmb-border, rgba(255, 255, 255, 0.22));
+}
+.cmb-chip.is-active,
+.cmb-chip[aria-current="page"] {
+  background: var(--cmb-accent, #e5e7eb);
+  color: var(--cmb-accent-fg, #111827);
 }
 
 .cmb-status-chips,
