@@ -338,10 +338,14 @@ $searchFix = (string) file_get_contents($root.'/resources/assets/search-fix.js')
 expectTrue('search-fix fetches filtered jobs', str_contains($searchFix, '/api/modules/custom-maker_bids/jobs') && str_contains($searchFix, 'per_page') && str_contains($searchFix, 'quote_request'));
 expectTrue('search-fix does not clobber focused input', str_contains($searchFix, 'document.activeElement !== free') && str_contains($searchFix, 'data-cmb-free'));
 expectTrue('search-fix uses native search bar', str_contains($searchFix, 'data-cmb-native-bar') && str_contains($searchFix, 'stopPropagation'));
-expectTrue('search-fix ignores leftover G7 q unless URL has q', str_contains($searchFix, "inp0.value = state.q || ''"));
+expectTrue('search-fix native host sits outside G7 bar', str_contains($searchFix, 'data-cmb-native-host') && str_contains($searchFix, 'neutralizeG7'));
+expectTrue('search-fix keeps typed query across remount', str_contains($searchFix, 'typedQ') && str_contains($searchFix, 'rememberTyped'));
 expectTrue('search-fix hides G7 search with display none', str_contains($searchFix, "setProperty('display', 'none', 'important')"));
-expectTrue('search-fix searches only on Enter key', str_contains($searchFix, "e.key !== 'Enter'") && ! str_contains($searchFix, 'debounce') && ! str_contains($searchFix, "addEventListener('input'"));
+expectTrue('search-fix searches only on Enter key', str_contains($searchFix, "e.key !== 'Enter'") && ! str_contains($searchFix, 'debounce') && ! str_contains($searchFix, "addEventListener('input'") && ! str_contains($searchFix, "addEventListener('keyup'") && ! str_contains($searchFix, "addEventListener('keypress'"));
+expectTrue('search-fix self chips use inline display', str_contains($searchFix, 'paintSelfChips') && str_contains($searchFix, "setProperty('display', 'inline-flex', 'important')"));
+expectTrue('page.js skips native search wiring', str_contains($pageJs, 'data-cmb-native-host') && str_contains($pageJs, 'data-cmb-native-bar'));
 expectTrue('jobs_list has self-only draft and dispute chips', str_contains($listLayout, '임시저장') && str_contains($listLayout, '분쟁조정') && str_contains($listLayout, 'data-cmb-self-status'));
+expectTrue('list-grid reveals self chips when not hidden', str_contains($listGrid, 'cmb-chip-self-only:not([hidden])') && str_contains($listGrid, 'inline-flex !important'));
 expectTrue('jobs_list stacks 형식 then 의뢰상태 filters', str_contains($listLayout, 'cmb-filter-row-type') && str_contains($listLayout, 'cmb-filter-row-status') && str_contains($listLayout, '"text": "형식"') && str_contains($listLayout, '"text": "의뢰상태"'));
 expectTrue('jobs_list type chips have data-cmb-type', str_contains($listLayout, 'data-cmb-type'));
 expectTrue('nav skips list filter chips', str_contains((string) file_get_contents($root.'/resources/assets/nav.js'), 'cmb-chip') && str_contains((string) file_get_contents($root.'/resources/assets/nav.js'), 'data-cmb-type'));

@@ -170,6 +170,31 @@
   overflow: hidden;
 }
 
+.cmb-page .cmb-search-bar[data-cmb-search-bar]:not([data-cmb-native-host]),
+.cmb-search-bar[data-cmb-search-bar]:not([data-cmb-native-host]) {
+  display: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+[data-cmb-native-host],
+.cmb-native-search-host {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  position: relative;
+  overflow: visible;
+  pointer-events: auto !important;
+  opacity: 1 !important;
+}
+
 .cmb-native-search-bar {
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -238,6 +263,9 @@
 .cmb-chip-self-only[hidden],
 .cmb-chip-self-only.is-hidden {
   display: none !important;
+}
+.cmb-chip-self-only:not([hidden]):not(.is-hidden) {
+  display: inline-flex !important;
 }
 
 .cmb-status-chips,

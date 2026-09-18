@@ -1,11 +1,12 @@
 (function () {
-  if (window.__cmbSearchFix10) return;
-  window.__cmbSearchFix10 = true;
+  if (window.__cmbSearchFix11) return;
+  window.__cmbSearchFix11 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var lastRows = [];
   var lastMeta = {};
   var selfChips = { draft: false, disputed: false };
+  var typedQ = null;
 
   var PUBLIC_STATUS_CHIPS = [
     ['', '전체'],
@@ -123,12 +124,20 @@
 
   function paintSelfChips(flags) {
     selfChips = flags || selfChips;
+    var labels = { draft: '임시저장', disputed: '분쟁조정' };
     document.querySelectorAll('[data-cmb-self-status]').forEach(function (a) {
       var key = a.getAttribute('data-cmb-self-status');
       var on = !!(selfChips && selfChips[key]);
-      a.hidden = !on;
-      a.classList.toggle('is-hidden', !on);
-      a.style.display = on ? '' : 'none';
+      if (!(a.textContent || '').trim() && labels[key]) a.textContent = labels[key];
+      if (on) {
+        a.removeAttribute('hidden');
+        a.classList.remove('is-hidden');
+        a.style.setProperty('display', 'inline-flex', 'important');
+      } else {
+        a.setAttribute('hidden', '');
+        a.classList.add('is-hidden');
+        a.style.setProperty('display', 'none', 'important');
+      }
     });
   }
 
@@ -157,8 +166,10 @@
   }
 
   function apply(resetPage) {
+    rememberTyped();
     var inp = document.querySelector('[data-cmb-free]');
     if (inp) state.q = String(inp.value || '').trim();
+    typedQ = state.q;
     writeUrl(resetPage !== false);
     load();
   }
@@ -190,6 +201,11 @@
     });
   }
 
+  function rememberTyped() {
+    var free = document.querySelector('[data-cmb-native-host] [data-cmb-free], [data-cmb-native-bar] [data-cmb-free]');
+    if (free) typedQ = String(free.value || '');
+  }
+
   function bindSearchSubmit(inp) {
     if (!inp || inp.getAttribute('data-cmb-enter') === '1') return;
     inp.setAttribute('data-cmb-enter', '1');
@@ -197,55 +213,68 @@
       if (e.key !== 'Enter') return;
       e.preventDefault();
       e.stopPropagation();
+      rememberTyped();
       apply(true);
     });
   }
 
-  function ensureSearch() {
-    var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
+  function neutralizeG7(bar) {
     if (!bar) return;
-    var native = bar.querySelector('[data-cmb-native-bar]');
+    hideVisually(bar);
+    bar.querySelectorAll('input, textarea, select, button, [role="combobox"], [data-slot="trigger"]').forEach(function (el) {
+      hideVisually(el);
+      try { el.disabled = true; } catch (e) {}
+      try { el.readOnly = true; } catch (e2) {}
+      el.tabIndex = -1;
+      if (el.getAttribute && el.getAttribute('name') === 'q') el.removeAttribute('name');
+      if (el.tagName === 'INPUT' && !state.q) el.value = '';
+    });
+  }
+
+  function ensureSearch() {
+    rememberTyped();
+    var g7 = document.querySelector('[data-cmb-search-bar]:not([data-cmb-native-host])')
+      || document.querySelector('.cmb-search-bar:not([data-cmb-native-host])');
+    if (!g7 || !g7.parentNode) return;
+    var host = document.querySelector('[data-cmb-native-host]');
+    if (!host) {
+      host = document.createElement('div');
+      host.setAttribute('data-cmb-native-host', '1');
+      host.className = 'cmb-section-card cmb-search-bar cmb-native-search-host mb-3';
+      g7.parentNode.insertBefore(host, g7);
+    }
+    var native = host.querySelector('[data-cmb-native-bar]');
     if (!native) {
       native = document.createElement('div');
       native.setAttribute('data-cmb-native-bar', '1');
       native.className = 'cmb-native-search-bar';
       native.innerHTML =
-        '<input type="text" data-cmb-free="1" class="cmb-search-input cmb-search-free" placeholder="검색어" autocomplete="off">' +
+        '<input type="text" data-cmb-free="1" class="cmb-search-free" placeholder="검색어" autocomplete="off" spellcheck="false">' +
         '<select data-cmb-sort-free="1" class="cmb-search-sort-free" aria-label="정렬">' +
         '<option value="latest">최신순</option><option value="created">등록순</option>' +
         '<option value="views">조회순</option><option value="status">상태순</option></select>' +
         '<button type="button" class="cmb-btn cmb-btn-primary cmb-search-go" data-cmb-search-go="1">검색</button>';
-      bar.insertBefore(native, bar.firstChild);
+      host.appendChild(native);
       var inp0 = native.querySelector('[data-cmb-free]');
-      inp0.value = state.q || '';
-      bar.querySelectorAll('input').forEach(function (el) {
-        if (el.getAttribute('data-cmb-free') === '1') return;
-        if (!state.q) el.value = '';
-      });
+      inp0.value = typedQ != null ? typedQ : (state.q || '');
       bindSearchSubmit(inp0);
       native.querySelector('[data-cmb-sort-free]').addEventListener('change', function (e) {
         state.sort = e.target.value;
         apply(true);
       });
     }
+    neutralizeG7(g7);
     var free = native.querySelector('[data-cmb-free]');
     bindSearchSubmit(free);
-    if (document.activeElement !== free && state.q && !String(free.value || '').trim()) free.value = state.q;
+    if (document.activeElement !== free) {
+      if (typedQ != null) {
+        if (String(free.value || '') !== typedQ) free.value = typedQ;
+      } else if (state.q && !String(free.value || '').trim()) {
+        free.value = state.q;
+      }
+    }
     var sort = native.querySelector('[data-cmb-sort-free]');
     if (sort && document.activeElement !== sort) sort.value = state.sort || 'latest';
-    Array.prototype.slice.call(bar.children).forEach(function (n) {
-      if (n === native) return;
-      hideVisually(n);
-    });
-    bar.querySelectorAll('input, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
-      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
-      hideVisually(el);
-    });
-    document.querySelectorAll('[name="q"], [data-cmb-search-input], .cmb-search-input').forEach(function (el) {
-      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
-      hideVisually(el);
-      if (el.tagName === 'INPUT' && !state.q) el.value = '';
-    });
     return free;
   }
 
@@ -348,6 +377,7 @@
   window.addEventListener('popstate', function () {
     if (!listPath()) return;
     readUrl();
+    typedQ = state.q || '';
     var inp = document.querySelector('[data-cmb-free]');
     if (inp && document.activeElement !== inp) inp.value = state.q;
     load();
@@ -368,9 +398,13 @@
   setTimeout(boot, 200);
   setTimeout(function () { boot(); load(); }, 400);
   setTimeout(boot, 1000);
-  if (!window.__cmbSearchObs10) {
-    window.__cmbSearchObs10 = new MutationObserver(function () {
+  if (!window.__cmbTypedPoll11) {
+    window.__cmbTypedPoll11 = setInterval(rememberTyped, 120);
+  }
+  if (!window.__cmbSearchObs11) {
+    window.__cmbSearchObs11 = new MutationObserver(function () {
       if (!listPath()) return;
+      rememberTyped();
       ensureSearch();
       ensureChips();
       if (lastRows.length) {
@@ -379,7 +413,7 @@
       }
     });
     try {
-      window.__cmbSearchObs10.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs11.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();

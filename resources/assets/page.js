@@ -1178,7 +1178,9 @@
   }
 
   function searchInput() {
-    return document.querySelector('[data-cmb-search-input], .cmb-search-input, .cmb-search-bar input[name="q"]');
+    var el = document.querySelector('[data-cmb-search-input], .cmb-search-input, .cmb-search-bar input[name="q"]');
+    if (el && el.closest && el.closest('[data-cmb-native-bar], [data-cmb-native-host], [data-cmb-free]')) return null;
+    return el;
   }
 
   function currentQ() {
@@ -1247,6 +1249,7 @@
   }
 
   function bind() {
+    if (document.querySelector('[data-cmb-native-host], [data-cmb-native-bar], [data-cmb-free]')) return;
     syncInputFromUrl();
     var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
     if (!bar || bar.getAttribute('data-cmb-search-bound')) {
