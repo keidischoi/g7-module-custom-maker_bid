@@ -1,0 +1,158 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_bid",
+  "extends": "_user_base",
+  "meta": { "title": "견적서 작성" },
+  "errorHandling": {
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message || error.data.message}}" } }
+  },
+  "state": {
+    "bid": {
+      "amount": "",
+      "days": "",
+      "includes_modeling": false,
+      "includes_post": false,
+      "material": "",
+      "message": ""
+    }
+  },
+  "data_sources": [
+    {
+      "id": "job",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true
+    },
+    {
+      "id": "viewer",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/jobs/{{route.id}}/viewer",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true
+    },
+    {
+      "id": "me",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/companies/me",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "errorHandling": { "401": { "handler": "suppress" }, "403": { "handler": "suppress" } },
+      "fallback": { "data": {} }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": { "className": "cmb-page cmb-bid-page max-w-4xl mx-auto px-4 py-6 space-y-6" },
+        "children": [
+          {
+            "id": "head",
+            "type": "basic",
+            "name": "Div",
+            "children": [
+              { "id": "h1", "type": "basic", "name": "H1", "props": { "className": "text-2xl font-semibold", "text": "견적서 작성" } },
+              { "id": "sub", "type": "basic", "name": "P", "props": { "className": "text-sm text-gray-500 mt-1", "text": "{{job.data.title || '의뢰'}}" } }
+            ]
+          },
+          {
+            "id": "summary",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "cmb-section-card rounded-xl border p-4 space-y-1 text-sm" },
+            "children": [
+              { "id": "s1", "type": "basic", "name": "P", "text": "예산: {{job.data.budget_min || '-'}} ~ {{job.data.budget_max || '-'}}" },
+              { "id": "s2", "type": "basic", "name": "P", "text": "마감: {{job.data.closes_at || '-'}}" },
+              { "id": "s3", "type": "basic", "name": "P", "text": "업체: {{me.data.name || '미등록'}}" }
+            ]
+          },
+          {
+            "id": "form",
+            "type": "basic",
+            "name": "Div",
+            "props": { "className": "cmb-section-card cmb-form-stack cmb-bid-form space-y-4 rounded-xl border p-5", "dataKey": "bid", "trackChanges": true },
+            "children": [
+              {
+                "id": "amt_l", "type": "basic", "name": "Label", "props": { "className": "text-sm font-medium", "text": "견적 금액 (원) *" }
+              },
+              {
+                "id": "amt", "type": "basic", "name": "Input",
+                "props": { "name": "amount", "type": "number", "min": "1", "placeholder": "예: 150000", "className": "cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm", "value": "{{_local.bid.amount}}" }
+              },
+              {
+                "id": "days_l", "type": "basic", "name": "Label", "props": { "className": "text-sm font-medium", "text": "제작 기간 (일)" }
+              },
+              {
+                "id": "days", "type": "basic", "name": "Input",
+                "props": { "name": "days", "type": "number", "min": "1", "placeholder": "예: 7", "className": "cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm", "value": "{{_local.bid.days}}" }
+              },
+              {
+                "id": "mat_l", "type": "basic", "name": "Label", "props": { "className": "text-sm font-medium", "text": "주요 소재 / 공정" }
+              },
+              {
+                "id": "mat", "type": "basic", "name": "Input",
+                "props": { "name": "material", "placeholder": "예: PLA, 0.2mm, 무후가공", "className": "cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm", "value": "{{_local.bid.material}}" }
+              },
+              {
+                "id": "msg_l", "type": "basic", "name": "Label", "props": { "className": "text-sm font-medium", "text": "견적 설명" }
+              },
+              {
+                "id": "msg", "type": "basic", "name": "Textarea",
+                "props": { "name": "message", "rows": "8", "placeholder": "포함 범위, 후가공, 배송, 수정 횟수, 유의사항을 적어 주세요.", "className": "cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm min-h-[160px]", "value": "{{_local.bid.message}}" }
+              },
+              {
+                "id": "actions", "type": "basic", "name": "Div", "props": { "className": "flex gap-2 pt-2" },
+                "children": [
+                  {
+                    "id": "submit",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "견적 제출",
+                    "props": { "className": "cmb-btn cmb-btn-primary cmb-bid-page-submit", "type": "button" },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/bids",
+                        "params": {
+                          "method": "POST",
+                          "body": {
+                            "amount": "{{_local.bid.amount}}",
+                            "days": "{{_local.bid.days}}",
+                            "message": "{{_local.bid.message}}"
+                          }
+                        },
+                        "onSuccess": [
+                          { "handler": "toast", "params": { "type": "success", "message": "견적을 등록했습니다." } },
+                          { "handler": "navigate", "params": { "url": "/maker-bids/{{route.id}}" } }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "back",
+                    "type": "basic",
+                    "name": "A",
+                    "text": "의뢰로 돌아가기",
+                    "props": { "href": "/maker-bids/{{route.id}}", "className": "cmb-btn" }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
