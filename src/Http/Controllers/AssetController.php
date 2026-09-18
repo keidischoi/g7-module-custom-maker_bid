@@ -29,7 +29,13 @@ class AssetController extends Controller
 
     public function page(): Response
     {
-        return $this->asset('page.js', 'application/javascript; charset=UTF-8');
+        return $this->asset('page.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
+            $path = dirname(__DIR__, 3).'/resources/assets/search-fix.js';
+            if (is_file($path)) {
+                $body .= "\n".(string) file_get_contents($path);
+            }
+            return $body;
+        });
     }
 
     public function formCss(): Response
