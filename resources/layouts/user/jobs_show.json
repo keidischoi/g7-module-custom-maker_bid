@@ -383,6 +383,16 @@
                 "text": "{{job.data.payment.status_label}} · {{job.data.payment.kind_label || '전액'}} {{job.data.payment.amount_label}}{{job.data.payment.split ? (' · 계약금 ' + job.data.payment.deposit_percent + '%') : ''}} · {{job.data.payment.bank_name}} {{job.data.payment.account_no}} {{job.data.payment.account_holder}}"
               },
               {
+                "id": "pay_card_refund",
+                "type": "basic",
+                "name": "P",
+                "if": "{{job.data.payment.refund_account_label}}",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "환불 계좌 {{job.data.payment.refund_account_label}}"
+              },
+              {
                 "id": "pay_card_a",
                 "type": "basic",
                 "name": "A",

@@ -152,7 +152,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.job_title}} · {{$item.method_label}} · {{$item.destination_label}} · {{$item.account_label}} · 입금자 {{$item.depositor_name || '-'}}"
+                            "text": "{{$item.job_title}} · {{$item.method_label}} · {{$item.destination_label}} · {{$item.account_label}} · 입금자 {{$item.depositor_name || '-'}}{{$item.refund_account_label ? (' · 환불 ' + $item.refund_account_label) : ''}}"
                           }
                         ]
                       },

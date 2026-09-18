@@ -433,6 +433,12 @@ class PaymentService
             'payer_is_me' => $actorId > 0 && (int) $row->payer_user_id === $actorId,
             'payee_is_me' => $actorId > 0 && (int) ($row->payee_user_id ?? 0) === $actorId,
             'account_label' => trim((string) ($row->bank_name ?? '').' '.(string) ($row->account_no ?? '').' '.(string) ($row->account_holder ?? '')),
+            'refund_bank_name' => $job && isset($job->refund_bank_name) ? (string) ($job->refund_bank_name ?? '') : '',
+            'refund_account_holder' => $job && isset($job->refund_account_holder) ? (string) ($job->refund_account_holder ?? '') : '',
+            'refund_account_no' => $job && isset($job->refund_account_no) ? (string) ($job->refund_account_no ?? '') : '',
+            'refund_account_label' => $job
+                ? trim((string) ($job->refund_bank_name ?? '').' '.(string) ($job->refund_account_no ?? '').' '.(string) ($job->refund_account_holder ?? ''))
+                : '',
         ];
     }
 

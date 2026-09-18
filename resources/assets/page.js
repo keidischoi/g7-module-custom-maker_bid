@@ -109,7 +109,8 @@
       'title','type','status','audience','budget_min','budget_max','description',
       'closes_at','rush_deadline','size_w','size_d','size_h',
       'contact_name','contact_phone','contact_email','zipcode','address','address_detail',
-      'manager_name','manager_phone','manager_email','revision_count','revision_cost'
+      'manager_name','manager_phone','manager_email','revision_count','revision_cost',
+      'refund_bank_name','refund_account_holder','refund_account_no'
     ], [
       'rush_fee_enabled','schedule_premium_enabled','revision_enabled','ownership_requested',
       'ext_stl','ext_3mf','ext_obj','ext_step','ext_stp','ext_gcode','ext_fbx','ext_dwg'
@@ -601,7 +602,10 @@
     { label: '상세 주소', key: 'address_detail', private: true, applies: requiresAddress, wide: true },
     { label: '담당자 명', key: 'manager_name', private: true },
     { label: '담당자 연락처', key: 'manager_phone', private: true },
-    { label: '담당자 이메일', key: 'manager_email', private: true }
+    { label: '담당자 이메일', key: 'manager_email', private: true },
+    { label: '환불 은행', key: 'refund_bank_name', private: true },
+    { label: '환불 계좌 소유자명', key: 'refund_account_holder', private: true },
+    { label: '환불 계좌번호', key: 'refund_account_no', private: true }
   ];
   window.CMB_JOB_SPEC_CATALOG = CATALOG;
 
@@ -631,7 +635,10 @@
     ['contact_name', '주문자명 또는 업체명'],
     ['contact_phone', '연락처'],
     ['contact_hours', '연락 가능시간'],
-    ['contact_email', '이메일']
+    ['contact_email', '이메일'],
+    ['refund_bank_name', '환불 은행'],
+    ['refund_account_holder', '환불 계좌 소유자명'],
+    ['refund_account_no', '환불 계좌번호']
   ];
 
   function privateValue(job, privacy, key) {

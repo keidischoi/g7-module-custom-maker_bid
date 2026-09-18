@@ -160,6 +160,9 @@ class JobService
             'contact_phone' => $payload['contact_phone'] ?? null,
             'contact_email' => $payload['contact_email'] ?? null,
             'contact_hours' => JobRules::contactHours($payload['contact_hours_from'] ?? null, $payload['contact_hours_to'] ?? null, $payload['contact_hours'] ?? null),
+            'refund_bank_name' => isset($payload['refund_bank_name']) ? mb_substr(trim((string) $payload['refund_bank_name']), 0, 80) : null,
+            'refund_account_holder' => isset($payload['refund_account_holder']) ? mb_substr(trim((string) $payload['refund_account_holder']), 0, 80) : null,
+            'refund_account_no' => isset($payload['refund_account_no']) ? mb_substr(trim((string) $payload['refund_account_no']), 0, 80) : null,
             'zipcode' => $payload['zipcode'] ?? null,
             'address' => $payload['address'] ?? null,
             'address_detail' => $payload['address_detail'] ?? null,
@@ -184,6 +187,9 @@ class JobService
             'title' => $payload['title'] ?? null,
             'description' => $payload['description'] ?? null,
             'status' => isset($payload['status']) ? JobRules::normalizeListingStatus($payload['status']) : null,
+            'refund_bank_name' => $this->optionalTrim($payload, 'refund_bank_name', 80),
+            'refund_account_holder' => $this->optionalTrim($payload, 'refund_account_holder', 80),
+            'refund_account_no' => $this->optionalTrim($payload, 'refund_account_no', 80),
         ], static fn ($v) => $v !== null));
         $job->save();
         return $this->present(MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->findOrFail($job->id), $this->ownerContext($userId), true, true);
@@ -197,6 +203,12 @@ class JobService
         }
         if (isset($payload['title'])) {
             $job->title = $payload['title'];
+        }
+        foreach (['refund_bank_name', 'refund_account_holder', 'refund_account_no'] as $key) {
+            $val = $this->optionalTrim($payload, $key, 80);
+            if ($val !== null) {
+                $job->{$key} = $val;
+            }
         }
         $job->save();
         return $this->findAdmin($id);
@@ -446,5 +458,17 @@ class JobService
     private function settingBool(string $key, bool $default = false): bool
     {
         return SettingsRules::boolish($this->setting($key, $default));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function optionalTrim(array $payload, string $key, int $max): ?string
+    {
+        if (! array_key_exists($key, $payload) || $payload[$key] === null || $payload[$key] === '') {
+            return null;
+        }
+
+        return mb_substr(trim((string) $payload[$key]), 0, $max);
     }
 }

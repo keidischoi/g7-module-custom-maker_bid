@@ -143,5 +143,14 @@ expectTrue('admin company bank edit', str_contains($coAdmin, '"id": "epay_block"
 $awardRules = AwardRules::requestRules();
 expectTrue('award rules deposit percent', isset($awardRules['deposit_percent'], $awardRules['deposit_terms']));
 
+$form = (string) file_get_contents($root.'/resources/layouts/user/jobs_form.json');
+expectTrue('job form refund account', str_contains($form, 'refund_account_holder') && str_contains($form, 'refund_account_no') && str_contains($form, '환불 계좌 (선택)'));
+$migRefund = (string) file_get_contents($root.'/database/migrations/2026_09_18_000023_ensure_job_refund_account.php');
+expectTrue('refund account migration', str_contains($migRefund, 'refund_account_holder') && str_contains($migRefund, 'refund_account_no'));
+$privacy = (string) file_get_contents($root.'/src/Support/PrivacyRules.php');
+expectTrue('privacy keys refund', str_contains($privacy, "'refund_account_holder'") && str_contains($privacy, "'refund_account_no'"));
+$wsRefund = (string) file_get_contents($root.'/resources/layouts/user/jobs_workspace.json');
+expectTrue('workspace refund account', str_contains($wsRefund, 'pay_refund') && str_contains($wsRefund, '환불 계좌'));
+
 echo "\n{$passed} passed, {$failed} failed\n";
 exit($failed === 0 ? 0 : 1);

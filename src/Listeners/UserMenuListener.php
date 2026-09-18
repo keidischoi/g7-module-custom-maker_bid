@@ -20,6 +20,7 @@ class UserMenuListener implements HookListenerInterface
         'closes_at', 'rush_deadline', 'size_w', 'size_d', 'size_h', 'sizes_json',
         'contact_name', 'contact_phone', 'contact_hours', 'contact_email',
         'zipcode', 'address', 'address_detail', 'manager_name', 'manager_phone', 'manager_email',
+        'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         'revision_count', 'revision_cost',
     ];
 

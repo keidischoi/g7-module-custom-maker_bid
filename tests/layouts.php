@@ -93,6 +93,7 @@ expectTrue('detail manager info stays privacy-gated', str_contains($pageJs, "key
 expectTrue('detail spec requires route job id', str_contains($pageJs, 'job.id == null || String(job.id) !== id') && str_contains($pageJs, 'normalizeJob'));
 expectTrue('detail spec maps audience label', str_contains($pageJs, "label: '입찰 권한'") && str_contains($pageJs, 'function audienceLabel'));
 expectTrue('detail spec owner sees privacy', str_contains($pageJs, 'viewer.is_owner') && str_contains($pageJs, 'can_view_privacy'));
+expectTrue('detail refund account in spec catalog', str_contains($pageJs, "key: 'refund_account_holder', private: true") && str_contains($pageJs, "key: 'refund_account_no', private: true"));
 
 
 $create = (string) file_get_contents($root.'/resources/layouts/user/jobs_form.json');
@@ -144,6 +145,7 @@ $qrOpt = strpos($create, '"value": "quote_request"');
 $holdOpt = strpos($create, '"value": "hold"');
 expectTrue('create status lists 견적요청 before 보류', $qrOpt !== false && $holdOpt !== false && $qrOpt < $holdOpt);
 expectTrue('create privacy block', str_contains($create, '주문자명 또는 업체명'));
+expectTrue('create refund account optional fields', str_contains($create, 'refund_account_holder') && str_contains($create, 'refund_account_no') && str_contains($create, '환불 계좌'));
 
 $list = (string) file_get_contents($root.'/resources/layouts/user/jobs_list.json');
 expectTrue('list empty state', str_contains($list, '등록된 의뢰가 없습니다'));
@@ -384,6 +386,7 @@ expectTrue('form.js cond toggles rush/revision', str_contains($formJs, 'bindCond
 expectTrue('rush deadline ensure migration', is_file($root.'/database/migrations/2026_09_16_000006_ensure_rush_deadline.php'));
 expectTrue('revision fields ensure migration', is_file($root.'/database/migrations/2026_09_16_000007_ensure_revision_fields.php'));
 expectTrue('sizes and manager ensure migration', is_file($root.'/database/migrations/2026_09_16_000008_ensure_sizes_and_manager_fields.php'));
+expectTrue('job refund account ensure migration', is_file($root.'/database/migrations/2026_09_18_000023_ensure_job_refund_account.php'));
 expectTrue('includes_modeling ensure migration', is_file($root.'/database/migrations/2026_09_16_000009_ensure_includes_modeling.php'));
 expectTrue('company profile admin fields migration', is_file($root.'/database/migrations/2026_09_16_000010_ensure_company_profile_admin_fields.php'));
 expectTrue('job view_count migration', is_file($root.'/database/migrations/2026_09_17_000017_ensure_job_view_count.php'));

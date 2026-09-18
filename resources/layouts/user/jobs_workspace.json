@@ -736,6 +736,16 @@
                     "text": "{{job.data.payment.instructions}}"
                   },
                   {
+                    "id": "pay_refund",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.refund_account_label || job.data.refund_account_no}}",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "환불 계좌: {{job.data.payment.refund_account_label || ((job.data.refund_bank_name || '') + ' ' + (job.data.refund_account_no || '') + ' ' + (job.data.refund_account_holder || ''))}}"
+                  },
+                  {
                     "id": "pay_dep_l",
                     "type": "basic",
                     "name": "P",

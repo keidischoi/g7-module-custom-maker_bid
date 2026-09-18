@@ -2165,6 +2165,9 @@
       'form.manager_name': '이담당',
       'form.manager_phone': '010-9876-5432',
       'form.manager_email': 'manager@example.com',
+      'form.refund_bank_name': '국민은행',
+      'form.refund_account_holder': '김테스트',
+      'form.refund_account_no': '110-123-456789',
       'form.requires_address': '0',
       'form.includes_modeling': '1',
       'form.terms_agreed': true
