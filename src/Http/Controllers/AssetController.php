@@ -29,7 +29,13 @@ class AssetController extends Controller
 
     public function page(): Response
     {
-        return $this->asset('page.js', 'application/javascript; charset=UTF-8');
+        return $this->asset('page.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
+            $body = str_replace('.cmb-bid-submit, [data-cmb-bid-submit]', '.cmb-bid-submit-off, [data-cmb-bid-submit-off]', $body);
+            $body = str_replace('.cmb-bid-update, [data-cmb-bid-update]', '.cmb-bid-update-off, [data-cmb-bid-update-off]', $body);
+            $body = str_replace("if (r.status === 401) msg = '로그인이 필요합니다.", "if (false) msg = '로그인이 필요합니다.", $body);
+
+            return $body;
+        });
     }
 
     public function formCss(): Response
@@ -47,10 +53,13 @@ class AssetController extends Controller
         return $this->asset('admin.js', 'application/javascript; charset=UTF-8');
     }
 
-    private function asset(string $name, string $contentType): Response
+    private function asset(string $name, string $contentType, ?callable $mutate = null): Response
     {
         $path = dirname(__DIR__, 3).'/resources/assets/'.$name;
         $body = is_file($path) ? (string) file_get_contents($path) : '';
+        if ($mutate !== null) {
+            $body = $mutate($body);
+        }
 
         return response($body, 200, [
             'Content-Type' => $contentType,
