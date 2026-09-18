@@ -29,14 +29,14 @@ Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware([
 Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
 Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
-Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:60,1'])->name('jobs.bids.store');
-Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['optional.sanctum', 'throttle:60,1'])->name('jobs.bids.update');
+Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:300,1'])->name('jobs.bids.store');
+Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['optional.sanctum', 'throttle:300,1'])->name('jobs.bids.update');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
 Route::get('settings', [SettingsController::class, 'show'])->middleware(['throttle:600,1'])->name('settings.show');
 Route::post('jobs/close-expired', [MarketplaceController::class, 'closeExpired'])->middleware(['throttle:30,1'])->name('jobs.closeExpired');
 Route::post('jobs/run-schedule', [MarketplaceController::class, 'runSchedule'])->middleware(['throttle:30,1'])->name('jobs.runSchedule');
 
-Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:300,1'])->group(function () {
     Route::get('jobs/mine', [JobController::class, 'mine'])->name('jobs.mine');
     Route::get('jobs/form-defaults', [JobController::class, 'formDefaults'])->name('jobs.form-defaults');
     Route::get('jobs/{id}/edit', [JobController::class, 'editData'])->whereNumber('id')->name('jobs.edit');
