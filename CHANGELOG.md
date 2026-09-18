@@ -4,6 +4,37 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.23] - 2026-09-18
+
+### Fixed
+- **의뢰목록 홀쪽한 카드**: `LayoutFileFixListener`가 모든 `.cmb-card-list`에 인라인 `repeat(10, …)` 그리드를 넣던 문제를 제거. 의뢰/입찰/이력은 반응형 **1 / 2 / 3열**, 입찰자 목록만 `cmb-company-gallery` **2~5열**.
+- **검색이 페이저·썸네일을 덮어씀**: `search-fix.js`가 `per_page=50`으로 카드를 다시 그리던 경로를 없애고, 검색·정렬·상태 칩은 URL 쿼리 + G7 `navigate`로 처리.
+- **상태 칩 값**: `open`/`draft` 대신 실제 상태(`pending`/`hold`/`request`/`quote_request`/`awarded`/`done`/`cancelled`).
+- 상세 `viewer` API의 `debug_session` 디버그 문자열 제거.
+- 버전·캐시 버스트가 0.10.19에 멈춘 채 module.json만 올라가던 불일치 해소.
+
+### Added
+- 의뢰 카드 썸네일, 입찰자 카드 원형 로고를 레이아웃 JSON에 직접 배치.
+- 의뢰목록 「등록된 의뢰」 옆 상태 필터 칩.
+
+### Changed
+- 버전·캐시 버스트 **0.10.23**.
+
+## [0.10.22] - 2026-09-18
+
+### Fixed
+- 의뢰목록 고정 5열을 반응형 1/2/3열로 완화. 중복 「의뢰 등록」 CTA 제거, pager 추가.
+
+## [0.10.21] - 2026-09-18
+
+### Fixed
+- 고아 업로드를 의뢰에 연결해 수정 API가 기존 이미지를 반환. `existing-files.js` 주입.
+
+## [0.10.20] - 2026-09-18
+
+### Fixed
+- 의뢰·업체 수정 화면에서 기존 이미지/첨부/로고가 보이게 함.
+
 ## [0.10.19] - 2026-09-18
 
 ### Fixed

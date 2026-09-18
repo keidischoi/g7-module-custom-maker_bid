@@ -354,57 +354,55 @@ class LayoutFileFixListener implements HookListenerInterface
         }
 
         if (str_contains($cls, 'cmb-card-list')) {
-            $props['className'] = trim($cls.' cmb-company-gallery');
-            $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px';
+            unset($props['style']);
+            if ($layoutName === 'company_list') {
+                $props['className'] = trim(preg_replace('/\s+/', ' ', str_replace('cmb-company-gallery', '', $cls)).' cmb-company-gallery');
+            }
         }
         $node['props'] = $props;
 
-        if ($id === 'ctop' || $id === 'citem') {
-            $node = $this->ensureLogo($node, '{{$item.thumbnail_url}}');
+        if ($id === 'ctop') {
+            $node = $this->ensureThumb($node, 'cmb_co_logo', '{{$item.thumbnail_url || $item.logo_url}}', true);
         }
-        if ($id === 'me_top' || $id === 'me_card') {
-            $node = $this->ensureLogo($node, '{{me.data.thumbnail_url}}');
+        if ($id === 'me_top') {
+            $node = $this->ensureThumb($node, 'cmb_me_logo', '{{me.data.thumbnail_url || me.data.logo_url}}', true);
         }
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
-            $node = $this->ensureLogo($node, '{{$item.thumbnail_url}}', false);
+            $node = $this->ensureThumb($node, 'cmb_job_thumb', '{{$item.thumbnail_url}}', false);
         }
 
         return $node;
     }
 
-    private function ensureLogo(array $node, string $src, bool $round = true): array
+    private function ensureThumb(array $node, string $id, string $src, bool $round): array
     {
         $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $i => $child) {
-            if (is_array($child) && ($child['id'] ?? '') === 'cmb_co_logo') {
-                $kids[$i] = $this->logoNode($src, $round);
-                $node['children'] = $kids;
-
+        foreach ($kids as $child) {
+            if (is_array($child) && ($child['id'] ?? '') === $id) {
                 return $node;
             }
         }
-        array_unshift($kids, $this->logoNode($src, $round));
+        array_unshift($kids, $this->thumbNode($id, $src, $round));
         $node['children'] = $kids;
 
         return $node;
     }
 
-    private function logoNode(string $src, bool $round): array
+    private function thumbNode(string $id, string $src, bool $round): array
     {
-        $style = 'width:96px;height:96px;object-fit:cover;flex-shrink:0;';
-        $style .= $round ? 'border-radius:9999px;' : 'border-radius:8px;width:64px;height:64px;';
+        $size = $round ? '72' : '64';
 
         return [
-            'id' => 'cmb_co_logo',
+            'id' => $id,
             'type' => 'basic',
-            'name' => 'Image',
+            'name' => 'Img',
             'props' => [
                 'src' => $src,
                 'url' => $src,
+                'alt' => '',
                 'className' => $round ? 'cmb-list-thumb cmb-list-thumb-round' : 'cmb-list-thumb',
-                'style' => $style,
-                'width' => $round ? '96' : '64',
-                'height' => $round ? '96' : '64',
+                'width' => $size,
+                'height' => $size,
             ],
         ];
     }

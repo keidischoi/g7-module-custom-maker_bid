@@ -23,7 +23,8 @@ class JobRules
     public const LIST_SORT_LATEST = 'latest';
     public const LIST_SORT_CREATED = 'created';
     public const LIST_SORT_VIEWS = 'views';
-    public const LIST_SORTS = [self::LIST_SORT_LATEST, self::LIST_SORT_CREATED, self::LIST_SORT_VIEWS];
+    public const LIST_SORT_STATUS = 'status';
+    public const LIST_SORTS = [self::LIST_SORT_LATEST, self::LIST_SORT_CREATED, self::LIST_SORT_VIEWS, self::LIST_SORT_STATUS];
     public const TITLE_MAX = 200;
     public const SIZES_MAX = 20;
 
@@ -245,6 +246,7 @@ class JobRules
         $value = strtolower(trim((string) $raw));
         if (in_array($value, ['created', 'created_asc', '등록순', '등록', 'oldest'], true)) return self::LIST_SORT_CREATED;
         if (in_array($value, ['views', 'view', 'view_count', '조회순', '조회', 'popular', 'hits'], true)) return self::LIST_SORT_VIEWS;
+        if (in_array($value, ['status', '상태순', '상태'], true)) return self::LIST_SORT_STATUS;
         return self::LIST_SORT_LATEST;
     }
 

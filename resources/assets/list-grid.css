@@ -1,5 +1,6 @@
-.cmb-page .cmb-card-list,
-.cmb-section-card > .cmb-card-list {
+/* Job / bid / history cards: 1 / 2 / 3 columns. Company directory is denser. */
+.cmb-page .cmb-card-list:not(.cmb-company-gallery),
+.cmb-section-card > .cmb-card-list:not(.cmb-company-gallery) {
   display: grid !important;
   grid-template-columns: 1fr !important;
   gap: 0.75rem !important;
@@ -8,16 +9,46 @@
 }
 
 @media (min-width: 768px) {
-  .cmb-page .cmb-card-list,
-  .cmb-section-card > .cmb-card-list {
+  .cmb-page .cmb-card-list:not(.cmb-company-gallery),
+  .cmb-section-card > .cmb-card-list:not(.cmb-company-gallery) {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 
 @media (min-width: 1280px) {
-  .cmb-page .cmb-card-list,
-  .cmb-section-card > .cmb-card-list {
+  .cmb-page .cmb-card-list:not(.cmb-company-gallery),
+  .cmb-section-card > .cmb-card-list:not(.cmb-company-gallery) {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+.cmb-page .cmb-company-gallery,
+.cmb-page .cmb-card-list.cmb-company-gallery {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  flex-direction: unset !important;
+}
+
+@media (min-width: 640px) {
+  .cmb-page .cmb-company-gallery,
+  .cmb-page .cmb-card-list.cmb-company-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .cmb-page .cmb-company-gallery,
+  .cmb-page .cmb-card-list.cmb-company-gallery {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cmb-page .cmb-company-gallery,
+  .cmb-page .cmb-card-list.cmb-company-gallery {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
 }
 
@@ -31,6 +62,47 @@
   overflow-wrap: anywhere;
   word-break: keep-all;
   white-space: normal !important;
+}
+
+.cmb-page .cmb-job-card.cmb-list-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cmb-page .cmb-job-card-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.cmb-list-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: rgba(127, 127, 127, 0.15);
+}
+
+.cmb-list-thumb-round {
+  width: 72px;
+  height: 72px;
+  border-radius: 9999px;
+}
+
+.cmb-page .cmb-company-gallery .cmb-company-card {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.cmb-page .cmb-company-gallery .cmb-company-card-top {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .cmb-page .cmb-job-card-title,
@@ -78,4 +150,13 @@
   width: 8.5rem !important;
   min-width: 8.5rem !important;
   height: 2.5rem !important;
+}
+
+.cmb-status-chips,
+[data-cmb-status-chips] {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }

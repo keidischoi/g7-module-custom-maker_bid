@@ -54,7 +54,7 @@
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto", "data-cmb-subnav": "1" },
+                "props": { "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-wrap ml-auto", "data-cmb-subnav": "1" },
                 "children": [
                   { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰목록" },
@@ -93,6 +93,19 @@
                 "name": "Div",
                 "props": { "className": "cmb-job-card-top" },
                 "children": [
+                  {
+                    "id": "cmb_me_logo",
+                    "type": "basic",
+                    "name": "Img",
+                    "if": "{{me.data.thumbnail_url || me.data.logo_url}}",
+                    "props": {
+                      "src": "{{me.data.thumbnail_url || me.data.logo_url}}",
+                      "alt": "",
+                      "className": "cmb-list-thumb cmb-list-thumb-round",
+                      "width": "72",
+                      "height": "72"
+                    }
+                  },
                   { "id": "me_name", "type": "basic", "name": "P", "props": { "className": "cmb-job-card-title" }, "text": "내 등록 · {{me.data.name}}" },
                   { "id": "me_badge", "type": "basic", "name": "Span", "props": { "className": "cmb-badge cmb-badge-{{me.data.status}}" }, "text": "{{me.data.status_label || me.data.status}}" }
                 ]
@@ -130,7 +143,7 @@
                 "id": "clist",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-card-list" },
+                "props": { "className": "cmb-card-list cmb-company-gallery" },
                 "children": [
                   {
                     "id": "citem",
@@ -145,6 +158,19 @@
                         "name": "Div",
                         "props": { "className": "cmb-company-card-top" },
                         "children": [
+                          {
+                            "id": "cmb_co_logo",
+                            "type": "basic",
+                            "name": "Img",
+                            "if": "{{$item.thumbnail_url || $item.logo_url}}",
+                            "props": {
+                              "src": "{{$item.thumbnail_url || $item.logo_url}}",
+                              "alt": "",
+                              "className": "cmb-list-thumb cmb-list-thumb-round",
+                              "width": "72",
+                              "height": "72"
+                            }
+                          },
                           { "id": "cname", "type": "basic", "name": "P", "props": { "className": "cmb-company-card-title" }, "text": "{{$item.name}}" },
                           {
                             "id": "cbadges",
