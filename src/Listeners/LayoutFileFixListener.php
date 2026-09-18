@@ -343,8 +343,9 @@ class LayoutFileFixListener implements HookListenerInterface
             $node['text'] = '견적 수정';
         }
 
-        $goBid = str_contains($cls, 'cmb-open-bid-toggle') || $text === '견적 넣기' || $id === 'obid_btn'
-            || ($layoutName === 'jobs_show' && str_contains($cls, 'cmb-bid-submit'));
+        $goBid = $layoutName !== 'jobs_bids'
+            && (str_contains($cls, 'cmb-open-bid-toggle') || $text === '견적 넣기' || $id === 'obid_btn'
+                || ($layoutName === 'jobs_show' && str_contains($cls, 'cmb-bid-submit')));
         if ($goBid && in_array($name, ['Button', 'A'], true)) {
             $node['name'] = 'A';
             $node['text'] = '견적 넣기';

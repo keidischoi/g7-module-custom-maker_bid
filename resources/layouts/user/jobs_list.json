@@ -111,8 +111,8 @@
             "name": "Div",
             "props": { "className": "cmb-filters" },
             "children": [
-              { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip" }, "text": "전체" },
-              { "id": "ftype", "type": "basic", "name": "A", "props": { "href": "/maker-bids?type={{$type.slug}}", "className": "cmb-chip" }, "iteration": { "source": "{{types?.data?.data ?? types?.data ?? []}}", "item_var": "$type" }, "text": "{{$type.name}}" }
+              { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-type": "" }, "text": "전체" },
+              { "id": "ftype", "type": "basic", "name": "A", "props": { "href": "/maker-bids?type={{$type.slug}}", "className": "cmb-chip", "data-cmb-type": "{{$type.slug}}" }, "iteration": { "source": "{{types?.data?.data ?? types?.data ?? []}}", "item_var": "$type" }, "text": "{{$type.name}}" }
             ]
           },
           {

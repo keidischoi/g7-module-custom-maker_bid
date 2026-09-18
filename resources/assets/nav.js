@@ -89,6 +89,8 @@
       var a = t && t.closest ? t.closest('a[href]') : null;
       if (!a) return;
       if (a.getAttribute('data-cmb-full-nav') === '1') return;
+      if (a.classList.contains('cmb-chip') || a.getAttribute('data-cmb-status') != null || a.getAttribute('data-cmb-type') != null) return;
+      if (a.closest && (a.closest('.cmb-filters') || a.closest('[data-cmb-status-chips]') || a.closest('.cmb-status-chips'))) return;
       var tgt = a.getAttribute('target');
       if (tgt && tgt !== '' && tgt !== '_self') return;
       if (a.hasAttribute('download')) return;
