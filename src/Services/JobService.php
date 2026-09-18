@@ -3,6 +3,7 @@
 namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
@@ -192,7 +193,7 @@ class JobService
     {
         $job = MakerJob::query()->findOrFail($id);
         if (isset($payload['status']) && $payload['status'] !== '') {
-            $job->status = JobRules::normalizeListingStatus($payload['status']);
+            $job->status = JobRules::normalizeStatus($payload['status']);
         }
         if (isset($payload['title'])) {
             $job->title = $payload['title'];
@@ -228,15 +229,16 @@ class JobService
         $ctx = $this->viewerFromRequest($request);
         $uid = (int) ($ctx['userId'] ?? 0);
         if ($uid <= 0) {
-            return ['draft' => false, 'disputed' => false];
+            return ['hold' => false, 'draft' => false, 'disputed' => false];
         }
+        $hasHold = MakerJob::query()->where('user_id', $uid)->where('status', 'hold')->exists();
         $hasDraft = MakerJob::query()->where('user_id', $uid)->where('status', 'draft')->exists();
         $hasDispute = MakerJob::query()->where('status', DisputeRules::STATUS)->where(function ($q) use ($uid) {
             $q->where('user_id', $uid)
                 ->orWhereIn('awarded_bid_id', MakerBid::query()->withoutGlobalScopes()->where('user_id', $uid)->select('id'));
         })->exists();
 
-        return ['draft' => $hasDraft, 'disputed' => $hasDispute];
+        return ['hold' => $hasHold, 'draft' => $hasDraft, 'disputed' => $hasDispute];
     }
 
     public function viewerContext(int $userId, MakerJob $job, bool $isAdmin = false, array $ctx = []): array
@@ -260,7 +262,7 @@ class JobService
 
     public function viewerFromRequest(Request $request): array
     {
-        $user = $request->user() ?? (function_exists('auth') ? auth('sanctum')->user() : null);
+        $user = $this->actorFromRequest($request);
         $userId = $user ? (int) $user->id : 0;
         $company = null;
         if ($userId > 0) {
@@ -283,6 +285,18 @@ class JobService
             'companyKind' => $company?->kind ?? null,
             'isDesignated' => CompanyRules::isDesignated($company),
         ];
+    }
+
+    public function actorFromRequest(Request $request): mixed
+    {
+        try {
+            return $request->user()
+                ?? Auth::guard('web')->user()
+                ?? Auth::guard('sanctum')->user()
+                ?? (function_exists('auth') ? auth()->user() : null);
+        } catch (\Throwable) {
+            return $request->user();
+        }
     }
 
     public function isAdminActor(mixed $user): bool

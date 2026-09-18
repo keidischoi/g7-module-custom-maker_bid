@@ -874,6 +874,10 @@
                             {
                               "value": "hold",
                               "label": "보류"
+                            },
+                            {
+                              "value": "draft",
+                              "label": "임시저장"
                             }
                           ],
                           "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
@@ -2721,6 +2725,61 @@
                   "className": "cmb-dummy-fill w-full mb-2 px-4 py-2 rounded-lg border border-dashed border-amber-500/70 text-amber-700 dark:text-amber-300 text-sm font-medium"
                 },
                 "actions": []
+              },
+              {
+                "id": "draft_btn_edit",
+                "type": "basic",
+                "name": "Button",
+                "text": "임시저장",
+                "if": "{{!!route.id}}",
+                "props": {
+                  "type": "button",
+                  "className": "cmb-btn cmb-btn-secondary w-full mb-2 px-4 py-3 rounded-xl"
+                },
+                "actions": [
+                  {
+                    "type": "click",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "form.status": "draft"
+                    }
+                  },
+                  {
+                    "type": "click",
+                    "handler": "apiCall",
+                    "auth_required": true,
+                    "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}",
+                    "params": {
+                      "method": "PATCH",
+                      "body": "{{_local.form}}"
+                    },
+                    "onSuccess": [
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "success",
+                          "message": "임시저장했습니다."
+                        }
+                      },
+                      {
+                        "handler": "navigate",
+                        "params": {
+                          "path": "/maker-bids"
+                        }
+                      }
+                    ],
+                    "onError": [
+                      {
+                        "handler": "toast",
+                        "params": {
+                          "type": "error",
+                          "message": "{{error.message || error.data.message}}"
+                        }
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "submit_edit",
