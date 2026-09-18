@@ -104,7 +104,12 @@ class LayoutFileFixListener implements HookListenerInterface
                 'params' => [
                     'method' => $isUpdate ? 'PATCH' : 'POST',
                     'credentials' => 'include',
-                    'body' => '{{_local.bid}}',
+                    'body' => [
+                        'amount' => '{{_local.bid.amount}}',
+                        'days' => '{{_local.bid.days}}',
+                        'message' => '{{_local.bid.message}}',
+                        'bid_token' => '{{viewer.data.bid_token}}',
+                    ],
                 ],
                 'onSuccess' => [
                     ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => $isUpdate ? '견적을 수정했습니다.' : '견적을 등록했습니다.']],
