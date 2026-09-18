@@ -73,6 +73,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::post('jobs/{id}/approve', [JobAdminController::class, 'approve'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.approve');
     Route::post('jobs/{id}/hold', [JobAdminController::class, 'hold'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.hold');
     Route::post('jobs/{id}/cancel', [JobAdminController::class, 'cancel'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.cancel');
+    Route::post('jobs/{id}/pending', [JobAdminController::class, 'pending'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.pending');
+    Route::post('jobs/{id}/dispute', [JobAdminController::class, 'dispute'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.dispute');
+    Route::post('jobs/{id}/complete', [JobAdminController::class, 'complete'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.jobs.complete');
     Route::delete('jobs/{id}', [JobAdminController::class, 'destroy'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.delete')->name('admin.jobs.destroy');
     Route::get('job-types', [JobTypeAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.job-types.index');
     Route::post('job-types', [JobTypeAdminController::class, 'store'])->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.job-types.store');
