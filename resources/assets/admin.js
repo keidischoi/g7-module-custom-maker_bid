@@ -13,8 +13,8 @@
     text = String(text || '');
     if (text.indexOf('거절') >= 0 || /\brejected\b/i.test(text)) return 'rejected';
     if (text.indexOf('보류') >= 0 || /\bhold\b/i.test(text)) return 'hold';
-    if (text.indexOf('승인대기') >= 0) return 'pending';
-    if (text.indexOf('견적') >= 0 || /\bopen\b/i.test(text) || /\bquote_request\b/i.test(text)) return 'quote_request';
+    if (text.indexOf('승인대기') >= 0 || text.indexOf('draft') >= 0) return 'pending';
+    if (text.indexOf('견적') >= 0 || text.indexOf('입찰중') >= 0 || /\bopen\b/i.test(text) || /\bquote_request\b/i.test(text)) return 'quote_request';
     if (/\bapproved\b/i.test(text) || text.indexOf('승인') >= 0) return 'approved';
     if (/\bpending\b/i.test(text)) return 'pending';
     if (text.indexOf('의뢰') >= 0 || /\brequest\b/i.test(text)) return 'request';
@@ -66,6 +66,45 @@
     return t;
   }
 
+  var PALETTE = {
+    approve: {
+      on: { bg: 'rgb(5, 150, 105)', fg: '#fff', bd: 'rgb(4, 120, 87)' },
+      off: { bg: 'transparent', fg: 'rgb(167, 243, 208)', bd: 'rgba(52, 211, 153, 0.55)' }
+    },
+    hold: {
+      on: { bg: 'rgb(217, 119, 6)', fg: '#fff', bd: 'rgb(180, 83, 9)' },
+      off: { bg: 'transparent', fg: 'rgb(253, 230, 138)', bd: 'rgba(251, 191, 36, 0.55)' }
+    },
+    reject: {
+      on: { bg: 'rgb(220, 38, 38)', fg: '#fff', bd: 'rgb(185, 28, 28)' },
+      off: { bg: 'transparent', fg: 'rgb(254, 202, 202)', bd: 'rgba(252, 165, 165, 0.55)' }
+    }
+  };
+
+  function applyPalette(el, pal) {
+    if (!el || !el.style) return;
+    el.style.setProperty('background', pal.bg, 'important');
+    el.style.setProperty('background-color', pal.bg, 'important');
+    el.style.setProperty('color', pal.fg, 'important');
+    el.style.setProperty('border-color', pal.bd, 'important');
+    el.style.setProperty('border-style', 'solid', 'important');
+    el.style.setProperty('border-width', '1px', 'important');
+  }
+
+  function kindFromEl(b) {
+    if (!b) return '';
+    var kind = b.getAttribute && b.getAttribute('data-cmb-kind');
+    if (kind) return kind;
+    if (b.classList && b.classList.contains('cmb-btn-approve')) return 'approve';
+    if (b.classList && b.classList.contains('cmb-btn-hold')) return 'hold';
+    if (b.classList && b.classList.contains('cmb-btn-reject')) return 'reject';
+    var t = baseLabel(b);
+    if (t === '승인') return 'approve';
+    if (t === '보류') return 'hold';
+    if (t === '거절') return 'reject';
+    return '';
+  }
+
   function paintBtn(btn, on, kind) {
     if (!btn) return;
     var cls = kind === 'approve' ? 'cmb-btn-approve' : kind === 'hold' ? 'cmb-btn-hold' : 'cmb-btn-reject';
@@ -78,9 +117,12 @@
       btn.removeAttribute('data-cmb-active');
       btn.setAttribute('aria-pressed', 'false');
     }
-    btn.style.background = '';
-    btn.style.color = '';
-    btn.style.borderColor = '';
+    var pal = (PALETTE[kind] || PALETTE.approve)[on ? 'on' : 'off'];
+    applyPalette(btn, pal);
+    var wrap = btn.parentElement;
+    if (wrap && wrap !== document.body && (wrap.classList.contains(cls) || (wrap.getAttribute && wrap.getAttribute('data-cmb-kind') === kind))) {
+      applyPalette(wrap, pal);
+    }
     var base = baseLabel(btn);
     if (base && (btn.textContent || '').indexOf(ACTIVE_SUFFIX) >= 0) {
       btn.textContent = base;
@@ -91,11 +133,8 @@
     var out = { approve: null, hold: null, reject: null };
     if (!root || !root.querySelectorAll) return out;
     root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject').forEach(function (b) {
-      var t = baseLabel(b);
-      var kind = b.getAttribute && b.getAttribute('data-cmb-kind');
-      if (kind === 'approve' || t === '승인' || b.classList.contains('cmb-btn-approve')) out.approve = b;
-      else if (kind === 'hold' || t === '보류' || b.classList.contains('cmb-btn-hold')) out.hold = b;
-      else if (kind === 'reject' || t === '거절' || b.classList.contains('cmb-btn-reject')) out.reject = b;
+      var k = kindFromEl(b);
+      if (k && !out[k]) out[k] = b;
     });
     return out;
   }
@@ -159,12 +198,38 @@
     }
   }
 
+  function statusGroups() {
+    var rows = [];
+    function add(el) {
+      if (el && rows.indexOf(el) < 0) rows.push(el);
+    }
+    document.querySelectorAll('.cmb-admin-row, .cmb-admin-toolbar').forEach(add);
+    document.querySelectorAll('.cmb-admin button, .cmb-admin [role="button"]').forEach(function (b) {
+      if (kindFromEl(b) !== 'approve') return;
+      var root = b.parentElement;
+      var hops = 0;
+      while (root && hops < 6) {
+        var hasHold = false;
+        if (root.querySelectorAll) {
+          root.querySelectorAll('button, [role="button"]').forEach(function (x) {
+            if (kindFromEl(x) === 'hold') hasHold = true;
+          });
+        }
+        if (hasHold) { add(root); break; }
+        root = root.parentElement;
+        hops++;
+      }
+    });
+    return rows;
+  }
+
   function paintStatusButtons() {
     if (painting) return;
     painting = true;
     try {
-      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+      statusGroups().forEach(function (row) {
         var st = statusFromRoot(row);
+        if (!st) st = statusFromText(row.textContent);
         var entity = inferEntity(row, st);
         markRoot(row, st, entity);
         paintGroup(row, st, entity);
@@ -202,6 +267,56 @@
     } finally {
       painting = false;
     }
+  }
+
+  function hideVisually(el) {
+    if (!el || el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1') return;
+    el.style.setProperty('position', 'absolute', 'important');
+    el.style.setProperty('width', '1px', 'important');
+    el.style.setProperty('height', '1px', 'important');
+    el.style.setProperty('opacity', '0', 'important');
+    el.style.setProperty('overflow', 'hidden', 'important');
+    el.style.setProperty('pointer-events', 'none', 'important');
+    el.setAttribute('aria-hidden', 'true');
+    el.tabIndex = -1;
+  }
+
+  function ensureAdminFilterSelect() {
+    document.querySelectorAll('.cmb-admin-filter [role="combobox"], .cmb-admin-filter [data-slot="trigger"], .cmb-admin-filter [data-slot="select-trigger"]').forEach(function (el) {
+      if (el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1') return;
+      hideVisually(el);
+    });
+    document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host').forEach(function (host) {
+      host.querySelectorAll('button, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(hideVisually);
+      if (host.querySelector('[data-cmb-filter-free]')) return;
+      var company = /\/admin\/maker-bids\/companies/.test(location.pathname || '');
+      var opts = company
+        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
+        : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
+      var sel = document.createElement('select');
+      sel.setAttribute('data-cmb-filter-free', '1');
+      sel.setAttribute('name', 'status');
+      sel.className = 'cmb-admin-filter-control cmb-admin-filter-native';
+      opts.forEach(function (o) {
+        var op = document.createElement('option');
+        op.value = o[0];
+        op.textContent = o[1];
+        sel.appendChild(op);
+      });
+      var cur = '';
+      try {
+        if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
+          cur = String((window.G7Core.state.get('_local.filter.status')) || '');
+        }
+      } catch (e) {}
+      sel.value = cur;
+      sel.addEventListener('change', function () {
+        if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+          window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        }
+      });
+      host.appendChild(sel);
+    });
   }
 
   function hideLegacySizes() {
@@ -253,6 +368,7 @@
         paintStatusButtons();
         hideLegacySizes();
         ensureListBoxes();
+        ensureAdminFilterSelect();
       }, 60);
     });
     window.__cmbAdminStatusObs.observe(root, { childList: true, subtree: true });
@@ -565,6 +681,7 @@
     hideLegacySizes();
     bindStatusPress();
     paintStatusButtons();
+    ensureAdminFilterSelect();
     ensureCompanyEditButtons();
     ensureListBoxes();
     bindSettingsHarvest();
@@ -575,8 +692,16 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
   setTimeout(start, 400);
-  setTimeout(paintStatusButtons, 1200);
+  setTimeout(paintStatusButtons, 800);
+  setTimeout(paintStatusButtons, 1600);
+  setTimeout(ensureAdminFilterSelect, 500);
   setTimeout(ensureListBoxes, 800);
   setTimeout(paintSettingsControls, 900);
   setTimeout(ensureCompanyEditButtons, 600);
+  setInterval(function () {
+    if (document.querySelector('.cmb-admin')) {
+      paintStatusButtons();
+      ensureAdminFilterSelect();
+    }
+  }, 700);
 })();

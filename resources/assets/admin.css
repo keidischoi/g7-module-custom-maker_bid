@@ -134,7 +134,7 @@ html.cmb-admin-dark .cmb-admin-nav {
 
 .cmb-admin-filter {
   display: flex !important;
-  flex-wrap: wrap;
+  flex-wrap: wrap !important;
   align-items: flex-end;
   gap: 0.75rem 1rem;
   width: 100% !important;
@@ -189,6 +189,25 @@ html.cmb-admin-dark .cmb-admin-nav {
   justify-content: space-between;
   align-items: center;
   min-height: 2.25rem;
+}
+
+.cmb-admin-filter-native,
+.cmb-admin-filter [data-cmb-filter-free] {
+  display: block !important;
+  width: 12rem !important;
+  min-width: 12rem !important;
+  max-width: 14rem !important;
+  height: 2.25rem !important;
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  color: #e5e7eb !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 0.5rem !important;
+  padding: 0 0.6rem !important;
+  position: relative !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .cmb-admin-filter-go {
@@ -928,7 +947,7 @@ html.cmb-admin-dark .cmb-admin .cmb-btn-reject.is-pressed {
 
 /* Keep admin filter controls + 필터 button on one row when space allows */
 .cmb-admin-filter {
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   align-items: flex-end !important;
 }
 .cmb-admin-filter > .cmb-admin-filter-go,

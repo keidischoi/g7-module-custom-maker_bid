@@ -106,13 +106,39 @@
           { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "list" } },
           { "id": "guide", "type": "basic", "name": "P", "props": { "className": "cmb-page-guide" }, "text": "등록된 의뢰서입니다. 보류는 다른 회원에게 공개되지 않고, 로그인하면 내 보류 의뢰는 이 목록과 이력에 보입니다." },
           {
-            "id": "filters",
+            "id": "filter_stack",
             "type": "basic",
             "name": "Div",
-            "props": { "className": "cmb-filters" },
+            "props": { "className": "cmb-filter-stack", "data-cmb-filter-stack": "1" },
             "children": [
-              { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-type": "" }, "text": "전체" },
-              { "id": "ftype", "type": "basic", "name": "A", "props": { "href": "/maker-bids?type={{$type.slug}}", "className": "cmb-chip", "data-cmb-type": "{{$type.slug}}" }, "iteration": { "source": "{{types?.data?.data ?? types?.data ?? []}}", "item_var": "$type" }, "text": "{{$type.name}}" }
+              {
+                "id": "filters",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "cmb-filters cmb-filter-row cmb-filter-row-type" },
+                "children": [
+                  { "id": "ftype_lab", "type": "basic", "name": "Span", "props": { "className": "cmb-filter-label" }, "text": "형식" },
+                  { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-type": "" }, "text": "전체" },
+                  { "id": "ftype", "type": "basic", "name": "A", "props": { "href": "/maker-bids?type={{$type.slug}}", "className": "cmb-chip", "data-cmb-type": "{{$type.slug}}" }, "iteration": { "source": "{{types?.data?.data ?? types?.data ?? []}}", "item_var": "$type" }, "text": "{{$type.name}}" }
+                ]
+              },
+              {
+                "id": "status_chips",
+                "type": "basic",
+                "name": "Div",
+                "props": { "className": "cmb-status-chips cmb-filter-row cmb-filter-row-status", "data-cmb-status-chips": "1" },
+                "children": [
+                  { "id": "st_lab", "type": "basic", "name": "Span", "props": { "className": "cmb-filter-label" }, "text": "상태" },
+                  { "id": "st_all", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-status": "" }, "text": "전체" },
+                  { "id": "st_pending", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=pending", "className": "cmb-chip", "data-cmb-status": "pending" }, "text": "승인대기" },
+                  { "id": "st_hold", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=hold", "className": "cmb-chip", "data-cmb-status": "hold" }, "text": "보류" },
+                  { "id": "st_request", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=request", "className": "cmb-chip", "data-cmb-status": "request" }, "text": "의뢰" },
+                  { "id": "st_quote", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=quote_request", "className": "cmb-chip", "data-cmb-status": "quote_request" }, "text": "견적요청" },
+                  { "id": "st_awarded", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=awarded", "className": "cmb-chip", "data-cmb-status": "awarded" }, "text": "낙찰" },
+                  { "id": "st_done", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=done", "className": "cmb-chip", "data-cmb-status": "done" }, "text": "완료" },
+                  { "id": "st_cancel", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=cancelled", "className": "cmb-chip", "data-cmb-status": "cancelled" }, "text": "취소" }
+                ]
+              }
             ]
           },
           {
@@ -127,23 +153,7 @@
                 "name": "Div",
                 "props": { "className": "cmb-section-head flex items-center gap-2 flex-wrap" },
                 "children": [
-                  { "id": "lh", "type": "basic", "name": "H2", "props": { "className": "cmb-section-title" }, "text": "등록된 의뢰" },
-                  {
-                    "id": "status_chips",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": { "className": "cmb-status-chips", "data-cmb-status-chips": "1" },
-                    "children": [
-                      { "id": "st_all", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-status": "" }, "text": "전체" },
-                      { "id": "st_pending", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=pending", "className": "cmb-chip", "data-cmb-status": "pending" }, "text": "승인대기" },
-                      { "id": "st_hold", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=hold", "className": "cmb-chip", "data-cmb-status": "hold" }, "text": "보류" },
-                      { "id": "st_request", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=request", "className": "cmb-chip", "data-cmb-status": "request" }, "text": "의뢰" },
-                      { "id": "st_quote", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=quote_request", "className": "cmb-chip", "data-cmb-status": "quote_request" }, "text": "견적요청" },
-                      { "id": "st_awarded", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=awarded", "className": "cmb-chip", "data-cmb-status": "awarded" }, "text": "낙찰" },
-                      { "id": "st_done", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=done", "className": "cmb-chip", "data-cmb-status": "done" }, "text": "완료" },
-                      { "id": "st_cancel", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=cancelled", "className": "cmb-chip", "data-cmb-status": "cancelled" }, "text": "취소" }
-                    ]
-                  }
+                  { "id": "lh", "type": "basic", "name": "H2", "props": { "className": "cmb-section-title" }, "text": "등록된 의뢰" }
                 ]
               },
               { "id": "empty", "type": "basic", "name": "P", "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}", "props": { "className": "cmb-empty" }, "text": "등록된 의뢰가 없습니다." },

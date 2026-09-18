@@ -1,9 +1,12 @@
 (function () {
-  if (window.__cmbSearchFix7) return;
-  window.__cmbSearchFix7 = true;
+  if (window.__cmbSearchFix8) return;
+  window.__cmbSearchFix8 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var typing = false;
+  var lastRows = [];
+  var lastMeta = {};
+  var debounceT = null;
 
   var STATUS_CHIPS = [
     ['', '전체'],
@@ -51,6 +54,21 @@
     });
   }
 
+  function hideVisually(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.getAttribute('data-cmb-free') === '1' || el.getAttribute('data-cmb-sort-free') === '1' || el.getAttribute('data-cmb-native-bar') === '1') return;
+    if (el.querySelector && (el.querySelector('[data-cmb-free]') || el.querySelector('[data-cmb-sort-free]') || el.querySelector('[data-cmb-native-bar]'))) return;
+    el.style.setProperty('position', 'absolute', 'important');
+    el.style.setProperty('left', '-9999px', 'important');
+    el.style.setProperty('width', '1px', 'important');
+    el.style.setProperty('height', '1px', 'important');
+    el.style.setProperty('opacity', '0', 'important');
+    el.style.setProperty('overflow', 'hidden', 'important');
+    el.style.setProperty('pointer-events', 'none', 'important');
+    el.setAttribute('aria-hidden', 'true');
+    el.tabIndex = -1;
+  }
+
   function listBox() {
     return document.querySelector('.cmb-section-card .cmb-card-list, .cmb-card-list');
   }
@@ -79,16 +97,18 @@
   function paint(rows) {
     var box = listBox();
     if (!box) return;
+    lastRows = rows || [];
     var pager = box.querySelector('[data-cmb-pager]');
     var keep = pager ? pager.outerHTML : '';
-    if (!rows || !rows.length) {
+    if (!lastRows.length) {
       box.innerHTML = '<p class="cmb-empty">등록된 의뢰가 없습니다.</p>' + keep;
       return;
     }
-    box.innerHTML = rows.map(cardHtml).join('') + keep;
+    box.innerHTML = lastRows.map(cardHtml).join('') + keep;
   }
 
   function updatePager(meta) {
+    lastMeta = meta || {};
     var el = document.querySelector('[data-cmb-pager]');
     if (!el || !meta) return;
     el.setAttribute('data-page', String(meta.page || 1));
@@ -105,7 +125,7 @@
     if (state.type) p.set('type', state.type);
     if (state.status) p.set('status', state.status);
     p.set('page', String(state.page || 1));
-    p.set('per_page', '10');
+    p.set('per_page', '24');
     fetch('/api/modules/custom-maker_bids/jobs?' + p.toString(), {
       credentials: 'same-origin',
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -128,7 +148,8 @@
   }
 
   function markChips() {
-    document.querySelectorAll('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a').forEach(function (a) {
+    document.querySelectorAll('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a, .cmb-filter-row-status a').forEach(function (a) {
+      if ((a.textContent || '').trim() === '상태') return;
       var st = a.getAttribute('data-cmb-status');
       if (st == null) {
         try { st = new URL(a.href, location.origin).searchParams.get('status') || ''; } catch (e) { st = ''; }
@@ -138,7 +159,8 @@
       if (on) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    document.querySelectorAll('.cmb-filters a, .cmb-filters .cmb-chip').forEach(function (a) {
+    document.querySelectorAll('.cmb-filters a, .cmb-filters .cmb-chip, .cmb-filter-row-type a').forEach(function (a) {
+      if ((a.textContent || '').trim() === '형식') return;
       var type = a.getAttribute('data-cmb-type');
       if (type == null) {
         try { type = new URL(a.href, location.origin).searchParams.get('type') || ''; } catch (e) { type = ''; }
@@ -152,109 +174,117 @@
     });
   }
 
+  function bindNativeInput(inp) {
+    if (inp.getAttribute('data-cmb-bound') === '1') return;
+    inp.setAttribute('data-cmb-bound', '1');
+    inp.addEventListener('focus', function () { typing = true; }, true);
+    inp.addEventListener('blur', function () { typing = false; }, true);
+    inp.addEventListener('keydown', function (e) {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        typing = false;
+        apply(true);
+      }
+    }, true);
+    inp.addEventListener('keyup', function (e) { e.stopPropagation(); }, true);
+    inp.addEventListener('input', function (e) {
+      e.stopPropagation();
+      typing = true;
+      state.q = inp.value;
+      if (debounceT) clearTimeout(debounceT);
+      debounceT = setTimeout(function () { apply(true); }, 280);
+    }, true);
+  }
+
   function ensureSearch() {
     var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
     if (!bar) return;
-    var free = bar.querySelector('[data-cmb-free]');
-    var g7 = null;
-    bar.querySelectorAll('input').forEach(function (el) {
-      if (el.getAttribute('data-cmb-free') === '1') return;
-      if (el.getAttribute('data-cmb-search-input') || el.classList.contains('cmb-search-input') || el.getAttribute('name') === 'q') {
-        g7 = el;
-      }
+    var native = bar.querySelector('[data-cmb-native-bar]');
+    if (!native) {
+      native = document.createElement('div');
+      native.setAttribute('data-cmb-native-bar', '1');
+      native.className = 'cmb-native-search-bar';
+      native.innerHTML =
+        '<input type="text" data-cmb-free="1" class="cmb-search-input cmb-search-free" placeholder="검색어" autocomplete="off">' +
+        '<select data-cmb-sort-free="1" class="cmb-search-sort-free" aria-label="정렬">' +
+        '<option value="latest">최신순</option><option value="created">등록순</option>' +
+        '<option value="views">조회순</option><option value="status">상태순</option></select>' +
+        '<button type="button" class="cmb-btn cmb-btn-primary cmb-search-go" data-cmb-search-go="1">검색</button>';
+      bar.insertBefore(native, bar.firstChild);
+      var inp0 = native.querySelector('[data-cmb-free]');
+      var g7val = '';
+      bar.querySelectorAll('input').forEach(function (el) {
+        if (el.getAttribute('data-cmb-free') === '1') return;
+        if (el.value) g7val = el.value;
+      });
+      inp0.value = g7val || state.q || '';
+      state.q = String(inp0.value || '').trim();
+      bindNativeInput(inp0);
+      native.querySelector('[data-cmb-sort-free]').addEventListener('change', function (e) {
+        state.sort = e.target.value;
+        apply(true);
+      });
+    }
+    var free = native.querySelector('[data-cmb-free]');
+    bindNativeInput(free);
+    if (!typing && document.activeElement !== free && state.q && !String(free.value || '').trim()) free.value = state.q;
+    var sort = native.querySelector('[data-cmb-sort-free]');
+    if (sort && document.activeElement !== sort) sort.value = state.sort || 'latest';
+    Array.prototype.slice.call(bar.children).forEach(function (n) {
+      if (n === native) return;
+      hideVisually(n);
     });
-    if (free) {
-      if (g7 && g7 !== free) {
-        g7.setAttribute('tabindex', '-1');
-        g7.setAttribute('aria-hidden', 'true');
-        g7.style.display = 'none';
-      }
-      if (!typing && document.activeElement !== free) {
-        if (state.q && !String(free.value || '').trim()) free.value = state.q;
-      }
-      return free;
-    }
-    if (!g7) return;
-    var wrap = g7.parentElement || bar;
-    var inp = document.createElement('input');
-    inp.type = 'text';
-    inp.placeholder = g7.getAttribute('placeholder') || '검색어';
-    inp.className = (g7.className || 'cmb-search-input') + ' cmb-search-free';
-    inp.setAttribute('data-cmb-free', '1');
-    inp.setAttribute('autocomplete', 'off');
-    inp.value = String(g7.value || state.q || '');
-    wrap.style.position = wrap.style.position || 'relative';
-    wrap.style.flex = '1 1 12rem';
-    g7.setAttribute('tabindex', '-1');
-    g7.setAttribute('aria-hidden', 'true');
-    g7.style.display = 'none';
-    g7.parentNode.insertBefore(inp, g7);
-    inp.addEventListener('focus', function () { typing = true; });
-    inp.addEventListener('blur', function () { typing = false; });
-    inp.addEventListener('input', function () { typing = true; state.q = inp.value; });
-    if (!wrap.querySelector('[data-cmb-search-clear]')) {
-      var x = document.createElement('button');
-      x.type = 'button';
-      x.setAttribute('data-cmb-search-clear', '1');
-      x.textContent = '×';
-      x.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:9999px;border:0;background:rgba(127,127,127,.4);color:#fff;cursor:pointer;z-index:2';
-      wrap.appendChild(x);
-    }
-    return inp;
+    bar.querySelectorAll('input, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
+      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
+      hideVisually(el);
+    });
+    return free;
   }
 
   function ensureSort() {
-    var host = document.querySelector('[data-cmb-sort-wrap], .cmb-search-sort');
-    if (!host) return;
-    Array.prototype.slice.call(host.children).forEach(function (n) {
-      if (n.getAttribute && n.getAttribute('data-cmb-sort-free') === '1') return;
-      n.style.display = 'none';
-      n.setAttribute('aria-hidden', 'true');
-    });
-    var existing = host.querySelector('[data-cmb-sort-free]');
-    if (existing) {
-      if (document.activeElement !== existing) existing.value = state.sort || 'latest';
-      return;
-    }
-    var sel = document.createElement('select');
-    sel.setAttribute('data-cmb-sort-free', '1');
-    sel.setAttribute('aria-label', '정렬');
-    sel.className = 'cmb-order-field cmb-search-sort-free rounded-lg border px-3 py-2 text-sm';
-    [['latest', '최신순'], ['created', '등록순'], ['views', '조회순'], ['status', '상태순']].forEach(function (o) {
-      var opt = document.createElement('option');
-      opt.value = o[0];
-      opt.textContent = o[1];
-      sel.appendChild(opt);
-    });
-    sel.value = state.sort || 'latest';
-    sel.addEventListener('change', function () {
-      state.sort = sel.value;
-      apply(true);
-    });
-    host.appendChild(sel);
+    ensureSearch();
   }
 
   function ensureChips() {
-    var heads = document.querySelectorAll('.cmb-section-title, h2');
-    var title = null;
-    heads.forEach(function (h) { if ((h.textContent || '').trim() === '등록된 의뢰') title = h; });
-    if (!title) return;
-    var row = title.parentElement;
-    if (!row) return;
-    var box = row.querySelector('[data-cmb-status-chips]');
-    if (!box) {
-      box = document.createElement('div');
-      box.setAttribute('data-cmb-status-chips', '1');
-      box.className = 'cmb-status-chips';
+    var stack = document.querySelector('.cmb-filter-stack, [data-cmb-filter-stack]');
+    if (!stack) {
+      var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
+      if (!bar || !bar.parentNode) return;
+      stack = document.createElement('div');
+      stack.className = 'cmb-filter-stack';
+      stack.setAttribute('data-cmb-filter-stack', '1');
+      bar.parentNode.insertBefore(stack, bar.nextSibling);
+    }
+    var typeRow = document.querySelector('.cmb-filters, .cmb-filter-row-type');
+    if (typeRow && typeRow.parentNode !== stack) {
+      typeRow.classList.add('cmb-filter-row', 'cmb-filter-row-type');
+      if (!typeRow.querySelector('.cmb-filter-label')) {
+        var lab = document.createElement('span');
+        lab.className = 'cmb-filter-label';
+        lab.textContent = '형식';
+        typeRow.insertBefore(lab, typeRow.firstChild);
+      }
+      stack.appendChild(typeRow);
+    }
+    var stRow = stack.querySelector('.cmb-filter-row-status, [data-cmb-status-chips]');
+    if (!stRow) {
+      stRow = document.createElement('div');
+      stRow.className = 'cmb-status-chips cmb-filter-row cmb-filter-row-status';
+      stRow.setAttribute('data-cmb-status-chips', '1');
+      var slab = document.createElement('span');
+      slab.className = 'cmb-filter-label';
+      slab.textContent = '상태';
+      stRow.appendChild(slab);
       STATUS_CHIPS.forEach(function (it) {
         var a = document.createElement('a');
         a.href = it[0] ? '/maker-bids?status=' + encodeURIComponent(it[0]) : '/maker-bids';
         a.className = 'cmb-chip';
         a.textContent = it[1];
         a.setAttribute('data-cmb-status', it[0]);
-        box.appendChild(a);
+        stRow.appendChild(a);
       });
-      row.appendChild(box);
+      stack.appendChild(stRow);
     }
   }
 
@@ -291,15 +321,15 @@
       apply(true);
       return;
     }
-    var stEl = t.closest('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a');
-    if (stEl) {
+    var stEl = t.closest('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a, .cmb-filter-row-status a');
+    if (stEl && (stEl.textContent || '').trim() !== '상태') {
       e.preventDefault(); e.stopPropagation();
       state.status = chipStatus(stEl) || '';
       apply(true);
       return;
     }
-    var typeEl = t.closest('.cmb-filters a, .cmb-filters .cmb-chip');
-    if (typeEl) {
+    var typeEl = t.closest('.cmb-filters a, .cmb-filters .cmb-chip, .cmb-filter-row-type a');
+    if (typeEl && (typeEl.textContent || '').trim() !== '형식') {
       e.preventDefault(); e.stopPropagation();
       var type = chipType(typeEl);
       if ((typeEl.textContent || '').trim() === '전체') type = '';
@@ -311,6 +341,7 @@
   document.addEventListener('keydown', function (e) {
     var inp = e.target && e.target.closest && e.target.closest('[data-cmb-free]');
     if (!inp) return;
+    e.stopPropagation();
     if (e.key === 'Enter') {
       e.preventDefault();
       typing = false;
@@ -334,20 +365,25 @@
     ensureSort();
     ensureChips();
     markChips();
+    if (lastRows.length) paint(lastRows);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-  setTimeout(boot, 250);
-  setTimeout(boot, 900);
-  if (!window.__cmbSearchObs7) {
-    window.__cmbSearchObs7 = new MutationObserver(function () {
+  setTimeout(boot, 200);
+  setTimeout(function () { boot(); load(); }, 400);
+  setTimeout(boot, 1000);
+  if (!window.__cmbSearchObs8) {
+    window.__cmbSearchObs8 = new MutationObserver(function () {
       if (!listPath()) return;
       ensureSearch();
-      ensureSort();
       ensureChips();
+      if (lastRows.length) {
+        var box = listBox();
+        if (box && box.querySelectorAll('.cmb-job-card').length !== lastRows.length) paint(lastRows);
+      }
     });
     try {
-      window.__cmbSearchObs7.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs8.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();
