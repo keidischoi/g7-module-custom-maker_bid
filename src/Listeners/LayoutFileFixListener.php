@@ -75,11 +75,11 @@ class LayoutFileFixListener implements HookListenerInterface
         }
 
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
-            $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64');
+            $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64', false);
         }
 
         if ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top')) {
-            $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '40');
+            $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '40', true);
             $props = is_array($node['props'] ?? null) ? $node['props'] : [];
             $props['className'] = trim(($props['className'] ?? '').' cmb-name-with-logo');
             $node['props'] = $props;
@@ -88,29 +88,43 @@ class LayoutFileFixListener implements HookListenerInterface
         return $node;
     }
 
-    private function ensureChild(array $node, string $id, string $src, string $size): array
+    private function ensureChild(array $node, string $id, string $src, string $size, bool $round): array
     {
         $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $child) {
+        foreach ($kids as $i => $child) {
             if (is_array($child) && ($child['id'] ?? '') === $id) {
+                $kids[$i] = $this->thumb($id, $src, $size, $round);
+                $node['children'] = $kids;
+
                 return $node;
             }
         }
-        array_unshift($kids, [
+        array_unshift($kids, $this->thumb($id, $src, $size, $round));
+        $node['children'] = $kids;
+
+        return $node;
+    }
+
+    private function thumb(string $id, string $src, string $size, bool $round): array
+    {
+        $style = 'width:'.$size.'px;height:'.$size.'px;object-fit:cover;flex-shrink:0;';
+        $style .= $round
+            ? 'border-radius:9999px;border:1px solid rgba(255,255,255,0.18);'
+            : 'border-radius:8px;';
+
+        return [
             'id' => $id,
             'type' => 'basic',
             'name' => 'Img',
             'props' => [
                 'src' => $src,
                 'alt' => '{{$item.name || $item.title || ""}}',
-                'className' => 'cmb-list-thumb',
+                'className' => $round ? 'cmb-list-thumb cmb-list-thumb-round' : 'cmb-list-thumb',
                 'width' => $size,
                 'height' => $size,
+                'style' => $style,
             ],
-        ]);
-        $node['children'] = $kids;
-
-        return $node;
+        ];
     }
 
     private function scrub(mixed $node): mixed
