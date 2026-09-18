@@ -52,13 +52,18 @@ class JobService
                 $inner->where('title', 'like', $like)->orWhere('description', 'like', $like);
             });
         }
-        $sort = JobRules::normalizeListSort($request->query('sort', $request->input('sort')));
-        if ($sort === JobRules::LIST_SORT_CREATED) {
-            $q->orderBy('id');
-        } elseif ($sort === JobRules::LIST_SORT_VIEWS) {
-            $q->orderByDesc('view_count')->orderByDesc('id');
+        $sortRaw = strtolower(trim((string) $request->query('sort', $request->input('sort'))));
+        if (in_array($sortRaw, ['status', '상태', '상태순'], true)) {
+            $q->orderByRaw("CASE status WHEN 'quote_request' THEN 1 WHEN 'open' THEN 1 WHEN 'request' THEN 2 WHEN 'pending' THEN 3 WHEN 'hold' THEN 4 WHEN 'awarded' THEN 5 WHEN 'done' THEN 6 WHEN 'cancelled' THEN 7 WHEN 'draft' THEN 8 ELSE 9 END")->orderByDesc('id');
         } else {
-            $q->orderByDesc('id');
+            $sort = JobRules::normalizeListSort($sortRaw);
+            if ($sort === JobRules::LIST_SORT_CREATED) {
+                $q->orderBy('id');
+            } elseif ($sort === JobRules::LIST_SORT_VIEWS) {
+                $q->orderByDesc('view_count')->orderByDesc('id');
+            } else {
+                $q->orderByDesc('id');
+            }
         }
 
         return $q->limit(200)->get()
