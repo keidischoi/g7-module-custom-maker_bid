@@ -140,9 +140,17 @@ const documentMock = {
 };
 
 let fetchedUrl = '';
+let fetchedAuth = '';
 const jobsPayload = {
   data: [{ id: 9, title: '보류 의뢰', status: 'hold', status_label: '보류', type: 'print_3d', bids_count: 0 }],
-  meta: { page: 1, total: 1, last_page: 1, per_page: 24, viewer_status_chips: { hold: true, draft: true, disputed: true } },
+  meta: {
+    page: 1,
+    total: 1,
+    last_page: 1,
+    per_page: 24,
+    viewer: { is_admin: true, user_id: 1 },
+    viewer_status_chips: { hold: true, draft: true, disputed: true },
+  },
 };
 
 const g7 = {
@@ -150,7 +158,6 @@ const g7 = {
   api: {
     getToken: () => 'admin-token',
     get(url) {
-      fetchedUrl = url;
       return Promise.resolve(jobsPayload);
     },
   },
@@ -160,7 +167,7 @@ const windowMock = {
   G7Core: g7,
   AuthManager: { getInstance: () => ({ getAuthType: () => 'admin' }) },
   addEventListener() {},
-  __cmbSearchFix13: false,
+  __cmbSearchFix14: false,
 };
 
 const ctx = {
@@ -176,7 +183,17 @@ const ctx = {
   MutationObserver: class { observe() {} },
   setTimeout,
   setInterval() { return 0; },
-  fetch() { throw new Error('raw fetch should not be used when G7Core.api.get exists'); },
+  fetch(url, opts) {
+    fetchedUrl = String(url);
+    fetchedAuth = (opts && opts.headers && opts.headers.Authorization) || '';
+    if (String(url).includes('/auth/user')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: { uuid: 'admin-1', is_super: true } }),
+      });
+    }
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(jobsPayload) });
+  },
 };
 windowMock.location = ctx.location;
 windowMock.document = documentMock;
@@ -193,9 +210,10 @@ assert.ok(hold, 'hold chip exists');
 assert.equal(hold.hidden, false, 'admin should see hold chip');
 assert.equal(hold._display, 'inline-flex', 'hold chip display inline-flex');
 assert.match(fetchedUrl, /\/api\/modules\/custom-maker_bids\/jobs/, 'jobs API fetched');
+assert.equal(fetchedAuth, 'Bearer admin-token', 'jobs fetch sends bearer token');
 assert.match(cardList.innerHTML, /보류 의뢰/, 'hold job card painted');
 assert.match(cardList.innerHTML, /cmb-badge-hold/, 'hold badge class painted');
 
 console.log('ok  admin hold chip visible');
 console.log('ok  admin hold job card painted');
-console.log('ok  jobs fetch used G7Core.api');
+console.log('ok  jobs fetch sent bearer token');

@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.31] - 2026-09-18
+
+### Fixed
+- **관리자 보류**: 의뢰목록 재조회가 게스트로 덮어 보류가 사라지던 문제를 고칩니다. Bearer 토큰을 항상 붙이고, Sanctum 토큰으로 관리자를 다시 읽으며, 레이아웃 `if`로 보류 칩을 바로 띄웁니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.31**.
+
 ## [0.10.30] - 2026-09-18
 
 ### Fixed
