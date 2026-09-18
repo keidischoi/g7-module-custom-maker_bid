@@ -126,11 +126,13 @@ class LayoutFileFixListener implements HookListenerInterface
                         'params' => ['method' => 'POST', 'body' => [
                             'amount' => '{{_local.bid.amount}}',
                             'days' => '{{_local.bid.days}}',
-                            'message' => '{{(_local.bid.material ? ("[” + _local.bid.material + "] ") : "") + _local.bid.message}}',
+                            'message' => '{{_local.bid.message}}',
                         ]],
                         'onSuccess' => [
                             ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
-                            ['handler' => 'navigate', 'params' => ['url' => '/maker-bids/bids']],
+                        ],
+                        'errorHandling' => [
+                            'default' => ['handler' => 'toast', 'params' => ['type' => 'error', 'message' => '{{error.message || "제출에 실패했습니다."}}']],
                         ],
                     ]],
                 ],
