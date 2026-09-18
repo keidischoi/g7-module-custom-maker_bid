@@ -10,6 +10,7 @@ use Modules\Custom\MakerBids\Http\Requests\AwardJobRequest;
 use Modules\Custom\MakerBids\Http\Requests\StoreJobRequest;
 use Modules\Custom\MakerBids\Http\Requests\UpdateOwnedJobRequest;
 use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
 use Modules\Custom\MakerBids\Services\AwardService;
 use Modules\Custom\MakerBids\Services\JobFileService;
 use Modules\Custom\MakerBids\Services\JobService;
@@ -37,9 +38,10 @@ class JobController extends Controller
     public function index(Request $request): JsonResponse
     {
         try { app(MarketplaceService::class)->closeExpired(); } catch (\Throwable) {}
-$data = $this->jobs->listPublic($request);
+        $data = $this->attachListThumbs($this->jobs->listPublic($request));
 
-        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));    }
+        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));
+    }
 
     public function show(Request $request, int $id): JsonResponse
     {
@@ -152,5 +154,39 @@ $data = $this->jobs->listPublic($request);
             return $this->domainError($e);
         }
         return response()->json(['data' => $this->jobs->findPublic($id, $request)]);
+    }
+
+    private function attachListThumbs(array $rows): array
+    {
+        $ids = [];
+        foreach ($rows as $row) {
+            $id = (int) ($row['id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+        if ($ids === []) {
+            return $rows;
+        }
+        $files = MakerJobFile::query()
+            ->whereIn('job_id', $ids)
+            ->where('collection', UploadRules::COLLECTION_IMAGES)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+        $first = [];
+        foreach ($files as $file) {
+            $jid = (int) $file->job_id;
+            if (! isset($first[$jid])) {
+                $att = $file->toAttachmentArray();
+                $first[$jid] = $att['thumbnail_url'] ?: $att['url'] ?: $att['download_url'];
+            }
+        }
+        foreach ($rows as $i => $row) {
+            $jid = (int) ($row['id'] ?? 0);
+            $rows[$i]['thumbnail_url'] = $first[$jid] ?? null;
+        }
+
+        return $rows;
     }
 }
