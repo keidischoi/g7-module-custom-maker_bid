@@ -27,8 +27,114 @@ class LayoutFileFixListener implements HookListenerInterface
         if ($name === 'jobs_bids') {
             $layout = $this->injectBidsPageForm($layout);
         }
+        if (in_array($name, ['jobs_show', 'jobs_bids'], true)) {
+            $layout = $this->ensureRevisionSource($layout, $name === 'jobs_show' ? '{{route.id}}' : '{{query.job}}');
+        }
+        if ($name === 'jobs_show') {
+            $layout = $this->injectShowHistory($layout);
+        }
 
         return $layout;
+    }
+
+    private function ensureRevisionSource(array $layout, string $jobExpr): array
+    {
+        $sources = is_array($layout['data_sources'] ?? null) ? $layout['data_sources'] : [];
+        foreach ($sources as $src) {
+            if (($src['id'] ?? '') === 'bid_revisions') {
+                return $layout;
+            }
+        }
+        $sources[] = [
+            'id' => 'bid_revisions',
+            'type' => 'api',
+            'endpoint' => '/api/modules/custom-maker_bids/jobs/'.$jobExpr.'/bid-revisions',
+            'method' => 'GET',
+            'auto_fetch' => true,
+            'auth_required' => true,
+            'errorHandling' => ['401' => ['handler' => 'suppress'], 'default' => ['handler' => 'suppress']],
+            'fallback' => ['data' => []],
+        ];
+        $layout['data_sources'] = $sources;
+
+        return $layout;
+    }
+
+    private function historyPanel(): array
+    {
+        return [
+            'id' => 'cmb_bid_hist',
+            'type' => 'basic',
+            'name' => 'Div',
+            'if' => '{{viewer.data.my_bid || query.job}}',
+            'props' => ['className' => 'cmb-section-card space-y-2 rounded-xl border p-4 mt-3'],
+            'children' => [
+                ['id' => 'cmb_bid_hist_h', 'type' => 'basic', 'name' => 'H3', 'props' => ['text' => '내 견적 이력', 'className' => 'text-sm font-semibold']],
+                ['id' => 'cmb_bid_hist_empty', 'type' => 'basic', 'name' => 'P', 'if' => '{{!(bid_revisions.data && bid_revisions.data.length)}}', 'props' => ['className' => 'text-sm text-gray-500', 'text' => '아직 이력이 없습니다. 저장하면 여기 납니다.']],
+                [
+                    'id' => 'cmb_bid_hist_list',
+                    'type' => 'basic',
+                    'name' => 'Repeater',
+                    'props' => ['dataSource' => 'bid_revisions.data', 'className' => 'space-y-2'],
+                    'children' => [[
+                        'id' => 'cmb_bid_hist_row',
+                        'type' => 'basic',
+                        'name' => 'Div',
+                        'props' => ['className' => 'text-sm rounded-lg border px-3 py-2'],
+                        'children' => [
+                            ['id' => 'cmb_bid_hist_line', 'type' => 'basic', 'name' => 'P', 'props' => [
+                                'text' => '{{$item.event_label || $item.event}} · {{$item.amount}}원 · {{$item.days || "-"}}일',
+                            ]],
+                            ['id' => 'cmb_bid_hist_meta', 'type' => 'basic', 'name' => 'P', 'props' => [
+                                'className' => 'text-xs text-gray-500',
+                                'text' => '{{$item.created_at}} {{$item.message || ""}}',
+                            ]],
+                        ],
+                    ]],
+                ],
+            ],
+        ];
+    }
+
+    private function injectShowHistory(array $layout): array
+    {
+        $content = $layout['slots']['content'] ?? null;
+        if (! is_array($content)) {
+            return $layout;
+        }
+        $this->appendHistory($content);
+        $layout['slots']['content'] = $content;
+
+        return $layout;
+    }
+
+    private function appendHistory(array &$nodes): bool
+    {
+        foreach ($nodes as $i => $node) {
+            if (! is_array($node)) {
+                continue;
+            }
+            if (($node['id'] ?? '') === 'cmb_bid_hist') {
+                $nodes[$i] = $this->historyPanel();
+
+                return true;
+            }
+            $kids = is_array($node['children'] ?? null) ? $node['children'] : null;
+            if ($kids && $this->appendHistory($kids)) {
+                $nodes[$i]['children'] = $kids;
+
+                return true;
+            }
+            if (($node['id'] ?? '') === 'editform') {
+                $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
+                $kids[] = $this->historyPanel();
+                $nodes[$i]['children'] = $kids;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function injectBidsPageForm(array $layout): array
@@ -57,15 +163,6 @@ class LayoutFileFixListener implements HookListenerInterface
                 'auto_fetch' => true,
                 'auth_required' => true,
                 'errorHandling' => ['default' => ['handler' => 'suppress']],
-                'onSuccess' => [[
-                    'handler' => 'setState',
-                    'params' => [
-                        'target' => 'local',
-                        'bid.amount' => '{{response.data.my_bid.amount || ""}}',
-                        'bid.days' => '{{response.data.my_bid.days || ""}}',
-                        'bid.message' => '{{response.data.my_bid.message || ""}}',
-                    ],
-                ]],
             ];
         }
         $layout['data_sources'] = $sources;
@@ -80,12 +177,16 @@ class LayoutFileFixListener implements HookListenerInterface
         $replaced = false;
         foreach ($kids as $i => $child) {
             if (($child['id'] ?? '') === 'cmb_bid_compose') {
-                $kids[$i] = $this->composeForm();
+                $form = $this->composeForm();
+                $form['children'][] = $this->historyPanel();
+                $kids[$i] = $form;
                 $replaced = true;
             }
         }
         if (! $replaced) {
-            array_splice($kids, 1, 0, [$this->composeForm()]);
+            $form = $this->composeForm();
+            $form['children'][] = $this->historyPanel();
+            array_splice($kids, 1, 0, [$form]);
         }
         $content[0]['children'] = $kids;
         $layout['slots']['content'] = $content;
@@ -131,8 +232,6 @@ class LayoutFileFixListener implements HookListenerInterface
                 $this->bind('cmb_bid_amt', 'amount', 'Input', '예: 150000'),
                 ['id' => 'cmb_bid_days_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '제작 기간 (일)']],
                 $this->bind('cmb_bid_days', 'days', 'Input', '예: 7'),
-                ['id' => 'cmb_bid_mat_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '소재 / 공정']],
-                $this->bind('cmb_bid_mat', 'material', 'Input', '예: PLA, 0.2mm'),
                 ['id' => 'cmb_bid_msg_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '견적 설명']],
                 $this->bind('cmb_bid_msg', 'message', 'Textarea', '포함 범위, 후가공, 배송', 'min-h-[160px]'),
                 [
@@ -241,15 +340,15 @@ class LayoutFileFixListener implements HookListenerInterface
             ];
         }
 
-        if (in_array($id, ['eamount', 'amount'], true) && $name === 'Input') {
+        if (in_array($id, ['eamount'], true)) {
             $node['actions'] = $this->fieldBind('amount');
             $props['value'] = '{{_local.bid.amount || viewer.data.my_bid.amount}}';
         }
-        if (in_array($id, ['edays', 'days'], true) && $name === 'Input' && str_contains($cls, 'cmb-order-field')) {
+        if ($id === 'edays') {
             $node['actions'] = $this->fieldBind('days');
             $props['value'] = '{{_local.bid.days || viewer.data.my_bid.days}}';
         }
-        if (in_array($id, ['emsg', 'message'], true) && in_array($name, ['Input', 'Textarea'], true) && str_contains($cls, 'cmb-order-field')) {
+        if ($id === 'emsg') {
             $node['actions'] = $this->fieldBind('message');
             $props['value'] = '{{_local.bid.message || viewer.data.my_bid.message}}';
         }
@@ -257,21 +356,14 @@ class LayoutFileFixListener implements HookListenerInterface
         $isUpdate = str_contains($cls, 'cmb-bid-update') || $text === '금액 수정' || $id === 'esubmit';
         if ($isUpdate && $name === 'Button') {
             $node['actions'] = [[
-                'type' => 'click',
-                'handler' => 'apiCall',
-                'auth_required' => true,
+                'type' => 'click', 'handler' => 'apiCall', 'auth_required' => true,
                 'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
-                'params' => [
-                    'method' => 'POST',
-                    'body' => [
-                        'amount' => '{{_local.bid.amount}}',
-                        'days' => '{{_local.bid.days}}',
-                        'message' => '{{_local.bid.message}}',
-                    ],
-                ],
-                'onSuccess' => [
-                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 수정했습니다.']],
-                ],
+                'params' => ['method' => 'POST', 'body' => [
+                    'amount' => '{{_local.bid.amount}}',
+                    'days' => '{{_local.bid.days}}',
+                    'message' => '{{_local.bid.message}}',
+                ]],
+                'onSuccess' => [['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 수정했습니다.']]],
             ]];
         }
 
