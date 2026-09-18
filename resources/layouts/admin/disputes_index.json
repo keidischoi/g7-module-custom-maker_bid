@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
-  "layout_name": "ops_index",
+  "layout_name": "disputes_index",
   "extends": "_admin_base",
   "meta": {
-    "title": "운영(클레임/신고/로그)"
+    "title": "분쟁조정"
   },
   "permissions": [
-    "custom-maker_bids.jobs.read"
+    "custom-maker_bids.jobs.update"
   ],
   "errorHandling": {
     "401": {
@@ -75,26 +75,7 @@
             "props": {
               "className": "page-title"
             },
-            "text": "운영"
-          },
-          {
-            "id": "cmb_admin_nav",
-            "type": "basic",
-            "name": "Div",
-            "props": {
-              "className": "cmb-admin-nav text-sm",
-              "data-cmb-admin-nav": "1"
-            },
-            "children": []
-          },
-          {
-            "id": "d",
-            "type": "basic",
-            "name": "P",
-            "props": {
-              "className": "cmb-admin-lead"
-            },
-            "text": "클레임·신고·감사 로그를 확인합니다. 마감 자동종료 {{ops.data.closed ?? 0}}건 (조회 시 반영)."
+            "text": "분쟁조정"
           },
           {
             "id": "claims_card",
@@ -159,7 +140,7 @@
                               "href": "/admin/maker-bids/jobs/{{$item.job_id}}",
                               "className": "cmb-admin-row-title"
                             },
-                            "text": "클레임 #{{$item.id}} · 의뢰 #{{$item.job_id}}"
+                            "text": "분쟁 #{{$item.id}} · 의뢰 #{{$item.job_id}}"
                           },
                           {
                             "id": "cmeta",
@@ -168,7 +149,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.factor_label || $item.status}} · {{$item.status_label || $item.status}} · {{$item.reason}}"
+                            "text": "{{$item.factor_label}} · {{$item.status_label}} · {{$item.job_title}} · {{$item.reason}}"
                           }
                         ]
                       },
@@ -180,6 +161,159 @@
                           "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row items-center"
                         },
                         "children": [
+                          {
+                            "id": "cawarded",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "낙찰 유지",
+                            "if": "{{$item.status !== 'closed'}}",
+                            "props": {
+                              "className": "px-3 py-1 text-sm rounded-lg border"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/claims/{{$item.id}}",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {
+                                    "status": "closed",
+                                    "job_status": "awarded",
+                                    "admin_note": "낙찰 유지"
+                                  }
+                                },
+                                "confirm": "분쟁을 종결하고 낙찰 상태로 되돌릴까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "낙찰 상태로 종결했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "ops"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "ccancel",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "취소 처리",
+                            "if": "{{$item.status !== 'closed'}}",
+                            "props": {
+                              "className": "px-3 py-1 text-sm rounded-lg border"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/claims/{{$item.id}}",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {
+                                    "status": "closed",
+                                    "job_status": "cancelled",
+                                    "admin_note": "취소 처리"
+                                  }
+                                },
+                                "confirm": "분쟁을 종결하고 의뢰를 취소할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "취소로 종결했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "ops"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "cdone",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "완료 처리",
+                            "if": "{{$item.status !== 'closed'}}",
+                            "props": {
+                              "className": "px-3 py-1 text-sm rounded-lg border"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/claims/{{$item.id}}",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {
+                                    "status": "closed",
+                                    "job_status": "done",
+                                    "admin_note": "완료 처리"
+                                  }
+                                },
+                                "confirm": "분쟁을 종결하고 의뢰를 완료할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "완료로 종결했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "ops"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
                           {
                             "id": "cclose",
                             "type": "basic",
@@ -360,7 +494,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.factor_label || $item.status}} · {{$item.status_label || $item.status}} · {{$item.reason}}"
+                            "text": "{{$item.factor_label}} · {{$item.status_label}} · {{$item.job_title}} · {{$item.reason}}"
                           }
                         ]
                       },
@@ -381,178 +515,6 @@
                               "className": "px-3 py-1 text-sm rounded-lg border"
                             },
                             "text": "의뢰 보기"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "id": "audits_card",
-            "type": "basic",
-            "name": "Div",
-            "props": {
-              "className": "cmb-admin-card space-y-3 w-full"
-            },
-            "children": [
-              {
-                "id": "ah",
-                "type": "basic",
-                "name": "P",
-                "props": {
-                  "className": "cmb-admin-card-title"
-                },
-                "text": "감사 로그"
-              },
-              {
-                "id": "aempty",
-                "type": "basic",
-                "name": "P",
-                "if": "{{!(ops.data.audits && ops.data.audits.length)}}",
-                "props": {
-                  "className": "cmb-admin-empty"
-                },
-                "text": "감사 로그가 없습니다."
-              },
-              {
-                "id": "alist",
-                "type": "basic",
-                "name": "Div",
-                "props": {
-                  "className": "cmb-admin-list w-full"
-                },
-                "children": [
-                  {
-                    "id": "arow",
-                    "type": "basic",
-                    "name": "Div",
-                    "props": {
-                      "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
-                    },
-                    "iteration": {
-                      "source": "{{ops.data.audits}}",
-                      "item_var": "$item"
-                    },
-                    "children": [
-                      {
-                        "id": "amain",
-                        "type": "basic",
-                        "name": "Div",
-                        "props": {
-                          "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center"
-                        },
-                        "children": [
-                          {
-                            "id": "atitle",
-                            "type": "basic",
-                            "name": "P",
-                            "props": {
-                              "className": "cmb-admin-row-title"
-                            },
-                            "text": "{{$item.action}} · {{$item.subject_type}}#{{$item.subject_id}}"
-                          },
-                          {
-                            "id": "ameta",
-                            "type": "basic",
-                            "name": "P",
-                            "props": {
-                              "className": "cmb-admin-muted"
-                            },
-                            "text": "{{$item.created_at}} · 회원 {{$item.user_id ?? '-'}}"
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "id": "reports_resolve_help",
-            "type": "basic",
-            "name": "Div",
-            "props": {
-              "className": "cmb-admin-card mt-4 space-y-2"
-            },
-            "children": [
-              {
-                "id": "rrh",
-                "type": "basic",
-                "name": "H2",
-                "props": {
-                  "className": "cmb-section-title"
-                },
-                "text": "신고 종결"
-              },
-              {
-                "id": "rrg",
-                "type": "basic",
-                "name": "P",
-                "props": {
-                  "className": "cmb-page-guide"
-                },
-                "text": "신고 ID를 입력하고 종결합니다. API: POST admin/reports/{id}"
-              },
-              {
-                "id": "rr_box",
-                "type": "basic",
-                "name": "Div",
-                "props": {
-                  "className": "flex gap-2 mt-2",
-                  "dataKey": "report_resolve",
-                  "trackChanges": true
-                },
-                "children": [
-                  {
-                    "id": "rr_id",
-                    "type": "basic",
-                    "name": "Input",
-                    "props": {
-                      "name": "id",
-                      "placeholder": "신고 ID",
-                      "className": "cmb-order-field"
-                    }
-                  },
-                  {
-                    "id": "rr_btn",
-                    "type": "basic",
-                    "name": "Button",
-                    "text": "신고 종결",
-                    "props": {
-                      "className": "cmb-btn cmb-btn-primary"
-                    },
-                    "actions": [
-                      {
-                        "type": "click",
-                        "handler": "apiCall",
-                        "auth_required": true,
-                        "target": "/api/modules/custom-maker_bids/admin/reports/{{_local.report_resolve.id}}",
-                        "params": {
-                          "method": "POST",
-                          "body": {
-                            "status": "closed"
-                          }
-                        },
-                        "onSuccess": [
-                          {
-                            "handler": "toast",
-                            "params": {
-                              "type": "success",
-                              "message": "신고를 종결했습니다."
-                            }
-                          }
-                        ],
-                        "onError": [
-                          {
-                            "handler": "toast",
-                            "params": {
-                              "type": "error",
-                              "message": "{{error.message}}"
-                            }
                           }
                         ]
                       }

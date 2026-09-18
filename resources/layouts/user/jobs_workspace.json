@@ -44,9 +44,11 @@
       "comment": ""
     },
     "claim": {
+      "factor": "quality",
       "reason": ""
     },
     "report": {
+      "factor": "fraud",
       "reason": ""
     },
     "ship": {
@@ -182,6 +184,16 @@
                   "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
                 },
                 "text": "이력"
+              },
+              {
+                "id": "t_disputes",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/disputes",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "분쟁"
               },
               {
                 "id": "t5",
@@ -1025,7 +1037,7 @@
                 "props": {
                   "className": "cmb-section-title"
                 },
-                "text": "클레임 · 신고"
+                "text": "분쟁 · 신고"
               },
               {
                 "id": "clg",
@@ -1034,7 +1046,7 @@
                 "props": {
                   "className": "cmb-page-guide mt-1"
                 },
-                "text": "문제가 있으면 사유를 남겨 주세요. 관리자 운영 화면에서 확인합니다."
+                "text": "낙찰 이후 문제가 있으면 분쟁 요인을 고르고 내용을 남겨 주세요. 접수하면 의뢰가 분쟁조정 상태가 되고 관리자가 확인합니다. 내역은 분쟁 메뉴에서 볼 수 있습니다."
               },
               {
                 "id": "claim_box",
@@ -1053,7 +1065,48 @@
                     "props": {
                       "className": "cmb-admin-label text-xs text-gray-500"
                     },
-                    "text": "클레임 사유"
+                    "text": "분쟁 요인"
+                  },
+                  {
+                    "id": "claim_factor",
+                    "type": "basic",
+                    "name": "Select",
+                    "props": {
+                      "name": "factor",
+                      "value": "{{_local.claim.factor}}",
+                      "className": "cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm",
+                      "options": [
+                        { "value": "fraud", "label": "사기·허위" },
+                        { "value": "quality", "label": "제품 품질 문제" },
+                        { "value": "shipping", "label": "배송 문제" },
+                        { "value": "delay", "label": "납기 지연" },
+                        { "value": "damage", "label": "파손·분실" },
+                        { "value": "spec", "label": "사양·수량 불일치" },
+                        { "value": "communication", "label": "소통 불량" },
+                        { "value": "payment", "label": "결제·대금 문제" },
+                        { "value": "other", "label": "기타" }
+                      ]
+                    },
+                    "actions": [
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "claim.factor": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "claim_detail_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "상세 내용"
                   },
                   {
                     "id": "claim_reason",
@@ -1061,7 +1114,7 @@
                     "name": "Textarea",
                     "props": {
                       "name": "reason",
-                      "placeholder": "클레임 사유",
+                      "placeholder": "구체적인 내용을 적어 주세요",
                       "className": "cmb-order-field w-full min-h-[64px] rounded-lg border px-3 py-2 text-sm"
                     }
                   },
@@ -1069,7 +1122,7 @@
                     "id": "claim_btn",
                     "type": "basic",
                     "name": "Button",
-                    "text": "클레임 접수",
+                    "text": "분쟁 접수",
                     "props": {
                       "className": "cmb-btn cmb-btn-secondary"
                     },
@@ -1083,13 +1136,13 @@
                           "method": "POST",
                           "body": "{{_local.claim}}"
                         },
-                        "confirm": "클레임을 접수할까요?",
+                        "confirm": "분쟁을 접수할까요? 의뢰가 분쟁조정 상태로 바뀝니다.",
                         "onSuccess": [
                           {
                             "handler": "toast",
                             "params": {
                               "type": "success",
-                              "message": "클레임을 접수했습니다."
+                              "message": "분쟁을 접수했습니다."
                             }
                           },
                           {
@@ -1131,7 +1184,48 @@
                     "props": {
                       "className": "cmb-admin-label text-xs text-gray-500"
                     },
-                    "text": "신고 사유"
+                    "text": "신고 요인"
+                  },
+                  {
+                    "id": "report_factor",
+                    "type": "basic",
+                    "name": "Select",
+                    "props": {
+                      "name": "factor",
+                      "value": "{{_local.report.factor}}",
+                      "className": "cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm",
+                      "options": [
+                        { "value": "fraud", "label": "사기·허위" },
+                        { "value": "quality", "label": "제품 품질 문제" },
+                        { "value": "shipping", "label": "배송 문제" },
+                        { "value": "delay", "label": "납기 지연" },
+                        { "value": "damage", "label": "파손·분실" },
+                        { "value": "spec", "label": "사양·수량 불일치" },
+                        { "value": "communication", "label": "소통 불량" },
+                        { "value": "payment", "label": "결제·대금 문제" },
+                        { "value": "other", "label": "기타" }
+                      ]
+                    },
+                    "actions": [
+                      {
+                        "type": "change",
+                        "event": "change",
+                        "handler": "setState",
+                        "params": {
+                          "target": "local",
+                          "report.factor": "{{$event.target.value}}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "report_detail_l",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "신고 내용"
                   },
                   {
                     "id": "report_reason",
@@ -1139,7 +1233,7 @@
                     "name": "Textarea",
                     "props": {
                       "name": "reason",
-                      "placeholder": "신고 사유",
+                      "placeholder": "구체적인 내용을 적어 주세요",
                       "className": "cmb-order-field w-full min-h-[64px] rounded-lg border px-3 py-2 text-sm"
                     }
                   },

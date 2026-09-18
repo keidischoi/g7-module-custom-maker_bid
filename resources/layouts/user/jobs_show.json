@@ -73,6 +73,7 @@
           "can_award": false,
           "can_update_bid": false,
           "can_workspace": false,
+          "can_dispute": false,
           "my_bid": null
         }
       },
@@ -175,6 +176,16 @@
                   "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                 },
                 "text": "이력"
+              },
+              {
+                "id": "t_disputes",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/disputes",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "분쟁"
               },
               {
                 "id": "t5",
@@ -313,6 +324,17 @@
                       "className": "cmb-btn cmb-btn-primary"
                     },
                     "text": "작업실"
+                  },
+                  {
+                    "id": "dispute_link",
+                    "type": "basic",
+                    "name": "A",
+                    "if": "{{viewer.data?.can_dispute}}",
+                    "props": {
+                      "href": "/maker-bids/{{route.id}}/work",
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "text": "분쟁 접수"
                   }
                 ]
               }

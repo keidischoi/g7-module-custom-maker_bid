@@ -254,6 +254,19 @@ class JobService
     {
         $open = $job->isOpen();
         $isOwner = BidRules::isOwnJob($userId, $job->user_id);
+        $isWinner = false;
+        if ($userId > 0 && $job->awarded_bid_id) {
+            try {
+                $bid = $job->relationLoaded('awardedBid') ? $job->awardedBid : MakerBid::query()->find($job->awarded_bid_id);
+                $isWinner = $bid && (int) $bid->user_id === $userId;
+            } catch (\Throwable) {
+                $isWinner = false;
+            }
+        }
+        $isParty = $isOwner || $isWinner;
+        $status = (string) $job->status;
+        $canWork = ($isParty || $isAdmin) && in_array($status, ['awarded', 'disputed', 'done'], true);
+
         return [
             'authenticated' => $userId > 0,
             'is_owner' => $isOwner,
@@ -263,7 +276,8 @@ class JobService
             'can_update_bid' => false,
             'can_edit' => $isOwner && JobRules::isListingStatus((string) $job->status),
             'can_view_privacy' => $isOwner || $isAdmin,
-            'can_workspace' => false,
+            'can_workspace' => $canWork,
+            'can_dispute' => $isParty && DisputeRules::canOpen($status),
             'my_bid' => null,
             'privacy' => null,
         ];

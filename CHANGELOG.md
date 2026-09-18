@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.33] - 2026-09-18
+
+### Added
+- **분쟁조정**: 회원 메뉴 `/maker-bids/disputes`, 관리자 메뉴 `/admin/maker-bids/disputes`. 작업실·의뢰 상세에서 분쟁 접수.
+- 분쟁 요인: 사기·허위, 제품 품질, 배송, 납기 지연, 파손·분실, 사양 불일치, 소통 불량, 결제·대금, 기타.
+- 분쟁 접수 시 의뢰가 **분쟁조정** 상태가 됩니다. 관리자는 낙찰 유지·취소·완료로 종결합니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.33**.
+
 ## [0.10.32] - 2026-09-18
 
 ### Fixed
