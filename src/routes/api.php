@@ -28,7 +28,7 @@ Route::get('job-types', [JobTypeController::class, 'index'])->middleware(['throt
 Route::get('files/{hash}', [JobFileController::class, 'download'])->middleware(['throttle:600,1'])->name('files.download');
 Route::get('jobs', [JobController::class, 'index'])->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.index');
 Route::get('jobs/{id}', [JobController::class, 'show'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.show');
-Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
+Route::get('jobs/{id}/viewer', [JobController::class, 'viewer'])->whereNumber('id')->middleware(['web', 'optional.sanctum', 'throttle:600,1'])->name('jobs.viewer');
 Route::post('jobs/{id}/bids', [BidController::class, 'store'])->whereNumber('id')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.store');
 Route::patch('jobs/{id}/bids/{bidId}', [BidController::class, 'update'])->whereNumber('id')->whereNumber('bidId')->middleware(['web', 'throttle:60,1'])->name('jobs.bids.update');
 Route::get('companies', [CompanyController::class, 'index'])->middleware(['throttle:600,1'])->name('companies.index');
