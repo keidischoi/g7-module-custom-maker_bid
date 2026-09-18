@@ -30,12 +30,14 @@ class AssetController extends Controller
     public function page(): Response
     {
         return $this->asset('page.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
-            $extra = '';
-            $path = dirname(__DIR__, 3).'/resources/assets/list-fix.js';
-            if (is_file($path)) {
-                $extra = "\n".(string) file_get_contents($path);
+            $dir = dirname(__DIR__, 3).'/resources/assets/';
+            foreach (['list-fix.js', 'company-list-fix.js'] as $name) {
+                $path = $dir.$name;
+                if (is_file($path)) {
+                    $body .= "\n".(string) file_get_contents($path);
+                }
             }
-            return $body.$extra;
+            return $body;
         });
     }
 
