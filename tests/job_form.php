@@ -147,6 +147,8 @@ expect('print type query kept', JobRules::listTypeFilter('print_3d'), 'print_3d'
 expectTrue('open list status means biddable', JobRules::listStatusFilter('open') === JobRules::BIDDABLE_STATUSES);
 expectTrue('blank list status is no filter', JobRules::listStatusFilter(null) === null);
 expect('hold list status stays hold', JobRules::listStatusFilter('hold'), ['hold']);
+expect('status sort alias', JobRules::normalizeListSort('상태순'), JobRules::LIST_SORT_STATUS);
+expect('latest sort default', JobRules::normalizeListSort(''), JobRules::LIST_SORT_LATEST);
 
 expectTrue('personal keys include manager fields', in_array('manager_name', PrivacyRules::personalKeys(), true) && in_array('manager_phone', PrivacyRules::personalKeys(), true) && in_array('manager_email', PrivacyRules::personalKeys(), true));
 expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_request', null, false));

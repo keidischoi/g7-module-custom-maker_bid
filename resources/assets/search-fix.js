@@ -1,8 +1,19 @@
 (function () {
-  if (window.__cmbSearchFix5) return;
-  window.__cmbSearchFix5 = true;
+  if (window.__cmbSearchFix6) return;
+  window.__cmbSearchFix6 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '' };
+
+  var STATUS_CHIPS = [
+    ['', '전체'],
+    ['pending', '승인대기'],
+    ['hold', '보류'],
+    ['request', '의뢰'],
+    ['quote_request', '견적요청'],
+    ['awarded', '낙찰'],
+    ['done', '완료'],
+    ['cancelled', '취소']
+  ];
 
   function readUrl() {
     try {
@@ -14,91 +25,51 @@
     } catch (e) {}
   }
 
-  function listBox() {
-    return document.querySelector('.cmb-card-list');
-  }
-
-  function writeUrl() {
+  function go(resetPage) {
     try {
       var u = new URL(location.href);
       ['q', 'sort', 'type', 'status'].forEach(function (k) {
         if (state[k]) u.searchParams.set(k, state[k]);
         else u.searchParams.delete(k);
       });
-      history.replaceState(null, '', u.pathname + u.search);
-    } catch (e) {}
-  }
-
-  function esc(s) {
-    return String(s || '').replace(/[&<>"']/g, function (c) {
-      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
-    });
-  }
-
-  function cardHtml(item) {
-    var href = '/maker-bids/' + (item.id || '');
-    var badge = item.status_label || item.status || '';
-    var type = item.type_name || item.type || '';
-    var bids = item.bids_count != null ? item.bids_count : 0;
-    var closes = item.closes_at ? '<span>마감 ' + esc(item.closes_at) + '</span>' : '';
-    var aud = item.audience_label || '전체';
-    var budget = item.budget_label || '미정';
-    return '<a href="' + href + '" class="cmb-job-card cmb-list-item">' +
-      '<div class="cmb-job-card-top"><p class="cmb-job-card-title">' + esc(item.title) + '</p>' +
-      '<span class="cmb-badge cmb-badge-' + esc(item.status) + '">' + esc(badge) + '</span></div>' +
-      '<div class="cmb-job-card-meta"><span>' + esc(type) + '</span><span>견적 ' + bids + '건</span>' + closes +
-      '<span>입찰 권한 ' + esc(aud) + '</span></div>' +
-      '<p class="cmb-job-card-budget">예산 ' + esc(budget) + '</p></a>';
-  }
-
-  function paint(rows) {
-    var box = listBox();
-    if (!box) return;
-    if (!rows || !rows.length) {
-      box.innerHTML = '<p class="cmb-empty">등록된 의뢰가 없습니다.</p>';
-      return;
+      if (resetPage !== false) u.searchParams.delete('page');
+      var path = u.pathname + u.search;
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'navigate', params: { path: path } });
+        return;
+      }
+      location.href = path;
+    } catch (e) {
+      location.reload();
     }
-    box.innerHTML = rows.map(cardHtml).join('');
-  }
-
-  function load() {
-    var p = new URLSearchParams();
-    if (state.q) p.set('q', state.q);
-    if (state.sort) p.set('sort', state.sort);
-    if (state.type) p.set('type', state.type);
-    if (state.status) p.set('status', state.status);
-    p.set('per_page', '50');
-    fetch('/api/modules/custom-maker_bids/jobs?' + p.toString(), {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    }).then(function (r) { return r.json(); }).then(function (j) {
-      var rows = j.data || j || [];
-      if (rows && !Array.isArray(rows) && Array.isArray(rows.data)) rows = rows.data;
-      paint(Array.isArray(rows) ? rows : []);
-      markChips();
-    }).catch(function () {});
   }
 
   function markChips() {
     document.querySelectorAll('[data-cmb-status]').forEach(function (a) {
       var on = (a.getAttribute('data-cmb-status') || '') === (state.status || '');
-      a.style.background = on ? '#111827' : '';
-      a.style.color = on ? '#fff' : '';
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
     document.querySelectorAll('.cmb-filters a.cmb-chip').forEach(function (a) {
-      var href = a.getAttribute('href') || '';
       var type = '';
       try { type = new URL(a.href, location.origin).searchParams.get('type') || ''; } catch (e) {}
-      var on = type === (state.type || '') && href.indexOf('status=') < 0;
-      if (a.textContent.trim() === '전체' && !state.type) on = true;
-      if (type && type === state.type) on = true;
+      var label = (a.textContent || '').trim();
+      var on = type === (state.type || '');
+      if (label === '전체') on = !state.type;
+      a.classList.toggle('is-active', on);
+      if (on) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
   }
 
   function ensureSearch() {
     var old = document.querySelector('[data-cmb-search-input], .cmb-search-input, input[name="q"]');
     if (!old) return;
-    if (old.getAttribute('data-cmb-free') === '1') return old;
+    if (old.getAttribute('data-cmb-free') === '1') {
+      old.value = state.q;
+      return old;
+    }
     var wrap = old.parentElement;
     var inp = document.createElement('input');
     inp.type = 'text';
@@ -125,7 +96,11 @@
   function ensureSort() {
     var host = document.querySelector('[data-cmb-sort-wrap], .cmb-search-sort');
     if (!host) return;
-    if (host.querySelector('[data-cmb-sort-free]')) return;
+    if (host.querySelector('[data-cmb-sort-free]')) {
+      var existing = host.querySelector('[data-cmb-sort-free]');
+      if (existing) existing.value = state.sort || 'latest';
+      return;
+    }
     Array.prototype.slice.call(host.children).forEach(function (n) { n.style.display = 'none'; });
     var sel = document.createElement('select');
     sel.setAttribute('data-cmb-sort-free', '1');
@@ -138,7 +113,7 @@
     sel.value = state.sort || 'latest';
     sel.addEventListener('change', function () {
       state.sort = sel.value;
-      writeUrl(); load();
+      go(true);
     });
     host.appendChild(sel);
   }
@@ -150,18 +125,15 @@
     if (!title) return;
     var row = title.parentElement;
     if (!row) return;
-    row.style.display = 'flex';
-    row.style.alignItems = 'center';
-    row.style.flexWrap = 'wrap';
-    row.style.gap = '8px';
+    row.classList.add('cmb-section-head');
     var box = row.querySelector('[data-cmb-status-chips]');
     if (!box) {
       box = document.createElement('div');
       box.setAttribute('data-cmb-status-chips', '1');
-      box.style.cssText = 'margin-left:auto;display:flex;flex-wrap:wrap;gap:6px';
-      [['', '전체'], ['draft', '임시'], ['hold', '보류'], ['open', '입찰중'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소'], ['pending', '승인대기']].forEach(function (it) {
+      box.className = 'cmb-status-chips';
+      STATUS_CHIPS.forEach(function (it) {
         var a = document.createElement('a');
-        a.href = '#';
+        a.href = it[0] ? '/maker-bids?status=' + encodeURIComponent(it[0]) : '/maker-bids';
         a.className = 'cmb-chip';
         a.textContent = it[1];
         a.setAttribute('data-cmb-status', it[0]);
@@ -179,21 +151,21 @@
       var inp = document.querySelector('[data-cmb-free]');
       if (inp) inp.value = '';
       state.q = '';
-      writeUrl(); load();
+      go(true);
       return;
     }
     if (t.closest('[data-cmb-search-go], .cmb-search-go')) {
       e.preventDefault(); e.stopPropagation();
       var inp2 = document.querySelector('[data-cmb-free]');
       state.q = inp2 ? inp2.value.trim() : '';
-      writeUrl(); load();
+      go(true);
       return;
     }
     var st = t.closest('[data-cmb-status]');
     if (st) {
       e.preventDefault(); e.stopPropagation();
       state.status = st.getAttribute('data-cmb-status') || '';
-      writeUrl(); load();
+      go(true);
       return;
     }
     var typeA = t.closest('.cmb-filters a.cmb-chip');
@@ -203,7 +175,7 @@
       try { type = new URL(typeA.href, location.origin).searchParams.get('type') || ''; } catch (err) {}
       if ((typeA.textContent || '').trim() === '전체') type = '';
       state.type = type;
-      writeUrl(); load();
+      go(true);
     }
   }, true);
 
@@ -212,7 +184,7 @@
     if (!inp || e.key !== 'Enter') return;
     e.preventDefault();
     state.q = inp.value.trim();
-    writeUrl(); load();
+    go(true);
   }, true);
 
   function boot() {
@@ -220,7 +192,7 @@
     ensureSearch();
     ensureSort();
     ensureChips();
-    load();
+    markChips();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

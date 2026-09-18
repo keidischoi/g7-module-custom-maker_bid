@@ -58,16 +58,21 @@ class CompanyThumbListener implements HookListenerInterface
         $cls = (string) ($props['className'] ?? '');
 
         if (str_contains($cls, 'cmb-card-list')) {
-            $props['className'] = trim($cls.' cmb-company-gallery');
-            $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:start';
+            unset($props['style']);
+            if ($id === 'clist' || str_contains($cls, 'cmb-company-gallery')) {
+                $props['className'] = trim(preg_replace('/\s+/', ' ', str_replace('cmb-company-gallery', '', $cls)).' cmb-company-gallery');
+            }
         }
         $node['props'] = $props;
 
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
             $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url}}', '64', false);
         }
-        if ($id === 'ctop' || $id === 'citem' || $id === 'me_top' || str_contains($cls, 'cmb-company-card')) {
-            $node = $this->ensureChild($node, 'cmb_co_logo', '{{$item.thumbnail_url}}', '96', true);
+        if ($id === 'ctop') {
+            $node = $this->ensureChild($node, 'cmb_co_logo', '{{$item.thumbnail_url || $item.logo_url}}', '72', true);
+        }
+        if ($id === 'me_top') {
+            $node = $this->ensureChild($node, 'cmb_me_logo', '{{me.data.thumbnail_url || me.data.logo_url}}', '72', true);
         }
 
         return $node;
@@ -76,11 +81,8 @@ class CompanyThumbListener implements HookListenerInterface
     private function ensureChild(array $node, string $id, string $src, string $size, bool $round): array
     {
         $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $i => $child) {
+        foreach ($kids as $child) {
             if (is_array($child) && ($child['id'] ?? '') === $id) {
-                $kids[$i] = $this->thumb($id, $src, $size, $round);
-                $node['children'] = $kids;
-
                 return $node;
             }
         }
