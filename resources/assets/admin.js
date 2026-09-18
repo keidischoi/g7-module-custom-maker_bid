@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs26) return;
-  window.__cmbAdminJs26 = true;
+  if (window.__cmbAdminJs35) return;
+  window.__cmbAdminJs35 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -276,8 +276,8 @@
 
   function hideVisually(el) {
     if (!el || el.nodeType !== 1) return;
-    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') === '1')) return;
-    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('[data-cmb-filter-wrap]'))) return;
+    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') || el.getAttribute('data-cmb-filter-host'))) return;
+    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('select[data-cmb-filter-free]'))) return;
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('width', '1px', 'important');
     el.style.setProperty('height', '1px', 'important');
@@ -287,6 +287,32 @@
     el.style.setProperty('display', 'none', 'important');
     el.setAttribute('aria-hidden', 'true');
     el.tabIndex = -1;
+  }
+
+  function unlockAdminPointer() {
+    var html = document.documentElement;
+    var body = document.body;
+    if (html) {
+      html.style.setProperty('pointer-events', 'auto', 'important');
+      html.removeAttribute('data-scroll-locked');
+    }
+    if (body) {
+      body.style.setProperty('pointer-events', 'auto', 'important');
+      body.removeAttribute('data-scroll-locked');
+      if (body.style.overflow === 'hidden') body.style.overflow = '';
+    }
+    document.querySelectorAll('[data-radix-popper-content-wrapper], [data-radix-select-content], [data-slot="select-content"]').forEach(function (el) {
+      var st = (el.getAttribute('data-state') || '').toLowerCase();
+      var hidden = st === 'closed' || st === 'hidden' || el.hidden || el.getAttribute('aria-hidden') === 'true';
+      if (hidden) {
+        el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        return;
+      }
+      el.style.setProperty('pointer-events', 'auto', 'important');
+      el.style.setProperty('z-index', '2147483000', 'important');
+    });
   }
 
   function isCompanyAdminPage() {
@@ -305,69 +331,182 @@
     return 'jobs';
   }
 
-  function currentFilterStatus() {
+  function currentFilterValue(key) {
     try {
       if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
-        return String((window.G7Core.state.get('_local.filter.status')) || '');
+        return String((window.G7Core.state.get('_local.filter.' + key)) || '');
       }
     } catch (e) {}
     return '';
   }
 
-  function bindNativeFilter(sel, company) {
-    if (sel.getAttribute('data-cmb-filter-bound') === '1') return;
+  function currentFilterStatus() {
+    return currentFilterValue('status');
+  }
+
+  var TYPE_FALLBACK = [
+    ['', '전체 유형'],
+    ['modeling_3d', '3D 모델링'],
+    ['print_3d', '3D 출력 대행'],
+    ['full_package', '풀 패키지 제작 (모델링 + 출력 + 후가공)'],
+    ['character_figure', '캐릭터·피규어 커미션'],
+    ['design_mockup', '디자인 목업(Mock-up) 및 시제품'],
+    ['working_prototype', '워킹 프로토타입(기능성 시제품)']
+  ];
+  var typeOptsCache = null;
+  var typeOptsLoading = false;
+
+  function loadTypeOpts(cb) {
+    if (typeOptsCache) {
+      cb(typeOptsCache);
+      return;
+    }
+    if (typeOptsLoading) {
+      setTimeout(function () { loadTypeOpts(cb); }, 200);
+      return;
+    }
+    typeOptsLoading = true;
+    fetch('/api/modules/custom-maker_bids/job-types', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function (r) { return r.json(); }).then(function (json) {
+      var rows = (json && json.data) || [];
+      var opts = [['', '전체 유형']];
+      rows.forEach(function (t) {
+        var slug = String((t && (t.slug || t.value)) || '');
+        var name = String((t && (t.name || t.label)) || slug);
+        if (slug) opts.push([slug, name]);
+      });
+      typeOptsCache = opts.length > 1 ? opts : TYPE_FALLBACK;
+      typeOptsLoading = false;
+      cb(typeOptsCache);
+    }).catch(function () {
+      typeOptsCache = TYPE_FALLBACK;
+      typeOptsLoading = false;
+      cb(typeOptsCache);
+    });
+  }
+
+  function fillSelect(sel, opts, cur) {
+    if (!sel) return;
+    opts = opts || [];
+    var same = sel.options && sel.options.length === opts.length;
+    var i;
+    if (same) {
+      for (i = 0; i < opts.length; i++) {
+        if (sel.options[i].value !== String(opts[i][0]) || sel.options[i].textContent !== String(opts[i][1])) {
+          same = false;
+          break;
+        }
+      }
+    }
+    if (!same) {
+      sel.innerHTML = '';
+      opts.forEach(function (o) {
+        var op = document.createElement('option');
+        op.value = o[0];
+        op.textContent = o[1];
+        sel.appendChild(op);
+      });
+    }
+    var want = cur != null && String(cur) !== '' ? String(cur) : sel.value;
+    if (want && sel.value !== want) sel.value = want;
+  }
+
+  function bindNativeFilter(sel, company, key) {
+    if (!sel || sel.getAttribute('data-cmb-filter-bound') === '1') return;
     sel.setAttribute('data-cmb-filter-bound', '1');
     sel.addEventListener('change', function () {
+      unlockAdminPointer();
+      var map = { target: 'local' };
+      map['filter.' + (key || 'status')] = sel.value;
       if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'setState', params: map });
         window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: filterDsId(company) } });
       }
     });
   }
 
+  function statusOptsFor(bar, company) {
+    var path = location.pathname || '';
+    if (company) return [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']];
+    if (/\/admin\/maker-bids\/bids/.test(path) || (bar.getAttribute('data-cmb-filter-entity') === 'bid')) {
+      return [['', '전체 상태'], ['pending', '검토중'], ['accepted', '낙찰'], ['rejected', '거절']];
+    }
+    return [['', '전체 상태'], ['hold', '보류'], ['draft', '임시저장'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['disputed', '분쟁조정'], ['done', '완료'], ['cancelled', '취소']];
+  }
+
+  function hideG7FilterSelects(bar) {
+    bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"], [aria-haspopup="listbox"]').forEach(function (el) {
+      if (el.closest && (el.closest('[data-cmb-filter-wrap]') || el.closest('[data-cmb-filter-free]'))) return;
+      hideVisually(el);
+    });
+    bar.querySelectorAll('button, [role="combobox"]').forEach(function (el) {
+      if (el.closest && el.closest('[data-cmb-filter-host], .cmb-admin-filter-status, .cmb-admin-filter-type')) {
+        if (el.tagName === 'SELECT') return;
+        if (el.getAttribute('data-cmb-filter-free') === '1') return;
+        if ((el.textContent || '').indexOf('필터') >= 0) return;
+        hideVisually(el);
+      }
+    });
+  }
+
+  function ensureNativeSelect(bar, key, opts, company) {
+    var host = bar.querySelector('[data-cmb-filter-host="' + key + '"]');
+    var wrap = bar.querySelector('[data-cmb-filter-wrap="' + key + '"]');
+    if (!wrap && host) {
+      wrap = host;
+      wrap.setAttribute('data-cmb-filter-wrap', key);
+      wrap.classList.add('cmb-admin-filter-native-wrap');
+    }
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.setAttribute('data-cmb-filter-wrap', key);
+      wrap.className = 'cmb-admin-filter-native-wrap cmb-admin-filter-field ' + (key === 'type' ? 'cmb-admin-filter-type' : 'cmb-admin-filter-status');
+      var lab = document.createElement('p');
+      lab.className = 'cmb-admin-label';
+      lab.textContent = key === 'type' ? '유형' : '상태';
+      wrap.appendChild(lab);
+      var go = bar.querySelector('.cmb-admin-filter-go');
+      bar.insertBefore(wrap, go || bar.firstChild);
+    }
+    var sel = wrap.querySelector('select[data-cmb-filter-free][data-cmb-filter-key="' + key + '"]') ||
+      wrap.querySelector('select[data-cmb-filter-free]');
+    if (sel && sel.getAttribute('data-cmb-filter-key') && sel.getAttribute('data-cmb-filter-key') !== key) sel = null;
+    if (!sel) {
+      sel = document.createElement('select');
+      sel.setAttribute('data-cmb-filter-free', '1');
+      sel.setAttribute('data-cmb-filter-key', key);
+      sel.setAttribute('name', 'cmb_filter_' + key);
+      sel.className = 'cmb-admin-filter-native';
+      wrap.appendChild(sel);
+    }
+    fillSelect(sel, opts, currentFilterValue(key));
+    bindNativeFilter(sel, company, key);
+    return sel;
+  }
+
   function ensureAdminFilterSelect() {
     document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
       var company = (bar.getAttribute('data-cmb-filter-entity') === 'company') ||
-        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && isCompanyAdminPage());
-      var opts = company
-        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
-        : [['', '전체 상태'], ['hold', '보류'], ['draft', '임시저장'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['disputed', '분쟁조정'], ['done', '완료'], ['cancelled', '취소']];
-      bar.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-select-host').forEach(function (host) {
-        if (host.getAttribute('data-cmb-filter-wrap') === '1') return;
-        hideVisually(host);
-      });
-      bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
-        if (el.closest && el.closest('[data-cmb-filter-wrap]')) return;
-        hideVisually(el);
-      });
-      var wrap = bar.querySelector('[data-cmb-filter-wrap]');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.setAttribute('data-cmb-filter-wrap', '1');
-        wrap.className = 'cmb-admin-filter-native-wrap';
-        var lab = document.createElement('p');
-        lab.className = 'cmb-admin-label';
-        lab.textContent = '상태';
-        var sel = document.createElement('select');
-        sel.setAttribute('data-cmb-filter-free', '1');
-        sel.setAttribute('name', 'status');
-        sel.className = 'cmb-admin-filter-native';
-        opts.forEach(function (o) {
-          var op = document.createElement('option');
-          op.value = o[0];
-          op.textContent = o[1];
-          sel.appendChild(op);
-        });
-        var cur = currentFilterStatus();
-        if (cur) sel.value = cur;
-        wrap.appendChild(lab);
-        wrap.appendChild(sel);
-        var go = bar.querySelector('.cmb-admin-filter-go');
-        bar.insertBefore(wrap, go || bar.firstChild);
+        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && bar.getAttribute('data-cmb-filter-entity') !== 'bid' && isCompanyAdminPage());
+      hideG7FilterSelects(bar);
+      ensureNativeSelect(bar, 'status', statusOptsFor(bar, company), company);
+      var wantType = bar.getAttribute('data-cmb-filter-entity') === 'job' ||
+        bar.querySelector('[data-cmb-filter-host="type"], .cmb-admin-filter-type');
+      if (wantType && !company) {
+        if (typeOptsCache) {
+          ensureNativeSelect(bar, 'type', typeOptsCache, company);
+        } else {
+          ensureNativeSelect(bar, 'type', TYPE_FALLBACK, company);
+          loadTypeOpts(function (opts) {
+            var native = bar.querySelector('select[data-cmb-filter-key="type"]');
+            if (native) fillSelect(native, opts, currentFilterValue('type'));
+          });
+        }
       }
-      var native = wrap.querySelector('[data-cmb-filter-free]');
-      bindNativeFilter(native, company);
     });
+    unlockAdminPointer();
   }
 
   function injectStatusPaintCss() {
@@ -524,8 +663,23 @@
     var s = document.createElement('style');
     s.id = 'cmb-admin-select-portal-css';
     s.textContent =
-      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],html.cmb-admin-ui [data-radix-popper-content-wrapper]{width:max-content!important;min-width:14rem!important;max-width:min(90vw,40rem)!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;box-sizing:border-box!important;}' +
-      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;}';
+      'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
+      'html.cmb-admin-ui [data-state="closed"][data-radix-popper-content-wrapper],' +
+      'html.cmb-admin-ui [data-state="closed"][data-radix-select-content],' +
+      'html.cmb-admin-ui [data-state="closed"][role="listbox"]{display:none!important;pointer-events:none!important;visibility:hidden!important}' +
+      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],' +
+      'html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]){' +
+      'background:#1e293b!important;color:#f8fafc!important;border:1px solid rgba(255,255,255,0.2)!important;' +
+      'box-shadow:0 12px 40px rgba(0,0,0,0.5)!important;z-index:2147483000!important;opacity:1!important;' +
+      'pointer-events:auto!important;width:max-content!important;min-width:12rem!important;max-width:min(90vw,28rem)!important;' +
+      'white-space:nowrap!important;word-break:keep-all!important;overflow:auto!important;box-sizing:border-box!important}' +
+      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{' +
+      'color:#f8fafc!important;background:transparent!important;white-space:nowrap!important;word-break:keep-all!important;' +
+      'width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;' +
+      'padding:0.4rem 0.75rem!important}' +
+      'html.cmb-admin-ui [role="option"][data-highlighted],html.cmb-admin-ui [role="option"]:hover,' +
+      'html.cmb-admin-ui [data-slot="select-item"][data-highlighted]{background:rgba(255,255,255,0.12)!important;color:#fff!important}' +
+      '.cmb-admin-row-actions,.cmb-admin-row-actions a,.cmb-admin-row-actions button{position:relative;z-index:2;pointer-events:auto!important}';
     (document.head || document.documentElement).appendChild(s);
   }
 
@@ -648,13 +802,120 @@
     if (document.documentElement.getAttribute('data-cmb-filter-go')) return;
     document.documentElement.setAttribute('data-cmb-filter-go', '1');
     document.addEventListener('click', function (e) {
+      unlockAdminPointer();
       var go = e.target && e.target.closest ? e.target.closest('.cmb-admin-filter-go, .cmb-admin-filter > button') : null;
       if (!go || (go.textContent || '').indexOf('필터') < 0) return;
-      var sel = document.querySelector('.cmb-admin-filter [data-cmb-filter-free]');
-      if (!sel) return;
+      var bar = go.closest('.cmb-admin-filter') || document.querySelector('.cmb-admin-filter');
+      if (!bar) return;
+      var map = { target: 'local' };
+      bar.querySelectorAll('select[data-cmb-filter-free]').forEach(function (sel) {
+        var key = sel.getAttribute('data-cmb-filter-key') || (sel.name === 'cmb_filter_type' ? 'type' : 'status');
+        map['filter.' + key] = sel.value;
+      });
       if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'setState', params: map });
       }
+    }, true);
+  }
+
+  function csrfToken() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    if (m && m.getAttribute('content')) return m.getAttribute('content');
+    var match = String(document.cookie || '').match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function idFromRow(row) {
+    if (!row) return '';
+    var title = row.querySelector('.cmb-admin-row-title, a');
+    var m = title ? String(title.textContent || '').match(/#(\d+)/) : null;
+    if (m) return m[1];
+    var href = title && title.getAttribute ? String(title.getAttribute('href') || '') : '';
+    m = href.match(/(\d+)\/?$/);
+    return m ? m[1] : '';
+  }
+
+  function adminFetch(url, method, okMsg) {
+    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = csrfToken();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    return fetch(url, { method: method || 'POST', credentials: 'same-origin', headers: headers }).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function () { return {}; }).then(function (j) {
+          var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
+          if (window.G7Core && window.G7Core.dispatch) {
+            window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
+          }
+          throw new Error(msg);
+        });
+      }
+      if (window.G7Core && window.G7Core.dispatch) {
+        if (okMsg) window.G7Core.dispatch({ handler: 'toast', params: { type: 'success', message: okMsg } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'jobs' } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'companies' } });
+      } else {
+        location.reload();
+      }
+    });
+  }
+
+  function bindRowActions() {
+    if (document.documentElement.getAttribute('data-cmb-row-actions')) return;
+    document.documentElement.setAttribute('data-cmb-row-actions', '1');
+    document.addEventListener('pointerdown', function () { unlockAdminPointer(); }, true);
+    document.addEventListener('click', function (e) {
+      unlockAdminPointer();
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var row = t.closest('.cmb-admin-row');
+      if (!row || !row.closest('.cmb-admin')) return;
+      if (t.closest('a')) return;
+      var btn = t.closest('button, [role="button"]');
+      if (!btn || !row.contains(btn)) return;
+      var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+      var kind = kindFromEl(btn);
+      var entity = inferEntity(row, statusFromRow(row));
+      var id = idFromRow(row);
+      if (!id) return;
+      var action = '';
+      var method = 'POST';
+      var confirmMsg = '';
+      var okMsg = '';
+      var base = entity === 'company'
+        ? '/api/modules/custom-maker_bids/admin/companies/'
+        : '/api/modules/custom-maker_bids/admin/jobs/';
+      if (kind === 'approve' || /^승인/.test(label)) {
+        action = 'approve';
+        confirmMsg = entity === 'company' ? '이 업체를 승인할까요?' : '승인하여 견적요청(open)으로 공개할까요?';
+        okMsg = '승인했습니다.';
+      } else if (kind === 'hold' || /^보류/.test(label)) {
+        action = 'hold';
+        confirmMsg = entity === 'company' ? '이 업체를 보류할까요?' : '이 의뢰를 보류할까요?';
+        okMsg = '보류했습니다.';
+      } else if (kind === 'reject' || /^거절/.test(label)) {
+        action = 'reject';
+        confirmMsg = '이 업체를 거절할까요?';
+        okMsg = '거절했습니다.';
+      } else if (/^취소/.test(label) && entity !== 'company') {
+        action = 'cancel';
+        confirmMsg = '취소할까요?';
+        okMsg = '취소했습니다.';
+      } else if (/^삭제/.test(label)) {
+        action = '';
+        method = 'DELETE';
+        confirmMsg = '삭제할까요?';
+        okMsg = '삭제했습니다.';
+      } else {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      if (!confirm(confirmMsg)) return;
+      adminFetch(base + encodeURIComponent(id) + (action ? '/' + action : ''), method, okMsg);
     }, true);
   }
 
@@ -773,8 +1034,10 @@
     bindSettingsHarvest();
     bindCompanyHarvest();
     bindFilterGo();
+    bindRowActions();
     paintSettingsControls();
     observeAdminStatus();
+    unlockAdminPointer();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
@@ -785,10 +1048,12 @@
   setTimeout(ensureListBoxes, 800);
   setTimeout(paintSettingsControls, 900);
   setTimeout(ensureCompanyEditButtons, 600);
+  setTimeout(unlockAdminPointer, 300);
   setInterval(function () {
     if (document.querySelector('.cmb-admin')) {
       paintStatusButtons();
       ensureAdminFilterSelect();
+      unlockAdminPointer();
     }
   }, 700);
 })();

@@ -646,19 +646,26 @@ html.cmb-admin-dark .cmb-admin .cmb-section-card {
 html.cmb-admin-ui [role="listbox"],
 html.cmb-admin-ui [data-slot="select-content"],
 html.cmb-admin-ui [data-radix-select-content],
-html.cmb-admin-ui [data-radix-popper-content-wrapper],
+html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]),
 .cmb-admin-listbox,
 .cmb-admin-listbox [role="listbox"],
 .cmb-admin-listbox [data-slot="select-content"],
 .cmb-admin-listbox [data-radix-select-content] {
   width: max-content !important;
-  min-width: 14rem !important;
-  max-width: min(90vw, 40rem) !important;
+  min-width: 12rem !important;
+  max-width: min(90vw, 28rem) !important;
   box-sizing: border-box !important;
   white-space: nowrap !important;
   word-break: keep-all !important;
   overflow-wrap: normal !important;
   padding-inline: 0.35rem;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  z-index: 2147483000 !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 .cmb-admin [role="option"],
@@ -1112,4 +1119,43 @@ html.cmb-admin-ui .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"] {
   background-color: rgb(220, 38, 38) !important;
   color: #fff !important;
   border-color: rgb(185, 28, 28) !important;
+}
+
+/* 0.10.35: G7/Radix Select must not lock the page or paint invisible menus. */
+html.cmb-admin-ui,
+html.cmb-admin-ui body,
+html.cmb-admin-ui body[data-scroll-locked] {
+  pointer-events: auto !important;
+}
+html.cmb-admin-ui [data-state="closed"][data-radix-popper-content-wrapper],
+html.cmb-admin-ui [data-state="closed"][data-radix-select-content],
+html.cmb-admin-ui [data-state="closed"][role="listbox"] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+html.cmb-admin-ui [role="option"],
+html.cmb-admin-ui [data-slot="select-item"],
+.cmb-admin-listbox [role="option"] {
+  color: #f8fafc !important;
+  background: transparent !important;
+  padding: 0.4rem 0.75rem !important;
+}
+html.cmb-admin-ui [role="option"][data-highlighted],
+html.cmb-admin-ui [role="option"]:hover,
+html.cmb-admin-ui [data-slot="select-item"][data-highlighted] {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+.cmb-admin-filter-native option,
+.cmb-admin-filter select[data-cmb-filter-free] option {
+  background: #1e293b;
+  color: #f8fafc;
+}
+.cmb-admin-row-actions,
+.cmb-admin-row-actions a,
+.cmb-admin-row-actions button {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
 }

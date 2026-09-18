@@ -115,6 +115,7 @@
             "name": "Div",
             "props": {
               "className": "cmb-admin-card cmb-admin-filter w-full",
+              "data-cmb-filter-entity": "bid",
               "dataKey": "filter",
               "trackChanges": true
             },
@@ -182,7 +183,8 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host"
+                  "className": "cmb-admin-filter-field cmb-admin-filter-status",
+                  "data-cmb-filter-host": "status"
                 },
                 "children": [
                   {
@@ -193,45 +195,6 @@
                       "className": "cmb-admin-label"
                     },
                     "text": "상태"
-                  },
-                  {
-                    "id": "fstatus",
-                    "type": "basic",
-                    "name": "Select",
-                    "props": {
-                      "name": "status",
-                      "value": "{{_local.filter.status}}",
-                      "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-1.5 text-sm",
-                      "options": [
-                        {
-                          "value": "",
-                          "label": "전체 상태"
-                        },
-                        {
-                          "value": "pending",
-                          "label": "검토중"
-                        },
-                        {
-                          "value": "accepted",
-                          "label": "낙찰"
-                        },
-                        {
-                          "value": "rejected",
-                          "label": "거절"
-                        }
-                      ]
-                    },
-                    "actions": [
-                      {
-                        "type": "change",
-                        "event": "change",
-                        "handler": "setState",
-                        "params": {
-                          "target": "local",
-                          "filter.status": "{{$event.target.value}}"
-                        }
-                      }
-                    ]
                   }
                 ]
               },

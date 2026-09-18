@@ -423,7 +423,14 @@ html.dark .cmb-admin-nav a:hover,
 .cmb-admin-listbox,
 .cmb-admin-listbox [role="option"],
 html.cmb-admin-ui [role="listbox"],
-html.cmb-admin-ui [role="option"] { white-space: nowrap; word-break: keep-all; width: max-content; min-width: 14rem; }
+html.cmb-admin-ui [role="option"] {
+  white-space: nowrap;
+  word-break: keep-all;
+  width: max-content;
+  min-width: 12rem;
+  background: #1e293b;
+  color: #f8fafc;
+}
 
 .cmb-admin-fields {
   display: grid;

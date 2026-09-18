@@ -116,7 +116,8 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-admin-filter-field cmb-admin-filter-type"
+                  "className": "cmb-admin-filter-field cmb-admin-filter-type",
+                  "data-cmb-filter-host": "type"
                 },
                 "children": [
                   {
@@ -127,16 +128,6 @@
                       "className": "cmb-admin-label"
                     },
                     "text": "유형"
-                  },
-                  {
-                    "id": "ftype",
-                    "type": "basic",
-                    "name": "Input",
-                    "props": {
-                      "name": "type",
-                      "placeholder": "print_3d",
-                      "className": "cmb-admin-filter-control"
-                    }
                   }
                 ]
               },
@@ -145,7 +136,8 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host"
+                  "className": "cmb-admin-filter-field cmb-admin-filter-status",
+                  "data-cmb-filter-host": "status"
                 },
                 "children": [
                   {
@@ -156,65 +148,6 @@
                       "className": "cmb-admin-label"
                     },
                     "text": "상태"
-                  },
-                  {
-                    "id": "fstatus",
-                    "type": "basic",
-                    "name": "Select",
-                    "props": {
-                      "name": "status",
-                      "value": "{{_local.filter.status}}",
-                      "className": "cmb-admin-select cmb-admin-filter-control rounded-lg border border-gray-300 px-3 py-1.5 text-sm",
-                      "options": [
-                        {
-                          "value": "",
-                          "label": "전체 상태"
-                        },
-                        {
-                          "value": "hold",
-                          "label": "보류"
-                        },
-                        {
-                          "value": "draft",
-                          "label": "임시저장"
-                        },
-                        {
-                          "value": "request",
-                          "label": "의뢰"
-                        },
-                        {
-                          "value": "quote_request",
-                          "label": "견적요청(open)"
-                        },
-                        {
-                          "value": "awarded",
-                          "label": "낙찰"
-                        },
-                        {
-                          "value": "disputed",
-                          "label": "분쟁조정"
-                        },
-                        {
-                          "value": "done",
-                          "label": "완료"
-                        },
-                        {
-                          "value": "cancelled",
-                          "label": "취소"
-                        }
-                      ]
-                    },
-                    "actions": [
-                      {
-                        "type": "change",
-                        "event": "change",
-                        "handler": "setState",
-                        "params": {
-                          "target": "local",
-                          "filter.status": "{{$event.target.value}}"
-                        }
-                      }
-                    ]
                   }
                 ]
               },
@@ -313,7 +246,7 @@
                         "name": "A",
                         "props": {
                           "href": "/admin/maker-bids/jobs/{{$item.id}}",
-                          "className": "px-3 py-1 text-sm rounded-lg border"
+                          "className": "px-3 py-1 text-sm rounded-lg border relative z-[2]"
                         },
                         "text": "상세/수정"
                       },
@@ -323,6 +256,7 @@
                         "name": "Button",
                         "text": "승인",
                         "props": {
+                          "type": "button",
                           "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border",
                           "data-cmb-kind": "approve"
                         },
@@ -369,6 +303,7 @@
                         "name": "Button",
                         "text": "보류",
                         "props": {
+                          "type": "button",
                           "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border",
                           "data-cmb-kind": "hold"
                         },
@@ -415,6 +350,7 @@
                         "name": "Button",
                         "text": "취소",
                         "props": {
+                          "type": "button",
                           "className": "px-3 py-1 text-sm rounded-lg border"
                         },
                         "actions": [
@@ -460,6 +396,7 @@
                         "name": "Button",
                         "text": "삭제",
                         "props": {
+                          "type": "button",
                           "className": "px-3 py-1 text-sm rounded-lg text-red-600"
                         },
                         "actions": [

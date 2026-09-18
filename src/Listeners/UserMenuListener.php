@@ -8,12 +8,12 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.34';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.34';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.34';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.34';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.34';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.34';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.35';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.35';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.35';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.35';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.35';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.35';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
@@ -60,7 +60,9 @@ class UserMenuListener implements HookListenerInterface
                 $scripts = $this->upsertScript($scripts, 'cmb_maker_admin_js', self::ADMIN_JS);
                 $layout['scripts'] = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
                 $layout = $this->ensureAdminNav($layout);
-                if (in_array($name, ['jobs_show', 'jobs_index'], true)) {
+                // List filters use name=type|status; binding them to job.data
+                // empties the controls and can leave G7 Select portals open.
+                if ($name === 'jobs_show' || str_contains($name, 'jobs_show')) {
                     $layout = $this->bindNamedValues($layout, self::JOB_FIELDS, 'job.data');
                 }
                 return $layout;
