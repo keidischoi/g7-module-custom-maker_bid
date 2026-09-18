@@ -5,6 +5,7 @@ namespace Modules\Custom\MakerBids\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBids\Http\Requests\StoreBidRequest;
 use Modules\Custom\MakerBids\Http\Requests\UpdateBidRequest;
@@ -23,9 +24,20 @@ class BidController extends Controller
         private readonly JobService $jobs,
     ) {}
 
+    private function actor(Request $request)
+    {
+        return $request->user()
+            ?? Auth::guard('web')->user()
+            ?? Auth::guard('sanctum')->user();
+    }
+
     public function mine(Request $request): JsonResponse
     {
-        $items = $this->bids->listMine((int) $request->user()->id);
+        $user = $this->actor($request);
+        if (! $user) {
+            return response()->json(['message' => '로그인이 필요합니다.'], 401);
+        }
+        $items = $this->bids->listMine((int) $user->id);
         $list = [];
         foreach ($items as $bid) {
             $row = CompanyPresenter::presentBid($bid);
@@ -43,12 +55,16 @@ class BidController extends Controller
 
     public function store(StoreBidRequest $request, int $id): JsonResponse
     {
+        $user = $this->actor($request);
+        if (! $user) {
+            return response()->json(['message' => '로그인이 필요합니다.'], 401);
+        }
         try {
             $result = $this->bids->createOrUpdateOwn(
-                (int) $request->user()->id,
+                (int) $user->id,
                 $id,
                 $request->validated(),
-                $this->jobs->isAdminActor($request->user()),
+                $this->jobs->isAdminActor($user),
             );
         } catch (DomainException $e) {
             return $this->domainError($e);
@@ -59,13 +75,17 @@ class BidController extends Controller
 
     public function update(UpdateBidRequest $request, int $id, int $bidId): JsonResponse
     {
+        $user = $this->actor($request);
+        if (! $user) {
+            return response()->json(['message' => '로그인이 필요합니다.'], 401);
+        }
         try {
             $bid = $this->bids->updateOwn(
-                (int) $request->user()->id,
+                (int) $user->id,
                 $id,
                 $bidId,
                 $request->validated(),
-                $this->jobs->isAdminActor($request->user()),
+                $this->jobs->isAdminActor($user),
             );
         } catch (DomainException $e) {
             return $this->domainError($e);
