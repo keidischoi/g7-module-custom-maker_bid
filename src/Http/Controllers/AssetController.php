@@ -73,7 +73,14 @@ JS;
 
     public function adminJs(): Response
     {
-        return $this->asset('admin.js', 'application/javascript; charset=UTF-8');
+        return $this->asset('admin.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
+            $extra = '';
+            $path = dirname(__DIR__, 3).'/resources/assets/admin-job-form.js';
+            if (is_file($path)) {
+                $extra = "\n".(string) file_get_contents($path);
+            }
+            return $body.$extra;
+        });
     }
 
     private function asset(string $name, string $contentType, ?callable $mutate = null): Response
