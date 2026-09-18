@@ -130,6 +130,7 @@
             "name": "Div",
             "props": {
               "className": "cmb-admin-card cmb-admin-filter w-full",
+              "data-cmb-filter-entity": "company",
               "dataKey": "filter",
               "trackChanges": true
             },

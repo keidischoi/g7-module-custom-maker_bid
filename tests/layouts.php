@@ -338,7 +338,9 @@ $searchFix = (string) file_get_contents($root.'/resources/assets/search-fix.js')
 expectTrue('search-fix fetches filtered jobs', str_contains($searchFix, '/api/modules/custom-maker_bids/jobs') && str_contains($searchFix, 'per_page') && str_contains($searchFix, 'quote_request'));
 expectTrue('search-fix does not clobber focused input', str_contains($searchFix, 'document.activeElement !== free') && str_contains($searchFix, 'data-cmb-free'));
 expectTrue('search-fix uses native search bar', str_contains($searchFix, 'data-cmb-native-bar') && str_contains($searchFix, 'stopPropagation'));
-expectTrue('jobs_list stacks 형식 then 상태 filters', str_contains($listLayout, 'cmb-filter-row-type') && str_contains($listLayout, 'cmb-filter-row-status') && str_contains($listLayout, '"text": "형식"') && str_contains($listLayout, '"text": "상태"'));
+expectTrue('search-fix ignores leftover G7 q unless URL has q', str_contains($searchFix, "inp0.value = state.q || ''"));
+expectTrue('search-fix hides G7 search with display none', str_contains($searchFix, "setProperty('display', 'none', 'important')"));
+expectTrue('jobs_list stacks 형식 then 의뢰상태 filters', str_contains($listLayout, 'cmb-filter-row-type') && str_contains($listLayout, 'cmb-filter-row-status') && str_contains($listLayout, '"text": "형식"') && str_contains($listLayout, '"text": "의뢰상태"'));
 expectTrue('jobs_list type chips have data-cmb-type', str_contains($listLayout, 'data-cmb-type'));
 expectTrue('nav skips list filter chips', str_contains((string) file_get_contents($root.'/resources/assets/nav.js'), 'cmb-chip') && str_contains((string) file_get_contents($root.'/resources/assets/nav.js'), 'data-cmb-type'));
 expectTrue('listener keeps bids page quote toggle', str_contains($fixListener, "layoutName !== 'jobs_bids'"));
@@ -453,6 +455,8 @@ expectTrue('admin.css current 승인 beats dark outline', str_contains($adminCss
 expectTrue('admin.css current 보류 beats dark outline', str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-btn-hold.is-active') && str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-status-hold .cmb-btn-hold'));
 expectTrue('admin.css press effect on 승인/보류', str_contains($adminCss, 'data-cmb-pressed') && str_contains($adminCss, 'scale(0.9)') && str_contains($adminCss, 'is-pressed'));
 expectTrue('admin.js paints 승인/보류 with inline important', str_contains($adminJs, "setProperty('background'") && str_contains($adminJs, "PALETTE") && str_contains($adminJs, 'ensureAdminFilterSelect'));
+expectTrue('admin.css native filter select keeps width', str_contains($adminCss, 'select.cmb-admin-filter-native') && str_contains($adminCss, 'min-width: 12rem !important'));
+expectTrue('admin.css paints by data-cmb-kind', str_contains($adminCss, '[data-cmb-kind="approve"][data-cmb-active="1"]') && str_contains($adminCss, '[data-cmb-kind="hold"][data-cmb-active="1"]'));
 expectTrue('admin jobs show hides legacy WDH row', str_contains($adminJobsShow, 'cmb-legacy-size-row') && str_contains($adminCss, '.cmb-legacy-size-row'));
 expectTrue('admin jobs show has PDF checkbox', str_contains($adminJobsShow, '"text": "PDF"') && str_contains($adminJobsShow, 'ext_pdf'));
 expectTrue('admin.js syncs cmb-admin-dark', str_contains($adminJs, 'syncAdminDark') && str_contains($adminJs, 'cmb-admin-dark-css'));

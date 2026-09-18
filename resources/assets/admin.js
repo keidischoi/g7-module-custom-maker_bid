@@ -1,4 +1,6 @@
 (function () {
+  if (window.__cmbAdminJs26) return;
+  window.__cmbAdminJs26 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -89,6 +91,13 @@
     el.style.setProperty('border-color', pal.bd, 'important');
     el.style.setProperty('border-style', 'solid', 'important');
     el.style.setProperty('border-width', '1px', 'important');
+    if (pal.bg === 'transparent') {
+      el.style.setProperty('box-shadow', 'none', 'important');
+      el.style.setProperty('font-weight', '500', 'important');
+    } else {
+      el.style.setProperty('box-shadow', '0 0 0 2px rgba(0,0,0,0.18)', 'important');
+      el.style.setProperty('font-weight', '700', 'important');
+    }
   }
 
   function kindFromEl(b) {
@@ -109,6 +118,7 @@
     if (!btn) return;
     var cls = kind === 'approve' ? 'cmb-btn-approve' : kind === 'hold' ? 'cmb-btn-hold' : 'cmb-btn-reject';
     btn.classList.add(cls);
+    btn.setAttribute('data-cmb-kind', kind);
     btn.classList.toggle('is-active', !!on);
     if (on) {
       btn.setAttribute('data-cmb-active', '1');
@@ -130,20 +140,20 @@
   }
 
   function buttonsIn(root) {
-    var out = { approve: null, hold: null, reject: null };
+    var out = { approve: [], hold: [], reject: [] };
     if (!root || !root.querySelectorAll) return out;
-    root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject').forEach(function (b) {
+    root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject, [data-cmb-kind]').forEach(function (b) {
       var k = kindFromEl(b);
-      if (k && !out[k]) out[k] = b;
+      if (k && out[k].indexOf(b) < 0) out[k].push(b);
     });
     return out;
   }
 
   function paintGroup(root, st, entity) {
     var btns = buttonsIn(root);
-    paintBtn(btns.approve, isApproveOn(st), 'approve');
-    paintBtn(btns.hold, isHoldOn(st, entity), 'hold');
-    paintBtn(btns.reject, st === 'rejected', 'reject');
+    btns.approve.forEach(function (b) { paintBtn(b, isApproveOn(st), 'approve'); });
+    btns.hold.forEach(function (b) { paintBtn(b, isHoldOn(st, entity), 'hold'); });
+    btns.reject.forEach(function (b) { paintBtn(b, st === 'rejected', 'reject'); });
   }
 
   function companyIdFromEdit() {
@@ -270,53 +280,121 @@
   }
 
   function hideVisually(el) {
-    if (!el || el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1') return;
+    if (!el || (el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1')) return;
+    if (el.closest && el.closest('[data-cmb-filter-free]')) return;
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('width', '1px', 'important');
     el.style.setProperty('height', '1px', 'important');
     el.style.setProperty('opacity', '0', 'important');
     el.style.setProperty('overflow', 'hidden', 'important');
     el.style.setProperty('pointer-events', 'none', 'important');
+    el.style.setProperty('display', 'none', 'important');
     el.setAttribute('aria-hidden', 'true');
     el.tabIndex = -1;
   }
 
+  function isCompanyAdminPage() {
+    var path = location.pathname || '';
+    if (/\/admin\/maker-bids\/companies/.test(path)) return true;
+    if (/\/admin\/maker-bids\/jobs/.test(path)) return false;
+    var marked = document.querySelector('.cmb-admin-filter[data-cmb-filter-entity], .cmb-admin[data-cmb-filter-entity]');
+    if (marked) return marked.getAttribute('data-cmb-filter-entity') === 'company';
+    if (document.querySelector('.cmb-entity-company') && !document.querySelector('.cmb-entity-job')) return true;
+    return false;
+  }
+
+  function filterDsId(company) {
+    if (company) return 'companies';
+    if (/\/admin\/maker-bids\/bids/.test(location.pathname || '')) return 'bids';
+    return 'jobs';
+  }
+
+  function currentFilterStatus() {
+    try {
+      if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
+        return String((window.G7Core.state.get('_local.filter.status')) || '');
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function bindNativeFilter(sel, company) {
+    if (sel.getAttribute('data-cmb-filter-bound') === '1') return;
+    sel.setAttribute('data-cmb-filter-bound', '1');
+    sel.addEventListener('change', function () {
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: filterDsId(company) } });
+      }
+    });
+  }
+
   function ensureAdminFilterSelect() {
+    var company = isCompanyAdminPage();
+    var opts = company
+      ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
+      : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
     document.querySelectorAll('.cmb-admin-filter [role="combobox"], .cmb-admin-filter [data-slot="trigger"], .cmb-admin-filter [data-slot="select-trigger"]').forEach(function (el) {
       if (el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1') return;
       hideVisually(el);
     });
-    document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host').forEach(function (host) {
+    var hosts = document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host');
+    if (!hosts.length) {
+      document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
+        if (bar.querySelector('[data-cmb-filter-free]')) return;
+        var host = document.createElement('div');
+        host.className = 'cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host';
+        var lab = document.createElement('p');
+        lab.className = 'cmb-admin-label';
+        lab.textContent = '상태';
+        host.appendChild(lab);
+        bar.insertBefore(host, bar.firstChild);
+      });
+      hosts = document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host');
+    }
+    hosts.forEach(function (host) {
       host.querySelectorAll('button, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(hideVisually);
-      if (host.querySelector('[data-cmb-filter-free]')) return;
-      var company = /\/admin\/maker-bids\/companies/.test(location.pathname || '');
-      var opts = company
-        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
-        : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
-      var sel = document.createElement('select');
-      sel.setAttribute('data-cmb-filter-free', '1');
-      sel.setAttribute('name', 'status');
-      sel.className = 'cmb-admin-filter-control cmb-admin-filter-native';
-      opts.forEach(function (o) {
-        var op = document.createElement('option');
-        op.value = o[0];
-        op.textContent = o[1];
-        sel.appendChild(op);
-      });
-      var cur = '';
-      try {
-        if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
-          cur = String((window.G7Core.state.get('_local.filter.status')) || '');
-        }
-      } catch (e) {}
-      sel.value = cur;
-      sel.addEventListener('change', function () {
-        if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-          window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
-        }
-      });
-      host.appendChild(sel);
+      host.style.setProperty('min-width', '12rem', 'important');
+      host.style.setProperty('width', '12rem', 'important');
+      host.style.setProperty('flex', '0 0 12rem', 'important');
+      var sel = host.querySelector('[data-cmb-filter-free]');
+      if (!sel) {
+        sel = document.createElement('select');
+        sel.setAttribute('data-cmb-filter-free', '1');
+        sel.setAttribute('name', 'status');
+        sel.className = 'cmb-admin-filter-control cmb-admin-filter-native';
+        opts.forEach(function (o) {
+          var op = document.createElement('option');
+          op.value = o[0];
+          op.textContent = o[1];
+          sel.appendChild(op);
+        });
+        var cur = currentFilterStatus();
+        if (cur) sel.value = cur;
+        host.appendChild(sel);
+      }
+      bindNativeFilter(sel, company);
     });
+  }
+
+  function injectStatusPaintCss() {
+    if (document.getElementById('cmb-admin-status-inline')) return;
+    var s = document.createElement('style');
+    s.id = 'cmb-admin-status-inline';
+    s.textContent =
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"]{' +
+      'background:rgb(5,150,105)!important;background-color:rgb(5,150,105)!important;color:#fff!important;border-color:rgb(4,120,87)!important}' +
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"]{' +
+      'background:rgb(217,119,6)!important;background-color:rgb(217,119,6)!important;color:#fff!important;border-color:rgb(180,83,9)!important}' +
+      'html.cmb-admin-dark .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"],' +
+      'html.cmb-admin-ui .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"]{' +
+      'background:rgb(220,38,38)!important;background-color:rgb(220,38,38)!important;color:#fff!important;border-color:rgb(185,28,28)!important}' +
+      '.cmb-admin-filter-field.cmb-admin-select-host select.cmb-admin-filter-native,' +
+      '.cmb-admin-filter select[data-cmb-filter-free]{display:block!important;appearance:auto!important;-webkit-appearance:menulist!important;' +
+      'width:12rem!important;min-width:12rem!important;max-width:14rem!important;height:2.25rem!important;opacity:1!important;pointer-events:auto!important}';
+    (document.head || document.documentElement).appendChild(s);
   }
 
   function hideLegacySizes() {
@@ -573,6 +651,20 @@
     paintSettingsControls();
   }
 
+  function bindFilterGo() {
+    if (document.documentElement.getAttribute('data-cmb-filter-go')) return;
+    document.documentElement.setAttribute('data-cmb-filter-go', '1');
+    document.addEventListener('click', function (e) {
+      var go = e.target && e.target.closest ? e.target.closest('.cmb-admin-filter-go, .cmb-admin-filter > button') : null;
+      if (!go || (go.textContent || '').indexOf('필터') < 0) return;
+      var sel = document.querySelector('.cmb-admin-filter [data-cmb-filter-free]');
+      if (!sel) return;
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+      }
+    }, true);
+  }
+
   function bindCompanyHarvest() {
     if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
     if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
@@ -677,6 +769,7 @@
     document.documentElement.classList.add('cmb-admin-ui');
     syncAdminDark();
     injectPortalCss();
+    injectStatusPaintCss();
     enhanceSizes();
     hideLegacySizes();
     bindStatusPress();
@@ -686,6 +779,7 @@
     ensureListBoxes();
     bindSettingsHarvest();
     bindCompanyHarvest();
+    bindFilterGo();
     paintSettingsControls();
     observeAdminStatus();
   }

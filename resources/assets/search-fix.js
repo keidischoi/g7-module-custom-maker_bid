@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbSearchFix8) return;
-  window.__cmbSearchFix8 = true;
+  if (window.__cmbSearchFix9) return;
+  window.__cmbSearchFix9 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var typing = false;
@@ -58,6 +58,7 @@
     if (!el || el.nodeType !== 1) return;
     if (el.getAttribute('data-cmb-free') === '1' || el.getAttribute('data-cmb-sort-free') === '1' || el.getAttribute('data-cmb-native-bar') === '1') return;
     if (el.querySelector && (el.querySelector('[data-cmb-free]') || el.querySelector('[data-cmb-sort-free]') || el.querySelector('[data-cmb-native-bar]'))) return;
+    el.style.setProperty('display', 'none', 'important');
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('left', '-9999px', 'important');
     el.style.setProperty('width', '1px', 'important');
@@ -149,7 +150,7 @@
 
   function markChips() {
     document.querySelectorAll('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a, .cmb-filter-row-status a').forEach(function (a) {
-      if ((a.textContent || '').trim() === '상태') return;
+      if (/^(상태|의뢰상태)$/.test((a.textContent || '').trim())) return;
       var st = a.getAttribute('data-cmb-status');
       if (st == null) {
         try { st = new URL(a.href, location.origin).searchParams.get('status') || ''; } catch (e) { st = ''; }
@@ -213,13 +214,11 @@
         '<button type="button" class="cmb-btn cmb-btn-primary cmb-search-go" data-cmb-search-go="1">검색</button>';
       bar.insertBefore(native, bar.firstChild);
       var inp0 = native.querySelector('[data-cmb-free]');
-      var g7val = '';
+      inp0.value = state.q || '';
       bar.querySelectorAll('input').forEach(function (el) {
         if (el.getAttribute('data-cmb-free') === '1') return;
-        if (el.value) g7val = el.value;
+        if (!state.q) el.value = '';
       });
-      inp0.value = g7val || state.q || '';
-      state.q = String(inp0.value || '').trim();
       bindNativeInput(inp0);
       native.querySelector('[data-cmb-sort-free]').addEventListener('change', function (e) {
         state.sort = e.target.value;
@@ -238,6 +237,11 @@
     bar.querySelectorAll('input, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
       if (el.closest && el.closest('[data-cmb-native-bar]')) return;
       hideVisually(el);
+    });
+    document.querySelectorAll('[name="q"], [data-cmb-search-input], .cmb-search-input').forEach(function (el) {
+      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
+      hideVisually(el);
+      if (el.tagName === 'INPUT' && !state.q) el.value = '';
     });
     return free;
   }
@@ -274,7 +278,7 @@
       stRow.setAttribute('data-cmb-status-chips', '1');
       var slab = document.createElement('span');
       slab.className = 'cmb-filter-label';
-      slab.textContent = '상태';
+      slab.textContent = '의뢰상태';
       stRow.appendChild(slab);
       STATUS_CHIPS.forEach(function (it) {
         var a = document.createElement('a');
@@ -322,7 +326,7 @@
       return;
     }
     var stEl = t.closest('[data-cmb-status], [data-cmb-status-chips] a, .cmb-status-chips a, .cmb-filter-row-status a');
-    if (stEl && (stEl.textContent || '').trim() !== '상태') {
+    if (stEl && !/^(상태|의뢰상태)$/.test((stEl.textContent || '').trim())) {
       e.preventDefault(); e.stopPropagation();
       state.status = chipStatus(stEl) || '';
       apply(true);
@@ -372,8 +376,8 @@
   setTimeout(boot, 200);
   setTimeout(function () { boot(); load(); }, 400);
   setTimeout(boot, 1000);
-  if (!window.__cmbSearchObs8) {
-    window.__cmbSearchObs8 = new MutationObserver(function () {
+  if (!window.__cmbSearchObs9) {
+    window.__cmbSearchObs9 = new MutationObserver(function () {
       if (!listPath()) return;
       ensureSearch();
       ensureChips();
@@ -383,7 +387,7 @@
       }
     });
     try {
-      window.__cmbSearchObs8.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs9.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();

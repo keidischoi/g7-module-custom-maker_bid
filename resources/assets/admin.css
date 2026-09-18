@@ -1050,3 +1050,55 @@ html.cmb-admin-ui .cmb-admin-card.cmb-admin-filter {
 .cmb-admin-nav a:hover {
   background: rgba(255, 255, 255, 0.1) !important;
 }
+
+/* 0.10.26: native status select must beat .cmb-admin-select-host select { min-width:0 } */
+.cmb-admin-filter-field.cmb-admin-filter-status,
+.cmb-admin-filter-field.cmb-admin-select-host.cmb-admin-filter-status {
+  min-width: 12rem !important;
+  width: 12rem !important;
+  max-width: 14rem !important;
+  flex: 0 0 12rem !important;
+}
+html.cmb-admin-ui .cmb-admin-filter-field.cmb-admin-select-host select.cmb-admin-filter-native,
+html.cmb-admin-ui .cmb-admin-filter select[data-cmb-filter-free],
+.cmb-admin-filter-field.cmb-admin-select-host select.cmb-admin-filter-native,
+.cmb-admin-filter select[data-cmb-filter-free] {
+  display: block !important;
+  appearance: auto !important;
+  -webkit-appearance: menulist !important;
+  flex: 0 0 12rem !important;
+  width: 12rem !important;
+  min-width: 12rem !important;
+  max-width: 14rem !important;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  opacity: 1 !important;
+  position: relative !important;
+  left: auto !important;
+  overflow: visible !important;
+  pointer-events: auto !important;
+  padding-right: 0.6rem !important;
+}
+
+/* Active 승인/보류 without relying on .cmb-btn-* (G7 strips classes) */
+html.cmb-admin-dark .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"],
+html.cmb-admin-ui .cmb-admin [data-cmb-kind="approve"][data-cmb-active="1"] {
+  background: rgb(5, 150, 105) !important;
+  background-color: rgb(5, 150, 105) !important;
+  color: #fff !important;
+  border-color: rgb(4, 120, 87) !important;
+}
+html.cmb-admin-dark .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"],
+html.cmb-admin-ui .cmb-admin [data-cmb-kind="hold"][data-cmb-active="1"] {
+  background: rgb(217, 119, 6) !important;
+  background-color: rgb(217, 119, 6) !important;
+  color: #fff !important;
+  border-color: rgb(180, 83, 9) !important;
+}
+html.cmb-admin-dark .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"],
+html.cmb-admin-ui .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"] {
+  background: rgb(220, 38, 38) !important;
+  background-color: rgb(220, 38, 38) !important;
+  color: #fff !important;
+  border-color: rgb(185, 28, 28) !important;
+}

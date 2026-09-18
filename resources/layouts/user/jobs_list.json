@@ -128,7 +128,7 @@
                 "name": "Div",
                 "props": { "className": "cmb-status-chips cmb-filter-row cmb-filter-row-status", "data-cmb-status-chips": "1" },
                 "children": [
-                  { "id": "st_lab", "type": "basic", "name": "Span", "props": { "className": "cmb-filter-label" }, "text": "상태" },
+                  { "id": "st_lab", "type": "basic", "name": "Span", "props": { "className": "cmb-filter-label" }, "text": "의뢰상태" },
                   { "id": "st_all", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip", "data-cmb-status": "" }, "text": "전체" },
                   { "id": "st_pending", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=pending", "className": "cmb-chip", "data-cmb-status": "pending" }, "text": "승인대기" },
                   { "id": "st_hold", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=hold", "className": "cmb-chip", "data-cmb-status": "hold" }, "text": "보류" },

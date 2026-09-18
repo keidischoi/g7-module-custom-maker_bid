@@ -199,6 +199,7 @@
 }
 
 .cmb-search-bar > *:not([data-cmb-native-bar]) {
+  display: none !important;
   position: absolute !important;
   left: -9999px !important;
   width: 1px !important;
@@ -228,7 +229,8 @@
   font-weight: 600;
   color: var(--cmb-muted-fg, #9ca3af);
   margin: 0;
-  min-width: 2.4rem;
+  min-width: 4.2rem;
+  flex: 0 0 auto;
 }
 
 .cmb-status-chips,
