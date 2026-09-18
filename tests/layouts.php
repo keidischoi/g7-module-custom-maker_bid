@@ -474,6 +474,11 @@ expectTrue('admin.js unlocks Radix pointer lock', str_contains($adminJs, 'functi
 expectTrue('admin.js native type+status filters', str_contains($adminJs, "cmb_filter_") && str_contains($adminJs, "['disputed', '분쟁조정']") && str_contains($adminJs, 'data-cmb-filter-key'));
 expectTrue('admin.js binds list row actions', str_contains($adminJs, 'function bindRowActions') && str_contains($adminJs, '/admin/jobs/'));
 expectTrue('admin.js row actions send bearer token', str_contains($adminJs, 'function readAuthToken') && str_contains($adminJs, "headers.Authorization = 'Bearer '") && str_contains($adminJs, "credentials: 'include'"));
+expectTrue('admin.js binds detail toolbar and job save', str_contains($adminJs, 'cmb-admin-toolbar') && str_contains($adminJs, '의뢰 저장') && str_contains($adminJs, "action = 'dispute'") && str_contains($adminJs, 'function jobIdFromPath'));
+expectTrue('admin.js native job form selects', str_contains($adminJs, 'function ensureFormNativeSelects') && str_contains($adminJs, 'data-cmb-form-host') && str_contains($adminJs, "['disputed', '분쟁조정']"));
+expectTrue('admin.js keeps company edit id', str_contains($adminJs, 'function rememberEditId') && str_contains($adminJs, '__cmbEditCompanyId') && str_contains($adminJs, 'is-cmb-editing'));
+expectTrue('admin job detail marks form hosts', str_contains($adminJobsShow, 'data-cmb-job-edit') && str_contains($adminJobsShow, 'data-cmb-form-host') && str_contains($adminJobsShow, 'data-cmb-kind": "save'));
+expectTrue('admin company edit keeps hidden id', str_contains($adminCos, '"name": "id"') && str_contains($adminCos, 'data-cmb-edit-id') && str_contains($adminCos, 'data-cmb-load'));
 expectTrue('listener does not bind job fields onto jobs_index filters', str_contains($nav, "'jobs_show'") && ! str_contains($nav, "['jobs_show', 'jobs_index']"));
 expectTrue('admin jobs rows expose status for 승인/보류 paint', str_contains($adminJobs, 'data-cmb-status') && str_contains($adminJobs, 'cmb-status-{{$item.status}}') && str_contains($adminJobs, 'cmb-entity-job') && str_contains($adminJobs, 'data-cmb-kind'));
 expectTrue('admin companies rows expose status for 승인/보류 paint', str_contains($adminCos, 'data-cmb-status') && str_contains($adminCos, 'cmb-status-{{$co.status}}') && str_contains($adminCos, 'cmb-entity-company') && str_contains($adminCos, 'data-cmb-kind'));
@@ -662,6 +667,7 @@ expectTrue('admin company edit loads profile fields', str_contains($adminCos, 'e
 expectTrue('admin company logo sits in uploader box', str_contains($adminCos, 'cmb-admin-uploader') && str_contains($adminCos, 'cmb-existing-in-uploader') && str_contains($adminCos, 'cmb_admin_logo_existing') && str_contains($adminCos, 'cmb_admin_logo_uploader'));
 expectTrue('admin company approve/hold/reject sit with save', str_contains($adminCos, 'cmb-admin-company-toolbar') && str_contains($adminCos, '선택 업체 저장') && str_contains($adminCos, '"id": "eapprove"') && str_contains($adminCos, '"id": "eholdbtn"') && str_contains($adminCos, '"id": "erejectbtn"'));
 expectTrue('admin company edit harvests named fields', str_contains($adminJs, 'data-cmb-company-edit') && str_contains($adminJs, 'function harvestNamedInto') && str_contains($adminJs, 'nestExistingIntoUploader'));
+expectTrue('admin uploader box is compact', str_contains($adminCss, 'min-height: 2.75rem') && str_contains($adminCss, 'width: 48px') && str_contains($adminCss, 'is-cmb-editing'));
 expectTrue('page.js admin company fills profile', str_contains($pageJs, 'homepage_url') && str_contains($pageJs, 'applyAdminCompany') && str_contains($pageJs, 'formatClaimHistory'));
 expectTrue('jobs_form uploader_epoch', str_contains($form, 'uploader_epoch'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');

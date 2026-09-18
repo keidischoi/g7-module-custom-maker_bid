@@ -162,7 +162,21 @@
     extra['edit.job_types'] = copy.job_types || [];
     extra['edit.files_ready'] = false;
     extra['edit.uploader_epoch'] = Date.now();
+    if (copy.id) extra['edit.id'] = copy.id;
     setLocal(extra);
+    if (copy.id) {
+      try { window.__cmbEditCompanyId = String(copy.id); } catch (eId) {}
+      var card = document.querySelector('[data-cmb-company-edit]');
+      if (card) {
+        card.setAttribute('data-cmb-edit-id', String(copy.id));
+        fillNamed('id', copy.id);
+      }
+      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+        var title = row.querySelector('.cmb-admin-row-title, a');
+        var on = !!(title && String(title.textContent || '').indexOf('#' + copy.id) >= 0);
+        row.classList.toggle('is-cmb-editing', on);
+      });
+    }
     fillNamed('job_types', copy.job_types_json || (Array.isArray(copy.job_types) ? JSON.stringify(copy.job_types) : ''));
     document.querySelectorAll('[data-cmb-company-edit] [data-cmb-job-type]').forEach(function (box) {
       var slug = box.getAttribute('data-cmb-job-type');
@@ -215,7 +229,16 @@
       if (Array.isArray(list)) {
         list.forEach(function (c) { if (c && String(c.id) === m[1]) rowd = c; });
       }
+      try { window.__cmbEditCompanyId = m[1]; } catch (eKeep) {}
       if (rowd) applyAdminCompany(rowd);
+      else {
+        var cardOnly = document.querySelector('[data-cmb-company-edit]');
+        if (cardOnly) {
+          cardOnly.setAttribute('data-cmb-edit-id', m[1]);
+          fillNamed('id', m[1]);
+        }
+        setLocal({ 'edit.id': m[1] });
+      }
     }, true);
   }
 
