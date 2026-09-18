@@ -81,8 +81,7 @@ class LayoutFileFixListener implements HookListenerInterface
         if ($goBid && in_array($name, ['Button', 'A'], true)) {
             $node['name'] = 'A';
             $node['text'] = '견적 넣기';
-            $job = '{{$item.id || route.id}}';
-            $props['href'] = '/maker-bids/bid?job='.$job;
+            $props['href'] = '/maker-bids/quote?job={{$item.id || route.id}}';
             $props['className'] = 'cmb-btn cmb-btn-primary';
             unset($node['actions'], $props['type'], $props['data-cmb-open-bid'], $props['data-cmb-bid-submit']);
         }
