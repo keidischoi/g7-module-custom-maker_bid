@@ -353,9 +353,60 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($node['actions'], $props['type']);
         }
 
+        if (str_contains($cls, 'cmb-card-list')) {
+            $props['className'] = trim($cls.' cmb-company-gallery');
+            $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px';
+        }
         $node['props'] = $props;
 
+        if ($id === 'ctop' || $id === 'citem') {
+            $node = $this->ensureLogo($node, '{{$item.thumbnail_url}}');
+        }
+        if ($id === 'me_top' || $id === 'me_card') {
+            $node = $this->ensureLogo($node, '{{me.data.thumbnail_url}}');
+        }
+        if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
+            $node = $this->ensureLogo($node, '{{$item.thumbnail_url}}', false);
+        }
+
         return $node;
+    }
+
+    private function ensureLogo(array $node, string $src, bool $round = true): array
+    {
+        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
+        foreach ($kids as $i => $child) {
+            if (is_array($child) && ($child['id'] ?? '') === 'cmb_co_logo') {
+                $kids[$i] = $this->logoNode($src, $round);
+                $node['children'] = $kids;
+
+                return $node;
+            }
+        }
+        array_unshift($kids, $this->logoNode($src, $round));
+        $node['children'] = $kids;
+
+        return $node;
+    }
+
+    private function logoNode(string $src, bool $round): array
+    {
+        $style = 'width:96px;height:96px;object-fit:cover;flex-shrink:0;';
+        $style .= $round ? 'border-radius:9999px;' : 'border-radius:8px;width:64px;height:64px;';
+
+        return [
+            'id' => 'cmb_co_logo',
+            'type' => 'basic',
+            'name' => 'Image',
+            'props' => [
+                'src' => $src,
+                'url' => $src,
+                'className' => $round ? 'cmb-list-thumb cmb-list-thumb-round' : 'cmb-list-thumb',
+                'style' => $style,
+                'width' => $round ? '96' : '64',
+                'height' => $round ? '96' : '64',
+            ],
+        ];
     }
 
     private function scrub(mixed $node): mixed
