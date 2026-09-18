@@ -50,7 +50,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.24', ($moduleMeta['version'] ?? null) === '0.10.24');
+expectTrue('module version is 0.10.25', ($moduleMeta['version'] ?? null) === '0.10.25');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -59,7 +59,7 @@ expectTrue(
 );
 $composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
 expectTrue('composer name is custom/maker-bids', ($composer['name'] ?? null) === 'custom/maker-bids');
-expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.24');
+expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.25');
 expectTrue(
     'psr-4 is Modules\\Custom\\MakerBids\\ not MakerBid',
     isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\'])

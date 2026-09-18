@@ -936,7 +936,9 @@
                         "type": "basic",
                         "name": "Div",
                         "props": {
-                          "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
+                          "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between cmb-entity-company cmb-status-{{$co.status}}",
+                          "data-cmb-status": "{{$co.status}}",
+                          "data-cmb-entity": "company"
                         },
                         "iteration": {
                           "source": "{{companies.data}}",
@@ -1038,7 +1040,8 @@
                                 "name": "Button",
                                 "text": "승인",
                                 "props": {
-                                  "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border"
+                                  "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border",
+                                  "data-cmb-kind": "approve"
                                 },
                                 "actions": [
                                   {
@@ -1083,7 +1086,8 @@
                                 "name": "Button",
                                 "text": "보류",
                                 "props": {
-                                  "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border"
+                                  "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border",
+                                  "data-cmb-kind": "hold"
                                 },
                                 "actions": [
                                   {
@@ -1129,7 +1133,8 @@
                                 "name": "Button",
                                 "text": "거절",
                                 "props": {
-                                  "className": "cmb-btn-reject px-3 py-1 text-sm rounded-lg border"
+                                  "className": "cmb-btn-reject px-3 py-1 text-sm rounded-lg border",
+                                  "data-cmb-kind": "reject"
                                 },
                                 "actions": [
                                   {

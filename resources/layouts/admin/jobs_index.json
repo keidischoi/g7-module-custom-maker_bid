@@ -252,7 +252,9 @@
                 "type": "basic",
                 "name": "Div",
                 "props": {
-                  "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
+                  "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between cmb-entity-job cmb-status-{{$item.status}}",
+                  "data-cmb-status": "{{$item.status}}",
+                  "data-cmb-entity": "job"
                 },
                 "iteration": {
                   "source": "{{jobs.data}}",
@@ -312,7 +314,8 @@
                         "name": "Button",
                         "text": "승인",
                         "props": {
-                          "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border"
+                          "className": "cmb-btn-approve px-3 py-1 text-sm rounded-lg border",
+                          "data-cmb-kind": "approve"
                         },
                         "actions": [
                           {
@@ -357,7 +360,8 @@
                         "name": "Button",
                         "text": "보류",
                         "props": {
-                          "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border"
+                          "className": "cmb-btn-hold px-3 py-1 text-sm rounded-lg border",
+                          "data-cmb-kind": "hold"
                         },
                         "actions": [
                           {
