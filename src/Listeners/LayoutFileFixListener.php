@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21d';
+    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21e';
 
     public static function getSubscribedHooks(): array
     {
@@ -26,6 +26,27 @@ class LayoutFileFixListener implements HookListenerInterface
         }
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->walk($this->scrub($layout), $name);
+        if ($name === 'jobs_show') {
+            $kids = is_array($layout['children'] ?? null) ? $layout['children'] : [];
+            array_unshift($kids, [
+                'id' => 'cmb_debug_session',
+                'type' => 'basic',
+                'name' => 'Div',
+                'props' => [
+                    'className' => 'cmb-debug-session',
+                    'style' => 'margin:8px 0;padding:8px 10px;border:1px dashed #888;font-size:12px;word-break:break-all',
+                ],
+                'children' => [[
+                    'id' => 'cmb_debug_session_text',
+                    'type' => 'basic',
+                    'name' => 'Text',
+                    'props' => [
+                        'text' => 'session {{viewer.data.debug_session || "(no viewer session)"}}',
+                    ],
+                ]],
+            ]);
+            $layout['children'] = $kids;
+        }
         if (in_array($name, ['jobs_show', 'jobs_bids', 'jobs_form', 'company_apply', 'company_list', 'jobs_list'], true)) {
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $found = false;
