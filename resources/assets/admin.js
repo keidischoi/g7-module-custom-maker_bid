@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs26) return;
-  window.__cmbAdminJs26 = true;
+  if (window.__cmbAdminJs37) return;
+  window.__cmbAdminJs37 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -161,29 +161,67 @@
     return h ? h[1] : '';
   }
 
+  function csrfHeaderMap() {
+    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = csrfToken();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    return headers;
+  }
+
   function postCompany(id, action) {
     if (!id) return;
+    var headers = csrfHeaderMap();
+    var body = null;
+    if (action === 'hold' || action === 'reject') {
+      headers['Content-Type'] = 'application/json';
+      var edit = g7Get('_local.edit') || {};
+      body = JSON.stringify({
+        hold_reason: edit.hold_reason || '',
+        rejected_reason: edit.rejected_reason || '',
+        admin_memo: edit.admin_memo || ''
+      });
+    }
     fetch('/api/modules/custom-maker_bids/admin/companies/' + id + '/' + action, {
       method: 'POST',
       credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    }).then(function () { location.reload(); });
+      headers: headers,
+      body: body
+    }).then(function () {
+      if (window.G7Core && window.G7Core.dispatch) {
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'companies' } });
+      } else {
+        location.reload();
+      }
+    });
   }
 
   function ensureCompanyEditButtons() {
+    if (document.querySelector('.cmb-admin-company-toolbar[data-cmb-co-btns], [data-cmb-company-edit] [data-cmb-co-btns]')) {
+      return;
+    }
     var save = null;
     document.querySelectorAll('button').forEach(function (b) {
       if ((b.textContent || '').trim() === '선택 업체 저장') save = b;
     });
     if (!save || save.getAttribute('data-cmb-co-btns')) return;
     save.setAttribute('data-cmb-co-btns', '1');
-    var wrap = save.parentElement || save;
+    var wrap = document.createElement('div');
+    wrap.className = 'cmb-admin-toolbar cmb-admin-company-toolbar';
+    wrap.setAttribute('data-cmb-co-btns', '1');
+    wrap.setAttribute('data-cmb-entity', 'company');
+    var parent = save.parentElement || save;
+    parent.insertBefore(wrap, save);
+    wrap.appendChild(save);
     function add(label, action, confirmMsg) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = label;
       var kind = label === '승인' ? 'cmb-btn-approve' : label === '보류' ? 'cmb-btn-hold' : label === '거절' ? 'cmb-btn-reject' : '';
-      b.className = (kind ? kind + ' ' : '') + 'px-3 py-1.5 text-sm rounded-lg border mr-2';
+      b.className = (kind ? kind + ' ' : '') + 'px-3 py-1.5 text-sm rounded-lg border';
+      b.setAttribute('data-cmb-kind', label === '승인' ? 'approve' : label === '보류' ? 'hold' : 'reject');
       b.addEventListener('click', function () {
         var id = companyIdFromEdit();
         if (!id) return alert('먼저 목록에서 업체를 불러오세요.');
@@ -276,8 +314,8 @@
 
   function hideVisually(el) {
     if (!el || el.nodeType !== 1) return;
-    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') === '1')) return;
-    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('[data-cmb-filter-wrap]'))) return;
+    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') || el.getAttribute('data-cmb-filter-host'))) return;
+    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('select[data-cmb-filter-free]'))) return;
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('width', '1px', 'important');
     el.style.setProperty('height', '1px', 'important');
@@ -287,6 +325,32 @@
     el.style.setProperty('display', 'none', 'important');
     el.setAttribute('aria-hidden', 'true');
     el.tabIndex = -1;
+  }
+
+  function unlockAdminPointer() {
+    var html = document.documentElement;
+    var body = document.body;
+    if (html) {
+      html.style.setProperty('pointer-events', 'auto', 'important');
+      html.removeAttribute('data-scroll-locked');
+    }
+    if (body) {
+      body.style.setProperty('pointer-events', 'auto', 'important');
+      body.removeAttribute('data-scroll-locked');
+      if (body.style.overflow === 'hidden') body.style.overflow = '';
+    }
+    document.querySelectorAll('[data-radix-popper-content-wrapper], [data-radix-select-content], [data-slot="select-content"]').forEach(function (el) {
+      var st = (el.getAttribute('data-state') || '').toLowerCase();
+      var hidden = st === 'closed' || st === 'hidden' || el.hidden || el.getAttribute('aria-hidden') === 'true';
+      if (hidden) {
+        el.style.setProperty('pointer-events', 'none', 'important');
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        return;
+      }
+      el.style.setProperty('pointer-events', 'auto', 'important');
+      el.style.setProperty('z-index', '2147483000', 'important');
+    });
   }
 
   function isCompanyAdminPage() {
@@ -305,69 +369,182 @@
     return 'jobs';
   }
 
-  function currentFilterStatus() {
+  function currentFilterValue(key) {
     try {
       if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
-        return String((window.G7Core.state.get('_local.filter.status')) || '');
+        return String((window.G7Core.state.get('_local.filter.' + key)) || '');
       }
     } catch (e) {}
     return '';
   }
 
-  function bindNativeFilter(sel, company) {
-    if (sel.getAttribute('data-cmb-filter-bound') === '1') return;
+  function currentFilterStatus() {
+    return currentFilterValue('status');
+  }
+
+  var TYPE_FALLBACK = [
+    ['', '전체 유형'],
+    ['modeling_3d', '3D 모델링'],
+    ['print_3d', '3D 출력 대행'],
+    ['full_package', '풀 패키지 제작 (모델링 + 출력 + 후가공)'],
+    ['character_figure', '캐릭터·피규어 커미션'],
+    ['design_mockup', '디자인 목업(Mock-up) 및 시제품'],
+    ['working_prototype', '워킹 프로토타입(기능성 시제품)']
+  ];
+  var typeOptsCache = null;
+  var typeOptsLoading = false;
+
+  function loadTypeOpts(cb) {
+    if (typeOptsCache) {
+      cb(typeOptsCache);
+      return;
+    }
+    if (typeOptsLoading) {
+      setTimeout(function () { loadTypeOpts(cb); }, 200);
+      return;
+    }
+    typeOptsLoading = true;
+    fetch('/api/modules/custom-maker_bids/job-types', {
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function (r) { return r.json(); }).then(function (json) {
+      var rows = (json && json.data) || [];
+      var opts = [['', '전체 유형']];
+      rows.forEach(function (t) {
+        var slug = String((t && (t.slug || t.value)) || '');
+        var name = String((t && (t.name || t.label)) || slug);
+        if (slug) opts.push([slug, name]);
+      });
+      typeOptsCache = opts.length > 1 ? opts : TYPE_FALLBACK;
+      typeOptsLoading = false;
+      cb(typeOptsCache);
+    }).catch(function () {
+      typeOptsCache = TYPE_FALLBACK;
+      typeOptsLoading = false;
+      cb(typeOptsCache);
+    });
+  }
+
+  function fillSelect(sel, opts, cur) {
+    if (!sel) return;
+    opts = opts || [];
+    var same = sel.options && sel.options.length === opts.length;
+    var i;
+    if (same) {
+      for (i = 0; i < opts.length; i++) {
+        if (sel.options[i].value !== String(opts[i][0]) || sel.options[i].textContent !== String(opts[i][1])) {
+          same = false;
+          break;
+        }
+      }
+    }
+    if (!same) {
+      sel.innerHTML = '';
+      opts.forEach(function (o) {
+        var op = document.createElement('option');
+        op.value = o[0];
+        op.textContent = o[1];
+        sel.appendChild(op);
+      });
+    }
+    var want = cur != null && String(cur) !== '' ? String(cur) : sel.value;
+    if (want && sel.value !== want) sel.value = want;
+  }
+
+  function bindNativeFilter(sel, company, key) {
+    if (!sel || sel.getAttribute('data-cmb-filter-bound') === '1') return;
     sel.setAttribute('data-cmb-filter-bound', '1');
     sel.addEventListener('change', function () {
+      unlockAdminPointer();
+      var map = { target: 'local' };
+      map['filter.' + (key || 'status')] = sel.value;
       if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'setState', params: map });
         window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: filterDsId(company) } });
       }
     });
   }
 
+  function statusOptsFor(bar, company) {
+    var path = location.pathname || '';
+    if (company) return [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']];
+    if (/\/admin\/maker-bids\/bids/.test(path) || (bar.getAttribute('data-cmb-filter-entity') === 'bid')) {
+      return [['', '전체 상태'], ['pending', '검토중'], ['accepted', '낙찰'], ['rejected', '거절']];
+    }
+    return [['', '전체 상태'], ['hold', '보류'], ['draft', '임시저장'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['disputed', '분쟁조정'], ['done', '완료'], ['cancelled', '취소']];
+  }
+
+  function hideG7FilterSelects(bar) {
+    bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"], [aria-haspopup="listbox"]').forEach(function (el) {
+      if (el.closest && (el.closest('[data-cmb-filter-wrap]') || el.closest('[data-cmb-filter-free]'))) return;
+      hideVisually(el);
+    });
+    bar.querySelectorAll('button, [role="combobox"]').forEach(function (el) {
+      if (el.closest && el.closest('[data-cmb-filter-host], .cmb-admin-filter-status, .cmb-admin-filter-type')) {
+        if (el.tagName === 'SELECT') return;
+        if (el.getAttribute('data-cmb-filter-free') === '1') return;
+        if ((el.textContent || '').indexOf('필터') >= 0) return;
+        hideVisually(el);
+      }
+    });
+  }
+
+  function ensureNativeSelect(bar, key, opts, company) {
+    var host = bar.querySelector('[data-cmb-filter-host="' + key + '"]');
+    var wrap = bar.querySelector('[data-cmb-filter-wrap="' + key + '"]');
+    if (!wrap && host) {
+      wrap = host;
+      wrap.setAttribute('data-cmb-filter-wrap', key);
+      wrap.classList.add('cmb-admin-filter-native-wrap');
+    }
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.setAttribute('data-cmb-filter-wrap', key);
+      wrap.className = 'cmb-admin-filter-native-wrap cmb-admin-filter-field ' + (key === 'type' ? 'cmb-admin-filter-type' : 'cmb-admin-filter-status');
+      var lab = document.createElement('p');
+      lab.className = 'cmb-admin-label';
+      lab.textContent = key === 'type' ? '유형' : '상태';
+      wrap.appendChild(lab);
+      var go = bar.querySelector('.cmb-admin-filter-go');
+      bar.insertBefore(wrap, go || bar.firstChild);
+    }
+    var sel = wrap.querySelector('select[data-cmb-filter-free][data-cmb-filter-key="' + key + '"]') ||
+      wrap.querySelector('select[data-cmb-filter-free]');
+    if (sel && sel.getAttribute('data-cmb-filter-key') && sel.getAttribute('data-cmb-filter-key') !== key) sel = null;
+    if (!sel) {
+      sel = document.createElement('select');
+      sel.setAttribute('data-cmb-filter-free', '1');
+      sel.setAttribute('data-cmb-filter-key', key);
+      sel.setAttribute('name', 'cmb_filter_' + key);
+      sel.className = 'cmb-admin-filter-native';
+      wrap.appendChild(sel);
+    }
+    fillSelect(sel, opts, currentFilterValue(key));
+    bindNativeFilter(sel, company, key);
+    return sel;
+  }
+
   function ensureAdminFilterSelect() {
     document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
       var company = (bar.getAttribute('data-cmb-filter-entity') === 'company') ||
-        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && isCompanyAdminPage());
-      var opts = company
-        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
-        : [['', '전체 상태'], ['hold', '보류'], ['draft', '임시저장'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['disputed', '분쟁조정'], ['done', '완료'], ['cancelled', '취소']];
-      bar.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-select-host').forEach(function (host) {
-        if (host.getAttribute('data-cmb-filter-wrap') === '1') return;
-        hideVisually(host);
-      });
-      bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
-        if (el.closest && el.closest('[data-cmb-filter-wrap]')) return;
-        hideVisually(el);
-      });
-      var wrap = bar.querySelector('[data-cmb-filter-wrap]');
-      if (!wrap) {
-        wrap = document.createElement('div');
-        wrap.setAttribute('data-cmb-filter-wrap', '1');
-        wrap.className = 'cmb-admin-filter-native-wrap';
-        var lab = document.createElement('p');
-        lab.className = 'cmb-admin-label';
-        lab.textContent = '상태';
-        var sel = document.createElement('select');
-        sel.setAttribute('data-cmb-filter-free', '1');
-        sel.setAttribute('name', 'status');
-        sel.className = 'cmb-admin-filter-native';
-        opts.forEach(function (o) {
-          var op = document.createElement('option');
-          op.value = o[0];
-          op.textContent = o[1];
-          sel.appendChild(op);
-        });
-        var cur = currentFilterStatus();
-        if (cur) sel.value = cur;
-        wrap.appendChild(lab);
-        wrap.appendChild(sel);
-        var go = bar.querySelector('.cmb-admin-filter-go');
-        bar.insertBefore(wrap, go || bar.firstChild);
+        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && bar.getAttribute('data-cmb-filter-entity') !== 'bid' && isCompanyAdminPage());
+      hideG7FilterSelects(bar);
+      ensureNativeSelect(bar, 'status', statusOptsFor(bar, company), company);
+      var wantType = bar.getAttribute('data-cmb-filter-entity') === 'job' ||
+        bar.querySelector('[data-cmb-filter-host="type"], .cmb-admin-filter-type');
+      if (wantType && !company) {
+        if (typeOptsCache) {
+          ensureNativeSelect(bar, 'type', typeOptsCache, company);
+        } else {
+          ensureNativeSelect(bar, 'type', TYPE_FALLBACK, company);
+          loadTypeOpts(function (opts) {
+            var native = bar.querySelector('select[data-cmb-filter-key="type"]');
+            if (native) fillSelect(native, opts, currentFilterValue('type'));
+          });
+        }
       }
-      var native = wrap.querySelector('[data-cmb-filter-free]');
-      bindNativeFilter(native, company);
     });
+    unlockAdminPointer();
   }
 
   function injectStatusPaintCss() {
@@ -440,6 +617,7 @@
         hideLegacySizes();
         ensureListBoxes();
         ensureAdminFilterSelect();
+        paintOpenAdminMenus();
       }, 60);
     });
     window.__cmbAdminStatusObs.observe(root, { childList: true, subtree: true });
@@ -519,14 +697,104 @@
     sync();
   }
 
+  function menuIsOpen(el) {
+    if (!el || el.nodeType !== 1) return false;
+    var st = String(el.getAttribute('data-state') || '').toLowerCase();
+    if (st === 'closed' || st === 'hidden') return false;
+    if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+    return true;
+  }
+
+  function paintOpenAdminMenus() {
+    if (!document.documentElement.classList.contains('cmb-admin-ui')) return;
+    document.querySelectorAll('[role="listbox"], [data-radix-select-content], [data-slot="select-content"], [data-radix-popper-content-wrapper], [data-radix-select-viewport]').forEach(function (el) {
+      if (!menuIsOpen(el)) return;
+      el.classList.add('cmb-admin-listbox');
+      el.style.setProperty('background', '#0f172a', 'important');
+      el.style.setProperty('background-color', '#0f172a', 'important');
+      el.style.setProperty('color', '#f8fafc', 'important');
+      el.style.setProperty('-webkit-text-fill-color', '#f8fafc', 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('z-index', '2147483000', 'important');
+      el.style.setProperty('border-color', 'rgba(255,255,255,0.22)', 'important');
+      var nodes = el.querySelectorAll('*');
+      var i;
+      for (i = 0; i < nodes.length; i++) {
+        var child = nodes[i];
+        var slot = child.getAttribute ? String(child.getAttribute('data-slot') || '') : '';
+        if (slot === 'select-item-indicator' || (child.closest && child.closest('[data-slot="select-item-indicator"]'))) continue;
+        var tag = (child.tagName || '').toUpperCase();
+        if (tag === 'SVG' || tag === 'PATH' || tag === 'CIRCLE') continue;
+        child.style.setProperty('color', '#f8fafc', 'important');
+        child.style.setProperty('-webkit-text-fill-color', '#f8fafc', 'important');
+        child.style.setProperty('opacity', '1', 'important');
+        child.style.setProperty('visibility', 'visible', 'important');
+        if (child.getAttribute('role') === 'option' || slot === 'select-item' || tag === 'LI') {
+          var hi = child.getAttribute('data-highlighted') != null || child.getAttribute('data-state') === 'checked';
+          child.style.setProperty('background', hi ? 'rgba(255,255,255,0.14)' : 'transparent', 'important');
+          child.style.setProperty('background-color', hi ? 'rgba(255,255,255,0.14)' : 'transparent', 'important');
+        } else if (slot === 'select-viewport' || tag === 'DIV') {
+          var cls = String(child.className || '');
+          if (/bg-white|bg-popover|bg-background|bg-card/.test(cls) || child.getAttribute('data-radix-select-viewport') != null) {
+            child.style.setProperty('background', '#0f172a', 'important');
+            child.style.setProperty('background-color', '#0f172a', 'important');
+          }
+        }
+      }
+    });
+  }
+
+  function observeAdminMenus() {
+    if (window.__cmbAdminMenuObs || typeof MutationObserver === 'undefined') return;
+    window.__cmbAdminMenuObs = new MutationObserver(function () {
+      if (window.__cmbAdminMenuPaintT) clearTimeout(window.__cmbAdminMenuPaintT);
+      window.__cmbAdminMenuPaintT = setTimeout(paintOpenAdminMenus, 16);
+    });
+    window.__cmbAdminMenuObs.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   function injectPortalCss() {
-    if (document.getElementById('cmb-admin-select-portal-css')) return;
-    var s = document.createElement('style');
-    s.id = 'cmb-admin-select-portal-css';
-    s.textContent =
-      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],html.cmb-admin-ui [data-radix-popper-content-wrapper]{width:max-content!important;min-width:14rem!important;max-width:min(90vw,40rem)!important;white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;box-sizing:border-box!important;}' +
-      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{white-space:nowrap!important;word-break:keep-all!important;overflow-wrap:normal!important;width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;}';
-    (document.head || document.documentElement).appendChild(s);
+    var s = document.getElementById('cmb-admin-select-portal-css');
+    if (s && s.getAttribute('data-cmb-v') === '37') return;
+    if (!s) {
+      s = document.createElement('style');
+      s.id = 'cmb-admin-select-portal-css';
+      (document.head || document.documentElement).appendChild(s);
+    }
+    s.setAttribute('data-cmb-v', '37');
+      s.textContent =
+      'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui .cmb-admin,html.cmb-admin-ui select{color-scheme:dark}' +
+      'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
+      'html.cmb-admin-ui [data-state="closed"][data-radix-popper-content-wrapper],' +
+      'html.cmb-admin-ui [data-state="closed"][data-radix-select-content],' +
+      'html.cmb-admin-ui [data-state="closed"][role="listbox"]{display:none!important;pointer-events:none!important;visibility:hidden!important}' +
+      'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],' +
+      'html.cmb-admin-ui [data-radix-select-viewport],html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]),' +
+      'html.cmb-admin-ui .cmb-admin-listbox{' +
+      'background:#0f172a!important;background-color:#0f172a!important;color:#f8fafc!important;' +
+      '-webkit-text-fill-color:#f8fafc!important;border:1px solid rgba(255,255,255,0.22)!important;' +
+      'box-shadow:0 12px 40px rgba(0,0,0,0.55)!important;z-index:2147483000!important;opacity:1!important;visibility:visible!important;' +
+      'pointer-events:auto!important;min-width:12rem!important;max-width:min(90vw,28rem)!important;' +
+      'white-space:nowrap!important;word-break:keep-all!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important}' +
+      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"],html.cmb-admin-ui [role="option"] span,' +
+      'html.cmb-admin-ui [role="option"] p,html.cmb-admin-ui [data-slot="select-item"] span,' +
+      'html.cmb-admin-ui [role="option"] [class*="text-"],html.cmb-admin-ui .cmb-admin-listbox [role="option"]{' +
+      'color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;opacity:1!important;visibility:visible!important;' +
+      'white-space:nowrap!important;word-break:keep-all!important}' +
+      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{' +
+      'background:transparent!important;display:flex!important;flex-direction:row!important;align-items:center!important;' +
+      'min-width:100%!important;padding:0.45rem 0.8rem!important}' +
+      'html.cmb-admin-ui [role="option"][data-highlighted],html.cmb-admin-ui [role="option"]:hover,' +
+      'html.cmb-admin-ui [data-slot="select-item"][data-highlighted]{background:rgba(255,255,255,0.14)!important;color:#fff!important}' +
+      'html.cmb-admin-ui .cmb-admin [role="combobox"],html.cmb-admin-ui .cmb-admin-select-host button,' +
+      'html.cmb-admin-ui .cmb-admin-select-host [data-slot="trigger"]{' +
+      'color:#f8fafc!important;background:#1e293b!important;border-color:rgba(255,255,255,0.28)!important}' +
+      'html.cmb-admin-ui .cmb-admin [role="combobox"] *:not(svg):not(path),' +
+      'html.cmb-admin-ui .cmb-admin-select-host button *:not(svg):not(path){color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;opacity:1!important}' +
+      'html.cmb-admin-ui select,html.cmb-admin-ui .cmb-admin-filter-native{color-scheme:dark;color:#f8fafc;background:#1e293b}' +
+      'html.cmb-admin-ui select option,html.cmb-admin-ui .cmb-admin-filter-native option{color:#0f172a;background:#f8fafc}' +
+      '.cmb-admin-row-actions,.cmb-admin-row-actions a,.cmb-admin-row-actions button{position:relative;z-index:2;pointer-events:auto!important}';
   }
 
 
@@ -559,32 +827,49 @@
   }
 
   function harvestNamedInto(prefix) {
-    var root = document.querySelector('.cmb-admin');
+    var root = prefix === 'edit'
+      ? (document.querySelector('[data-cmb-company-edit]') || document.querySelector('.cmb-admin-company-edit') || document.querySelector('.cmb-admin'))
+      : document.querySelector('.cmb-admin');
     if (!root) return {};
     var map = {};
     var selectKeys = { type: 1, status: 1, audience: 1, kind: 1, nav_insert: 1, bid_allow: 1, default_job_status: 1 };
-    var cur = {};
-    try {
-      if (window.G7Core && window.G7Core.state && typeof window.G7Core.state.get === 'function') {
-        cur = window.G7Core.state.get('_local.' + prefix) || {};
-      }
-    } catch (e) { cur = {}; }
+    var jobTypes = [];
     root.querySelectorAll('[name]').forEach(function (el) {
       var name = el.getAttribute('name');
       if (!name || el.type === 'file') return;
+      if (name.indexOf('cmb_filter_') === 0) return;
+      if (name === 'job_types' || name.indexOf('job_type_') === 0) {
+        if (el.type === 'checkbox' && el.checked) jobTypes.push(name.slice('job_type_'.length));
+        return;
+      }
       if (el.type === 'checkbox') {
-        if (cur && typeof cur[name] === 'boolean') map[prefix + '.' + name] = cur[name];
-        else map[prefix + '.' + name] = !!el.checked;
+        map[prefix + '.' + name] = !!el.checked;
         return;
       }
       var tag = (el.tagName || '').toUpperCase();
       if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') return;
       var val = el.value;
-      if (selectKeys[name] && String(val || '').trim() === '') return;
-      // Empty DOM must not zero partial admin edits (logo / image upload saves).
-      if (String(val || '').trim() === '') return;
+      if (prefix !== 'edit' && selectKeys[name] && String(val || '').trim() === '') return;
+      if (prefix !== 'edit' && String(val || '').trim() === '') return;
       map[prefix + '.' + name] = val;
     });
+    root.querySelectorAll('[data-cmb-job-type]').forEach(function (el) {
+      if (el.checked) jobTypes.push(el.getAttribute('data-cmb-job-type'));
+    });
+    jobTypes = jobTypes.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    if (prefix === 'edit' && root.querySelector('[data-cmb-job-type]')) {
+      if (!jobTypes.length) {
+        var hidden = root.querySelector('input[name="job_types"]');
+        var raw = hidden && hidden.value;
+        if (raw) {
+          try {
+            var parsed = raw.charAt(0) === '[' ? JSON.parse(raw) : raw;
+            if (Array.isArray(parsed)) jobTypes = parsed.map(String);
+          } catch (eJT) {}
+        }
+      }
+      map[prefix + '.job_types'] = jobTypes;
+    }
     return map;
   }
 
@@ -648,32 +933,291 @@
     if (document.documentElement.getAttribute('data-cmb-filter-go')) return;
     document.documentElement.setAttribute('data-cmb-filter-go', '1');
     document.addEventListener('click', function (e) {
+      unlockAdminPointer();
       var go = e.target && e.target.closest ? e.target.closest('.cmb-admin-filter-go, .cmb-admin-filter > button') : null;
       if (!go || (go.textContent || '').indexOf('필터') < 0) return;
-      var sel = document.querySelector('.cmb-admin-filter [data-cmb-filter-free]');
-      if (!sel) return;
+      var bar = go.closest('.cmb-admin-filter') || document.querySelector('.cmb-admin-filter');
+      if (!bar) return;
+      var map = { target: 'local' };
+      bar.querySelectorAll('select[data-cmb-filter-free]').forEach(function (sel) {
+        var key = sel.getAttribute('data-cmb-filter-key') || (sel.name === 'cmb_filter_type' ? 'type' : 'status');
+        map['filter.' + key] = sel.value;
+      });
       if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
-        window.G7Core.dispatch({ handler: 'setState', params: { target: 'local', 'filter.status': sel.value } });
+        window.G7Core.dispatch({ handler: 'setState', params: map });
       }
+    }, true);
+  }
+
+  function csrfToken() {
+    var m = document.querySelector('meta[name="csrf-token"]');
+    if (m && m.getAttribute('content')) return m.getAttribute('content');
+    var match = String(document.cookie || '').match(/(?:^|; )XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function idFromRow(row) {
+    if (!row) return '';
+    var title = row.querySelector('.cmb-admin-row-title, a');
+    var m = title ? String(title.textContent || '').match(/#(\d+)/) : null;
+    if (m) return m[1];
+    var href = title && title.getAttribute ? String(title.getAttribute('href') || '') : '';
+    m = href.match(/(\d+)\/?$/);
+    return m ? m[1] : '';
+  }
+
+  function adminFetch(url, method, okMsg) {
+    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = csrfToken();
+    if (token) {
+      headers['X-CSRF-TOKEN'] = token;
+      headers['X-XSRF-TOKEN'] = token;
+    }
+    return fetch(url, { method: method || 'POST', credentials: 'same-origin', headers: headers }).then(function (res) {
+      if (!res.ok) {
+        return res.json().catch(function () { return {}; }).then(function (j) {
+          var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
+          if (window.G7Core && window.G7Core.dispatch) {
+            window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
+          }
+          throw new Error(msg);
+        });
+      }
+      if (window.G7Core && window.G7Core.dispatch) {
+        if (okMsg) window.G7Core.dispatch({ handler: 'toast', params: { type: 'success', message: okMsg } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'jobs' } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'companies' } });
+      } else {
+        location.reload();
+      }
+    });
+  }
+
+  function bindRowActions() {
+    if (document.documentElement.getAttribute('data-cmb-row-actions')) return;
+    document.documentElement.setAttribute('data-cmb-row-actions', '1');
+    document.addEventListener('pointerdown', function () { unlockAdminPointer(); }, true);
+    document.addEventListener('click', function (e) {
+      unlockAdminPointer();
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var row = t.closest('.cmb-admin-row');
+      if (!row || !row.closest('.cmb-admin')) return;
+      if (t.closest('a')) return;
+      var btn = t.closest('button, [role="button"]');
+      if (!btn || !row.contains(btn)) return;
+      var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
+      var kind = kindFromEl(btn);
+      var entity = inferEntity(row, statusFromRow(row));
+      var id = idFromRow(row);
+      if (!id) return;
+      var action = '';
+      var method = 'POST';
+      var confirmMsg = '';
+      var okMsg = '';
+      var base = entity === 'company'
+        ? '/api/modules/custom-maker_bids/admin/companies/'
+        : '/api/modules/custom-maker_bids/admin/jobs/';
+      if (kind === 'approve' || /^승인/.test(label)) {
+        action = 'approve';
+        confirmMsg = entity === 'company' ? '이 업체를 승인할까요?' : '승인하여 견적요청(open)으로 공개할까요?';
+        okMsg = '승인했습니다.';
+      } else if (kind === 'hold' || /^보류/.test(label)) {
+        action = 'hold';
+        confirmMsg = entity === 'company' ? '이 업체를 보류할까요?' : '이 의뢰를 보류할까요?';
+        okMsg = '보류했습니다.';
+      } else if (kind === 'reject' || /^거절/.test(label)) {
+        action = 'reject';
+        confirmMsg = '이 업체를 거절할까요?';
+        okMsg = '거절했습니다.';
+      } else if (/^취소/.test(label) && entity !== 'company') {
+        action = 'cancel';
+        confirmMsg = '취소할까요?';
+        okMsg = '취소했습니다.';
+      } else if (/^삭제/.test(label)) {
+        action = '';
+        method = 'DELETE';
+        confirmMsg = '삭제할까요?';
+        okMsg = '삭제했습니다.';
+      } else {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      if (!confirm(confirmMsg)) return;
+      adminFetch(base + encodeURIComponent(id) + (action ? '/' + action : ''), method, okMsg);
     }, true);
   }
 
   function bindCompanyHarvest() {
     if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
-    if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
+    if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '') && !document.querySelector('[data-cmb-company-edit]')) return;
     document.documentElement.setAttribute('data-cmb-co-harvest', '1');
+    function pushDom() {
+      var map = harvestNamedInto('edit');
+      if (Object.keys(map).length) setLocal(map);
+    }
     document.addEventListener(
       'click',
       function (e) {
         var btn = e.target && e.target.closest ? e.target.closest('button') : null;
         if (!btn) return;
         var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
-        if (label.indexOf('선택 업체 저장') === -1) return;
-        var map = harvestNamedInto('edit');
-        if (Object.keys(map).length) setLocal(map);
+        if (label.indexOf('선택 업체 저장') === -1 && label.indexOf('승인') !== 0 && label.indexOf('보류') !== 0 && label.indexOf('거절') !== 0) return;
+        if (!btn.closest('[data-cmb-company-edit], .cmb-admin-company-toolbar')) return;
+        pushDom();
       },
       true
     );
+    document.addEventListener(
+      'input',
+      function (e) {
+        var el = e.target;
+        if (!el || !el.getAttribute || !el.closest) return;
+        if (!el.closest('[data-cmb-company-edit]')) return;
+        var name = el.getAttribute('name');
+        if (!name || name.indexOf('cmb_filter_') === 0) return;
+        var map = {};
+        if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
+        else map['edit.' + name] = el.value;
+        setLocal(map);
+      },
+      true
+    );
+    document.addEventListener(
+      'change',
+      function (e) {
+        var el = e.target;
+        if (!el || !el.getAttribute || !el.closest) return;
+        if (!el.closest('[data-cmb-company-edit]')) return;
+        var name = el.getAttribute('name') || '';
+        var map = {};
+        if (el.getAttribute('data-cmb-job-type')) {
+          var slugs = [];
+          document.querySelectorAll('[data-cmb-company-edit] [data-cmb-job-type]:checked').forEach(function (b) {
+            slugs.push(b.getAttribute('data-cmb-job-type'));
+          });
+          map['edit.job_types'] = slugs;
+          setLocal(map);
+          return;
+        }
+        if (!name || name.indexOf('cmb_filter_') === 0) return;
+        if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
+        else map['edit.' + name] = el.value;
+        setLocal(map);
+      },
+      true
+    );
+  }
+
+  function currentEditValue(key) {
+    try {
+      if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
+        var v = window.G7Core.state.get('_local.edit.' + key);
+        if (v != null && v !== '') return String(v);
+        var ed = window.G7Core.state.get('_local.edit') || {};
+        if (ed && ed[key] != null && ed[key] !== '') return String(ed[key]);
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  function bindEditNative(sel, key) {
+    if (!sel || sel.getAttribute('data-cmb-edit-bound') === '1') return;
+    sel.setAttribute('data-cmb-edit-bound', '1');
+    sel.addEventListener('change', function () {
+      var map = { target: 'local' };
+      map['edit.' + key] = sel.value;
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'setState', params: map });
+      }
+    });
+  }
+
+  function ensureEditNativeSelects() {
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card) return;
+    function mount(key, opts) {
+      var host = card.querySelector('[data-cmb-edit-host="' + key + '"]');
+      if (!host) return;
+      var sel = host.querySelector('select[data-cmb-edit-free]');
+      if (!sel) {
+        sel = document.createElement('select');
+        sel.setAttribute('data-cmb-edit-free', '1');
+        sel.setAttribute('name', key);
+        sel.className = 'cmb-admin-filter-native cmb-admin-edit-native';
+        host.appendChild(sel);
+      }
+      fillSelect(sel, opts, currentEditValue(key) || sel.value);
+      bindEditNative(sel, key);
+    }
+    mount('kind', [['company', '업체'], ['individual', '개인']]);
+    mount('status', [['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]);
+  }
+
+  function renderCompanyEditJobTypes() {
+    var host = document.querySelector('[data-cmb-company-edit] [data-cmb-job-types]');
+    if (!host) return;
+    var selected = [];
+    try {
+      var cur = g7Get('_local.edit.job_types');
+      if (cur == null) {
+        var ed = g7Get('_local.edit') || {};
+        cur = ed.job_types || [];
+      }
+      if (typeof cur === 'string') {
+        try { cur = JSON.parse(cur); } catch (e1) { cur = cur ? [cur] : []; }
+      }
+      if (Array.isArray(cur)) selected = cur.map(String);
+    } catch (e2) {}
+    var id = currentEditValue('id');
+    function paint(opts) {
+      if (!host.getAttribute('data-cmb-job-types-ready')) {
+        host.innerHTML = '';
+        (opts || []).forEach(function (o) {
+          if (!o[0]) return;
+          var label = document.createElement('label');
+          label.className = 'cmb-admin-check-label';
+          var box = document.createElement('input');
+          box.type = 'checkbox';
+          box.setAttribute('data-cmb-job-type', o[0]);
+          box.name = 'job_type_' + o[0];
+          var span = document.createElement('span');
+          span.className = 'cmb-admin-check-text';
+          span.textContent = o[1] || o[0];
+          label.appendChild(box);
+          label.appendChild(span);
+          host.appendChild(label);
+        });
+        host.setAttribute('data-cmb-job-types-ready', '1');
+      }
+      if (host.getAttribute('data-cmb-job-types-for') === id && id) return;
+      host.setAttribute('data-cmb-job-types-for', id || '');
+      host.querySelectorAll('[data-cmb-job-type]').forEach(function (box) {
+        box.checked = selected.indexOf(box.getAttribute('data-cmb-job-type')) >= 0;
+      });
+    }
+    if (typeOptsCache) paint(typeOptsCache);
+    else {
+      paint(TYPE_FALLBACK);
+      loadTypeOpts(function (opts) {
+        host.removeAttribute('data-cmb-job-types-ready');
+        host.removeAttribute('data-cmb-job-types-for');
+        renderCompanyEditJobTypes();
+      });
+    }
+  }
+
+  function nestExistingIntoUploader() {
+    document.querySelectorAll('.cmb-admin-uploader, [data-cmb-admin-uploader]').forEach(function (box) {
+      var gallery = box.querySelector('.cmb-existing-files');
+      if (!gallery) return;
+      var dashed = box.querySelector('[class*="border-dashed"]');
+      if (dashed && gallery.parentElement !== dashed) {
+        dashed.insertBefore(gallery, dashed.firstChild);
+      }
+    });
   }
 
 
@@ -768,13 +1312,20 @@
     bindStatusPress();
     paintStatusButtons();
     ensureAdminFilterSelect();
+    ensureEditNativeSelects();
+    renderCompanyEditJobTypes();
+    nestExistingIntoUploader();
     ensureCompanyEditButtons();
     ensureListBoxes();
     bindSettingsHarvest();
     bindCompanyHarvest();
     bindFilterGo();
+    bindRowActions();
     paintSettingsControls();
     observeAdminStatus();
+    observeAdminMenus();
+    unlockAdminPointer();
+    paintOpenAdminMenus();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
@@ -782,13 +1333,22 @@
   setTimeout(paintStatusButtons, 800);
   setTimeout(paintStatusButtons, 1600);
   setTimeout(ensureAdminFilterSelect, 500);
+  setTimeout(ensureEditNativeSelects, 500);
+  setTimeout(renderCompanyEditJobTypes, 600);
+  setTimeout(nestExistingIntoUploader, 800);
   setTimeout(ensureListBoxes, 800);
   setTimeout(paintSettingsControls, 900);
   setTimeout(ensureCompanyEditButtons, 600);
+  setTimeout(unlockAdminPointer, 300);
   setInterval(function () {
     if (document.querySelector('.cmb-admin')) {
       paintStatusButtons();
       ensureAdminFilterSelect();
+      ensureEditNativeSelects();
+      renderCompanyEditJobTypes();
+      nestExistingIntoUploader();
+      unlockAdminPointer();
+      paintOpenAdminMenus();
     }
   }, 700);
 })();

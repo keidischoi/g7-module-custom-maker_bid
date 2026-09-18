@@ -423,7 +423,15 @@ html.dark .cmb-admin-nav a:hover,
 .cmb-admin-listbox,
 .cmb-admin-listbox [role="option"],
 html.cmb-admin-ui [role="listbox"],
-html.cmb-admin-ui [role="option"] { white-space: nowrap; word-break: keep-all; width: max-content; min-width: 14rem; }
+html.cmb-admin-ui [role="option"] {
+  white-space: nowrap;
+  word-break: keep-all;
+  width: max-content;
+  min-width: 12rem;
+  background: #0f172a;
+  color: #f8fafc;
+  -webkit-text-fill-color: #f8fafc;
+}
 
 .cmb-admin-fields {
   display: grid;
@@ -568,8 +576,13 @@ html.dark .cmb-admin-check-text,
   align-items: start;
 }
 
+.cmb-admin-split.cmb-admin-split-company {
+  grid-template-columns: minmax(22rem, 38rem) minmax(0, 1fr);
+}
+
 @media (max-width: 900px) {
-  .cmb-admin-split {
+  .cmb-admin-split,
+  .cmb-admin-split.cmb-admin-split-company {
     grid-template-columns: 1fr;
   }
 }
@@ -1668,3 +1681,21 @@ html.dark .cmb-pager a.is-active,
   font-size: 1.1rem;
 }
 .dark .cmb-existing-thumb-link { background: #334155; }
+
+.cmb-existing-in-uploader {
+  border: none;
+  background: transparent;
+  margin: 0 0 0.45rem;
+  padding: 0;
+}
+.cmb-order-uploader .cmb-existing-files,
+.cmb-admin-uploader .cmb-existing-files {
+  border: none;
+  background: transparent;
+}
+.cmb-admin-uploader .cmb-existing-thumb-link {
+  width: 72px;
+  height: 72px;
+  background-size: cover;
+  background-position: center;
+}
