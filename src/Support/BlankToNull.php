@@ -105,13 +105,15 @@ trait BlankToNull
         }
     }
 /**
-     * Map Korean / legacy status labels to listing slugs and fold ext_* flags
+     * Map Korean / legacy status labels to slugs and fold ext_* flags
      * into provided_extensions before validation (validated() strips unknown keys).
+     * Member create/update keep listing statuses; admin updates keep full STATUSES.
      */
-    protected function normalizeJobStatusAndExtensions(): void
+    protected function normalizeJobStatusAndExtensions(bool $listingOnly = true): void
     {
         if ($this->exists('status')) {
-            $this->merge(['status' => JobRules::normalizeListingStatus($this->input('status'))]);
+            $raw = $this->input('status');
+            $this->merge(['status' => $listingOnly ? JobRules::normalizeListingStatus($raw) : JobRules::normalizeStatus($raw)]);
         }
         // Coerce any ext_* checkbox (including settings-driven ones like ext_pdf).
         $boolMerge = [];

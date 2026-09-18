@@ -8,6 +8,7 @@ use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\BidRules;
+use Modules\Custom\MakerBids\Support\BiddingRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
 use Modules\Custom\MakerBids\Support\DisputeRules;
 use Modules\Custom\MakerBids\Support\DomainException;
@@ -142,8 +143,7 @@ class JobService
     public function create(int $userId, array $payload): array
     {
         $type = $this->types->requireEnabled(TypeCatalog::coerceTypeInput($payload['type'] ?? null));
-        $picked = JobRules::normalizeListingStatus($payload['status'] ?? '');
-        $status = $picked === 'draft' ? 'draft' : $this->defaultCreateStatus();
+        $status = JobCreateStatus::resolve($payload['status'] ?? '', $this->defaultCreateStatus());
         $job = MakerJob::query()->create([
             'user_id' => $userId,
             'type_id' => $type->id,
@@ -214,6 +214,11 @@ class JobService
     {
         $job = MakerJob::query()->findOrFail($id);
         $job->status = 'cancelled';
+        $job->bidding_status = BiddingRules::CLOSED;
+        try {
+            $job->bidding_closed_at = now();
+        } catch (\Throwable) {
+        }
         $job->save();
         return $this->findAdmin($id);
     }

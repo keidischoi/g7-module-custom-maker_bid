@@ -19,6 +19,10 @@ class JobPresenter
 
     public static function biddingLabel(MakerJob $job): string
     {
+        $status = (string) $job->status;
+        if (in_array($status, ['cancelled', 'done', 'hold', 'draft', 'pending', 'disputed'], true)) {
+            return '종료';
+        }
         $bidding = BiddingRules::normalize($job->bidding_status ?? BiddingRules::OPEN);
 
         return $bidding === BiddingRules::CLOSED ? '종료' : '입찰중';

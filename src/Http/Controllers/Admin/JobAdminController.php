@@ -10,6 +10,7 @@ use Modules\Custom\MakerBids\Http\Requests\Admin\UpdateJobRequest;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Services\JobService;
 use Modules\Custom\MakerBids\Services\MarketplaceService;
+use Modules\Custom\MakerBids\Support\BiddingRules;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobRules;
 
@@ -104,13 +105,20 @@ class JobAdminController extends Controller
             $status = 'quote_request';
         }
         if (! in_array($status, $allowed, true)) {
-            $status = JobRules::normalizeListingStatus($status);
+            $status = JobRules::normalizeStatus($status);
         }
         if (! in_array($status, $allowed, true)) {
             return response()->json(['message' => '올바른 상태가 아닙니다.'], 422);
         }
         $job = MakerJob::query()->findOrFail($id);
         $job->status = $status;
+        if (in_array($status, ['cancelled', 'done'], true)) {
+            $job->bidding_status = BiddingRules::CLOSED;
+            try {
+                $job->bidding_closed_at = now();
+            } catch (\Throwable) {
+            }
+        }
         $job->save();
         try {
             if ($notice) {
