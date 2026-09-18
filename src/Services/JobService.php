@@ -37,7 +37,31 @@ class JobService
                 }
             });
         }
-        return $q->orderByDesc('id')->limit(100)->get()
+        $type = JobRules::listTypeFilter($request->query('type', $request->input('type')));
+        if ($type) {
+            $q->where(function ($inner) use ($type) {
+                $inner->where('type', $type)->orWhereHas('jobType', function ($rel) use ($type) {
+                    $rel->where('slug', $type);
+                });
+            });
+        }
+        $term = trim((string) $request->query('q', $request->input('q', '')));
+        if ($term !== '') {
+            $like = '%'.$term.'%';
+            $q->where(function ($inner) use ($like) {
+                $inner->where('title', 'like', $like)->orWhere('description', 'like', $like);
+            });
+        }
+        $sort = JobRules::normalizeListSort($request->query('sort', $request->input('sort')));
+        if ($sort === JobRules::LIST_SORT_CREATED) {
+            $q->orderBy('id');
+        } elseif ($sort === JobRules::LIST_SORT_VIEWS) {
+            $q->orderByDesc('view_count')->orderByDesc('id');
+        } else {
+            $q->orderByDesc('id');
+        }
+
+        return $q->limit(200)->get()
             ->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
     }
 
