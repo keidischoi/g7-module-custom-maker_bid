@@ -11,6 +11,12 @@ class CompanyPresenter
     public static function present(MakerCompany $row, string $audience = 'public'): array
     {
         $jobTypes = is_array($row->job_types) ? array_values($row->job_types) : CompanyRules::normalizeJobTypes($row->job_types);
+        $logos = self::logoFilesFor($row);
+        $thumb = null;
+        if ($logos) {
+            $first = $logos[0];
+            $thumb = $first['thumbnail_url'] ?? $first['url'] ?? $first['download_url'] ?? null;
+        }
         $payload = [
             'id' => (int) $row->id,
             'user_id' => (int) $row->user_id,
@@ -21,7 +27,9 @@ class CompanyPresenter
             'job_types' => $jobTypes,
             'business_no' => $row->business_no,
             'logo_hash' => $row->logo_hash,
-            'logo_url' => self::logoUrl($row->logo_hash),
+            'logo_url' => $thumb ?: self::logoUrl($row->logo_hash),
+            'thumbnail_url' => $thumb,
+            'logo_files' => $logos,
             'bio' => $row->bio ?? $row->note,
             'homepage_url' => $row->homepage_url,
             'portfolio_url' => $row->portfolio_url,
@@ -36,11 +44,6 @@ class CompanyPresenter
             'updated_at' => optional($row->updated_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('updated_at'),
         ];
 
-        $logos = self::logoFilesFor($row);
-        if ($logos) {
-            $payload['logo_url'] = $payload['logo_url'] ?: ($logos[0]['url'] ?? $logos[0]['download_url'] ?? null);
-        }
-
         if ($audience === 'owner' || $audience === 'admin') {
             $payload['manager_name'] = $row->manager_name;
             $payload['phone'] = $row->phone;
@@ -53,7 +56,6 @@ class CompanyPresenter
             $payload['reviewed_at'] = optional($row->reviewed_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('reviewed_at');
             $payload['note'] = $row->note;
             $payload['upload_token'] = $row->upload_token;
-            $payload['logo_files'] = $logos;
         }
 
         if ($audience === 'admin') {
@@ -135,20 +137,6 @@ class CompanyPresenter
         if ($row) {
             return [$row->toAttachmentArray()];
         }
-        return [UploadRules::toUploaderFile([
-            'id' => $hash,
-            'hash' => $hash,
-            'url' => $url,
-            'download_url' => $url,
-            'thumbnail_url' => $url,
-            'original_filename' => 'logo',
-            'file_name' => 'logo',
-            'name' => 'logo',
-            'is_image' => true,
-            'mime_type' => 'image/png',
-            'collection' => UploadRules::COLLECTION_LOGOS,
-            'size' => 0,
-            'order' => 0,
-        ])];
+        return [];
     }
 }
