@@ -22,22 +22,23 @@ class LayoutFileFixListener implements HookListenerInterface
         if (! is_array($layout)) {
             return $layout;
         }
+        $name = (string) ($layout['layout_name'] ?? '');
 
-        return $this->walk($this->scrub($layout));
+        return $this->walk($this->scrub($layout), $name);
     }
 
-    private function walk(mixed $node): mixed
+    private function walk(mixed $node, string $layoutName): mixed
     {
         if (! is_array($node)) {
             return $node;
         }
-        $node = $this->touch($node);
+        $node = $this->touch($node, $layoutName);
         foreach (['children', 'injections', 'components'] as $key) {
             if (! isset($node[$key]) || ! is_array($node[$key])) {
                 continue;
             }
             foreach ($node[$key] as $i => $child) {
-                $node[$key][$i] = $this->walk($child);
+                $node[$key][$i] = $this->walk($child, $layoutName);
             }
         }
         if (isset($node['slots']) && is_array($node['slots'])) {
@@ -46,7 +47,7 @@ class LayoutFileFixListener implements HookListenerInterface
                     continue;
                 }
                 foreach ($items as $i => $child) {
-                    $node['slots'][$slot][$i] = $this->walk($child);
+                    $node['slots'][$slot][$i] = $this->walk($child, $layoutName);
                 }
             }
         }
@@ -54,14 +55,14 @@ class LayoutFileFixListener implements HookListenerInterface
         return $node;
     }
 
-    private function touch(array $node): array
+    private function touch(array $node, string $layoutName): array
     {
         $name = (string) ($node['name'] ?? '');
         $id = (string) ($node['id'] ?? '');
-        $cls = (string) (($node['props']['className'] ?? ''));
+        $props = is_array($node['props'] ?? null) ? $node['props'] : [];
+        $cls = (string) ($props['className'] ?? '');
 
         if ($name === 'FileUploader') {
-            $props = is_array($node['props'] ?? null) ? $node['props'] : [];
             $collection = (string) ($props['collection'] ?? '');
             if ($collection === 'images' || str_contains($id, 'images')) {
                 $props['initialFiles'] = '{{job.data.images || []}}';
@@ -71,18 +72,36 @@ class LayoutFileFixListener implements HookListenerInterface
                 $props['initialFiles'] = '{{me.data.logo_files || []}}';
             }
             unset($props['key']);
-            $node['props'] = $props;
         }
+
+        if (str_contains($cls, 'cmb-bid-submit')) {
+            $props['className'] = trim(str_replace('cmb-bid-submit', 'cmb-bid-send', $cls).' cmb-bid-send');
+            unset($props['data-cmb-bid-submit']);
+        }
+        if (str_contains($cls, 'cmb-bid-update')) {
+            $props['className'] = trim(str_replace('cmb-bid-update', 'cmb-bid-send-update', $cls));
+        }
+
+        if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
+            $props['className'] = trim($cls.' cmb-company-gallery');
+            $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:start';
+        }
+        if ($layoutName === 'company_list' && str_contains($cls, 'cmb-company-card')) {
+            $props['className'] = trim($cls.' cmb-company-gallery-card');
+            $props['style'] = 'display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px;min-width:0';
+        }
+
+        $node['props'] = $props;
 
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
             $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64', false);
         }
-
-        if ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top')) {
-            $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '40', true);
-            $props = is_array($node['props'] ?? null) ? $node['props'] : [];
-            $props['className'] = trim(($props['className'] ?? '').' cmb-name-with-logo');
-            $node['props'] = $props;
+        if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top'))) {
+            $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '120', true);
+            $p = is_array($node['props'] ?? null) ? $node['props'] : [];
+            $p['className'] = trim(($p['className'] ?? '').' cmb-name-with-logo');
+            $p['style'] = 'display:flex;flex-direction:column;align-items:center;gap:8px';
+            $node['props'] = $p;
         }
 
         return $node;
