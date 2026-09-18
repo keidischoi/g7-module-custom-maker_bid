@@ -4,6 +4,12 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.29] - 2026-09-18
+
+### Changed
+- 의뢰상태 **보류** 칩은 로그인한 본인과 관리자에게만 보입니다. 게스트·타인에게는 숨깁니다. 보류 카드도 본인·관리자만 목록에서 봅니다.
+- 버전·캐시 버스트 **0.10.29**.
+
 ## [0.10.28] - 2026-09-18
 
 ### Fixed
