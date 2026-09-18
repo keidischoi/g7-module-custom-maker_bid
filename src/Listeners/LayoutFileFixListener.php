@@ -24,7 +24,7 @@ class LayoutFileFixListener implements HookListenerInterface
         }
         $layout = $this->scrub($layout);
 
-        return $this->bindUploaders($layout);
+        return $this->injectListThumbs($this->bindUploaders($layout));
     }
 
     private function bindUploaders(array $node): array
@@ -80,6 +80,74 @@ class LayoutFileFixListener implements HookListenerInterface
         foreach ($node as $k => $v) {
             $node[$k] = $this->scrub($v);
         }
+
+        return $node;
+    }
+
+    private function injectListThumbs(array $node): array
+    {
+        $cls = (string) (($node['props']['className'] ?? ''));
+        $name = (string) ($node['name'] ?? '');
+        if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
+            $node = $this->prependThumb($node, '{{$item.thumbnail_url || ""}}', 'cmb_job_thumb');
+        }
+        if ($name === 'A' && str_contains($cls, 'cmb-company-card')) {
+            $node = $this->prependThumb($node, '{{$item.logo_url || ""}}', 'cmb_co_thumb');
+        }
+        foreach (['children', 'injections', 'components'] as $key) {
+            if (! isset($node[$key]) || ! is_array($node[$key])) {
+                continue;
+            }
+            foreach ($node[$key] as $i => $child) {
+                if (is_array($child)) {
+                    $node[$key][$i] = $this->injectListThumbs($child);
+                }
+            }
+        }
+        if (isset($node['slots']) && is_array($node['slots'])) {
+            foreach ($node['slots'] as $slot => $items) {
+                if (! is_array($items)) {
+                    continue;
+                }
+                foreach ($items as $i => $child) {
+                    if (is_array($child)) {
+                        $node['slots'][$slot][$i] = $this->injectListThumbs($child);
+                    }
+                }
+            }
+        }
+
+        return $node;
+    }
+
+    private function prependThumb(array $node, string $srcExpr, string $id): array
+    {
+        $props = is_array($node['props'] ?? null) ? $node['props'] : [];
+        $cls = (string) ($props['className'] ?? '');
+        if (! str_contains($cls, 'cmb-card-with-thumb')) {
+            $props['className'] = trim($cls.' cmb-card-with-thumb');
+        }
+        $node['props'] = $props;
+        $thumb = [
+            'id' => $id,
+            'type' => 'basic',
+            'name' => 'Img',
+            'props' => [
+                'src' => $srcExpr,
+                'alt' => '',
+                'className' => 'cmb-list-thumb',
+                'width' => '64',
+                'height' => '64',
+            ],
+        ];
+        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
+        foreach ($kids as $child) {
+            if (is_array($child) && ($child['id'] ?? '') === $id) {
+                return $node;
+            }
+        }
+        array_unshift($kids, $thumb);
+        $node['children'] = $kids;
 
         return $node;
     }
