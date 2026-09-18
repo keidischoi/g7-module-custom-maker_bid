@@ -42,7 +42,7 @@ class JobPresenter
         $deliveries = [];
         foreach ($files as $file) {
             if ($file instanceof MakerJobFile && $file->isExpired()) {
-                continue; // hide expired delivery/archives from payload
+                continue;
             }
             $row = $file instanceof MakerJobFile ? $file->toAttachmentArray() : (is_array($file) ? UploadRules::toUploaderFile($file) : $file);
             if (! is_array($row) || ! empty($row['is_expired'])) {
@@ -135,11 +135,11 @@ class JobPresenter
             'revision_enabled' => (bool) $job->revision_enabled,
             'revision_count' => $job->revision_count,
             'revision_cost' => $job->revision_cost,
-            // Edit form binds from/to; derived from stored contact_hours when present.
             'contact_hours_from' => self::contactHoursPart($job->contact_hours, 0),
             'contact_hours_to' => self::contactHoursPart($job->contact_hours, 1),
             'bids_count' => (int) ($job->bids_count ?? 0),
             'view_count' => (int) ($job->view_count ?? 0),
+            'upload_token' => (string) ($job->upload_token ?? ''),
             'images' => $images,
             'archives' => $archives,
             'deliveries' => $deliveries,
@@ -155,7 +155,6 @@ class JobPresenter
             }
             $payload['ext_'.strtolower($extToken)] = true;
         }
-
 
         if ($canViewPersonal) {
             foreach (PrivacyRules::personalKeys() as $key) {
@@ -189,16 +188,13 @@ class JobPresenter
         ]);
     }
 
-    /**
-     * Split "09:00 ~ 18:00" / "09:00-18:00" style contact_hours for edit inputs.
-     */
     private static function contactHoursPart(mixed $hours, int $index): ?string
     {
         $raw = trim((string) ($hours ?? ''));
         if ($raw === '') {
             return null;
         }
-        if (preg_match('/(\d{1,2}:\d{2})\s*[~\-–—]\s*(\d{1,2}:\d{2})/u', $raw, $m)) {
+        if (preg_match('/(\d{1,2}:\d{2})\s*[~\-\x{2013}\x{2014}]\s*(\d{1,2}:\d{2})/u', $raw, $m)) {
             return $index === 0 ? $m[1] : $m[2];
         }
         if (preg_match_all('/\d{1,2}:\d{2}/', $raw, $all) && isset($all[0][$index])) {
