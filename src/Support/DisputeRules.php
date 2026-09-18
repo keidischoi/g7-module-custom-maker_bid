@@ -141,7 +141,11 @@ class DisputeRules
 
     public static function kindLabel(string $kind): string
     {
-        return $kind === 'report' ? '신고' : '분쟁';
+        return match ($kind) {
+            'report' => '신고',
+            'company_report' => '업체신고',
+            default => '분쟁',
+        };
     }
 
     public static function statusLabel(mixed $status): string

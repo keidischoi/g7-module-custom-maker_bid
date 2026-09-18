@@ -127,6 +127,23 @@ class MarketplaceController extends Controller
         return response()->json(['data' => $data], 201);
     }
 
+    public function reportCompany(Request $request, int $id): JsonResponse
+    {
+        try {
+            $data = $this->market->reportCompany(
+                (int) $request->user()->id,
+                $id,
+                (string) $request->input('reason', ''),
+                (string) $request->input('factor', 'fraud'),
+                (int) $request->input('job_id', 0)
+            );
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+
+        return response()->json(['data' => $data], 201);
+    }
+
     public function myDisputes(Request $request): JsonResponse
     {
         $items = $this->market->listMineDisputes((int) $request->user()->id);

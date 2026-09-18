@@ -144,6 +144,9 @@ expectTrue('provider registers seed-dummy-bids', str_contains($providerSrc, 'See
 $api = (string) file_get_contents($root.'/src/routes/api.php');
 expectTrue('reviews route', str_contains($api, "jobs/{id}/reviews"));
 expectTrue('company reviews route', str_contains($api, "companies/{id}/reviews"));
+expectTrue('company report route', str_contains($api, "companies/{id}/report"));
+$marketSrc = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
+expectTrue('reportCompany helper', str_contains($marketSrc, 'function reportCompany'));
 expectTrue('run-schedule route', str_contains($api, 'jobs/run-schedule'));
 expectTrue('admin resolve report route', str_contains($api, "reports/{id}"));
 

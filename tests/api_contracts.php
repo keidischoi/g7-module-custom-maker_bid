@@ -25,6 +25,7 @@ expectTrue('owner award route exists', str_contains($api, "Route::post('jobs/{id
 expectTrue('company apply route exists', str_contains($api, "Route::post('companies', [CompanyController::class, 'store'])"));
 expectTrue('company form-defaults route exists', str_contains($api, "Route::get('companies/form-defaults'"));
 expectTrue('public companies list route exists', str_contains($api, "Route::get('companies', [CompanyController::class, 'index'])"));
+expectTrue('company report route exists', str_contains($api, "Route::post('companies/{id}/report'"));
 expectTrue('admin company patch route', str_contains($api, "Route::patch('companies/{id}'"));
 expectTrue('admin company hold route', str_contains($api, "Route::post('companies/{id}/hold'"));
 expectTrue('admin group uses auth:sanctum', str_contains($api, "->middleware(['auth:sanctum', 'throttle:600,1'])"));
@@ -50,7 +51,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.37', ($moduleMeta['version'] ?? null) === '0.10.37');
+expectTrue('module version is 0.10.38', ($moduleMeta['version'] ?? null) === '0.10.38');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -59,7 +60,7 @@ expectTrue(
 );
 $composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
 expectTrue('composer name is custom/maker-bids', ($composer['name'] ?? null) === 'custom/maker-bids');
-expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.37');
+expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.38');
 expectTrue(
     'psr-4 is Modules\\Custom\\MakerBids\\ not MakerBid',
     isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\'])
@@ -137,6 +138,7 @@ $mutators = [
     "Route::post('jobs/{id}/award'",
     "Route::get('companies/form-defaults'",
     "Route::post('companies'",
+    "Route::post('companies/{id}/report'",
 ];
 $authBlockStart = strpos($api, "middleware(['auth:sanctum', 'throttle:60,1'])");
 $authBlockEnd = strpos($api, "Route::prefix('admin')");

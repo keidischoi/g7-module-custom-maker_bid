@@ -23,6 +23,7 @@ expect('factor label quality', DisputeRules::factorLabel('quality'), '제품 품
 expect('compose reason prefixes factor', DisputeRules::composeReason('shipping', '박스가 찢어짐'), '배송 문제 · 박스가 찢어짐');
 expect('kind claim label', DisputeRules::kindLabel('claim'), '분쟁');
 expect('kind report label', DisputeRules::kindLabel('report'), '신고');
+expect('kind company_report label', DisputeRules::kindLabel('company_report'), '업체신고');
 expect('open status label', DisputeRules::statusLabel('open'), '진행중');
 expect('closed status label', DisputeRules::statusLabel('closed'), '종결');
 expectTrue('options include fraud', in_array('fraud', array_column(DisputeRules::factorOptions(), 'value'), true));
@@ -33,6 +34,12 @@ $ws = (string) file_get_contents($root.'/resources/layouts/user/jobs_workspace.j
 expectTrue('workspace has factor select', str_contains($ws, '"id": "claim_factor"') && str_contains($ws, '사기·허위'));
 expectTrue('workspace posts factor in claim body', str_contains($ws, '{{_local.claim}}') && str_contains($ws, '/claim'));
 expectTrue('workspace report has factor', str_contains($ws, '"id": "report_factor"'));
+expectTrue('workspace company report posts to companies', str_contains($ws, 'company_report_box') && str_contains($ws, '/companies/{{job.data.awarded_company_id}}/report'));
+$disp = (string) file_get_contents($root.'/resources/layouts/user/jobs_disputes.json');
+expectTrue('disputes has company report form', str_contains($disp, 'company_report_box') && str_contains($disp, 'data-cmb-company-report-host') && str_contains($disp, '/companies/{{_local.company_report.company_id}}/report'));
+expectTrue('disputes lists company_name', str_contains($disp, '$d.company_name'));
+$pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
+expectTrue('page.js binds company report picker', str_contains($pageJs, '__cmbCompanyReport') && str_contains($pageJs, 'data-cmb-company-report-select'));
 $nav = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav has 분쟁 tab', str_contains($nav, "/maker-bids/disputes") && str_contains($nav, "label: '분쟁'"));
 $userRoutes = json_decode((string) file_get_contents($root.'/resources/routes/user.json'), true);
@@ -45,6 +52,14 @@ $show = (string) file_get_contents($root.'/resources/layouts/user/jobs_show.json
 expectTrue('detail 분쟁 접수 link', str_contains($show, '분쟁 접수') && str_contains($show, 'can_dispute'));
 $api = (string) file_get_contents($root.'/src/routes/api.php');
 expectTrue('disputes mine API', str_contains($api, "Route::get('disputes'"));
+expectTrue('company report API', str_contains($api, "companies/{id}/report"));
+$migCo = (string) file_get_contents($root.'/database/migrations/2026_09_18_000024_ensure_report_company_id.php');
+expectTrue('company_id migration on reports', str_contains($migCo, 'maker_reports') && str_contains($migCo, 'company_id'));
+$market = (string) file_get_contents($root.'/src/Services/MarketplaceService.php');
+expectTrue('reportCompany bumps report_count', str_contains($market, 'function reportCompany') && str_contains($market, 'touchCompanyReport') && str_contains($market, 'report_count'));
+expectTrue('job report also touches company', str_contains($market, 'touchCompanyReport($company[\'id\']'));
+$presenter = (string) file_get_contents($root.'/src/Support/JobPresenter.php');
+expectTrue('job presenter awarded company', str_contains($presenter, 'awarded_company_id') && str_contains($presenter, 'awarded_company_name'));
 $mig = (string) file_get_contents($root.'/database/migrations/2026_09_18_000020_ensure_claim_report_factor.php');
 expectTrue('factor migration claims+reports', str_contains($mig, 'maker_claims') && str_contains($mig, "'factor'"));
 $adminDisp = (string) file_get_contents($root.'/resources/layouts/admin/disputes_index.json');

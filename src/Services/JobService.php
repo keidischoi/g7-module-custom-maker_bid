@@ -106,7 +106,7 @@ class JobService
 
     public function findPublic(int $id, Request $request): array
     {
-        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->find($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid.company'])->withCount('bids')->find($id);
         if ($job === null) {
             throw new DomainException('의뢰를 찾을 수 없습니다.', 404);
         }
@@ -116,7 +116,7 @@ class JobService
 
     public function findAdmin(int $id): array
     {
-        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files'])->withCount('bids')->findOrFail($id);
+        $job = MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid.company'])->withCount('bids')->findOrFail($id);
         $payload = $this->present($job, ['userId' => 0, 'isAdmin' => true], true, true);
         $payload['upload_token'] = $this->files->newUploadToken();
         return $payload;
@@ -137,7 +137,7 @@ class JobService
 
     public function rawFind(int $id): MakerJob
     {
-        return MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid'])->withCount('bids')->findOrFail($id);
+        return MakerJob::query()->with(['bids.company', 'jobType', 'files', 'awardedBid.company'])->withCount('bids')->findOrFail($id);
     }
 
     public function create(int $userId, array $payload): array

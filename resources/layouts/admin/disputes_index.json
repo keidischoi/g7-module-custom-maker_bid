@@ -482,10 +482,10 @@
                             "type": "basic",
                             "name": "A",
                             "props": {
-                              "href": "/admin/maker-bids/jobs/{{$item.job_id}}",
+                              "href": "{{$item.job_id ? ('/admin/maker-bids/jobs/' + $item.job_id) : '/admin/maker-bids/companies'}}",
                               "className": "cmb-admin-row-title"
                             },
-                            "text": "신고 #{{$item.id}} · 의뢰 #{{$item.job_id}}"
+                            "text": "{{$item.kind_label || '신고'}} #{{$item.id}}{{$item.company_name ? (' · ' + $item.company_name) : ''}}{{$item.job_id ? (' · 의뢰 #' + $item.job_id) : ''}}"
                           },
                           {
                             "id": "rmeta",
@@ -494,7 +494,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.factor_label}} · {{$item.status_label}} · {{$item.job_title}} · {{$item.reason}}"
+                            "text": "{{$item.factor_label}} · {{$item.status_label}} · {{$item.company_name || $item.job_title}} · {{$item.reason}}"
                           }
                         ]
                       },
@@ -510,6 +510,7 @@
                             "id": "rjob",
                             "type": "basic",
                             "name": "A",
+                            "if": "{{$item.job_id}}",
                             "props": {
                               "href": "/admin/maker-bids/jobs/{{$item.job_id}}",
                               "className": "px-3 py-1 text-sm rounded-lg border"
