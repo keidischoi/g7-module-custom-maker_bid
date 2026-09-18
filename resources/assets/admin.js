@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs37) return;
-  window.__cmbAdminJs37 = true;
+  if (window.__cmbAdminJs38) return;
+  window.__cmbAdminJs38 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -161,6 +161,42 @@
     return h ? h[1] : '';
   }
 
+  function readAuthToken() {
+    var token = '';
+    try {
+      if (window.G7Core && window.G7Core.api && typeof window.G7Core.api.getToken === 'function') {
+        token = window.G7Core.api.getToken();
+      }
+    } catch (e) {}
+    if (!token) {
+      try {
+        if (window.AuthManager && typeof window.AuthManager.getInstance === 'function') {
+          var auth = window.AuthManager.getInstance();
+          if (auth && typeof auth.getToken === 'function') token = auth.getToken();
+          if (!token && auth && auth.state && auth.state.token) token = auth.state.token;
+        }
+      } catch (e2) {}
+    }
+    var keys = ['auth_token', 'g7_token', 'access_token', 'token'];
+    var i;
+    var v;
+    if (!token) {
+      for (i = 0; i < keys.length; i++) {
+        try { v = localStorage.getItem(keys[i]); } catch (e3) { v = ''; }
+        if (v && v !== 'undefined' && v !== 'null') { token = v; break; }
+      }
+    }
+    if (!token) {
+      for (i = 0; i < keys.length; i++) {
+        try { v = sessionStorage.getItem(keys[i]); } catch (e4) { v = ''; }
+        if (v && v !== 'undefined' && v !== 'null') { token = v; break; }
+      }
+    }
+    if (token && typeof token === 'string' && token.indexOf('Bearer ') === 0) token = token.slice(7);
+    if (token && token !== 'undefined' && token !== 'null') return String(token);
+    return '';
+  }
+
   function csrfHeaderMap() {
     var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
     var token = csrfToken();
@@ -168,6 +204,8 @@
       headers['X-CSRF-TOKEN'] = token;
       headers['X-XSRF-TOKEN'] = token;
     }
+    var bearer = readAuthToken();
+    if (bearer) headers.Authorization = 'Bearer ' + bearer;
     return headers;
   }
 
@@ -186,7 +224,7 @@
     }
     fetch('/api/modules/custom-maker_bids/admin/companies/' + id + '/' + action, {
       method: 'POST',
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: headers,
       body: body
     }).then(function () {
@@ -756,13 +794,13 @@
 
   function injectPortalCss() {
     var s = document.getElementById('cmb-admin-select-portal-css');
-    if (s && s.getAttribute('data-cmb-v') === '37') return;
+    if (s && s.getAttribute('data-cmb-v') === '38') return;
     if (!s) {
       s = document.createElement('style');
       s.id = 'cmb-admin-select-portal-css';
       (document.head || document.documentElement).appendChild(s);
     }
-    s.setAttribute('data-cmb-v', '37');
+    s.setAttribute('data-cmb-v', '38');
       s.textContent =
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui .cmb-admin,html.cmb-admin-ui select{color-scheme:dark}' +
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
@@ -966,23 +1004,12 @@
     return m ? m[1] : '';
   }
 
-  function adminFetch(url, method, okMsg) {
-    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
-    var token = csrfToken();
-    if (token) {
-      headers['X-CSRF-TOKEN'] = token;
-      headers['X-XSRF-TOKEN'] = token;
-    }
-    return fetch(url, { method: method || 'POST', credentials: 'same-origin', headers: headers }).then(function (res) {
-      if (!res.ok) {
-        return res.json().catch(function () { return {}; }).then(function (j) {
-          var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
-          if (window.G7Core && window.G7Core.dispatch) {
-            window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
-          }
-          throw new Error(msg);
-        });
-      }
+  function adminFetch(url, method, okMsg, body) {
+    method = method || 'POST';
+    var headers = csrfHeaderMap();
+    if (body != null) headers['Content-Type'] = 'application/json';
+    var payload = body == null ? undefined : (typeof body === 'string' ? body : JSON.stringify(body));
+    function onOk() {
       if (window.G7Core && window.G7Core.dispatch) {
         if (okMsg) window.G7Core.dispatch({ handler: 'toast', params: { type: 'success', message: okMsg } });
         window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'jobs' } });
@@ -990,7 +1017,44 @@
       } else {
         location.reload();
       }
-    });
+    }
+    function onErr(msg) {
+      if (window.G7Core && window.G7Core.dispatch) {
+        window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
+      }
+    }
+    function rawFetch() {
+      return fetch(url, {
+        method: method,
+        credentials: 'include',
+        headers: headers,
+        body: payload
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
+            if (res.status === 401) msg = '로그인이 필요합니다. 새로고침 후 다시 시도해 주세요.';
+            onErr(msg);
+            throw new Error(msg);
+          });
+        }
+        onOk();
+      });
+    }
+    try {
+      var api = window.G7Core && window.G7Core.api;
+      var m = String(method).toLowerCase();
+      if (api) {
+        var via = null;
+        if (m === 'delete' && typeof api.delete === 'function') via = api.delete(url);
+        else if (m === 'post' && typeof api.post === 'function') via = api.post(url, body && typeof body === 'object' ? body : {});
+        else if (m === 'patch' && typeof api.patch === 'function') via = api.patch(url, body && typeof body === 'object' ? body : {});
+        if (via && typeof via.then === 'function') {
+          return via.then(function () { onOk(); }).catch(function () { return rawFetch(); });
+        }
+      }
+    } catch (eApi) {}
+    return rawFetch();
   }
 
   function bindRowActions() {

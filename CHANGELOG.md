@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.38] - 2026-09-18
+
+### Fixed
+- **관리자 의뢰 보류·승인**: 목록 버튼이 G7 인증 호출을 가로채고 Bearer 없이 보내 «인증이 필요합니다»가 나던 문제를 고칩니다. Sanctum 토큰·쿠키를 함께 붙입니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.38**.
+
 ## [0.10.37] - 2026-09-18
 
 ### Fixed
