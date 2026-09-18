@@ -210,27 +210,23 @@
 
   function statusGroups() {
     var rows = [];
-    function add(el) {
+    document.querySelectorAll('.cmb-admin-row, .cmb-admin-toolbar').forEach(function (el) {
       if (el && rows.indexOf(el) < 0) rows.push(el);
-    }
-    document.querySelectorAll('.cmb-admin-row, .cmb-admin-toolbar').forEach(add);
-    document.querySelectorAll('.cmb-admin button, .cmb-admin [role="button"]').forEach(function (b) {
-      if (kindFromEl(b) !== 'approve') return;
-      var root = b.parentElement;
-      var hops = 0;
-      while (root && hops < 6) {
-        var hasHold = false;
-        if (root.querySelectorAll) {
-          root.querySelectorAll('button, [role="button"]').forEach(function (x) {
-            if (kindFromEl(x) === 'hold') hasHold = true;
-          });
-        }
-        if (hasHold) { add(root); break; }
-        root = root.parentElement;
-        hops++;
-      }
     });
     return rows;
+  }
+
+  function statusFromRow(root) {
+    if (!root) return '';
+    var raw = '';
+    if (root.getAttribute) raw = normalizeStatus(root.getAttribute('data-cmb-status') || '');
+    if (raw) return raw;
+    var cls = (root.className && String(root.className)) || '';
+    var m = cls.match(/(?:^|\s)cmb-status-([a-z0-9_]+)/i);
+    if (m) return normalizeStatus(m[1]);
+    var meta = root.querySelector && root.querySelector('.cmb-admin-muted, .cmb-admin-meta, .cmb-admin-row-title');
+    if (meta && String(meta.textContent || '').trim()) return statusFromText(meta.textContent);
+    return '';
   }
 
   function paintStatusButtons() {
@@ -238,15 +234,14 @@
     painting = true;
     try {
       statusGroups().forEach(function (row) {
-        var st = statusFromRoot(row);
-        if (!st) st = statusFromText(row.textContent);
+        var st = statusFromRow(row);
         var entity = inferEntity(row, st);
         markRoot(row, st, entity);
         paintGroup(row, st, entity);
       });
       var bar = document.querySelector('.cmb-admin-toolbar');
       if (bar) {
-        var st = statusFromRoot(bar);
+        var st = statusFromRow(bar);
         if (!st) {
           var meta = document.querySelector('.cmb-admin-meta');
           st = statusFromText(meta && meta.textContent);
@@ -280,8 +275,9 @@
   }
 
   function hideVisually(el) {
-    if (!el || (el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1')) return;
-    if (el.closest && el.closest('[data-cmb-filter-free]')) return;
+    if (!el || el.nodeType !== 1) return;
+    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') === '1')) return;
+    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('[data-cmb-filter-wrap]'))) return;
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('width', '1px', 'important');
     el.style.setProperty('height', '1px', 'important');
@@ -330,39 +326,32 @@
   }
 
   function ensureAdminFilterSelect() {
-    var company = isCompanyAdminPage();
-    var opts = company
-      ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
-      : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
-    document.querySelectorAll('.cmb-admin-filter [role="combobox"], .cmb-admin-filter [data-slot="trigger"], .cmb-admin-filter [data-slot="select-trigger"]').forEach(function (el) {
-      if (el.getAttribute && el.getAttribute('data-cmb-filter-free') === '1') return;
-      hideVisually(el);
-    });
-    var hosts = document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host');
-    if (!hosts.length) {
-      document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
-        if (bar.querySelector('[data-cmb-filter-free]')) return;
-        var host = document.createElement('div');
-        host.className = 'cmb-admin-filter-field cmb-admin-filter-status cmb-admin-select-host';
+    document.querySelectorAll('.cmb-admin-filter').forEach(function (bar) {
+      var company = (bar.getAttribute('data-cmb-filter-entity') === 'company') ||
+        (bar.getAttribute('data-cmb-filter-entity') !== 'job' && isCompanyAdminPage());
+      var opts = company
+        ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
+        : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
+      bar.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-select-host').forEach(function (host) {
+        if (host.getAttribute('data-cmb-filter-wrap') === '1') return;
+        hideVisually(host);
+      });
+      bar.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
+        if (el.closest && el.closest('[data-cmb-filter-wrap]')) return;
+        hideVisually(el);
+      });
+      var wrap = bar.querySelector('[data-cmb-filter-wrap]');
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.setAttribute('data-cmb-filter-wrap', '1');
+        wrap.className = 'cmb-admin-filter-native-wrap';
         var lab = document.createElement('p');
         lab.className = 'cmb-admin-label';
         lab.textContent = '상태';
-        host.appendChild(lab);
-        bar.insertBefore(host, bar.firstChild);
-      });
-      hosts = document.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-filter .cmb-admin-select-host');
-    }
-    hosts.forEach(function (host) {
-      host.querySelectorAll('button, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(hideVisually);
-      host.style.setProperty('min-width', '12rem', 'important');
-      host.style.setProperty('width', '12rem', 'important');
-      host.style.setProperty('flex', '0 0 12rem', 'important');
-      var sel = host.querySelector('[data-cmb-filter-free]');
-      if (!sel) {
-        sel = document.createElement('select');
+        var sel = document.createElement('select');
         sel.setAttribute('data-cmb-filter-free', '1');
         sel.setAttribute('name', 'status');
-        sel.className = 'cmb-admin-filter-control cmb-admin-filter-native';
+        sel.className = 'cmb-admin-filter-native';
         opts.forEach(function (o) {
           var op = document.createElement('option');
           op.value = o[0];
@@ -371,9 +360,13 @@
         });
         var cur = currentFilterStatus();
         if (cur) sel.value = cur;
-        host.appendChild(sel);
+        wrap.appendChild(lab);
+        wrap.appendChild(sel);
+        var go = bar.querySelector('.cmb-admin-filter-go');
+        bar.insertBefore(wrap, go || bar.firstChild);
       }
-      bindNativeFilter(sel, company);
+      var native = wrap.querySelector('[data-cmb-filter-free]');
+      bindNativeFilter(native, company);
     });
   }
 

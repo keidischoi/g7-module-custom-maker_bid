@@ -175,7 +175,9 @@
   flex-wrap: nowrap !important;
   align-items: center;
   gap: 0.5rem;
-  width: 100%;
+  width: 100% !important;
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
   position: relative;
   z-index: 2;
 }

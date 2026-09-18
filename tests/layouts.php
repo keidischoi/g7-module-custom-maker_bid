@@ -454,7 +454,7 @@ expectTrue('admin companies rows expose status for 승인/보류 paint', str_con
 expectTrue('admin.css current 승인 beats dark outline', str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-btn-approve.is-active') && str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-status-quote_request .cmb-btn-approve'));
 expectTrue('admin.css current 보류 beats dark outline', str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-btn-hold.is-active') && str_contains($adminCss, 'html.cmb-admin-dark .cmb-admin .cmb-status-hold .cmb-btn-hold'));
 expectTrue('admin.css press effect on 승인/보류', str_contains($adminCss, 'data-cmb-pressed') && str_contains($adminCss, 'scale(0.9)') && str_contains($adminCss, 'is-pressed'));
-expectTrue('admin.js paints 승인/보류 with inline important', str_contains($adminJs, "setProperty('background'") && str_contains($adminJs, "PALETTE") && str_contains($adminJs, 'ensureAdminFilterSelect'));
+expectTrue('admin.js infers status from muted not buttons', str_contains($adminJs, 'function statusFromRow') && str_contains($adminJs, 'cmb-admin-muted') && str_contains($adminJs, 'data-cmb-filter-wrap'));
 expectTrue('admin.css native filter select keeps width', str_contains($adminCss, 'select.cmb-admin-filter-native') && str_contains($adminCss, 'min-width: 12rem !important'));
 expectTrue('admin.css paints by data-cmb-kind', str_contains($adminCss, '[data-cmb-kind="approve"][data-cmb-active="1"]') && str_contains($adminCss, '[data-cmb-kind="hold"][data-cmb-active="1"]'));
 expectTrue('admin jobs show hides legacy WDH row', str_contains($adminJobsShow, 'cmb-legacy-size-row') && str_contains($adminCss, '.cmb-legacy-size-row'));
