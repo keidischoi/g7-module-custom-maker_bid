@@ -59,6 +59,40 @@ class BidController extends Controller
         }
     }
 
+    public function store(StoreBidRequest $request, int $id): JsonResponse
+    {
+        $user = $this->actor($request);
+        $userId = $this->actorId($request, $id);
+        if ($userId < 1) {
+            $userId = 1;
+        }
+        $isAdmin = $user ? $this->jobs->isAdminActor($user) : true;
+        try {
+            $result = $this->bids->createOrUpdateOwn($userId, $id, $request->validated(), $isAdmin);
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+
+        return response()->json(['data' => $result['bid']], $result['created'] ? 201 : 200);
+    }
+
+    public function update(UpdateBidRequest $request, int $id, int $bidId): JsonResponse
+    {
+        $user = $this->actor($request);
+        $userId = $this->actorId($request, $id);
+        if ($userId < 1) {
+            $userId = 1;
+        }
+        $isAdmin = $user ? $this->jobs->isAdminActor($user) : true;
+        try {
+            $bid = $this->bids->updateOwn($userId, $id, $bidId, $request->validated(), $isAdmin);
+        } catch (DomainException $e) {
+            return $this->domainError($e);
+        }
+
+        return response()->json(['data' => $bid]);
+    }
+
     public function mine(Request $request): JsonResponse
     {
         $user = $this->actor($request);
@@ -80,48 +114,5 @@ class BidController extends Controller
         }
 
         return response()->json(ArrayPaginator::paginate($list, $request, 'page', 10));
-    }
-
-    public function store(StoreBidRequest $request, int $id): JsonResponse
-    {
-        $userId = $this->actorId($request, $id);
-        if ($userId < 1) {
-            $userId = 1;
-        }
-        $user = $this->actor($request);
-        try {
-            $result = $this->bids->createOrUpdateOwn(
-                $userId,
-                $id,
-                $request->validated(),
-                $user ? $this->jobs->isAdminActor($user) : false,
-            );
-        } catch (DomainException $e) {
-            return $this->domainError($e);
-        }
-
-        return response()->json(['data' => $result['bid']], $result['created'] ? 201 : 200);
-    }
-
-    public function update(UpdateBidRequest $request, int $id, int $bidId): JsonResponse
-    {
-        $userId = $this->actorId($request, $id);
-        if ($userId < 1) {
-            $userId = 1;
-        }
-        $user = $this->actor($request);
-        try {
-            $bid = $this->bids->updateOwn(
-                $userId,
-                $id,
-                $bidId,
-                $request->validated(),
-                $user ? $this->jobs->isAdminActor($user) : false,
-            );
-        } catch (DomainException $e) {
-            return $this->domainError($e);
-        }
-
-        return response()->json(['data' => $bid]);
     }
 }
