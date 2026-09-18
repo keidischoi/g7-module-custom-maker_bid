@@ -57,7 +57,7 @@
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": { "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto", "data-cmb-subnav": "1" },
+                "props": { "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-wrap ml-auto", "data-cmb-subnav": "1" },
                 "children": [
                   { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
                   { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰목록" },
@@ -116,15 +116,6 @@
             ]
           },
           {
-            "id": "cta",
-            "type": "basic",
-            "name": "Div",
-            "props": { "className": "cmb-job-card-actions" },
-            "children": [
-              { "id": "cta_new", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "cmb-btn cmb-btn-primary" }, "text": "의뢰 등록" }
-            ]
-          },
-          {
             "id": "list_card",
             "type": "basic",
             "name": "Div",
@@ -179,6 +170,20 @@
                     ]
                   }
                 ]
+              },
+              {
+                "id": "jobs_pager",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-pager",
+                  "data-cmb-pager": "1",
+                  "data-param": "page",
+                  "data-page": "{{jobs?.data?.meta?.page || 1}}",
+                  "data-total": "{{jobs?.data?.meta?.total || 0}}",
+                  "data-last-page": "{{jobs?.data?.meta?.last_page || 1}}",
+                  "data-per-page": "{{jobs?.data?.meta?.per_page || 10}}"
+                }
               }
             ]
           }
