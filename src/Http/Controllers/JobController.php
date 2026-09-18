@@ -5,6 +5,7 @@ namespace Modules\Custom\MakerBids\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Modules\Custom\MakerBids\Http\Concerns\RespondsWithDomainErrors;
 use Modules\Custom\MakerBids\Http\Requests\AwardJobRequest;
 use Modules\Custom\MakerBids\Http\Requests\StoreJobRequest;
@@ -109,6 +110,16 @@ class JobController extends Controller
                     'exp' => time() + 3600,
                 ]));
             }
+            $data['debug_session'] = sprintf(
+                'req=%s web=%s sanctum=%s viewer=%s member=%s admin=%s can_bid=%s',
+                $request->user()?->id ?? '-',
+                Auth::guard('web')->id() ?? '-',
+                Auth::guard('sanctum')->id() ?? '-',
+                $userId ?: '-',
+                ! empty($ctx['isMember']) ? '1' : '0',
+                ! empty($ctx['isAdmin']) ? '1' : '0',
+                ! empty($data['can_bid']) ? '1' : '0'
+            );
 
             return response()->json(['data' => $data]);
         } catch (DomainException $e) {
