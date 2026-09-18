@@ -19,14 +19,10 @@ class BidService
         private readonly JobService $jobs,
     ) {}
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array{bid: MakerBid, created: bool}
-     */
     public function createOrUpdateOwn(int $userId, int $jobId, array $payload, bool $isAdmin = false): array
     {
         $job = MakerJob::query()->findOrFail($jobId);
-        $this->assertCanWrite($userId, $job);
+        $this->assertCanWrite($userId, $job, $isAdmin);
 
         $company = $this->approvedCompany($userId);
         $this->assertEligible($userId, $job, $company, $isAdmin);
@@ -72,21 +68,18 @@ class BidService
         return ['bid' => $bid, 'created' => true];
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     */
     public function updateOwn(int $userId, int $jobId, int $bidId, array $payload, bool $isAdmin = false): MakerBid
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $bid = MakerBid::query()->where('job_id', $job->id)->findOrFail($bidId);
 
-        if ((int) $bid->user_id !== $userId) {
+        if ((int) $bid->user_id !== $userId && ! $isAdmin) {
             throw new DomainException('본인 입찰만 수정할 수 있습니다.', 403);
         }
 
         $this->jobs->assertOpen($job);
 
-        if (! BidRules::canUpdateOwn($userId, (int) $bid->user_id, true, (string) $bid->status)) {
+        if (! BidRules::canUpdateOwn($userId, (int) $bid->user_id, true, (string) $bid->status) && ! $isAdmin) {
             throw new DomainException('수정할 수 없는 입찰입니다.', 422);
         }
 
@@ -98,9 +91,6 @@ class BidService
         return $bid->fresh() ?? $bid;
     }
 
-    /**
-     * @return Collection<int, MakerBid>
-     */
     public function listMine(int $userId): Collection
     {
         return MakerBid::query()
@@ -111,9 +101,6 @@ class BidService
             ->get();
     }
 
-    /**
-     * @return list<array<string, mixed>>
-     */
     public function listAdmin(Request $request): array
     {
         $q = MakerBid::query()->with(['job', 'company'])->latest();
@@ -130,9 +117,6 @@ class BidService
         return $q->limit(200)->get()->map(fn (MakerBid $bid) => $this->presentAdmin($bid))->all();
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function findAdmin(int $id): array
     {
         return $this->presentAdmin(
@@ -140,10 +124,6 @@ class BidService
         );
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
     public function updateAdmin(int $id, array $payload): array
     {
         $bid = MakerBid::query()->findOrFail($id);
@@ -153,7 +133,6 @@ class BidService
                 continue;
             }
             $val = $payload[$key];
-            // Blank days/message on partial admin update = unchanged.
             if (($val === null || $val === '') && in_array($key, ['days', 'message'], true)) {
                 continue;
             }
@@ -167,9 +146,6 @@ class BidService
         return $this->findAdmin($id);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function presentAdmin(MakerBid $bid): array
     {
         $row = CompanyPresenter::presentBid($bid);
@@ -198,11 +174,11 @@ class BidService
         $bid->delete();
     }
 
-    private function assertCanWrite(int $userId, MakerJob $job): void
+    private function assertCanWrite(int $userId, MakerJob $job, bool $isAdmin = false): void
     {
         $this->jobs->assertOpen($job);
 
-        if (BidRules::isOwnJob($userId, $job->user_id)) {
+        if (! $isAdmin && BidRules::isOwnJob($userId, $job->user_id)) {
             throw new DomainException('본인 의뢰에는 입찰할 수 없습니다.', 422);
         }
     }
@@ -229,14 +205,6 @@ class BidService
             ->first();
     }
 
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
-    /**
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
     private function writeAttributes(array $payload, ?MakerCompany $company, bool $partial = false): array
     {
         $attrs = [];
