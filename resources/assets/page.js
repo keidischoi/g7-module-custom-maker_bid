@@ -1687,13 +1687,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.24';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.25';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.24') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.25') < 0) {
         existing.href = FORM_CSS;
       }
       return;

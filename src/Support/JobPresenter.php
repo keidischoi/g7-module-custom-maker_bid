@@ -131,6 +131,7 @@ class JobPresenter
             'ext_gcode' => in_array('GCODE', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
             'ext_fbx' => in_array('FBX', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
             'ext_dwg' => in_array('DWG', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
+            'ext_pdf' => in_array('PDF', is_array($job->provided_extensions) ? $job->provided_extensions : [], true),
             'ownership_requested' => (bool) $job->ownership_requested,
             'revision_enabled' => (bool) $job->revision_enabled,
             'revision_count' => $job->revision_count,

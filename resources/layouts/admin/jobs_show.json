@@ -67,6 +67,7 @@
       "ext_gcode": false,
       "ext_fbx": false,
       "ext_dwg": false,
+      "ext_pdf": false,
       "contact_name": "",
       "contact_phone": "",
       "contact_hours": "",
@@ -125,6 +126,7 @@
             "form.ext_gcode": "{{response.data.ext_gcode ?? job.data.ext_gcode}}",
             "form.ext_fbx": "{{response.data.ext_fbx ?? job.data.ext_fbx}}",
             "form.ext_dwg": "{{response.data.ext_dwg ?? job.data.ext_dwg}}",
+            "form.ext_pdf": "{{response.data.ext_pdf ?? job.data.ext_pdf}}",
             "form.contact_name": "{{response.data.contact_name || job.data.contact_name || ''}}",
             "form.contact_phone": "{{response.data.contact_phone || job.data.contact_phone || ''}}",
             "form.contact_hours": "{{response.data.contact_hours || job.data.contact_hours || ''}}",
@@ -319,7 +321,9 @@
             "type": "basic",
             "name": "Div",
             "props": {
-              "className": "cmb-admin-toolbar"
+              "className": "cmb-admin-toolbar cmb-entity-job cmb-status-{{job.data.status}}",
+              "data-cmb-status": "{{job.data.status}}",
+              "data-cmb-entity": "job"
             },
             "children": [
               {
@@ -328,7 +332,8 @@
                 "name": "Button",
                 "text": "승인",
                 "props": {
-                  "className": "cmb-btn-approve px-3 py-1.5 text-sm rounded-lg border"
+                  "className": "cmb-btn-approve px-3 py-1.5 text-sm rounded-lg border",
+                  "data-cmb-kind": "approve"
                 },
                 "actions": [
                   {
@@ -373,7 +378,8 @@
                 "name": "Button",
                 "text": "보류",
                 "props": {
-                  "className": "cmb-btn-hold px-3 py-1.5 text-sm rounded-lg border"
+                  "className": "cmb-btn-hold px-3 py-1.5 text-sm rounded-lg border",
+                  "data-cmb-kind": "hold"
                 },
                 "actions": [
                   {
@@ -1000,14 +1006,15 @@
                     "props": {
                       "className": "cmb-admin-label"
                     },
-                    "text": "최종 크기 W / D / H (mm) · 여러 행은 sizes JSON"
+                    "text": "크기 (여러 행) · mm"
                   },
                   {
                     "id": "size_row",
                     "type": "basic",
                     "name": "Div",
                     "props": {
-                      "className": "cmb-admin-inline"
+                      "className": "cmb-admin-inline cmb-legacy-size-row",
+                      "data-cmb-legacy-size": "1"
                     },
                     "children": [
                       {
@@ -1285,6 +1292,33 @@
                               "className": "cmb-admin-check-text"
                             },
                             "text": "DWG"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "ext_pdf_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "ext_pdf",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "ext_pdf"
+                            }
+                          },
+                          {
+                            "id": "ext_pdf_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "PDF"
                           }
                         ]
                       }
