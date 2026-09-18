@@ -102,7 +102,7 @@ class LayoutFileFixListener implements HookListenerInterface
             $node['actions'] = [[
                 'type' => 'click',
                 'handler' => 'apiCall',
-                'auth_required' => true,
+                'auth_mode' => 'optional',
                 'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
                 'params' => [
                     'method' => 'POST',
@@ -118,7 +118,7 @@ class LayoutFileFixListener implements HookListenerInterface
             $node['actions'] = [[
                 'type' => 'click',
                 'handler' => 'apiCall',
-                'auth_required' => true,
+                'auth_mode' => 'optional',
                 'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}',
                 'params' => [
                     'method' => 'PATCH',
