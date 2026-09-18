@@ -1,16 +1,32 @@
-.cmb-page .cmb-card-list {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.75rem;
-  width: 100%;
+.cmb-page:has(.cmb-card-list) {
+  max-width: 100% !important;
+  width: 100% !important;
 }
 
-.cmb-page .cmb-card-list > .cmb-company-card,
+.cmb-page .cmb-card-list,
+.cmb-section-card > .cmb-card-list {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  flex-direction: unset !important;
+}
+
 .cmb-page .cmb-card-list > .cmb-job-card,
+.cmb-page .cmb-card-list > .cmb-company-card,
 .cmb-page .cmb-card-list > .cmb-list-item {
-  min-width: 0;
-  width: 100%;
-  box-sizing: border-box;
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
   overflow-wrap: anywhere;
   word-break: keep-all;
+  white-space: normal !important;
+}
+
+.cmb-page .cmb-job-card-title,
+.cmb-page .cmb-job-card-budget,
+.cmb-page .cmb-company-card-title {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
 }
