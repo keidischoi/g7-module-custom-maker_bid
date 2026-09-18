@@ -131,9 +131,6 @@ class LayoutFileFixListener implements HookListenerInterface
                         'onSuccess' => [
                             ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
                         ],
-                        'errorHandling' => [
-                            'default' => ['handler' => 'toast', 'params' => ['type' => 'error', 'message' => '{{error.message || "제출에 실패했습니다."}}']],
-                        ],
                     ]],
                 ],
             ],
@@ -208,6 +205,18 @@ class LayoutFileFixListener implements HookListenerInterface
                 $props['initialFiles'] = '{{me.data.logo_files || []}}';
             }
             unset($props['key']);
+        }
+
+        if ($id === 'default_job_status' && $name === 'Select') {
+            $props['options'] = [
+                ['value' => 'quote_request', 'label' => '승인 (공개·입찰 가능)'],
+                ['value' => 'draft', 'label' => '승인대기 (비공개)'],
+                ['value' => 'hold', 'label' => '보류 (비공개)'],
+            ];
+        }
+        if (str_contains($text, '의뢰 등록 기본 상태')) {
+            $node['text'] = '의뢰 등록 기본 상태';
+            $props['text'] = '의뢰 등록 기본 상태';
         }
 
         $goBid = str_contains($cls, 'cmb-open-bid-toggle') || $text === '견적 넣기' || $id === 'obid_btn'
