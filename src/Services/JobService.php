@@ -24,7 +24,7 @@ class JobService
 
     public function listPublic(Request $request): array
     {
-        $q = MakerJob::query()->with(['jobType', 'files'])->withCount('bids');
+        $q = MakerJob::query()->with(['jobType'])->withCount('bids');
         $ctx = $this->viewerFromRequest($request);
         if (! $ctx['isAdmin'] && ! $ctx['isMember'] && ! $this->settingBool('general.guests_see_list', true)) {
             return [];
@@ -38,7 +38,7 @@ class JobService
             });
         }
         return $q->orderByDesc('id')->limit(100)->get()
-            ->map(fn (MakerJob $job) => $this->present($job, $ctx, false, true))->all();
+            ->map(fn (MakerJob $job) => $this->present($job, $ctx, false, false))->all();
     }
 
     public function listMine(int $userId): array
@@ -49,7 +49,7 @@ class JobService
 
     public function listAdmin(Request $request): array
     {
-        $q = MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->latest();
+        $q = MakerJob::query()->with(['jobType'])->withCount('bids')->latest();
         if ($status = $request->query('status')) {
             $q->where('status', $status);
         }
@@ -146,8 +146,7 @@ class JobService
     {
         $job = MakerJob::query()->findOrFail($id);
         if (isset($payload['status']) && $payload['status'] !== '') {
-            $st = (string) $payload['status'];
-            $job->status = in_array($st, JobRules::STATUSES, true) ? $st : JobRules::normalizeListingStatus($st);
+            $job->status = JobRules::normalizeListingStatus($payload['status']);
         }
         if (isset($payload['title'])) {
             $job->title = $payload['title'];
@@ -244,12 +243,7 @@ class JobService
     private function present(MakerJob $job, array $ctx, bool $includeBids, bool $includeFiles): array
     {
         $files = $includeFiles ? ($job->relationLoaded('files') ? $job->files : $this->files->forJob((int) $job->id)) : [];
-        $payload = JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
-        $first = $payload['images'][0] ?? null;
-        if (is_array($first)) {
-            $payload['image_url'] = $first['thumbnail_url'] ?? $first['url'] ?? $first['download_url'] ?? null;
-        }
-        return $payload;
+        return JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
     }
 
     private function ownerContext(int $userId): array
