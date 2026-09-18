@@ -26,6 +26,12 @@
       "meta": { "title": "이력" }
     },
     {
+      "path": "*/maker-bids/disputes",
+      "layout": "jobs_disputes",
+      "auth_required": true,
+      "meta": { "title": "분쟁" }
+    },
+    {
       "path": "*/maker-bids/notices",
       "layout": "jobs_notices",
       "auth_required": true,

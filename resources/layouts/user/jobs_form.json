@@ -324,6 +324,16 @@
                     "text": "이력"
                   },
                   {
+                    "id": "t_disputes",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/disputes",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "분쟁"
+                  },
+                  {
                     "id": "t5",
                     "type": "basic",
                     "name": "A",

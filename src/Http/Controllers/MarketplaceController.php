@@ -98,7 +98,12 @@ class MarketplaceController extends Controller
     public function claim(Request $request, int $id): JsonResponse
     {
         try {
-            $data = $this->market->claim((int) $request->user()->id, $id, (string) $request->input('reason', ''));
+            $data = $this->market->claim(
+                (int) $request->user()->id,
+                $id,
+                (string) $request->input('reason', ''),
+                (string) $request->input('factor', '')
+            );
         } catch (DomainException $e) {
             return $this->domainError($e);
         }
@@ -109,12 +114,26 @@ class MarketplaceController extends Controller
     public function report(Request $request, int $id): JsonResponse
     {
         try {
-            $data = $this->market->report((int) $request->user()->id, $id, (string) $request->input('reason', ''));
+            $data = $this->market->report(
+                (int) $request->user()->id,
+                $id,
+                (string) $request->input('reason', ''),
+                (string) $request->input('factor', 'fraud')
+            );
         } catch (DomainException $e) {
             return $this->domainError($e);
         }
 
         return response()->json(['data' => $data], 201);
+    }
+
+    public function myDisputes(Request $request): JsonResponse
+    {
+        $items = $this->market->listMineDisputes((int) $request->user()->id);
+        $payload = ArrayPaginator::paginate($items, $request, 'page', 10);
+        $payload['meta']['factors'] = \Modules\Custom\MakerBids\Support\DisputeRules::factorOptions();
+
+        return response()->json($payload);
     }
 
     public function export(Request $request, int $id)

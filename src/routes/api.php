@@ -61,6 +61,7 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])->group(function () {
     Route::post('jobs/{id}/messages', [MarketplaceController::class, 'postMessage'])->whereNumber('id')->name('jobs.messages.store');
     Route::post('jobs/{id}/claim', [MarketplaceController::class, 'claim'])->whereNumber('id')->name('jobs.claim');
     Route::post('jobs/{id}/report', [MarketplaceController::class, 'report'])->whereNumber('id')->name('jobs.report');
+    Route::get('disputes', [MarketplaceController::class, 'myDisputes'])->name('disputes.mine');
     Route::get('jobs/{id}/export', [MarketplaceController::class, 'export'])->whereNumber('id')->name('jobs.export');
     Route::get('jobs/{id}/reviews', [MarketplaceController::class, 'reviews'])->whereNumber('id')->name('jobs.reviews');
     Route::get('companies/{id}/reviews', [MarketplaceController::class, 'companyReviews'])->whereNumber('id')->name('companies.reviews');

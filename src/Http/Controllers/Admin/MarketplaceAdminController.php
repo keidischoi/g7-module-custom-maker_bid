@@ -18,7 +18,12 @@ class MarketplaceAdminController extends Controller
 
     public function resolveClaim(Request $request, int $id): JsonResponse
     {
-        $this->market->resolveClaim($id, (string) $request->input('status', 'closed'), $request->input('admin_note'));
+        $this->market->resolveClaim(
+            $id,
+            (string) $request->input('status', 'closed'),
+            $request->input('admin_note'),
+            $request->input('job_status')
+        );
 
         return response()->json(['ok' => true]);
     }
