@@ -96,7 +96,7 @@ class BidController extends Controller
             return $this->domainError($e);
         }
 
-        return response()->json(['data' => $result['bid']], $result['created'] ? 201 : 200);
+        return response()->json(['success' => true, 'data' => $result['bid']]);
     }
 
     public function update(UpdateBidRequest $request, int $id, int $bidId): JsonResponse
@@ -118,6 +118,6 @@ class BidController extends Controller
             return $this->domainError($e);
         }
 
-        return response()->json(['data' => $bid]);
+        return response()->json(['success' => true, 'data' => $bid]);
     }
 }
