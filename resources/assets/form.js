@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.27';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.28';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -339,11 +339,15 @@
     request: 'request',
     hold: 'hold',
     draft: 'draft',
+    disputed: 'disputed',
     '견적요청': 'quote_request',
     '의뢰': 'request',
     '보류': 'hold',
     '임시저장': 'draft',
-    '초안': 'draft'
+    '초안': 'draft',
+    '분쟁조정': 'disputed',
+    '분쟁': 'disputed',
+    '분쟁상태': 'disputed'
   };
 
   function normalizeStatusSlug(raw) {
@@ -352,7 +356,7 @@
     if (STATUS_SLUGS[v]) return STATUS_SLUGS[v];
     var lower = v.toLowerCase();
     if (STATUS_SLUGS[lower]) return STATUS_SLUGS[lower];
-    if (['quote_request', 'request', 'hold', 'draft'].indexOf(lower) !== -1) return lower;
+    if (['quote_request', 'request', 'hold', 'draft', 'disputed', 'awarded', 'done', 'cancelled', 'pending'].indexOf(lower) !== -1) return lower;
     return 'quote_request';
   }
 

@@ -102,7 +102,7 @@
     if (d && d.status != null && window.cmbForm && typeof window.cmbForm.normalizeStatusSlug === 'function') {
       d.status = window.cmbForm.normalizeStatusSlug(d.status);
     } else if (d && d.status) {
-      var sm = { '견적요청': 'quote_request', '의뢰': 'request', '보류': 'hold', '임시저장': 'draft', open: 'quote_request' };
+      var sm = { '견적요청': 'quote_request', '의뢰': 'request', '보류': 'hold', '임시저장': 'draft', '분쟁조정': 'disputed', '분쟁': 'disputed', open: 'quote_request' };
       if (sm[d.status]) d.status = sm[d.status];
     }
     applyPrefixed('form', d, [
@@ -1692,13 +1692,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.27';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.28';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.27') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.28') < 0) {
         existing.href = FORM_CSS;
       }
       return;

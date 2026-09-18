@@ -175,6 +175,10 @@
                           "label": "보류"
                         },
                         {
+                          "value": "draft",
+                          "label": "임시저장"
+                        },
+                        {
                           "value": "request",
                           "label": "의뢰"
                         },
@@ -185,6 +189,10 @@
                         {
                           "value": "awarded",
                           "label": "낙찰"
+                        },
+                        {
+                          "value": "disputed",
+                          "label": "분쟁조정"
                         },
                         {
                           "value": "done",

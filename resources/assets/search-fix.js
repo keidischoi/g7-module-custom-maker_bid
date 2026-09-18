@@ -5,13 +5,12 @@
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var lastRows = [];
   var lastMeta = {};
-  var selfChips = { draft: false, disputed: false };
+  var selfChips = { hold: false, draft: false, disputed: false };
   var typedQ = null;
 
   var PUBLIC_STATUS_CHIPS = [
     ['', '전체'],
     ['pending', '승인대기'],
-    ['hold', '보류'],
     ['request', '의뢰'],
     ['quote_request', '견적요청'],
     ['awarded', '낙찰'],
@@ -19,6 +18,7 @@
     ['cancelled', '취소']
   ];
   var SELF_STATUS_CHIPS = [
+    ['hold', '보류'],
     ['draft', '임시저장'],
     ['disputed', '분쟁조정']
   ];
@@ -122,9 +122,24 @@
     el.setAttribute('data-per-page', String(meta.per_page || 10));
   }
 
+  function chipsFromRows(rows, flags) {
+    var out = {
+      hold: !!(flags && flags.hold),
+      draft: !!(flags && flags.draft),
+      disputed: !!(flags && flags.disputed)
+    };
+    (rows || []).forEach(function (r) {
+      if (!r) return;
+      if (r.status === 'hold') out.hold = true;
+      if (r.status === 'draft') out.draft = true;
+      if (r.status === 'disputed') out.disputed = true;
+    });
+    return out;
+  }
+
   function paintSelfChips(flags) {
     selfChips = flags || selfChips;
-    var labels = { draft: '임시저장', disputed: '분쟁조정' };
+    var labels = { hold: '보류', draft: '임시저장', disputed: '분쟁조정' };
     document.querySelectorAll('[data-cmb-self-status]').forEach(function (a) {
       var key = a.getAttribute('data-cmb-self-status');
       var on = !!(selfChips && selfChips[key]);
@@ -160,7 +175,7 @@
       var meta = (payload && payload.meta) || (j && j.meta) || {};
       paint(rows);
       updatePager(meta);
-      paintSelfChips(meta.viewer_status_chips || {});
+      paintSelfChips(chipsFromRows(rows, meta.viewer_status_chips || {}));
       markChips();
     }).catch(function () {});
   }

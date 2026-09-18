@@ -149,6 +149,10 @@ expectTrue('blank list status is no filter', JobRules::listStatusFilter(null) ==
 expect('hold list status stays hold', JobRules::listStatusFilter('hold'), ['hold']);
 expect('draft list status stays draft', JobRules::listStatusFilter('임시저장'), ['draft']);
 expect('disputed list status stays disputed', JobRules::listStatusFilter('분쟁조정'), ['disputed']);
+expect('normalizeStatus keeps disputed', JobRules::normalizeStatus('분쟁조정'), 'disputed');
+expect('normalizeStatus keeps awarded', JobRules::normalizeStatus('낙찰'), 'awarded');
+expect('normalizeListingStatus does not accept disputed', JobRules::normalizeListingStatus('disputed'), 'quote_request');
+expect('normalizeListingStatus keeps draft', JobRules::normalizeListingStatus('임시저장'), 'draft');
 expect('status sort alias', JobRules::normalizeListSort('상태순'), JobRules::LIST_SORT_STATUS);
 expect('latest sort default', JobRules::normalizeListSort(''), JobRules::LIST_SORT_LATEST);
 

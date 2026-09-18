@@ -331,7 +331,7 @@
         (bar.getAttribute('data-cmb-filter-entity') !== 'job' && isCompanyAdminPage());
       var opts = company
         ? [['', '전체'], ['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]
-        : [['', '전체 상태'], ['hold', '보류'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['done', '완료'], ['cancelled', '취소']];
+        : [['', '전체 상태'], ['hold', '보류'], ['draft', '임시저장'], ['request', '의뢰'], ['quote_request', '견적요청(open)'], ['awarded', '낙찰'], ['disputed', '분쟁조정'], ['done', '완료'], ['cancelled', '취소']];
       bar.querySelectorAll('.cmb-admin-filter-status, .cmb-admin-select-host').forEach(function (host) {
         if (host.getAttribute('data-cmb-filter-wrap') === '1') return;
         hideVisually(host);

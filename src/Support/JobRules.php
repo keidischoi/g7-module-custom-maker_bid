@@ -127,7 +127,7 @@ class JobRules
     public static function isHiddenFromPublic(string $status): bool { return in_array($status, self::HIDDEN_PUBLIC_STATUSES, true); }
     public static function isBiddableStatus(string $status): bool { return in_array($status, self::BIDDABLE_STATUSES, true); }
 
-    public static function normalizeListingStatus(mixed $raw): string
+    public static function normalizeStatus(mixed $raw): string
     {
         if (is_array($raw)) {
             foreach (['status', 'value', 'slug', 'id', 'label', 'name'] as $k) {
@@ -152,10 +152,18 @@ class JobRules
             '승인' => 'quote_request',
             '임시저장' => 'draft',
             '초안' => 'draft',
+            '분쟁조정' => 'disputed',
+            '분쟁' => 'disputed',
+            '분쟁상태' => 'disputed',
+            '낙찰' => 'awarded',
+            '완료' => 'done',
+            '취소' => 'cancelled',
             'open' => 'quote_request',
             'OPEN' => 'quote_request',
             'pending' => 'pending',
             'pending_approval' => 'pending',
+            'dispute' => 'disputed',
+            'disputed' => 'disputed',
         ];
         if (isset($map[$value])) {
             return $map[$value];
@@ -164,10 +172,16 @@ class JobRules
         if (isset($map[$lower])) {
             return $map[$lower];
         }
-        if (in_array($lower, self::LISTING_STATUSES, true)) {
+        if (in_array($lower, self::STATUSES, true)) {
             return $lower;
         }
         return 'quote_request';
+    }
+
+    public static function normalizeListingStatus(mixed $raw): string
+    {
+        $status = self::normalizeStatus($raw);
+        return in_array($status, self::LISTING_STATUSES, true) ? $status : 'quote_request';
     }
 
     public static function normalizeAudience(mixed $raw): string
@@ -237,8 +251,9 @@ class JobRules
         $raw = strtolower(trim((string) $status));
         if ($raw === '' || in_array($raw, ['undefined', 'null', '*', 'all'], true)) return null;
         if ($raw === 'open' || $raw === 'biddable') return self::BIDDABLE_STATUSES;
-        if (in_array($raw, ['분쟁조정', 'dispute', 'disputed'], true)) return ['disputed'];
+        if (in_array($raw, ['분쟁조정', '분쟁', '분쟁상태', 'dispute', 'disputed'], true)) return ['disputed'];
         if (in_array($raw, ['임시저장', '임시', 'draft'], true)) return ['draft'];
+        if (in_array($raw, ['보류', 'hold'], true)) return ['hold'];
         if (! self::isAllowedStatus($raw)) return [];
         return [$raw];
     }

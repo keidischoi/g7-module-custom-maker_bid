@@ -149,8 +149,10 @@ expectTrue('admin resolve report route', str_contains($api, "reports/{id}"));
 expectTrue('draft is listing status', in_array('draft', JobRules::LISTING_STATUSES, true));
 expectTrue('draft hidden from public', in_array('draft', JobRules::HIDDEN_PUBLIC_STATUSES, true));
 expectTrue('disputed is status and hidden from public', in_array('disputed', JobRules::STATUSES, true) && in_array('disputed', JobRules::HIDDEN_PUBLIC_STATUSES, true));
+expectTrue('disputed is not a member listing status', ! in_array('disputed', JobRules::LISTING_STATUSES, true));
 expectTrue('draft status label is 임시저장', JobRules::statusLabel('draft') === '임시저장');
 expectTrue('disputed status label is 분쟁조정', JobRules::statusLabel('disputed') === '분쟁조정');
+expectTrue('normalizeStatus maps 분쟁상태', JobRules::normalizeStatus('분쟁상태') === 'disputed');
 expectTrue('terms_agreed in create rules', array_key_exists('terms_agreed', JobRules::createRules()));
 
 expectTrue('business_no normalize helper', method_exists(CompanyRules::class, 'normalizeBusinessNo'));
