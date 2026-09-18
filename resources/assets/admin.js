@@ -838,7 +838,7 @@
       var name = el.getAttribute('name');
       if (!name || el.type === 'file') return;
       if (name.indexOf('cmb_filter_') === 0) return;
-      if (name.indexOf('job_type_') === 0) {
+      if (name === 'job_types' || name.indexOf('job_type_') === 0) {
         if (el.type === 'checkbox' && el.checked) jobTypes.push(name.slice('job_type_'.length));
         return;
       }
@@ -856,7 +856,18 @@
     root.querySelectorAll('[data-cmb-job-type]').forEach(function (el) {
       if (el.checked) jobTypes.push(el.getAttribute('data-cmb-job-type'));
     });
-    if (prefix === 'edit' && (jobTypes.length || root.querySelector('[data-cmb-job-type]'))) {
+    jobTypes = jobTypes.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    if (prefix === 'edit' && root.querySelector('[data-cmb-job-type]')) {
+      if (!jobTypes.length) {
+        var hidden = root.querySelector('input[name="job_types"]');
+        var raw = hidden && hidden.value;
+        if (raw) {
+          try {
+            var parsed = raw.charAt(0) === '[' ? JSON.parse(raw) : raw;
+            if (Array.isArray(parsed)) jobTypes = parsed.map(String);
+          } catch (eJT) {}
+        }
+      }
       map[prefix + '.job_types'] = jobTypes;
     }
     return map;
@@ -1041,7 +1052,7 @@
 
   function bindCompanyHarvest() {
     if (document.documentElement.getAttribute('data-cmb-co-harvest')) return;
-    if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '')) return;
+    if (!/\/admin\/maker-bids\/companies/.test(location.pathname || '') && !document.querySelector('[data-cmb-company-edit]')) return;
     document.documentElement.setAttribute('data-cmb-co-harvest', '1');
     function pushDom() {
       var map = harvestNamedInto('edit');
@@ -1105,6 +1116,8 @@
       if (window.G7Core && window.G7Core.state && window.G7Core.state.get) {
         var v = window.G7Core.state.get('_local.edit.' + key);
         if (v != null && v !== '') return String(v);
+        var ed = window.G7Core.state.get('_local.edit') || {};
+        if (ed && ed[key] != null && ed[key] !== '') return String(ed[key]);
       }
     } catch (e) {}
     return '';
@@ -1148,7 +1161,11 @@
     if (!host) return;
     var selected = [];
     try {
-      var cur = g7Get('_local.edit.job_types') || [];
+      var cur = g7Get('_local.edit.job_types');
+      if (cur == null) {
+        var ed = g7Get('_local.edit') || {};
+        cur = ed.job_types || [];
+      }
       if (typeof cur === 'string') {
         try { cur = JSON.parse(cur); } catch (e1) { cur = cur ? [cur] : []; }
       }

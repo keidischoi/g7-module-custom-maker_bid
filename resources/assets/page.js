@@ -60,7 +60,7 @@
   function isUserShow() { return /\/maker-bids\/\d+$/.test(path()) && path().indexOf('/admin/') < 0; }
   function isUserCompany() { return /\/maker-bids\/company$/.test(path()); }
   function isAdminJob() { return /\/admin\/maker-bids\/jobs\/\d+$/.test(path()); }
-  function isAdminCompany() { return /\/admin\/maker-bids\/companies$/.test(path()); }
+  function isAdminCompany() { return /\/admin\/maker-bids\/companies/.test(path()) || !!document.querySelector('[data-cmb-company-edit]'); }
 
   function fillNamed(name, value) {
     document.querySelectorAll('[name="' + name + '"]').forEach(function (el) {
