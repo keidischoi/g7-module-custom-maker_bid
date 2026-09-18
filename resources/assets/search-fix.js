@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbSearchFix11) return;
-  window.__cmbSearchFix11 = true;
+  if (window.__cmbSearchFix12) return;
+  window.__cmbSearchFix12 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var lastRows = [];

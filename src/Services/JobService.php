@@ -228,17 +228,21 @@ class JobService
     {
         $ctx = $this->viewerFromRequest($request);
         $uid = (int) ($ctx['userId'] ?? 0);
-        if ($uid <= 0) {
+        $isAdmin = (bool) ($ctx['isAdmin'] ?? false);
+        if ($uid <= 0 && ! $isAdmin) {
             return ['hold' => false, 'draft' => false, 'disputed' => false];
         }
-        $hasHold = MakerJob::query()->where('user_id', $uid)->where('status', 'hold')->exists();
-        $hasDraft = MakerJob::query()->where('user_id', $uid)->where('status', 'draft')->exists();
-        $hasDispute = MakerJob::query()->where('status', DisputeRules::STATUS)->where(function ($q) use ($uid) {
+        $hasDraft = $uid > 0 && MakerJob::query()->where('user_id', $uid)->where('status', 'draft')->exists();
+        $hasDispute = $uid > 0 && MakerJob::query()->where('status', DisputeRules::STATUS)->where(function ($q) use ($uid) {
             $q->where('user_id', $uid)
                 ->orWhereIn('awarded_bid_id', MakerBid::query()->withoutGlobalScopes()->where('user_id', $uid)->select('id'));
         })->exists();
 
-        return ['hold' => $hasHold, 'draft' => $hasDraft, 'disputed' => $hasDispute];
+        return [
+            'hold' => $isAdmin || $uid > 0,
+            'draft' => $isAdmin || $hasDraft,
+            'disputed' => $isAdmin || $hasDispute,
+        ];
     }
 
     public function viewerContext(int $userId, MakerJob $job, bool $isAdmin = false, array $ctx = []): array
