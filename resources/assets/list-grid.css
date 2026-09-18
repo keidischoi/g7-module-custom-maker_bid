@@ -1,0 +1,16 @@
+.cmb-page .cmb-card-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.cmb-page .cmb-card-list > .cmb-company-card,
+.cmb-page .cmb-card-list > .cmb-job-card,
+.cmb-page .cmb-card-list > .cmb-list-item {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
