@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21g';
+    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21h';
 
     public static function getSubscribedHooks(): array
     {
@@ -26,25 +26,16 @@ class LayoutFileFixListener implements HookListenerInterface
         }
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->walk($this->scrub($layout), $name);
-        if (in_array($name, ['jobs_show', 'jobs_bids', 'jobs_form', 'company_apply', 'company_list', 'jobs_list'], true)) {
+        if (in_array($name, ['jobs_show', 'jobs_bids'], true)) {
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
-            $found = false;
-            foreach ($scripts as $i => $script) {
-                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'existing-files.js')) {
-                    $scripts[$i]['src'] = self::JS;
-                    $found = true;
-                }
-            }
-            if (! $found) {
-                $scripts[] = [
-                    'id' => 'cmb_maker_existing',
-                    'src' => self::JS,
-                    'async' => false,
-                    'optional' => true,
-                    'required' => false,
-                    'failOnError' => false,
-                ];
-            }
+            $scripts[] = [
+                'id' => 'cmb_maker_existing',
+                'src' => self::JS,
+                'async' => false,
+                'optional' => true,
+                'required' => false,
+                'failOnError' => false,
+            ];
             $layout['scripts'] = $scripts;
         }
 
@@ -98,34 +89,25 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($props['key']);
         }
 
-        if ($name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send'))) {
+        $isSubmit = $name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send') || str_contains($cls, 'cmb-bid-g7'));
+        $isUpdate = $name === 'Button' && (str_contains($cls, 'cmb-bid-update') || str_contains($cls, 'cmb-bid-send-update'));
+        if ($isSubmit || $isUpdate) {
+            $props['className'] = trim(str_replace(['cmb-bid-submit', 'cmb-bid-update', 'cmb-bid-send-update', 'cmb-bid-send'], 'cmb-bid-g7', $cls));
+            unset($props['data-cmb-bid-submit'], $props['data-cmb-bid-update']);
             $node['actions'] = [[
                 'type' => 'click',
                 'handler' => 'apiCall',
                 'auth_mode' => 'optional',
-                'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
+                'target' => $isUpdate
+                    ? '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}'
+                    : '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
                 'params' => [
-                    'method' => 'POST',
+                    'method' => $isUpdate ? 'PATCH' : 'POST',
+                    'credentials' => 'include',
                     'body' => '{{_local.bid}}',
                 ],
                 'onSuccess' => [
-                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
-                    ['handler' => 'navigate', 'params' => ['url' => '{{route.path}}']],
-                ],
-            ]];
-        }
-        if ($name === 'Button' && (str_contains($cls, 'cmb-bid-update') || str_contains($cls, 'cmb-bid-send-update'))) {
-            $node['actions'] = [[
-                'type' => 'click',
-                'handler' => 'apiCall',
-                'auth_mode' => 'optional',
-                'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}',
-                'params' => [
-                    'method' => 'PATCH',
-                    'body' => '{{_local.bid}}',
-                ],
-                'onSuccess' => [
-                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 수정했습니다.']],
+                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => $isUpdate ? '견적을 수정했습니다.' : '견적을 등록했습니다.']],
                     ['handler' => 'navigate', 'params' => ['url' => '{{route.path}}']],
                 ],
             ]];
