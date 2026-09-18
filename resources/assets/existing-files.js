@@ -1,4 +1,4 @@
-/* Keep painting after G7 remounts the edit form. */
+/* Paint existing files; reuse session cookie like G7. */
 (function () {
   var API = '/api/modules/custom-maker_bids';
   var lastImages = [];
@@ -13,15 +13,25 @@
     return m ? m[1] : '';
   }
   function csrf() {
+    var el = document.querySelector('meta[name="csrf-token"]');
+    if (el && el.content) return el.content;
     var m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
     if (!m) return '';
     try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
   }
+  function headers() {
+    var h = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var t = csrf();
+    if (t) {
+      h['X-CSRF-TOKEN'] = t;
+      h['X-XSRF-TOKEN'] = t;
+    }
+    return h;
+  }
   function getJson(url) {
-    return fetch(url, {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'X-XSRF-TOKEN': csrf(), 'X-Requested-With': 'XMLHttpRequest' }
-    }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    return fetch(url, { credentials: 'include', headers: headers() })
+      .then(function (r) { return r.ok ? r.json() : r.json().then(function (j) { return j; }).catch(function () { return null; }); })
+      .catch(function () { return null; });
   }
   function fileUrl(f) {
     if (!f) return '';
@@ -73,28 +83,41 @@
     paint('[data-cmb-existing-files="archives"]', lastArchives, 'archives');
     paint('[data-cmb-existing-files="logo"]', lastLogos, 'logo');
   }
+  function take(data) {
+    if (!data || typeof data !== 'object') return;
+    if (data.images) lastImages = data.images;
+    if (data.archives) lastArchives = data.archives;
+    if (data.logo_files) lastLogos = data.logo_files;
+    if (!lastLogos.length && data.logo_url) {
+      lastLogos = [{ url: data.logo_url, download_url: data.logo_url, original_filename: 'logo', is_image: true }];
+    }
+    applyCached();
+  }
+  function fromG7State() {
+    try {
+      var keys = ['job.data', 'local.form', '_local.form', 'me.data', 'local.company'];
+      /* walk likely globals */
+      var roots = [window.__G7_STATE__, window.g7State, window.__INITIAL_STATE__];
+      roots.forEach(function () {});
+    } catch (e) {}
+  }
   function load() {
     var id = jobIdFromPath();
     if (id) {
       getJson(API + '/jobs/' + id + '/edit').then(function (json) {
-        var data = json && (json.data || json);
-        if (!data) return;
-        lastImages = data.images || [];
-        lastArchives = data.archives || [];
-        applyCached();
+        if (!json || json.message === '인증이 필요합니다.') {
+          return getJson(API + '/jobs/' + id).then(function (j2) {
+            take(j2 && (j2.data || j2));
+          });
+        }
+        take(json.data || json);
       });
     }
     if (/\/maker-bids\/company\/?$/.test(location.pathname || '') || /\/admin\/maker-bids\/companies\//.test(location.pathname || '')) {
       var companyUrl = /\/admin\/maker-bids\/companies\/(\d+)/.exec(location.pathname || '');
       var url = companyUrl ? API + '/admin/companies/' + companyUrl[1] : API + '/companies/me';
       getJson(url).then(function (json) {
-        var data = json && (json.data || json);
-        if (!data) return;
-        lastLogos = data.logo_files || [];
-        if (!lastLogos.length && data.logo_url) {
-          lastLogos = [{ url: data.logo_url, download_url: data.logo_url, original_filename: 'logo', is_image: true }];
-        }
-        applyCached();
+        take(json && (json.data || json));
       });
     }
   }
@@ -106,11 +129,8 @@
   document.documentElement.setAttribute('data-cmb-existing-paint', '1');
   [200, 600, 1200, 2500, 5000].forEach(function (ms) { setTimeout(boot, ms); });
   var obs = new MutationObserver(function () { applyCached(); });
-  if (document.body) {
+  if (document.body) obs.observe(document.body, { childList: true, subtree: true });
+  else document.addEventListener('DOMContentLoaded', function () {
     obs.observe(document.body, { childList: true, subtree: true });
-  } else {
-    document.addEventListener('DOMContentLoaded', function () {
-      obs.observe(document.body, { childList: true, subtree: true });
-    });
-  }
+  });
 })();
