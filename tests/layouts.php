@@ -475,6 +475,7 @@ expectTrue('admin.js native type+status filters', str_contains($adminJs, "cmb_fi
 expectTrue('admin.js binds list row actions', str_contains($adminJs, 'function bindRowActions') && str_contains($adminJs, '/admin/jobs/'));
 expectTrue('admin.js row actions send bearer token', str_contains($adminJs, 'function readAuthToken') && str_contains($adminJs, "headers.Authorization = 'Bearer '") && str_contains($adminJs, "credentials: 'include'"));
 expectTrue('admin.js binds detail toolbar and job save', str_contains($adminJs, 'cmb-admin-toolbar') && str_contains($adminJs, '의뢰 저장') && str_contains($adminJs, "action = 'dispute'") && str_contains($adminJs, 'function jobIdFromPath'));
+expectTrue('admin.js paint ignores non-status kinds', str_contains($adminJs, 'out[k] && out[k].indexOf'));
 expectTrue('admin.js native job form selects', str_contains($adminJs, 'function ensureFormNativeSelects') && str_contains($adminJs, 'data-cmb-form-host') && str_contains($adminJs, "['disputed', '분쟁조정']"));
 expectTrue('admin.js keeps company edit id', str_contains($adminJs, 'function rememberEditId') && str_contains($adminJs, '__cmbEditCompanyId') && str_contains($adminJs, 'is-cmb-editing'));
 expectTrue('admin job detail marks form hosts', str_contains($adminJobsShow, 'data-cmb-job-edit') && str_contains($adminJobsShow, 'data-cmb-form-host') && str_contains($adminJobsShow, 'data-cmb-kind": "save'));

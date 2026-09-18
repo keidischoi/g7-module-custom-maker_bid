@@ -144,7 +144,7 @@
     if (!root || !root.querySelectorAll) return out;
     root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject, [data-cmb-kind]').forEach(function (b) {
       var k = kindFromEl(b);
-      if (k && out[k].indexOf(b) < 0) out[k].push(b);
+      if (k && out[k] && out[k].indexOf(b) < 0) out[k].push(b);
     });
     return out;
   }
@@ -1625,7 +1625,7 @@
     enhanceSizes();
     hideLegacySizes();
     bindStatusPress();
-    paintStatusButtons();
+    try { paintStatusButtons(); } catch (ePaint) {}
     ensureAdminFilterSelect();
     ensureEditNativeSelects();
     ensureFormNativeSelects();
@@ -1660,7 +1660,7 @@
   setTimeout(unlockAdminPointer, 300);
   setInterval(function () {
     if (document.querySelector('.cmb-admin')) {
-      paintStatusButtons();
+      try { paintStatusButtons(); } catch (ePaint2) {}
       ensureAdminFilterSelect();
       ensureEditNativeSelects();
       ensureFormNativeSelects();
