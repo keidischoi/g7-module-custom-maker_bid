@@ -235,6 +235,10 @@
   background: var(--cmb-accent, #e5e7eb);
   color: var(--cmb-accent-fg, #111827);
 }
+.cmb-chip-self-only[hidden],
+.cmb-chip-self-only.is-hidden {
+  display: none !important;
+}
 
 .cmb-status-chips,
 [data-cmb-status-chips] {

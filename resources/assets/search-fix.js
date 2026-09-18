@@ -1,14 +1,13 @@
 (function () {
-  if (window.__cmbSearchFix9) return;
-  window.__cmbSearchFix9 = true;
+  if (window.__cmbSearchFix10) return;
+  window.__cmbSearchFix10 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
-  var typing = false;
   var lastRows = [];
   var lastMeta = {};
-  var debounceT = null;
+  var selfChips = { draft: false, disputed: false };
 
-  var STATUS_CHIPS = [
+  var PUBLIC_STATUS_CHIPS = [
     ['', '전체'],
     ['pending', '승인대기'],
     ['hold', '보류'],
@@ -17,6 +16,10 @@
     ['awarded', '낙찰'],
     ['done', '완료'],
     ['cancelled', '취소']
+  ];
+  var SELF_STATUS_CHIPS = [
+    ['draft', '임시저장'],
+    ['disputed', '분쟁조정']
   ];
 
   function listPath() {
@@ -118,6 +121,17 @@
     el.setAttribute('data-per-page', String(meta.per_page || 10));
   }
 
+  function paintSelfChips(flags) {
+    selfChips = flags || selfChips;
+    document.querySelectorAll('[data-cmb-self-status]').forEach(function (a) {
+      var key = a.getAttribute('data-cmb-self-status');
+      var on = !!(selfChips && selfChips[key]);
+      a.hidden = !on;
+      a.classList.toggle('is-hidden', !on);
+      a.style.display = on ? '' : 'none';
+    });
+  }
+
   function load() {
     if (!listPath()) return;
     var p = new URLSearchParams();
@@ -137,6 +151,7 @@
       var meta = (payload && payload.meta) || (j && j.meta) || {};
       paint(rows);
       updatePager(meta);
+      paintSelfChips(meta.viewer_status_chips || {});
       markChips();
     }).catch(function () {});
   }
@@ -175,27 +190,15 @@
     });
   }
 
-  function bindNativeInput(inp) {
-    if (inp.getAttribute('data-cmb-bound') === '1') return;
-    inp.setAttribute('data-cmb-bound', '1');
-    inp.addEventListener('focus', function () { typing = true; }, true);
-    inp.addEventListener('blur', function () { typing = false; }, true);
+  function bindSearchSubmit(inp) {
+    if (!inp || inp.getAttribute('data-cmb-enter') === '1') return;
+    inp.setAttribute('data-cmb-enter', '1');
     inp.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
       e.stopPropagation();
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        typing = false;
-        apply(true);
-      }
-    }, true);
-    inp.addEventListener('keyup', function (e) { e.stopPropagation(); }, true);
-    inp.addEventListener('input', function (e) {
-      e.stopPropagation();
-      typing = true;
-      state.q = inp.value;
-      if (debounceT) clearTimeout(debounceT);
-      debounceT = setTimeout(function () { apply(true); }, 280);
-    }, true);
+      apply(true);
+    });
   }
 
   function ensureSearch() {
@@ -219,15 +222,15 @@
         if (el.getAttribute('data-cmb-free') === '1') return;
         if (!state.q) el.value = '';
       });
-      bindNativeInput(inp0);
+      bindSearchSubmit(inp0);
       native.querySelector('[data-cmb-sort-free]').addEventListener('change', function (e) {
         state.sort = e.target.value;
         apply(true);
       });
     }
     var free = native.querySelector('[data-cmb-free]');
-    bindNativeInput(free);
-    if (!typing && document.activeElement !== free && state.q && !String(free.value || '').trim()) free.value = state.q;
+    bindSearchSubmit(free);
+    if (document.activeElement !== free && state.q && !String(free.value || '').trim()) free.value = state.q;
     var sort = native.querySelector('[data-cmb-sort-free]');
     if (sort && document.activeElement !== sort) sort.value = state.sort || 'latest';
     Array.prototype.slice.call(bar.children).forEach(function (n) {
@@ -246,8 +249,18 @@
     return free;
   }
 
-  function ensureSort() {
-    ensureSearch();
+  function appendChip(row, value, label, selfKey) {
+    var a = document.createElement('a');
+    a.href = value ? '/maker-bids?status=' + encodeURIComponent(value) : '/maker-bids';
+    a.className = selfKey ? 'cmb-chip cmb-chip-self-only' : 'cmb-chip';
+    a.textContent = label;
+    a.setAttribute('data-cmb-status', value);
+    if (selfKey) {
+      a.setAttribute('data-cmb-self-status', selfKey);
+      a.hidden = true;
+    }
+    row.appendChild(a);
+    return a;
   }
 
   function ensureChips() {
@@ -280,16 +293,16 @@
       slab.className = 'cmb-filter-label';
       slab.textContent = '의뢰상태';
       stRow.appendChild(slab);
-      STATUS_CHIPS.forEach(function (it) {
-        var a = document.createElement('a');
-        a.href = it[0] ? '/maker-bids?status=' + encodeURIComponent(it[0]) : '/maker-bids';
-        a.className = 'cmb-chip';
-        a.textContent = it[1];
-        a.setAttribute('data-cmb-status', it[0]);
-        stRow.appendChild(a);
-      });
+      PUBLIC_STATUS_CHIPS.forEach(function (it) { appendChip(stRow, it[0], it[1]); });
+      SELF_STATUS_CHIPS.forEach(function (it) { appendChip(stRow, it[0], it[1], it[0]); });
       stack.appendChild(stRow);
+    } else {
+      SELF_STATUS_CHIPS.forEach(function (it) {
+        if (stRow.querySelector('[data-cmb-self-status="' + it[0] + '"]')) return;
+        appendChip(stRow, it[0], it[1], it[0]);
+      });
     }
+    paintSelfChips(selfChips);
   }
 
   function chipType(el) {
@@ -310,18 +323,8 @@
     if (!listPath()) return;
     var t = e.target;
     if (!t || !t.closest) return;
-    if (t.closest('[data-cmb-search-clear]')) {
-      e.preventDefault(); e.stopPropagation();
-      var inp = document.querySelector('[data-cmb-free]');
-      if (inp) inp.value = '';
-      state.q = '';
-      typing = false;
-      apply(true);
-      return;
-    }
     if (t.closest('[data-cmb-search-go], .cmb-search-go')) {
       e.preventDefault(); e.stopPropagation();
-      typing = false;
       apply(true);
       return;
     }
@@ -342,17 +345,6 @@
     }
   }, true);
 
-  document.addEventListener('keydown', function (e) {
-    var inp = e.target && e.target.closest && e.target.closest('[data-cmb-free]');
-    if (!inp) return;
-    e.stopPropagation();
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      typing = false;
-      apply(true);
-    }
-  }, true);
-
   window.addEventListener('popstate', function () {
     if (!listPath()) return;
     readUrl();
@@ -366,9 +358,9 @@
     if (!listPath()) return;
     readUrl();
     ensureSearch();
-    ensureSort();
     ensureChips();
     markChips();
+    paintSelfChips(selfChips);
     if (lastRows.length) paint(lastRows);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
@@ -376,8 +368,8 @@
   setTimeout(boot, 200);
   setTimeout(function () { boot(); load(); }, 400);
   setTimeout(boot, 1000);
-  if (!window.__cmbSearchObs9) {
-    window.__cmbSearchObs9 = new MutationObserver(function () {
+  if (!window.__cmbSearchObs10) {
+    window.__cmbSearchObs10 = new MutationObserver(function () {
       if (!listPath()) return;
       ensureSearch();
       ensureChips();
@@ -387,7 +379,7 @@
       }
     });
     try {
-      window.__cmbSearchObs9.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs10.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();

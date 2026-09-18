@@ -8,7 +8,7 @@ class JobRules
 {
     public const TYPES = ['modeling_3d', 'print_3d', 'full_package', 'character_figure', 'design_mockup', 'working_prototype'];
 
-    public const STATUSES = ['pending', 'hold', 'request', 'quote_request', 'open', 'awarded', 'done', 'cancelled', 'draft'];
+    public const STATUSES = ['pending', 'hold', 'request', 'quote_request', 'open', 'awarded', 'done', 'cancelled', 'draft', 'disputed'];
 
     public const LISTING_STATUSES = ['pending', 'hold', 'request', 'quote_request', 'draft'];
 
@@ -16,7 +16,7 @@ class JobRules
 
     public const BIDDABLE_STATUSES = ['request', 'quote_request', 'open'];
 
-    public const HIDDEN_PUBLIC_STATUSES = ['pending', 'hold', 'draft'];
+    public const HIDDEN_PUBLIC_STATUSES = ['pending', 'hold', 'draft', 'disputed'];
 
     public const AUDIENCES = ['all', 'company', 'individual', 'admin'];
 
@@ -237,6 +237,8 @@ class JobRules
         $raw = strtolower(trim((string) $status));
         if ($raw === '' || in_array($raw, ['undefined', 'null', '*', 'all'], true)) return null;
         if ($raw === 'open' || $raw === 'biddable') return self::BIDDABLE_STATUSES;
+        if (in_array($raw, ['분쟁조정', 'dispute', 'disputed'], true)) return ['disputed'];
+        if (in_array($raw, ['임시저장', '임시', 'draft'], true)) return ['draft'];
         if (! self::isAllowedStatus($raw)) return [];
         return [$raw];
     }
@@ -269,6 +271,8 @@ class JobRules
             'awarded' => '낙찰',
             'done' => '완료',
             'cancelled' => '취소',
+            'draft' => '임시저장',
+            'disputed' => '분쟁조정',
             default => $status,
         };
     }

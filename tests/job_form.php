@@ -147,6 +147,8 @@ expect('print type query kept', JobRules::listTypeFilter('print_3d'), 'print_3d'
 expectTrue('open list status means biddable', JobRules::listStatusFilter('open') === JobRules::BIDDABLE_STATUSES);
 expectTrue('blank list status is no filter', JobRules::listStatusFilter(null) === null);
 expect('hold list status stays hold', JobRules::listStatusFilter('hold'), ['hold']);
+expect('draft list status stays draft', JobRules::listStatusFilter('임시저장'), ['draft']);
+expect('disputed list status stays disputed', JobRules::listStatusFilter('분쟁조정'), ['disputed']);
 expect('status sort alias', JobRules::normalizeListSort('상태순'), JobRules::LIST_SORT_STATUS);
 expect('latest sort default', JobRules::normalizeListSort(''), JobRules::LIST_SORT_LATEST);
 

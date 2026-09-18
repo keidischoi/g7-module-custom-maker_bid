@@ -1254,6 +1254,7 @@
     }
     bar.setAttribute('data-cmb-search-bound', '1');
     bar.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('[data-cmb-native-bar]')) return;
       var t = e.target;
       if (!t) return;
       var go = t.closest ? t.closest('[data-cmb-search-go], .cmb-search-go, button') : null;
@@ -1264,6 +1265,7 @@
       }
     }, true);
     bar.addEventListener('keydown', function (e) {
+      if (e.target && e.target.closest && e.target.closest('[data-cmb-native-bar], [data-cmb-free]')) return;
       if (!e || e.key !== 'Enter') return;
       var t = e.target;
       if (!t) return;
@@ -1687,13 +1689,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.26';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.27';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.26') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.27') < 0) {
         existing.href = FORM_CSS;
       }
       return;
