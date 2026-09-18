@@ -334,6 +334,16 @@
                     "text": "분쟁"
                   },
                   {
+                    "id": "t_payments",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/payments",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "결제"
+                  },
+                  {
                     "id": "t5",
                     "type": "basic",
                     "name": "A",

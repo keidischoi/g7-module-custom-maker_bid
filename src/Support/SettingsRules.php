@@ -6,7 +6,7 @@ class SettingsRules
 {
     public const MODULE_ID = 'custom-maker_bids';
 
-    public const CATEGORIES = ['menu', 'notices', 'general'];
+    public const CATEGORIES = ['menu', 'notices', 'general', 'payment'];
 
     public const NAV_INSERTS = ['append_row', 'prepend_row', 'after_shop', 'after_home'];
 
@@ -58,6 +58,16 @@ class SettingsRules
                 'guests_see_list' => true,
                 'bid_allow' => BidRules::ALLOW_ALL,
                 'provided_extensions' => implode(',', UploadRules::PROVIDED_EXTENSIONS),
+            ],
+            'payment' => [
+                'method' => PaymentRules::METHOD_BANK,
+                'destination' => PaymentRules::DEST_PLATFORM,
+                'bank_name' => '',
+                'account_no' => '',
+                'account_holder' => '',
+                'transfer_note' => '의뢰 #{job_id}',
+                'instructions' => '낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.',
+                'require_confirmed' => true,
             ],
         ];
     }
@@ -191,6 +201,26 @@ class SettingsRules
             $status = 'quote_request';
         }
 
+        $paymentIn = is_array($all['payment'] ?? null) ? $all['payment'] : [];
+        $bankName = trim((string) ($paymentIn['bank_name'] ?? ''));
+        $accountNo = trim((string) ($paymentIn['account_no'] ?? ''));
+        $accountHolder = trim((string) ($paymentIn['account_holder'] ?? ''));
+        $transferNote = trim((string) ($paymentIn['transfer_note'] ?? '의뢰 #{job_id}'));
+        $instructions = (string) ($paymentIn['instructions'] ?? '');
+        if (function_exists('mb_substr')) {
+            $bankName = mb_substr($bankName, 0, 80);
+            $accountNo = mb_substr($accountNo, 0, 80);
+            $accountHolder = mb_substr($accountHolder, 0, 80);
+            $transferNote = mb_substr($transferNote, 0, 120);
+            $instructions = mb_substr($instructions, 0, 2000);
+        } else {
+            $bankName = substr($bankName, 0, 80);
+            $accountNo = substr($accountNo, 0, 80);
+            $accountHolder = substr($accountHolder, 0, 80);
+            $transferNote = substr($transferNote, 0, 120);
+            $instructions = substr($instructions, 0, 2000);
+        }
+
         return [
             'menu' => [
                 'nav_js_enabled' => self::boolish($menu['nav_js_enabled'] ?? true),
@@ -207,6 +237,16 @@ class SettingsRules
                 'provided_extensions' => self::normalizeProvidedExtensionsSetting(
                     $general['provided_extensions'] ?? implode(',', UploadRules::PROVIDED_EXTENSIONS)
                 ),
+            ],
+            'payment' => [
+                'method' => PaymentRules::normalizeMethod($paymentIn['method'] ?? PaymentRules::METHOD_BANK),
+                'destination' => PaymentRules::normalizeDestination($paymentIn['destination'] ?? PaymentRules::DEST_PLATFORM),
+                'bank_name' => $bankName,
+                'account_no' => $accountNo,
+                'account_holder' => $accountHolder,
+                'transfer_note' => $transferNote !== '' ? $transferNote : '의뢰 #{job_id}',
+                'instructions' => $instructions,
+                'require_confirmed' => self::boolish($paymentIn['require_confirmed'] ?? true),
             ],
         ];
     }
@@ -234,6 +274,18 @@ class SettingsRules
             'menu' => $all['menu'],
             'notices' => $notices,
             'general' => $all['general'],
+            'payment' => [
+                'method' => $all['payment']['method'],
+                'method_label' => PaymentRules::methodLabel($all['payment']['method']),
+                'destination' => $all['payment']['destination'],
+                'destination_label' => PaymentRules::destinationLabel($all['payment']['destination']),
+                'bank_name' => $all['payment']['bank_name'],
+                'account_no' => $all['payment']['account_no'],
+                'account_holder' => $all['payment']['account_holder'],
+                'transfer_note' => $all['payment']['transfer_note'],
+                'instructions' => $all['payment']['instructions'],
+                'require_confirmed' => $all['payment']['require_confirmed'],
+            ],
         ];
     }
 
@@ -308,9 +360,18 @@ class SettingsRules
             'guests_see_list' => ['nullable'],
             'bid_allow' => ['nullable', 'string', 'in:'.implode(',', BidRules::ALLOW_MODES)],
             'provided_extensions' => ['nullable', 'string', 'max:500'],
+            'method' => ['nullable', 'string', 'max:40'],
+            'destination' => ['nullable', 'string', 'max:40'],
+            'bank_name' => ['nullable', 'string', 'max:80'],
+            'account_no' => ['nullable', 'string', 'max:80'],
+            'account_holder' => ['nullable', 'string', 'max:80'],
+            'transfer_note' => ['nullable', 'string', 'max:120'],
+            'instructions' => ['nullable', 'string', 'max:2000'],
+            'require_confirmed' => ['nullable'],
             'menu' => ['nullable', 'array'],
             'notices' => ['nullable', 'array'],
             'general' => ['nullable', 'array'],
+            'payment' => ['nullable', 'array'],
             'form' => ['nullable', 'array'],
         ];
         foreach (array_keys(self::pages()) as $page) {

@@ -278,6 +278,7 @@ class JobService
             'can_view_privacy' => $isOwner || $isAdmin,
             'can_workspace' => $canWork,
             'can_dispute' => $isParty && DisputeRules::canOpen($status),
+            'can_pay' => $isOwner && in_array($status, ['awarded', 'disputed', 'done'], true),
             'my_bid' => null,
             'privacy' => null,
         ];
@@ -408,7 +409,18 @@ class JobService
     private function present(MakerJob $job, array $ctx, bool $includeBids, bool $includeFiles): array
     {
         $files = $includeFiles ? ($job->relationLoaded('files') ? $job->files : $this->files->forJob((int) $job->id)) : [];
-        return JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        $payload = JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        try {
+            $payload['payment'] = app(PaymentService::class)->forJob(
+                (int) $job->id,
+                (int) ($ctx['userId'] ?? 0),
+                (bool) ($ctx['isAdmin'] ?? false)
+            );
+        } catch (\Throwable) {
+            $payload['payment'] = null;
+        }
+
+        return $payload;
     }
 
     private function ownerContext(int $userId): array

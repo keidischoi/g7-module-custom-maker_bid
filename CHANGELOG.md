@@ -4,6 +4,16 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.34] - 2026-09-18
+
+### Added
+- **결제 (계좌이체)**: 낙찰 시 입금 대기가 생깁니다. 의뢰자가 작업실에서 입금자명을 신고하고, 관리자(플랫폼 계좌) 또는 낙찰자(제작자 계좌)가 확인합니다.
+- 관리자 설정에 은행·계좌·예금주·이체 안내. 입금 확인 전에는 완료할 수 없습니다.
+- 회원 메뉴 `/maker-bids/payments`, 관리자 메뉴 `/admin/maker-bids/payments`.
+
+### Changed
+- 버전·캐시 버스트 **0.10.34**.
+
 ## [0.10.33] - 2026-09-18
 
 ### Added

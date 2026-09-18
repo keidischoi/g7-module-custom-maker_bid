@@ -61,8 +61,9 @@ class Module extends AbstractModule
                     $this->adminMenuChild('회사 목록', 'Companies', 'companies', '/admin/maker-bids/companies', 'fa-building', 4, 'custom-maker_bids.companies.read'),
                     $this->adminMenuChild('운영', 'Ops', 'ops', '/admin/maker-bids/ops', 'fa-clipboard-list', 5, 'custom-maker_bids.jobs.read'),
                     $this->adminMenuChild('분쟁조정', 'Disputes', 'disputes', '/admin/maker-bids/disputes', 'fa-balance-scale', 6, 'custom-maker_bids.jobs.update'),
-                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 7, 'custom-maker_bids.jobs.read'),
-                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 8, 'custom-maker_bids.settings.read'),
+                    $this->adminMenuChild('결제', 'Payments', 'payments', '/admin/maker-bids/payments', 'fa-won-sign', 7, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 8, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 9, 'custom-maker_bids.settings.read'),
                 ],
             ],
         ];
@@ -98,6 +99,7 @@ class Module extends AbstractModule
                 'custom-maker_bids-activity',
                 'custom-maker_bids-ops',
                 'custom-maker_bids-disputes',
+                'custom-maker_bids-payments',
                 'custom-maker_bids-settings',
                 'custom-maker_bid-jobs',
                 'custom-maker_bid-types',
@@ -147,6 +149,7 @@ class Module extends AbstractModule
             'maker_reviews',
             'maker_claims',
             'maker_reports',
+            'maker_payments',
             'maker_audits',
             'maker_file_logs',
         ];

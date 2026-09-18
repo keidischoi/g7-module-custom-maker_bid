@@ -15,6 +15,7 @@ $files = [
     __DIR__.'/admin_actor.php',
     __DIR__.'/job_lifecycle.php',
     __DIR__.'/dispute_rules.php',
+    __DIR__.'/payment_rules.php',
 ];
 
 

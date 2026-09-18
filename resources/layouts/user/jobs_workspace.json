@@ -54,6 +54,10 @@
     "ship": {
       "carrier": "",
       "tracking_no": ""
+    },
+    "pay": {
+      "depositor_name": "",
+      "memo": ""
     }
   },
   "data_sources": [
@@ -194,6 +198,16 @@
                   "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                 },
                 "text": "분쟁"
+              },
+              {
+                "id": "t_payments",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/payments",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "결제"
               },
               {
                 "id": "t5",
@@ -639,6 +653,202 @@
                 ]
               },
               {
+                "id": "pay_box",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-order-card mt-4 space-y-3",
+                  "dataKey": "pay",
+                  "trackChanges": true
+                },
+                "if": "{{job.data.payment}}",
+                "children": [
+                  {
+                    "id": "pay_h",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-section-title"
+                    },
+                    "text": "결제 · 계좌이체"
+                  },
+                  {
+                    "id": "pay_status",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "{{job.data.payment.status_label}} · {{job.data.payment.amount_label}} · {{job.data.payment.destination_label}}"
+                  },
+                  {
+                    "id": "pay_acct",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "{{job.data.payment.bank_name}} {{job.data.payment.account_no}} {{job.data.payment.account_holder}} · 메모 {{job.data.payment.transfer_note}}"
+                  },
+                  {
+                    "id": "pay_inst",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.instructions}}",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "{{job.data.payment.instructions}}"
+                  },
+                  {
+                    "id": "pay_dep_l",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.can_report}}",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "입금자명"
+                  },
+                  {
+                    "id": "pay_dep",
+                    "type": "basic",
+                    "name": "Input",
+                    "if": "{{job.data.payment.can_report}}",
+                    "props": {
+                      "name": "depositor_name",
+                      "placeholder": "통장 예금주명",
+                      "className": "cmb-order-field w-full rounded-lg border px-3 py-2 text-sm"
+                    }
+                  },
+                  {
+                    "id": "pay_memo_l",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.can_report}}",
+                    "props": {
+                      "className": "cmb-admin-label text-xs text-gray-500"
+                    },
+                    "text": "메모 (선택)"
+                  },
+                  {
+                    "id": "pay_memo",
+                    "type": "basic",
+                    "name": "Input",
+                    "if": "{{job.data.payment.can_report}}",
+                    "props": {
+                      "name": "memo",
+                      "placeholder": "이체 시각·메모",
+                      "className": "cmb-order-field w-full rounded-lg border px-3 py-2 text-sm"
+                    }
+                  },
+                  {
+                    "id": "pay_report",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "입금 신고",
+                    "if": "{{job.data.payment.can_report}}",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-primary"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/payment/report",
+                        "params": {
+                          "method": "POST",
+                          "body": "{{_local.pay}}"
+                        },
+                        "confirm": "입금을 신고할까요?",
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "입금을 신고했습니다."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "job"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "pay_confirm",
+                    "type": "basic",
+                    "name": "Button",
+                    "text": "입금 확인",
+                    "if": "{{job.data.payment.can_confirm}}",
+                    "props": {
+                      "className": "cmb-btn cmb-btn-primary"
+                    },
+                    "actions": [
+                      {
+                        "type": "click",
+                        "handler": "apiCall",
+                        "auth_required": true,
+                        "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/payment/confirm",
+                        "params": {
+                          "method": "POST",
+                          "body": {}
+                        },
+                        "confirm": "입금을 확인할까요?",
+                        "onSuccess": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "success",
+                              "message": "입금을 확인했습니다."
+                            }
+                          },
+                          {
+                            "handler": "refetchDataSource",
+                            "params": {
+                              "dataSourceId": "job"
+                            }
+                          }
+                        ],
+                        "onError": [
+                          {
+                            "handler": "toast",
+                            "params": {
+                              "type": "error",
+                              "message": "{{error.message}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "pay_dep_done",
+                    "type": "basic",
+                    "name": "P",
+                    "if": "{{job.data.payment.depositor_name}}",
+                    "props": {
+                      "className": "cmb-page-guide"
+                    },
+                    "text": "입금자 {{job.data.payment.depositor_name}} · {{job.data.payment.reported_at || ''}}"
+                  }
+                ]
+              },
+              {
                 "id": "complete_box",
                 "type": "basic",
                 "name": "Div",
@@ -664,7 +874,7 @@
                     "props": {
                       "className": "cmb-page-guide"
                     },
-                    "text": "의뢰자만 완료할 수 있습니다. 점수(1–5)와 후기를 입력하세요."
+                    "text": "의뢰자만 완료할 수 있습니다. 입금이 확인된 뒤에 점수(1–5)와 후기를 입력하세요."
                   },
                   {
                     "id": "score_l",
@@ -1076,15 +1286,42 @@
                       "value": "{{_local.claim.factor}}",
                       "className": "cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm",
                       "options": [
-                        { "value": "fraud", "label": "사기·허위" },
-                        { "value": "quality", "label": "제품 품질 문제" },
-                        { "value": "shipping", "label": "배송 문제" },
-                        { "value": "delay", "label": "납기 지연" },
-                        { "value": "damage", "label": "파손·분실" },
-                        { "value": "spec", "label": "사양·수량 불일치" },
-                        { "value": "communication", "label": "소통 불량" },
-                        { "value": "payment", "label": "결제·대금 문제" },
-                        { "value": "other", "label": "기타" }
+                        {
+                          "value": "fraud",
+                          "label": "사기·허위"
+                        },
+                        {
+                          "value": "quality",
+                          "label": "제품 품질 문제"
+                        },
+                        {
+                          "value": "shipping",
+                          "label": "배송 문제"
+                        },
+                        {
+                          "value": "delay",
+                          "label": "납기 지연"
+                        },
+                        {
+                          "value": "damage",
+                          "label": "파손·분실"
+                        },
+                        {
+                          "value": "spec",
+                          "label": "사양·수량 불일치"
+                        },
+                        {
+                          "value": "communication",
+                          "label": "소통 불량"
+                        },
+                        {
+                          "value": "payment",
+                          "label": "결제·대금 문제"
+                        },
+                        {
+                          "value": "other",
+                          "label": "기타"
+                        }
                       ]
                     },
                     "actions": [
@@ -1195,15 +1432,42 @@
                       "value": "{{_local.report.factor}}",
                       "className": "cmb-order-field cmb-order-select w-full rounded-lg border px-3 py-2 text-sm",
                       "options": [
-                        { "value": "fraud", "label": "사기·허위" },
-                        { "value": "quality", "label": "제품 품질 문제" },
-                        { "value": "shipping", "label": "배송 문제" },
-                        { "value": "delay", "label": "납기 지연" },
-                        { "value": "damage", "label": "파손·분실" },
-                        { "value": "spec", "label": "사양·수량 불일치" },
-                        { "value": "communication", "label": "소통 불량" },
-                        { "value": "payment", "label": "결제·대금 문제" },
-                        { "value": "other", "label": "기타" }
+                        {
+                          "value": "fraud",
+                          "label": "사기·허위"
+                        },
+                        {
+                          "value": "quality",
+                          "label": "제품 품질 문제"
+                        },
+                        {
+                          "value": "shipping",
+                          "label": "배송 문제"
+                        },
+                        {
+                          "value": "delay",
+                          "label": "납기 지연"
+                        },
+                        {
+                          "value": "damage",
+                          "label": "파손·분실"
+                        },
+                        {
+                          "value": "spec",
+                          "label": "사양·수량 불일치"
+                        },
+                        {
+                          "value": "communication",
+                          "label": "소통 불량"
+                        },
+                        {
+                          "value": "payment",
+                          "label": "결제·대금 문제"
+                        },
+                        {
+                          "value": "other",
+                          "label": "기타"
+                        }
                       ]
                     },
                     "actions": [

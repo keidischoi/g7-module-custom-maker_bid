@@ -33,11 +33,15 @@ class AwardService
             $job->awarded_bid_id = $bid->id;
             $job->work_status = 'producing';
             $job->save();
+            try {
+                app(PaymentService::class)->ensureDue($job, $bid);
+            } catch (\Throwable) {
+            }
             return $job->fresh('bids') ?? $job;
         });
         try {
             $market = app(MarketplaceService::class);
-            $market->notify((int) $job->user_id, 'award', '낙찰했습니다.', (string) $job->title, $jobId);
+            $market->notify((int) $job->user_id, 'award', '낙찰했습니다. 안내된 계좌로 이체해 주세요.', (string) $job->title, $jobId);
             $bid = MakerBid::query()->find($bidId);
             if ($bid) {
                 $market->notify((int) $bid->user_id, 'award', '입찰이 낙찰되었습니다.', (string) $job->title, $jobId);

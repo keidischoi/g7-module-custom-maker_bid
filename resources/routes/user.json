@@ -32,6 +32,12 @@
       "meta": { "title": "분쟁" }
     },
     {
+      "path": "*/maker-bids/payments",
+      "layout": "jobs_payments",
+      "auth_required": true,
+      "meta": { "title": "결제" }
+    },
+    {
       "path": "*/maker-bids/notices",
       "layout": "jobs_notices",
       "auth_required": true,

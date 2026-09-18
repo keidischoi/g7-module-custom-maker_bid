@@ -50,7 +50,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.33', ($moduleMeta['version'] ?? null) === '0.10.33');
+expectTrue('module version is 0.10.34', ($moduleMeta['version'] ?? null) === '0.10.34');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -59,7 +59,7 @@ expectTrue(
 );
 $composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
 expectTrue('composer name is custom/maker-bids', ($composer['name'] ?? null) === 'custom/maker-bids');
-expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.33');
+expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.34');
 expectTrue(
     'psr-4 is Modules\\Custom\\MakerBids\\ not MakerBid',
     isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\'])
@@ -114,6 +114,7 @@ expectTrue('admin menus include 회사 목록', str_contains($modulePhp, '회사
 expectTrue('admin menus include 회원 활동', str_contains($modulePhp, '회원 활동'));
 expectTrue('admin menus include 설정', str_contains($modulePhp, '설정'));
 expectTrue('admin menus include 분쟁조정', str_contains($modulePhp, '분쟁조정'));
+expectTrue('admin menus include 결제', str_contains($modulePhp, "'결제'"));
 expectTrue('jobs permissions declared', str_contains($modulePhp, "permissionCategory('jobs'"));
 expectTrue('bids permissions declared', str_contains($modulePhp, "permissionCategory('bids'"));
 expectTrue('companies permissions declared', str_contains($modulePhp, "permissionCategory('companies'"));

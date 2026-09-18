@@ -74,7 +74,8 @@
           "can_update_bid": false,
           "can_workspace": false,
           "can_dispute": false,
-          "my_bid": null
+          "my_bid": null,
+          "can_pay": false
         }
       },
       "auth_mode": "optional"
@@ -186,6 +187,16 @@
                   "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                 },
                 "text": "분쟁"
+              },
+              {
+                "id": "t_payments",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/payments",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "결제"
               },
               {
                 "id": "t5",
@@ -337,6 +348,46 @@
                     "text": "분쟁 접수"
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "id": "pay_card",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{job.data.payment}}",
+            "props": {
+              "className": "cmb-section-card space-y-2"
+            },
+            "children": [
+              {
+                "id": "pay_card_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "결제 · 계좌이체"
+              },
+              {
+                "id": "pay_card_m",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "{{job.data.payment.status_label}} · {{job.data.payment.amount_label}} · {{job.data.payment.bank_name}} {{job.data.payment.account_no}} {{job.data.payment.account_holder}}"
+              },
+              {
+                "id": "pay_card_a",
+                "type": "basic",
+                "name": "A",
+                "if": "{{viewer.data?.can_workspace}}",
+                "props": {
+                  "href": "/maker-bids/{{route.id}}/work",
+                  "className": "cmb-btn cmb-btn-secondary"
+                },
+                "text": "작업실에서 입금 신고"
               }
             ]
           },

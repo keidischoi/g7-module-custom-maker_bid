@@ -286,6 +286,12 @@ class MarketplaceService
         if ((int) $job->user_id !== $userId) {
             throw new DomainException('의뢰자만 완료할 수 있습니다.', 403);
         }
+        try {
+            app(PaymentService::class)->assertCompleteAllowed($job);
+        } catch (DomainException $e) {
+            throw $e;
+        } catch (\Throwable) {
+        }
         $job->status = 'done';
         $job->work_status = 'done';
         $job->save();

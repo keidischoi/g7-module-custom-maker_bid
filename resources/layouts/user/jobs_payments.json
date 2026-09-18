@@ -1,9 +1,9 @@
 {
   "version": "1.0.0",
-  "layout_name": "jobs_disputes",
+  "layout_name": "jobs_payments",
   "extends": "_user_base",
   "meta": {
-    "title": "분쟁"
+    "title": "결제"
   },
   "errorHandling": {
     "401": {
@@ -37,9 +37,9 @@
   },
   "data_sources": [
     {
-      "id": "disputes",
+      "id": "payments",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/disputes",
+      "endpoint": "/api/modules/custom-maker_bids/payments",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
@@ -86,7 +86,7 @@
                 "props": {
                   "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
                 },
-                "text": "분쟁"
+                "text": "결제"
               },
               {
                 "id": "tabs",
@@ -138,14 +138,14 @@
                     "text": "이력"
                   },
                   {
-                    "id": "t_notices",
+                    "id": "t_disputes",
                     "type": "basic",
                     "name": "A",
                     "props": {
-                      "href": "/maker-bids/notices",
+                      "href": "/maker-bids/disputes",
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
-                    "text": "알림"
+                    "text": "분쟁"
                   },
                   {
                     "id": "t_payments",
@@ -153,7 +153,7 @@
                     "name": "A",
                     "props": {
                       "href": "/maker-bids/payments",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                      "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
                     },
                     "text": "결제"
                   },
@@ -182,7 +182,7 @@
             ]
           },
           {
-            "id": "disputes_card",
+            "id": "payments_card",
             "type": "basic",
             "name": "Div",
             "props": {
@@ -190,7 +190,7 @@
             },
             "children": [
               {
-                "id": "nh_row",
+                "id": "ph_row",
                 "type": "basic",
                 "name": "Div",
                 "props": {
@@ -198,28 +198,28 @@
                 },
                 "children": [
                   {
-                    "id": "nh",
+                    "id": "ph",
                     "type": "basic",
                     "name": "H2",
                     "props": {
                       "className": "cmb-section-title"
                     },
-                    "text": "내 분쟁·신고"
+                    "text": "내 계좌이체"
                   }
                 ]
               },
               {
-                "id": "nempty",
+                "id": "pempty",
                 "type": "basic",
                 "name": "P",
-                "if": "{{!(disputes?.data?.data ?? disputes?.data ?? []).length}}",
+                "if": "{{!(payments?.data?.data ?? payments?.data ?? []).length}}",
                 "props": {
                   "className": "cmb-page-guide mt-2"
                 },
-                "text": "접수한 분쟁·신고가 없습니다. 낙찰된 의뢰의 작업실에서 사유를 골라 접수하세요."
+                "text": "낙찰된 의뢰의 결제가 여기 모입니다. 안내된 계좌로 이체한 뒤 작업실에서 입금자명을 신고하세요."
               },
               {
-                "id": "nlist",
+                "id": "plist",
                 "type": "basic",
                 "name": "Div",
                 "props": {
@@ -227,37 +227,37 @@
                 },
                 "children": [
                   {
-                    "id": "nrow",
+                    "id": "prow",
                     "type": "basic",
                     "name": "Div",
                     "props": {
                       "className": "cmb-bid-card cmb-list-item"
                     },
                     "iteration": {
-                      "source": "{{disputes?.data?.data ?? disputes?.data ?? []}}",
-                      "item_var": "$d"
+                      "source": "{{payments?.data?.data ?? payments?.data ?? []}}",
+                      "item_var": "$p"
                     },
                     "children": [
                       {
-                        "id": "nt",
+                        "id": "pt",
                         "type": "basic",
                         "name": "P",
                         "props": {
                           "className": "cmb-job-card-title"
                         },
-                        "text": "{{$d.kind_label}} · {{$d.factor_label}} · {{$d.job_title}}"
+                        "text": "{{$p.status_label}} · {{$p.amount_label}} · {{$p.job_title}}"
                       },
                       {
-                        "id": "nm",
+                        "id": "pm",
                         "type": "basic",
                         "name": "P",
                         "props": {
                           "className": "cmb-page-guide mt-1"
                         },
-                        "text": "{{$d.status_label}} · {{$d.reason}} · {{$d.created_at}}"
+                        "text": "{{$p.method_label}} · {{$p.destination_label}} · {{$p.account_label}} · 입금자 {{$p.depositor_name || '-'}}"
                       },
                       {
-                        "id": "nacts",
+                        "id": "pacts",
                         "type": "basic",
                         "name": "Div",
                         "props": {
@@ -265,24 +265,24 @@
                         },
                         "children": [
                           {
-                            "id": "njob",
+                            "id": "pjob",
                             "type": "basic",
                             "name": "A",
-                            "if": "{{$d.job_id}}",
+                            "if": "{{$p.job_id}}",
                             "props": {
-                              "href": "/maker-bids/{{$d.job_id}}",
+                              "href": "/maker-bids/{{$p.job_id}}",
                               "className": "cmb-btn cmb-btn-secondary"
                             },
                             "text": "의뢰 보기"
                           },
                           {
-                            "id": "nread",
+                            "id": "pwork",
                             "type": "basic",
                             "name": "A",
                             "text": "작업실",
-                            "if": "{{$d.job_id}}",
+                            "if": "{{$p.job_id}}",
                             "props": {
-                              "href": "/maker-bids/{{$d.job_id}}/work",
+                              "href": "/maker-bids/{{$p.job_id}}/work",
                               "className": "cmb-btn cmb-btn-primary"
                             }
                           }
@@ -293,17 +293,17 @@
                 ]
               },
               {
-                "id": "disputes_pager",
+                "id": "payments_pager",
                 "type": "basic",
                 "name": "Div",
                 "props": {
                   "className": "cmb-pager",
                   "data-cmb-pager": "1",
                   "data-param": "page",
-                  "data-page": "{{disputes?.data?.meta?.page || 1}}",
-                  "data-total": "{{disputes?.data?.meta?.total || 0}}",
-                  "data-last-page": "{{disputes?.data?.meta?.last_page || 1}}",
-                  "data-per-page": "{{disputes?.data?.meta?.per_page || 10}}"
+                  "data-page": "{{payments?.data?.meta?.page || 1}}",
+                  "data-total": "{{payments?.data?.meta?.total || 0}}",
+                  "data-last-page": "{{payments?.data?.meta?.last_page || 1}}",
+                  "data-per-page": "{{payments?.data?.meta?.per_page || 10}}"
                 }
               }
             ]

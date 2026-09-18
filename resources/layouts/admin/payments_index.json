@@ -1,0 +1,275 @@
+{
+  "version": "1.0.0",
+  "layout_name": "payments_index",
+  "extends": "_admin_base",
+  "meta": {
+    "title": "결제"
+  },
+  "permissions": [
+    "custom-maker_bids.jobs.read"
+  ],
+  "errorHandling": {
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
+  },
+  "data_sources": [
+    {
+      "id": "payments",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/admin/payments",
+      "method": "GET",
+      "auto_fetch": true,
+      "auth_required": true,
+      "refetchOnMount": true,
+      "fallback": {
+        "data": []
+      }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": {
+          "className": "admin-page-content cmb-admin space-y-5 w-full"
+        },
+        "children": [
+          {
+            "id": "h",
+            "type": "basic",
+            "name": "H1",
+            "props": {
+              "className": "page-title"
+            },
+            "text": "결제"
+          },
+          {
+            "id": "pay_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-admin-card space-y-3 w-full"
+            },
+            "children": [
+              {
+                "id": "ph",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-card-title"
+                },
+                "text": "계좌이체"
+              },
+              {
+                "id": "pguide",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-muted"
+                },
+                "text": "낙찰 시 입금 대기가 생깁니다. 의뢰자가 입금 신고하면 여기서 확인하세요. 확인 후에 의뢰자가 완료할 수 있습니다."
+              },
+              {
+                "id": "pempty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(payments.data && payments.data.length)}}",
+                "props": {
+                  "className": "cmb-admin-empty"
+                },
+                "text": "결제 내역이 없습니다."
+              },
+              {
+                "id": "plist",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-admin-list w-full"
+                },
+                "children": [
+                  {
+                    "id": "prow",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-admin-row w-full flex flex-row flex-nowrap items-center justify-between"
+                    },
+                    "iteration": {
+                      "source": "{{payments.data}}",
+                      "item_var": "$item"
+                    },
+                    "children": [
+                      {
+                        "id": "pmain",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-row-main min-w-0 flex-1 flex flex-row flex-nowrap items-center"
+                        },
+                        "children": [
+                          {
+                            "id": "ptitle",
+                            "type": "basic",
+                            "name": "A",
+                            "props": {
+                              "href": "/admin/maker-bids/jobs/{{$item.job_id}}",
+                              "className": "cmb-admin-row-title"
+                            },
+                            "text": "결제 #{{$item.id}} · {{$item.amount_label}} · {{$item.status_label}}"
+                          },
+                          {
+                            "id": "pmeta",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-muted"
+                            },
+                            "text": "{{$item.job_title}} · {{$item.method_label}} · {{$item.destination_label}} · {{$item.account_label}} · 입금자 {{$item.depositor_name || '-'}}"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "pacts",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-row-actions shrink-0 ml-auto flex flex-row items-center"
+                        },
+                        "children": [
+                          {
+                            "id": "pconfirm",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "입금 확인",
+                            "if": "{{$item.status !== 'confirmed' && $item.status !== 'refunded'}}",
+                            "props": {
+                              "className": "px-3 py-1 text-sm rounded-lg border"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/payments/{{$item.id}}/confirm",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {}
+                                },
+                                "confirm": "입금을 확인 처리할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "입금을 확인했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "payments"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "prefund",
+                            "type": "basic",
+                            "name": "Button",
+                            "text": "환불",
+                            "if": "{{$item.status !== 'refunded'}}",
+                            "props": {
+                              "className": "px-3 py-1 text-sm rounded-lg border"
+                            },
+                            "actions": [
+                              {
+                                "type": "click",
+                                "handler": "apiCall",
+                                "auth_required": true,
+                                "target": "/api/modules/custom-maker_bids/admin/payments/{{$item.id}}/refund",
+                                "params": {
+                                  "method": "POST",
+                                  "body": {
+                                    "refund_note": "관리자 환불"
+                                  }
+                                },
+                                "confirm": "이 결제를 환불 처리할까요?",
+                                "onSuccess": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "success",
+                                      "message": "환불 처리했습니다."
+                                    }
+                                  },
+                                  {
+                                    "handler": "refetchDataSource",
+                                    "params": {
+                                      "dataSourceId": "payments"
+                                    }
+                                  }
+                                ],
+                                "onError": [
+                                  {
+                                    "handler": "toast",
+                                    "params": {
+                                      "type": "error",
+                                      "message": "{{error.message}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -8,7 +8,7 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 require __DIR__.'/bootstrap.php';
 
 $defaults = SettingsRules::defaults();
-expectTrue('defaults have menu notices general', isset($defaults['menu'], $defaults['notices'], $defaults['general']));
+expectTrue('defaults have menu notices general payment', isset($defaults['menu'], $defaults['notices'], $defaults['general'], $defaults['payment']));
 expectTrue('default nav insert append_row', $defaults['menu']['nav_insert'] === 'append_row');
 expectTrue('default nav js on', $defaults['menu']['nav_js_enabled'] === true);
 expectTrue('default guests see list', $defaults['general']['guests_see_list'] === true);
