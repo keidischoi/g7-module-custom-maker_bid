@@ -4,6 +4,7 @@ namespace Modules\Custom\MakerBids\Support;
 
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
+use Modules\Custom\MakerBids\Models\MakerJobFile;
 use Modules\Custom\MakerBids\Support\BidRules;
 
 class CompanyPresenter
@@ -110,6 +111,11 @@ class CompanyPresenter
         $url = self::logoUrl($hash);
         if ($url === null || $hash === null || $hash === '') {
             return [];
+        }
+
+        $row = MakerJobFile::query()->where('hash', $hash)->first();
+        if ($row) {
+            return [$row->toAttachmentArray()];
         }
 
         return [UploadRules::toUploaderFile([
