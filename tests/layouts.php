@@ -668,7 +668,7 @@ expectTrue('admin company edit loads profile fields', str_contains($adminCos, 'e
 expectTrue('admin company logo sits in uploader box', str_contains($adminCos, 'cmb-admin-uploader') && str_contains($adminCos, 'cmb-existing-in-uploader') && str_contains($adminCos, 'cmb_admin_logo_existing') && str_contains($adminCos, 'cmb_admin_logo_uploader'));
 expectTrue('admin company approve/hold/reject sit with save', str_contains($adminCos, 'cmb-admin-company-toolbar') && str_contains($adminCos, '선택 업체 저장') && str_contains($adminCos, '"id": "eapprove"') && str_contains($adminCos, '"id": "eholdbtn"') && str_contains($adminCos, '"id": "erejectbtn"'));
 expectTrue('admin company edit harvests named fields', str_contains($adminJs, 'data-cmb-company-edit') && str_contains($adminJs, 'function harvestNamedInto') && str_contains($adminJs, 'nestExistingIntoUploader'));
-expectTrue('admin uploader box is compact', str_contains($adminCss, 'min-height: 2.75rem') && str_contains($adminCss, 'width: 48px') && str_contains($adminCss, 'is-cmb-editing'));
+expectTrue('admin uploader box is compact', str_contains($adminCss, 'cmb-admin-uploader-compact') && str_contains($adminCss, 'width: 40px') && str_contains($adminJs, 'cmb-admin-uploader-compact') && str_contains($adminCss, 'is-cmb-editing'));
 expectTrue('page.js admin company fills profile', str_contains($pageJs, 'homepage_url') && str_contains($pageJs, 'applyAdminCompany') && str_contains($pageJs, 'formatClaimHistory'));
 expectTrue('jobs_form uploader_epoch', str_contains($form, 'uploader_epoch'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
