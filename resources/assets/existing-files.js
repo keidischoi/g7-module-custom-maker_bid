@@ -1,37 +1,40 @@
 (function () {
-  if (document.documentElement.getAttribute('data-cmb-bid-token-v1')) return;
-  document.documentElement.setAttribute('data-cmb-bid-token-v1', '1');
   function jobId() {
     var m = (location.pathname || '').match(/\/maker-bids\/(?:jobs\/)?(\d+)/);
     return m ? m[1] : '';
   }
-  function pick(obj, path) {
-    var cur = obj;
-    var parts = path.split('.');
-    for (var i = 0; i < parts.length; i++) {
-      if (!cur) return '';
-      cur = cur[parts[i]];
+  function banner(text) {
+    var el = document.getElementById('cmb-debug-session');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'cmb-debug-session';
+      el.style.cssText = 'position:relative;z-index:9999;margin:8px 0;padding:8px 10px;border:1px dashed #c9a227;background:#1a1a1a;color:#ffe08a;font:12px/1.4 monospace;white-space:pre-wrap';
+      var host = document.querySelector('.cmb-bid-form, .cmb-job-show, main, body');
+      if (host && host.firstChild) host.insertBefore(el, host.firstChild);
+      else document.body.appendChild(el);
     }
-    return cur || '';
+    el.textContent = text;
   }
-  function bidToken() {
-    var g = window.G7Core || window.g7 || {};
-    var tries = [];
-    try { if (g.get) tries.push(g.get('viewer.data.bid_token')); } catch (e) {}
-    try { if (g.get) tries.push(g.get('_data.viewer.data.bid_token')); } catch (e) {}
-    tries.push(pick(g, 'state.viewer.data.bid_token'));
-    tries.push(pick(g, 'data.viewer.data.bid_token'));
-    tries.push(pick(window, '__G7_STATE__.viewer.data.bid_token'));
-    for (var i = 0; i < tries.length; i++) {
-      if (tries[i]) return String(tries[i]);
-    }
-    try {
-      var dump = JSON.stringify(g.state || g.data || g);
-      var m = dump.match(/"bid_token":"([^"]+)"/);
-      if (m) return m[1];
-    } catch (e) {}
-    return '';
+  var id = jobId();
+  if (id) {
+    banner('session loading… job=' + id);
+    fetch('/api/modules/custom-maker_bids/jobs/' + id + '/viewer', {
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    }).then(function (r) { return r.json().then(function (j) { return { status: r.status, json: j }; }); })
+      .then(function (r) {
+        var d = (r.json && (r.json.data || r.json)) || {};
+        banner(
+          'viewer HTTP ' + r.status +
+          '\n' + (d.debug_session || JSON.stringify(d).slice(0, 300)) +
+          '\ncan_bid=' + d.can_bid + ' userId=' + (d.userId || d.user_id || '-')
+        );
+      })
+      .catch(function (e) { banner('viewer fetch failed: ' + e); });
   }
+
+  if (document.documentElement.getAttribute('data-cmb-bid-token-v1')) return;
+  document.documentElement.setAttribute('data-cmb-bid-token-v1', '1');
   function val(root, name) {
     var el = (root || document).querySelector('[name="' + name + '"]');
     if (el && el.value) return String(el.value).trim();
@@ -59,17 +62,15 @@
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     var formBox = t.closest('.cmb-bid-form, #bidform, #editform') || document.querySelector('.cmb-bid-form');
-    var id = jobId();
-    var token = bidToken();
-    if (!id) { toast('error', '의뢰를 찾을 수 없습니다.'); return; }
-    if (!token) { toast('error', '견적 토큰이 없습니다. 페이지를 새로고침 해 주세요.'); return; }
+    var jid = jobId();
+    if (!jid) { toast('error', '의뢰를 찾을 수 없습니다.'); return; }
     var amount = parseInt(val(formBox, 'amount').replace(/[^\d]/g, ''), 10);
     var days = parseInt(val(formBox, 'days').replace(/[^\d]/g, ''), 10);
     var message = val(formBox, 'message');
     if (!amount) { toast('error', '견적 금액을 입력해 주세요.'); return; }
-    var body = { amount: amount, message: message, bid_token: token };
+    var body = { amount: amount, message: message };
     if (days) body.days = days;
-    var path = '/api/modules/custom-maker_bids/jobs/' + id + '/bids';
+    var path = '/api/modules/custom-maker_bids/jobs/' + jid + '/bids';
     var method = 'POST';
     if (isUpdate) {
       var bidId = (formBox && formBox.getAttribute('data-bid-id')) || (document.querySelector('[name="bid_id"]') || {}).value || '';
