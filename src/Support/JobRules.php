@@ -254,6 +254,12 @@ class JobRules
         if (in_array($raw, ['분쟁조정', '분쟁', '분쟁상태', 'dispute', 'disputed'], true)) return ['disputed'];
         if (in_array($raw, ['임시저장', '임시', 'draft'], true)) return ['draft'];
         if (in_array($raw, ['보류', 'hold'], true)) return ['hold'];
+        if (in_array($raw, ['취소', 'cancel', 'cancelled'], true)) return ['cancelled'];
+        if (in_array($raw, ['완료', 'done'], true)) return ['done'];
+        if (in_array($raw, ['낙찰', 'awarded'], true)) return ['awarded'];
+        if (in_array($raw, ['의뢰', 'request'], true)) return ['request'];
+        if (in_array($raw, ['견적요청', 'quote_request'], true)) return ['quote_request'];
+        if (in_array($raw, ['승인대기', '대기', 'pending', 'pending_approval'], true)) return ['pending'];
         if (! self::isAllowedStatus($raw)) return [];
         return [$raw];
     }

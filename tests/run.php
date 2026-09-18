@@ -13,6 +13,7 @@ $files = [
     __DIR__.'/settings.php',
     __DIR__.'/type_ext_coerce.php',
     __DIR__.'/admin_actor.php',
+    __DIR__.'/job_lifecycle.php',
 ];
 
 
