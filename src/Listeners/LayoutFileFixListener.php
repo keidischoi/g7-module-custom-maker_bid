@@ -26,6 +26,7 @@ class LayoutFileFixListener implements HookListenerInterface
         }
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->scrub($layout);
+        $layout = $this->bindUploaders($layout, $name);
         if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show', 'jobs_edit'], true)
             || str_contains($name, 'jobs_form')
             || str_contains($name, 'company_apply')) {
@@ -51,6 +52,55 @@ class LayoutFileFixListener implements HookListenerInterface
         }
 
         return $layout;
+    }
+
+    private function bindUploaders(array $node, string $layoutName): array
+    {
+        $name = (string) ($node['name'] ?? '');
+        $id = (string) ($node['id'] ?? '');
+        if ($name === 'FileUploader') {
+            $props = is_array($node['props'] ?? null) ? $node['props'] : [];
+            $collection = (string) ($props['collection'] ?? '');
+            $endpoints = is_array($props['apiEndpoints'] ?? null) ? $props['apiEndpoints'] : [];
+            if ($collection === 'images' || str_contains($id, 'images')) {
+                $props['initialFiles'] = '{{job.data.images || []}}';
+                $endpoints['upload'] = '/api/modules/custom-maker_bids/jobs/{{route.id}}/files';
+            } elseif ($collection === 'archives' || str_contains($id, 'archives')) {
+                $props['initialFiles'] = '{{job.data.archives || []}}';
+                $endpoints['upload'] = '/api/modules/custom-maker_bids/jobs/{{route.id}}/files';
+            } elseif ($collection === 'logos' || str_contains($id, 'logo')) {
+                $props['initialFiles'] = '{{me.data.logo_files || company.data.logo_files || []}}';
+            }
+            if ($endpoints !== []) {
+                $props['apiEndpoints'] = $endpoints;
+            }
+            unset($props['key']);
+            $node['props'] = $props;
+        }
+        foreach (['children', 'injections', 'components'] as $key) {
+            if (! isset($node[$key]) || ! is_array($node[$key])) {
+                continue;
+            }
+            foreach ($node[$key] as $i => $child) {
+                if (is_array($child)) {
+                    $node[$key][$i] = $this->bindUploaders($child, $layoutName);
+                }
+            }
+        }
+        if (isset($node['slots']) && is_array($node['slots'])) {
+            foreach ($node['slots'] as $slot => $items) {
+                if (! is_array($items)) {
+                    continue;
+                }
+                foreach ($items as $i => $child) {
+                    if (is_array($child)) {
+                        $node['slots'][$slot][$i] = $this->bindUploaders($child, $layoutName);
+                    }
+                }
+            }
+        }
+
+        return $node;
     }
 
     private function scrub(mixed $node): mixed
