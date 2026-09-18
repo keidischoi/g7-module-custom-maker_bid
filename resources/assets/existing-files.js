@@ -1,16 +1,36 @@
 (function () {
-  if (document.documentElement.getAttribute('data-cmb-bid-formpost')) return;
-  document.documentElement.setAttribute('data-cmb-bid-formpost', '1');
+  if (document.documentElement.getAttribute('data-cmb-bid-token-v1')) return;
+  document.documentElement.setAttribute('data-cmb-bid-token-v1', '1');
   function jobId() {
     var m = (location.pathname || '').match(/\/maker-bids\/(?:jobs\/)?(\d+)/);
     return m ? m[1] : '';
   }
-  function csrf() {
-    var el = document.querySelector('meta[name="csrf-token"]');
-    if (el && el.content) return el.content;
-    var m = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
-    if (!m) return '';
-    try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+  function pick(obj, path) {
+    var cur = obj;
+    var parts = path.split('.');
+    for (var i = 0; i < parts.length; i++) {
+      if (!cur) return '';
+      cur = cur[parts[i]];
+    }
+    return cur || '';
+  }
+  function bidToken() {
+    var g = window.G7Core || window.g7 || {};
+    var tries = [];
+    try { if (g.get) tries.push(g.get('viewer.data.bid_token')); } catch (e) {}
+    try { if (g.get) tries.push(g.get('_data.viewer.data.bid_token')); } catch (e) {}
+    tries.push(pick(g, 'state.viewer.data.bid_token'));
+    tries.push(pick(g, 'data.viewer.data.bid_token'));
+    tries.push(pick(window, '__G7_STATE__.viewer.data.bid_token'));
+    for (var i = 0; i < tries.length; i++) {
+      if (tries[i]) return String(tries[i]);
+    }
+    try {
+      var dump = JSON.stringify(g.state || g.data || g);
+      var m = dump.match(/"bid_token":"([^"]+)"/);
+      if (m) return m[1];
+    } catch (e) {}
+    return '';
   }
   function val(root, name) {
     var el = (root || document).querySelector('[name="' + name + '"]');
@@ -25,6 +45,10 @@
     try { if (window.G7Core && G7Core.toast) { G7Core.toast({ type: type, message: msg }); return; } } catch (e) {}
     alert(msg);
   }
+  function csrf() {
+    var el = document.querySelector('meta[name="csrf-token"]');
+    return el && el.content ? el.content : '';
+  }
   document.addEventListener('click', function (e) {
     var t = e.target && e.target.closest ? e.target.closest('button, [role="button"]') : null;
     if (!t) return;
@@ -36,54 +60,47 @@
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     var formBox = t.closest('.cmb-bid-form, #bidform, #editform') || document.querySelector('.cmb-bid-form');
     var id = jobId();
+    var token = bidToken();
     if (!id) { toast('error', '의뢰를 찾을 수 없습니다.'); return; }
-    var amount = val(formBox, 'amount').replace(/[^\d]/g, '');
-    var days = val(formBox, 'days').replace(/[^\d]/g, '');
+    if (!token) { toast('error', '견적 토큰이 없습니다. 페이지를 새로고침 해 주세요.'); return; }
+    var amount = parseInt(val(formBox, 'amount').replace(/[^\d]/g, ''), 10);
+    var days = parseInt(val(formBox, 'days').replace(/[^\d]/g, ''), 10);
     var message = val(formBox, 'message');
     if (!amount) { toast('error', '견적 금액을 입력해 주세요.'); return; }
-    var action = '/maker-bids/jobs/' + encodeURIComponent(id) + '/bid-save';
+    var body = { amount: amount, message: message, bid_token: token };
+    if (days) body.days = days;
+    var path = '/api/modules/custom-maker_bids/jobs/' + id + '/bids';
+    var method = 'POST';
     if (isUpdate) {
       var bidId = (formBox && formBox.getAttribute('data-bid-id')) || (document.querySelector('[name="bid_id"]') || {}).value || '';
       if (!bidId) { toast('error', '수정할 견적이 없습니다.'); return; }
-      action = '/maker-bids/jobs/' + encodeURIComponent(id) + '/bids/' + encodeURIComponent(bidId) + '/bid-save';
+      path += '/' + bidId;
+      method = 'PATCH';
     }
-    var iframe = document.getElementById('cmb_bid_iframe');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'cmb_bid_iframe';
-      iframe.name = 'cmb_bid_iframe';
-      iframe.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;opacity:0';
-      document.body.appendChild(iframe);
-    }
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = action;
-    form.target = 'cmb_bid_iframe';
-    function add(n, v) {
-      var i = document.createElement('input');
-      i.type = 'hidden'; i.name = n; i.value = v == null ? '' : String(v);
-      form.appendChild(i);
-    }
-    add('_token', csrf());
-    add('amount', amount);
-    if (days) add('days', days);
-    add('message', message);
-    document.body.appendChild(form);
-    iframe.onload = function () {
-      var text = '';
-      try { text = (iframe.contentDocument && iframe.contentDocument.body && iframe.contentDocument.body.innerText) || ''; } catch (err) {}
-      form.parentNode && form.parentNode.removeChild(form);
-      if (/404|Not Found/.test(text)) {
-        toast('error', '웹 라우트가 없습니다. route:clear 후 다시 시도해 주세요.');
-        return;
-      }
-      if (/로그인이 필요|인증이 필요|Unauthorized|401/.test(text)) {
-        toast('error', '로그인 세션을 찾지 못했습니다.');
+    t.disabled = true;
+    fetch(path, {
+      method: method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': csrf()
+      },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (j) { return { ok: res.ok, json: j }; });
+    }).then(function (r) {
+      t.disabled = false;
+      if (!r.ok) {
+        toast('error', (r.json && r.json.message) || '제출에 실패했습니다.');
         return;
       }
       toast('success', '견적을 저장했습니다.');
       setTimeout(function () { location.reload(); }, 400);
-    };
-    form.submit();
+    }).catch(function () {
+      t.disabled = false;
+      toast('error', '제출에 실패했습니다.');
+    });
   }, true);
 })();
