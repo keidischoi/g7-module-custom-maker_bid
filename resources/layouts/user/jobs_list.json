@@ -2,38 +2,12 @@
   "version": "1.0.0",
   "layout_name": "jobs_list",
   "extends": "_user_base",
-  "meta": {
-    "title": "의뢰목록"
-  },
+  "meta": { "title": "의뢰목록" },
   "errorHandling": {
-    "401": {
-      "handler": "toast",
-      "params": {
-        "type": "warning",
-        "message": "로그인이 필요합니다."
-      }
-    },
-    "403": {
-      "handler": "toast",
-      "params": {
-        "type": "error",
-        "message": "{{error.message}}"
-      }
-    },
-    "422": {
-      "handler": "toast",
-      "params": {
-        "type": "error",
-        "message": "{{error.message}}"
-      }
-    },
-    "default": {
-      "handler": "toast",
-      "params": {
-        "type": "error",
-        "message": "{{error.message}}"
-      }
-    }
+    "401": { "handler": "toast", "params": { "type": "warning", "message": "로그인이 필요합니다." } },
+    "403": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "422": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } },
+    "default": { "handler": "toast", "params": { "type": "error", "message": "{{error.message}}" } }
   },
   "data_sources": [
     {
@@ -43,28 +17,25 @@
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
-      "fallback": {
-        "data": []
-      }
+      "fallback": { "data": [] }
     },
     {
       "id": "jobs",
       "type": "api",
-      "endpoint": "/api/modules/custom-maker_bids/jobs?q={{route.query.q || _local.search.q || ''}}&sort={{route.query.sort || _local.search.sort || 'latest'}}&type={{route.query.type || query.type || ''}}&page={{route.query.page || 1}}&per_page={{route.query.per_page || 10}}",
+      "endpoint": "/api/modules/custom-maker_bids/jobs?q={{route.query.q || ''}}&sort={{route.query.sort || 'latest'}}&type={{route.query.type || ''}}&status={{route.query.status || ''}}&page={{route.query.page || 1}}&per_page={{route.query.per_page || 10}}",
       "method": "GET",
       "auto_fetch": true,
       "refetchOnMount": true,
       "auth_mode": "optional",
       "params": {
-        "q": "{{route.query.q || _local.search.q || ''}}",
-        "sort": "{{route.query.sort || _local.search.sort || 'latest'}}",
-        "type": "{{route.query.type || query.type || ''}}",
+        "q": "{{route.query.q || ''}}",
+        "sort": "{{route.query.sort || 'latest'}}",
+        "type": "{{route.query.type || ''}}",
+        "status": "{{route.query.status || ''}}",
         "page": "{{route.query.page || 1}}",
         "per_page": "{{route.query.per_page || 10}}"
       },
-      "fallback": {
-        "data": []
-      }
+      "fallback": { "data": [] }
     }
   ],
   "slots": {
@@ -73,96 +44,27 @@
         "id": "page",
         "type": "basic",
         "name": "Div",
-        "props": {
-          "className": "cmb-page"
-        },
+        "props": { "className": "cmb-page" },
         "children": [
           {
             "id": "head",
             "type": "basic",
             "name": "Div",
-            "props": {
-              "className": "cmb-page-head"
-            },
+            "props": { "className": "cmb-page-head" },
             "children": [
-              {
-                "id": "h",
-                "type": "basic",
-                "name": "H1",
-                "props": {
-                  "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
-                },
-                "text": "의뢰목록"
-              },
+              { "id": "h", "type": "basic", "name": "H1", "props": { "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white" }, "text": "의뢰목록" },
               {
                 "id": "tabs",
                 "type": "basic",
                 "name": "Div",
-                "props": {
-                  "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto",
-                  "data-cmb-subnav": "1"
-                },
+                "props": { "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto", "data-cmb-subnav": "1" },
                 "children": [
-                  {
-                    "id": "t1",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids/new",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
-                    },
-                    "text": "의뢰서 작성"
-                  },
-                  {
-                    "id": "t2",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids",
-                      "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                    },
-                    "text": "의뢰목록"
-                  },
-                  {
-                    "id": "t3",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids/bids",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
-                    },
-                    "text": "입찰현황"
-                  },
-                  {
-                    "id": "t4",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids/history",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
-                    },
-                    "text": "이력"
-                  },
-                  {
-                    "id": "t5",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids/company",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
-                    },
-                    "text": "입찰자 등록"
-                  },
-                  {
-                    "id": "t6",
-                    "type": "basic",
-                    "name": "A",
-                    "props": {
-                      "href": "/maker-bids/companies",
-                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
-                    },
-                    "text": "입찰자 목록"
-                  }
+                  { "id": "t1", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "의뢰서 작성" },
+                  { "id": "t2", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "px-3 py-1.5 text-sm rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900" }, "text": "의뢰목록" },
+                  { "id": "t3", "type": "basic", "name": "A", "props": { "href": "/maker-bids/bids", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰현황" },
+                  { "id": "t4", "type": "basic", "name": "A", "props": { "href": "/maker-bids/history", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "이력" },
+                  { "id": "t5", "type": "basic", "name": "A", "props": { "href": "/maker-bids/company", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰자 등록" },
+                  { "id": "t6", "type": "basic", "name": "A", "props": { "href": "/maker-bids/companies", "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300" }, "text": "입찰자 목록" }
                 ]
               }
             ]
@@ -171,53 +73,14 @@
             "id": "search_bar",
             "type": "basic",
             "name": "Div",
-            "props": {
-              "className": "cmb-section-card cmb-search-bar mb-3 flex flex-wrap items-center gap-2",
-              "dataKey": "search",
-              "trackChanges": true,
-              "data-cmb-search-bar": "1"
-            },
+            "props": { "className": "cmb-section-card cmb-search-bar mb-3 flex flex-wrap items-center gap-2", "data-cmb-search-bar": "1" },
             "children": [
-              {
-                "id": "search_input",
-                "type": "basic",
-                "name": "Input",
-                "props": {
-                  "name": "q",
-                  "placeholder": "검색어",
-                  "className": "cmb-order-field cmb-search-input rounded-lg border px-3 py-2 text-sm",
-                  "value": "{{_local.search.q || route.query.q || ''}}",
-                  "data-cmb-search-input": "1"
-                },
-                "actions": [
-                  {
-                    "type": "change",
-                    "event": "change",
-                    "handler": "setState",
-                    "params": {
-                      "target": "local",
-                      "search.q": "{{$event.target.value}}"
-                    }
-                  },
-                  {
-                    "type": "input",
-                    "event": "input",
-                    "handler": "setState",
-                    "params": {
-                      "target": "local",
-                      "search.q": "{{$event.target.value}}"
-                    }
-                  }
-                ]
-              },
+              { "id": "search_input", "type": "basic", "name": "Input", "props": { "name": "q", "placeholder": "검색어", "className": "cmb-order-field cmb-search-input rounded-lg border px-3 py-2 text-sm", "data-cmb-search-input": "1" } },
               {
                 "id": "sort_wrap",
                 "type": "basic",
                 "name": "Div",
-                "props": {
-                  "className": "cmb-search-sort cmb-order-select-wrap",
-                  "data-cmb-sort-wrap": "1"
-                },
+                "props": { "className": "cmb-search-sort cmb-order-select-wrap", "data-cmb-sort-wrap": "1" },
                 "children": [
                   {
                     "id": "sort_select",
@@ -225,301 +88,102 @@
                     "name": "Select",
                     "props": {
                       "name": "sort",
-                      "value": "{{_local.search.sort || route.query.sort || 'latest'}}",
                       "className": "cmb-order-field cmb-search-sort-select rounded-lg border px-3 py-2 text-sm",
                       "data-cmb-sort-select": "1",
                       "options": [
-                        {
-                          "value": "latest",
-                          "label": "최신순"
-                        },
-                        {
-                          "value": "created",
-                          "label": "등록순"
-                        },
-                        {
-                          "value": "views",
-                          "label": "조회순"
-                        }
+                        { "value": "latest", "label": "최신순" },
+                        { "value": "created", "label": "등록순" },
+                        { "value": "views", "label": "조회순" },
+                        { "value": "status", "label": "상태순" }
                       ]
-                    },
-                    "actions": [
-                      {
-                        "type": "change",
-                        "event": "change",
-                        "handler": "setState",
-                        "params": {
-                          "target": "local",
-                          "search.sort": "{{$event.target.value}}",
-                          "search.page": 1
-                        }
-                      }
-                    ]
+                    }
                   }
                 ]
               },
-              {
-                "id": "search_btn",
-                "type": "basic",
-                "name": "Button",
-                "text": "검색",
-                "props": {
-                  "className": "cmb-btn cmb-btn-primary cmb-search-go",
-                  "type": "button",
-                  "data-cmb-search-go": "1"
-                },
-                "actions": [
-                  {
-                    "type": "click",
-                    "handler": "setState",
-                    "params": {
-                      "target": "local",
-                      "search.q": "{{_local.search.q || ''}}",
-                      "search.page": 1
-                    }
-                  },
-                  {
-                    "type": "click",
-                    "handler": "refetchDataSource",
-                    "params": {
-                      "dataSourceId": "jobs"
-                    }
-                  }
-                ]
-              }
+              { "id": "search_btn", "type": "basic", "name": "Button", "text": "검색", "props": { "className": "cmb-btn cmb-btn-primary cmb-search-go", "type": "button", "data-cmb-search-go": "1" } }
             ]
           },
-          {
-            "id": "cmb_notice",
-            "type": "basic",
-            "name": "Div",
-            "props": {
-              "className": "cmb-notice hidden",
-              "data-cmb-notice": "list"
-            }
-          },
-          {
-            "id": "guide",
-            "type": "basic",
-            "name": "P",
-            "props": {
-              "className": "cmb-page-guide"
-            },
-            "text": "등록된 의뢰서입니다. 보류는 다른 회원에게 공개되지 않고, 로그인하면 내 보류 의뢰는 이 목록과 이력에 보입니다."
-          },
+          { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "list" } },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "cmb-page-guide" }, "text": "등록된 의뢰서입니다. 보류는 다른 회원에게 공개되지 않고, 로그인하면 내 보류 의뢰는 이 목록과 이력에 보입니다." },
           {
             "id": "filters",
             "type": "basic",
             "name": "Div",
-            "props": {
-              "className": "cmb-filters"
-            },
+            "props": { "className": "cmb-filters" },
             "children": [
-              {
-                "id": "f0",
-                "type": "basic",
-                "name": "A",
-                "props": {
-                  "href": "/maker-bids",
-                  "className": "cmb-chip"
-                },
-                "text": "전체"
-              },
-              {
-                "id": "ftype",
-                "type": "basic",
-                "name": "A",
-                "props": {
-                  "href": "/maker-bids?type={{$type.slug}}",
-                  "className": "cmb-chip"
-                },
-                "iteration": {
-                  "source": "{{types?.data?.data ?? types?.data ?? []}}",
-                  "item_var": "$type"
-                },
-                "text": "{{$type.name}}"
-              }
+              { "id": "f0", "type": "basic", "name": "A", "props": { "href": "/maker-bids", "className": "cmb-chip" }, "text": "전체" },
+              { "id": "ftype", "type": "basic", "name": "A", "props": { "href": "/maker-bids?type={{$type.slug}}", "className": "cmb-chip" }, "iteration": { "source": "{{types?.data?.data ?? types?.data ?? []}}", "item_var": "$type" }, "text": "{{$type.name}}" }
             ]
           },
           {
             "id": "cta",
             "type": "basic",
             "name": "Div",
-            "props": {
-              "className": "cmb-job-card-actions"
-            },
+            "props": { "className": "cmb-job-card-actions" },
             "children": [
-              {
-                "id": "cta_new",
-                "type": "basic",
-                "name": "A",
-                "props": {
-                  "href": "/maker-bids/new",
-                  "className": "cmb-btn cmb-btn-primary"
-                },
-                "text": "의뢰 등록"
-              }
+              { "id": "cta_new", "type": "basic", "name": "A", "props": { "href": "/maker-bids/new", "className": "cmb-btn cmb-btn-primary" }, "text": "의뢰 등록" }
             ]
           },
           {
             "id": "list_card",
             "type": "basic",
             "name": "Div",
-            "props": {
-              "className": "cmb-section-card"
-            },
+            "props": { "className": "cmb-section-card" },
             "children": [
               {
                 "id": "lh_row",
                 "type": "basic",
                 "name": "Div",
-                "props": {
-                  "className": "cmb-section-head"
-                },
+                "props": { "className": "cmb-section-head flex items-center gap-2 flex-wrap" },
                 "children": [
-                  {
-                    "id": "lh",
-                    "type": "basic",
-                    "name": "H2",
-                    "props": {
-                      "className": "cmb-section-title"
-                    },
-                    "text": "등록된 의뢰"
-                  }
+                  { "id": "lh", "type": "basic", "name": "H2", "props": { "className": "cmb-section-title" }, "text": "등록된 의뢰" }
                 ]
               },
-              {
-                "id": "empty",
-                "type": "basic",
-                "name": "P",
-                "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}",
-                "props": {
-                  "className": "cmb-empty"
-                },
-                "text": "등록된 의뢰가 없습니다."
-              },
+              { "id": "empty", "type": "basic", "name": "P", "if": "{{!(jobs?.data?.data ?? jobs?.data ?? []).length}}", "props": { "className": "cmb-empty" }, "text": "등록된 의뢰가 없습니다." },
               {
                 "id": "list",
                 "type": "basic",
                 "name": "Div",
-                "props": {
-                  "className": "cmb-card-list"
-                },
+                "props": { "className": "cmb-card-list" },
                 "children": [
                   {
                     "id": "item",
                     "type": "basic",
                     "name": "A",
-                    "props": {
-                      "href": "/maker-bids/{{$item.id}}",
-                      "className": "cmb-job-card cmb-list-item"
-                    },
-                    "iteration": {
-                      "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}",
-                      "item_var": "$item"
-                    },
+                    "props": { "href": "/maker-bids/{{$item.id}}", "className": "cmb-job-card cmb-list-item" },
+                    "iteration": { "source": "{{jobs?.data?.data ?? jobs?.data ?? []}}", "item_var": "$item" },
                     "children": [
                       {
                         "id": "top",
                         "type": "basic",
                         "name": "Div",
-                        "props": {
-                          "className": "cmb-job-card-top"
-                        },
+                        "props": { "className": "cmb-job-card-top" },
                         "children": [
-                          {
-                            "id": "title",
-                            "type": "basic",
-                            "name": "P",
-                            "props": {
-                              "className": "cmb-job-card-title"
-                            },
-                            "text": "{{$item.title}}"
-                          },
-                          {
-                            "id": "badge",
-                            "type": "basic",
-                            "name": "Span",
-                            "props": {
-                              "className": "cmb-badge cmb-badge-{{$item.status}}"
-                            },
-                            "text": "{{$item.status_label || $item.status}}"
-                          }
+                          { "id": "title", "type": "basic", "name": "P", "props": { "className": "cmb-job-card-title" }, "text": "{{$item.title}}" },
+                          { "id": "badge", "type": "basic", "name": "Span", "props": { "className": "cmb-badge cmb-badge-{{$item.status}}" }, "text": "{{$item.status_label || $item.status}}" }
                         ]
                       },
                       {
                         "id": "meta",
                         "type": "basic",
                         "name": "Div",
-                        "props": {
-                          "className": "cmb-job-card-meta"
-                        },
+                        "props": { "className": "cmb-job-card-meta" },
                         "children": [
-                          {
-                            "id": "m1",
-                            "type": "basic",
-                            "name": "Span",
-                            "text": "{{$item.type_name || $item.type}}"
-                          },
-                          {
-                            "id": "m2",
-                            "type": "basic",
-                            "name": "Span",
-                            "text": "견적 {{$item.bids_count ?? 0}}건"
-                          },
-                          {
-                            "id": "m3",
-                            "type": "basic",
-                            "name": "Span",
-                            "if": "{{$item.closes_at}}",
-                            "text": "마감 {{$item.closes_at}}"
-                          },
-                          {
-                            "id": "m_aud",
-                            "type": "basic",
-                            "name": "Span",
-                            "text": "입찰 권한 {{$item.audience_label || '전체'}}"
-                          }
+                          { "id": "m1", "type": "basic", "name": "Span", "text": "{{$item.type_name || $item.type}}" },
+                          { "id": "m2", "type": "basic", "name": "Span", "text": "견적 {{$item.bids_count ?? 0}}건" },
+                          { "id": "m3", "type": "basic", "name": "Span", "if": "{{$item.closes_at}}", "text": "마감 {{$item.closes_at}}" },
+                          { "id": "m_aud", "type": "basic", "name": "Span", "text": "입찰 권한 {{$item.audience_label || '전체'}}" }
                         ]
                       },
-                      {
-                        "id": "budget",
-                        "type": "basic",
-                        "name": "P",
-                        "props": {
-                          "className": "cmb-job-card-budget"
-                        },
-                        "text": "예산 {{$item.budget_label || '미정'}}"
-                      }
+                      { "id": "budget", "type": "basic", "name": "P", "props": { "className": "cmb-job-card-budget" }, "text": "예산 {{$item.budget_label || '미정'}}" }
                     ]
                   }
                 ]
-              },
-              {
-                "id": "jobs_pager",
-                "type": "basic",
-                "name": "Div",
-                "props": {
-                  "className": "cmb-pager",
-                  "data-cmb-pager": "1",
-                  "data-param": "page",
-                  "data-page": "{{jobs?.data?.meta?.page || 1}}",
-                  "data-total": "{{jobs?.data?.meta?.total || 0}}",
-                  "data-last-page": "{{jobs?.data?.meta?.last_page || 1}}",
-                  "data-per-page": "{{jobs?.data?.meta?.per_page || 10}}"
-                }
               }
             ]
           }
         ]
       }
     ]
-  },
-  "state": {
-    "search": {
-      "q": "",
-      "page": 1,
-      "sort": "latest"
-    }
   }
 }
