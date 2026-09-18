@@ -6,6 +6,8 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
+    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21d';
+
     public static function getSubscribedHooks(): array
     {
         return [
@@ -23,8 +25,30 @@ class LayoutFileFixListener implements HookListenerInterface
             return $layout;
         }
         $name = (string) ($layout['layout_name'] ?? '');
+        $layout = $this->walk($this->scrub($layout), $name);
+        if (in_array($name, ['jobs_show', 'jobs_bids', 'jobs_form', 'company_apply', 'company_list', 'jobs_list'], true)) {
+            $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
+            $found = false;
+            foreach ($scripts as $i => $script) {
+                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'existing-files.js')) {
+                    $scripts[$i]['src'] = self::JS;
+                    $found = true;
+                }
+            }
+            if (! $found) {
+                $scripts[] = [
+                    'id' => 'cmb_maker_existing',
+                    'src' => self::JS,
+                    'async' => false,
+                    'optional' => true,
+                    'required' => false,
+                    'failOnError' => false,
+                ];
+            }
+            $layout['scripts'] = $scripts;
+        }
 
-        return $this->walk($this->scrub($layout), $name);
+        return $layout;
     }
 
     private function walk(mixed $node, string $layoutName): mixed
@@ -75,11 +99,11 @@ class LayoutFileFixListener implements HookListenerInterface
         }
 
         if (str_contains($cls, 'cmb-bid-submit')) {
-            $props['className'] = trim(str_replace('cmb-bid-submit', 'cmb-bid-send', $cls).' cmb-bid-send');
+            $props['className'] = trim(str_replace('cmb-bid-submit', 'cmb-bid-send', $cls));
             unset($props['data-cmb-bid-submit']);
         }
         if (str_contains($cls, 'cmb-bid-update')) {
-            $props['className'] = trim(str_replace('cmb-bid-update', 'cmb-bid-send-update', $cls));
+            $props['className'] = str_replace('cmb-bid-update', 'cmb-bid-send-update', $cls);
         }
 
         if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
@@ -87,7 +111,6 @@ class LayoutFileFixListener implements HookListenerInterface
             $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:start';
         }
         if ($layoutName === 'company_list' && str_contains($cls, 'cmb-company-card')) {
-            $props['className'] = trim($cls.' cmb-company-gallery-card');
             $props['style'] = 'display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px;min-width:0';
         }
 
@@ -99,7 +122,6 @@ class LayoutFileFixListener implements HookListenerInterface
         if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top'))) {
             $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '120', true);
             $p = is_array($node['props'] ?? null) ? $node['props'] : [];
-            $p['className'] = trim(($p['className'] ?? '').' cmb-name-with-logo');
             $p['style'] = 'display:flex;flex-direction:column;align-items:center;gap:8px';
             $node['props'] = $p;
         }
@@ -126,10 +148,8 @@ class LayoutFileFixListener implements HookListenerInterface
 
     private function thumb(string $id, string $src, string $size, bool $round): array
     {
-        $style = 'width:'.$size.'px;height:'.$size.'px;object-fit:cover;flex-shrink:0;';
-        $style .= $round
-            ? 'border-radius:9999px;border:1px solid rgba(255,255,255,0.18);'
-            : 'border-radius:8px;';
+        $style = 'width:'.$size.'px;height:'.$size.'px;max-width:100%;object-fit:cover;flex-shrink:0;';
+        $style .= $round ? 'border-radius:9999px;border:1px solid rgba(255,255,255,0.18);' : 'border-radius:8px;';
 
         return [
             'id' => $id,
