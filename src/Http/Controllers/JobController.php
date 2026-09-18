@@ -13,6 +13,7 @@ use Modules\Custom\MakerBids\Http\Requests\UpdateOwnedJobRequest;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJobFile;
 use Modules\Custom\MakerBids\Services\AwardService;
+use Modules\Custom\MakerBids\Services\BidService;
 use Modules\Custom\MakerBids\Services\JobFileService;
 use Modules\Custom\MakerBids\Services\JobService;
 use Modules\Custom\MakerBids\Services\JobTypeService;
@@ -103,7 +104,17 @@ class JobController extends Controller
             $ctx = $this->jobs->viewerFromRequest($request);
             $userId = (int) ($ctx['userId'] ?? 0);
             $data = $this->jobs->viewerContext($userId, $job, (bool) ($ctx['isAdmin'] ?? false), $ctx);
+            $data['my_bid_history'] = [];
             if ($userId > 0) {
+                try {
+                    $data['my_bid_history'] = app(BidService::class)->listRevisions(
+                        $id,
+                        $userId,
+                        ! empty($ctx['isAdmin'])
+                    );
+                } catch (\Throwable) {
+                    $data['my_bid_history'] = [];
+                }
                 $data['bid_token'] = encrypt(json_encode([
                     'uid' => $userId,
                     'jid' => $id,
