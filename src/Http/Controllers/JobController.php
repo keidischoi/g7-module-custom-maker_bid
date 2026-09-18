@@ -41,6 +41,11 @@ class JobController extends Controller
         try { app(MarketplaceService::class)->closeExpired(); } catch (\Throwable) {}
         $data = $this->attachListThumbs($this->jobs->listPublic($request));
         $payload = ArrayPaginator::paginate($data, $request, 'page', 10);
+        $ctx = $this->jobs->viewerFromRequest($request);
+        $payload['meta']['viewer'] = [
+            'is_admin' => (bool) ($ctx['isAdmin'] ?? false),
+            'user_id' => (int) ($ctx['userId'] ?? 0),
+        ];
         $payload['meta']['viewer_status_chips'] = $this->jobs->viewerSelfStatusChips($request);
 
         return response()->json($payload);

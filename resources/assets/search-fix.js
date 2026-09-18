@@ -1,12 +1,13 @@
 (function () {
-  if (window.__cmbSearchFix13) return;
-  window.__cmbSearchFix13 = true;
+  if (window.__cmbSearchFix14) return;
+  window.__cmbSearchFix14 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var lastRows = [];
   var lastMeta = {};
   var selfChips = { hold: false, draft: false, disputed: false };
   var typedQ = null;
+  var probedAdmin = false;
 
   var PUBLIC_STATUS_CHIPS = [
     ['', '전체'],
@@ -24,7 +25,8 @@
   ];
 
   function listPath() {
-    return (location.pathname || '').replace(/\/+$/, '') === '/maker-bids';
+    var p = (location.pathname || '').replace(/\/+$/, '');
+    return /(^|\/)maker-bids$/.test(p);
   }
 
   function readUrl() {
@@ -138,6 +140,10 @@
   }
 
   function viewerLooksAdmin() {
+    if (probedAdmin) return true;
+    try {
+      if (lastMeta && lastMeta.viewer && lastMeta.viewer.is_admin) return true;
+    } catch (e0) {}
     try {
       var g = window.G7Core || {};
       var auth = g.auth || g.AuthManager;
@@ -158,8 +164,7 @@
     return viewerLooksAdmin() ? { hold: true, draft: true, disputed: true } : {};
   }
 
-  function authHeaders() {
-    var h = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+  function readAuthToken() {
     var token = null;
     try {
       if (window.G7Core && G7Core.api && typeof G7Core.api.getToken === 'function') {
@@ -169,21 +174,72 @@
     if (!token) {
       try { token = localStorage.getItem('auth_token'); } catch (e2) {}
     }
-    if (token && token !== 'undefined' && token !== 'null') {
-      h.Authorization = 'Bearer ' + token;
+    if (!token) {
+      try { token = sessionStorage.getItem('auth_token'); } catch (e3) {}
     }
+    if (token && token !== 'undefined' && token !== 'null') return token;
+    return '';
+  }
+
+  function authHeaders() {
+    var h = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = readAuthToken();
+    if (token) h.Authorization = 'Bearer ' + token;
     return h;
   }
 
-  function fetchJobs(url) {
-    if (window.G7Core && G7Core.api && typeof G7Core.api.get === 'function') {
-      return G7Core.api.get(url);
+  function jobsEnvelope(j) {
+    if (!j || typeof j !== 'object') return { rows: [], meta: {} };
+    var payload = j.data && !Array.isArray(j.data) ? j.data : j;
+    var rows = Array.isArray(payload) ? payload : (payload && payload.data) || (j && j.data) || [];
+    if (!Array.isArray(rows)) rows = [];
+    var meta = (payload && payload.meta) || (j && j.meta) || {};
+    if (!meta.viewer_status_chips && payload && payload.viewer_status_chips) {
+      meta.viewer_status_chips = payload.viewer_status_chips;
     }
-    return fetch(url, { credentials: 'include', headers: authHeaders() }).then(function (r) { return r.json(); });
+    return { rows: rows, meta: meta || {} };
+  }
+
+  function fetchJobs(url) {
+    return fetch(url, { credentials: 'include', headers: authHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var parsed = jobsEnvelope(j);
+        if (parsed.meta && parsed.meta.viewer && parsed.meta.viewer.is_admin) probedAdmin = true;
+        if (window.G7Core && G7Core.api && typeof G7Core.api.get === 'function' && !(parsed.meta.viewer && parsed.meta.viewer.is_admin) && !readAuthToken()) {
+          return G7Core.api.get(url).then(function (alt) {
+            var other = jobsEnvelope(alt);
+            if (other.meta && other.meta.viewer && other.meta.viewer.is_admin) return alt;
+            if ((other.meta.viewer_status_chips && other.meta.viewer_status_chips.hold) && !(parsed.meta.viewer_status_chips && parsed.meta.viewer_status_chips.hold)) return alt;
+            return j;
+          }).catch(function () { return j; });
+        }
+        return j;
+      });
+  }
+
+  function probeAdminAuth() {
+    var token = readAuthToken();
+    if (!token && !(window.G7Core && G7Core.api && typeof G7Core.api.get === 'function')) return;
+    var urls = ['/api/admin/auth/user', '/admin/auth/user'];
+    urls.forEach(function (url) {
+      var req = fetch(url, { credentials: 'include', headers: authHeaders() }).then(function (r) {
+        if (!r.ok) return null;
+        return r.json();
+      }).then(function (j) {
+        if (!j) return;
+        var u = (j && j.data) || j;
+        if (u && (u.uuid || u.email || u.id || u.is_super || u.isAdmin)) {
+          probedAdmin = true;
+          paintSelfChips(Object.assign(adminChipFlags(), selfChips));
+        }
+      }).catch(function () {});
+      return req;
+    });
   }
 
   function paintSelfChips(flags) {
-    selfChips = flags || selfChips;
+    selfChips = Object.assign({}, adminChipFlags(), flags || selfChips);
     var labels = { hold: '보류', draft: '임시저장', disputed: '분쟁조정' };
     document.querySelectorAll('[data-cmb-self-status]').forEach(function (a) {
       var key = a.getAttribute('data-cmb-self-status');
@@ -211,10 +267,9 @@
     p.set('page', String(state.page || 1));
     p.set('per_page', '24');
     fetchJobs('/api/modules/custom-maker_bids/jobs?' + p.toString()).then(function (j) {
-      var payload = j && j.data && !Array.isArray(j.data) ? j.data : j;
-      var rows = Array.isArray(payload) ? payload : (payload && payload.data) || (j && j.data) || [];
-      if (!Array.isArray(rows)) rows = [];
-      var meta = (payload && payload.meta) || (j && j.meta) || {};
+      var parsed = jobsEnvelope(j);
+      var rows = parsed.rows;
+      var meta = parsed.meta || {};
       paint(rows);
       updatePager(meta);
       paintSelfChips(chipsFromRows(rows, Object.assign(adminChipFlags(), meta.viewer_status_chips || {})));
@@ -447,6 +502,7 @@
     ensureSearch();
     ensureChips();
     markChips();
+    probeAdminAuth();
     paintSelfChips(Object.assign(adminChipFlags(), selfChips));
     if (lastRows.length) paint(lastRows);
   }
@@ -458,19 +514,23 @@
   if (!window.__cmbTypedPoll11) {
     window.__cmbTypedPoll11 = setInterval(rememberTyped, 120);
   }
-  if (!window.__cmbSearchObs11) {
-    window.__cmbSearchObs11 = new MutationObserver(function () {
-      if (!listPath()) return;
+  if (!window.__cmbSearchObs14) {
+    var obsBusy = false;
+    window.__cmbSearchObs14 = new MutationObserver(function () {
+      if (!listPath() || obsBusy) return;
+      obsBusy = true;
       rememberTyped();
       ensureSearch();
       ensureChips();
+      paintSelfChips(Object.assign(adminChipFlags(), selfChips));
       if (lastRows.length) {
         var box = listBox();
         if (box && box.querySelectorAll('.cmb-job-card').length !== lastRows.length) paint(lastRows);
       }
+      setTimeout(function () { obsBusy = false; }, 0);
     });
     try {
-      window.__cmbSearchObs11.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs14.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();

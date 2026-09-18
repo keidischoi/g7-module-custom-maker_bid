@@ -359,6 +359,17 @@ class JobService
             $out[] = Auth::user();
         } catch (\Throwable) {
         }
+        try {
+            $bearer = $request->bearerToken();
+            if (is_string($bearer) && $bearer !== '' && class_exists(\Laravel\Sanctum\PersonalAccessToken::class)) {
+                $access = \Laravel\Sanctum\PersonalAccessToken::findToken($bearer);
+                $tokenable = $access?->tokenable;
+                if (is_object($tokenable)) {
+                    $out[] = $tokenable;
+                }
+            }
+        } catch (\Throwable) {
+        }
 
         return $out;
     }
