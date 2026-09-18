@@ -153,9 +153,13 @@ class Module extends AbstractModule
     public function getRoutes(): array
     {
         $api = $this->getModulePath().'/src/routes/api.php';
+        $web = $this->getModulePath().'/src/routes/web.php';
         $routes = [];
         if (is_file($api)) {
             $routes['api'] = $api;
+        }
+        if (is_file($web)) {
+            $routes['web'] = $web;
         }
 
         return $routes;
