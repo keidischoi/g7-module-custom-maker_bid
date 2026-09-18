@@ -29,21 +29,18 @@ class AssetController extends Controller
 
     public function page(): Response
     {
-        return $this->asset('page.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
-            $dir = dirname(__DIR__, 3).'/resources/assets/';
-            foreach (['list-fix.js', 'company-list-fix.js'] as $name) {
-                $path = $dir.$name;
-                if (is_file($path)) {
-                    $body .= "\n".(string) file_get_contents($path);
-                }
-            }
-            return $body;
-        });
+        return $this->asset('page.js', 'application/javascript; charset=UTF-8');
     }
 
     public function formCss(): Response
     {
-        return $this->asset('form.css', 'text/css; charset=UTF-8');
+        return $this->asset('form.css', 'text/css; charset=UTF-8', static function (string $body): string {
+            $path = dirname(__DIR__, 3).'/resources/assets/list-grid.css';
+            if (is_file($path)) {
+                $body .= "\n".(string) file_get_contents($path);
+            }
+            return $body;
+        });
     }
 
     public function adminCss(): Response
@@ -53,16 +50,7 @@ class AssetController extends Controller
 
     public function adminJs(): Response
     {
-        return $this->asset('admin.js', 'application/javascript; charset=UTF-8', static function (string $body): string {
-            $dir = dirname(__DIR__, 3).'/resources/assets/';
-            foreach (['admin-job-form.js', 'admin-photos.js'] as $name) {
-                $path = $dir.$name;
-                if (is_file($path)) {
-                    $body .= "\n".(string) file_get_contents($path);
-                }
-            }
-            return $body;
-        });
+        return $this->asset('admin.js', 'application/javascript; charset=UTF-8');
     }
 
     private function asset(string $name, string $contentType, ?callable $mutate = null): Response
