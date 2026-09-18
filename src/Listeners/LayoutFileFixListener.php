@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21f';
+    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21g';
 
     public static function getSubscribedHooks(): array
     {
@@ -98,12 +98,37 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($props['key']);
         }
 
-        if (str_contains($cls, 'cmb-bid-submit')) {
-            $props['className'] = trim(str_replace('cmb-bid-submit', 'cmb-bid-send', $cls));
-            unset($props['data-cmb-bid-submit']);
+        if ($name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send'))) {
+            $node['actions'] = [[
+                'type' => 'click',
+                'handler' => 'apiCall',
+                'auth_required' => true,
+                'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
+                'params' => [
+                    'method' => 'POST',
+                    'body' => '{{_local.bid}}',
+                ],
+                'onSuccess' => [
+                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
+                    ['handler' => 'navigate', 'params' => ['url' => '{{route.path}}']],
+                ],
+            ]];
         }
-        if (str_contains($cls, 'cmb-bid-update')) {
-            $props['className'] = str_replace('cmb-bid-update', 'cmb-bid-send-update', $cls);
+        if ($name === 'Button' && (str_contains($cls, 'cmb-bid-update') || str_contains($cls, 'cmb-bid-send-update'))) {
+            $node['actions'] = [[
+                'type' => 'click',
+                'handler' => 'apiCall',
+                'auth_required' => true,
+                'target' => '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}',
+                'params' => [
+                    'method' => 'PATCH',
+                    'body' => '{{_local.bid}}',
+                ],
+                'onSuccess' => [
+                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 수정했습니다.']],
+                    ['handler' => 'navigate', 'params' => ['url' => '{{route.path}}']],
+                ],
+            ]];
         }
 
         if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
