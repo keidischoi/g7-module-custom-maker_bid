@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.36] - 2026-09-18
+
+### Fixed
+- **관리자 드롭박스**: 열린 메뉴가 흰 배경에 밝은 글자라 안 보이던 문제를 고칩니다. 포털·옵션·트리거는 어두운 배경에 밝은 글자이고, 네이티브 `<select>` 옵션은 밝은 배경에 어두운 글자입니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.36**.
+
 ## [0.10.35] - 2026-09-18
 
 ### Fixed

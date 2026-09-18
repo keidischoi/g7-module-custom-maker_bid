@@ -646,6 +646,7 @@ html.cmb-admin-dark .cmb-admin .cmb-section-card {
 html.cmb-admin-ui [role="listbox"],
 html.cmb-admin-ui [data-slot="select-content"],
 html.cmb-admin-ui [data-radix-select-content],
+html.cmb-admin-ui [data-radix-select-viewport],
 html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]),
 .cmb-admin-listbox,
 .cmb-admin-listbox [role="listbox"],
@@ -659,10 +660,12 @@ html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"])
   word-break: keep-all !important;
   overflow-wrap: normal !important;
   padding-inline: 0.35rem;
-  background: #1e293b !important;
+  background: #0f172a !important;
+  background-color: #0f172a !important;
   color: #f8fafc !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  -webkit-text-fill-color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
   z-index: 2147483000 !important;
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -1121,7 +1124,13 @@ html.cmb-admin-ui .cmb-admin [data-cmb-kind="reject"][data-cmb-active="1"] {
   border-color: rgb(185, 28, 28) !important;
 }
 
-/* 0.10.35: G7/Radix Select must not lock the page or paint invisible menus. */
+/* 0.10.36: G7/Radix Select menus stay readable on dark admin chrome. */
+html.cmb-admin-ui,
+html.cmb-admin-ui body,
+html.cmb-admin-ui .cmb-admin,
+html.cmb-admin-ui select {
+  color-scheme: dark;
+}
 html.cmb-admin-ui,
 html.cmb-admin-ui body,
 html.cmb-admin-ui body[data-scroll-locked] {
@@ -1136,21 +1145,53 @@ html.cmb-admin-ui [data-state="closed"][role="listbox"] {
 }
 html.cmb-admin-ui [role="option"],
 html.cmb-admin-ui [data-slot="select-item"],
+html.cmb-admin-ui [role="option"] span,
+html.cmb-admin-ui [role="option"] p,
+html.cmb-admin-ui [data-slot="select-item"] span,
+html.cmb-admin-ui [role="option"] [class*="text-"],
 .cmb-admin-listbox [role="option"] {
   color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+html.cmb-admin-ui [role="option"],
+html.cmb-admin-ui [data-slot="select-item"] {
   background: transparent !important;
-  padding: 0.4rem 0.75rem !important;
+  padding: 0.45rem 0.8rem !important;
 }
 html.cmb-admin-ui [role="option"][data-highlighted],
 html.cmb-admin-ui [role="option"]:hover,
 html.cmb-admin-ui [data-slot="select-item"][data-highlighted] {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
   color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+html.cmb-admin-ui .cmb-admin [role="combobox"],
+html.cmb-admin-ui .cmb-admin-select-host button,
+html.cmb-admin-ui .cmb-admin-select-host [data-slot="trigger"] {
+  color: #f8fafc !important;
+  background: #1e293b !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+html.cmb-admin-ui .cmb-admin [role="combobox"] *:not(svg):not(path),
+html.cmb-admin-ui .cmb-admin-select-host button *:not(svg):not(path) {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+}
+.cmb-admin-filter-native,
+.cmb-admin-filter select[data-cmb-filter-free],
+html.cmb-admin-ui .cmb-admin select {
+  color-scheme: dark;
+  color: #f8fafc !important;
+  background: #1e293b !important;
 }
 .cmb-admin-filter-native option,
-.cmb-admin-filter select[data-cmb-filter-free] option {
-  background: #1e293b;
-  color: #f8fafc;
+.cmb-admin-filter select[data-cmb-filter-free] option,
+html.cmb-admin-ui .cmb-admin select option {
+  color: #0f172a;
+  background: #f8fafc;
 }
 .cmb-admin-row-actions,
 .cmb-admin-row-actions a,

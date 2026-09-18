@@ -428,8 +428,9 @@ html.cmb-admin-ui [role="option"] {
   word-break: keep-all;
   width: max-content;
   min-width: 12rem;
-  background: #1e293b;
+  background: #0f172a;
   color: #f8fafc;
+  -webkit-text-fill-color: #f8fafc;
 }
 
 .cmb-admin-fields {

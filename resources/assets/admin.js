@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs35) return;
-  window.__cmbAdminJs35 = true;
+  if (window.__cmbAdminJs36) return;
+  window.__cmbAdminJs36 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -579,6 +579,7 @@
         hideLegacySizes();
         ensureListBoxes();
         ensureAdminFilterSelect();
+        paintOpenAdminMenus();
       }, 60);
     });
     window.__cmbAdminStatusObs.observe(root, { childList: true, subtree: true });
@@ -658,29 +659,104 @@
     sync();
   }
 
+  function menuIsOpen(el) {
+    if (!el || el.nodeType !== 1) return false;
+    var st = String(el.getAttribute('data-state') || '').toLowerCase();
+    if (st === 'closed' || st === 'hidden') return false;
+    if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+    return true;
+  }
+
+  function paintOpenAdminMenus() {
+    if (!document.documentElement.classList.contains('cmb-admin-ui')) return;
+    document.querySelectorAll('[role="listbox"], [data-radix-select-content], [data-slot="select-content"], [data-radix-popper-content-wrapper], [data-radix-select-viewport]').forEach(function (el) {
+      if (!menuIsOpen(el)) return;
+      el.classList.add('cmb-admin-listbox');
+      el.style.setProperty('background', '#0f172a', 'important');
+      el.style.setProperty('background-color', '#0f172a', 'important');
+      el.style.setProperty('color', '#f8fafc', 'important');
+      el.style.setProperty('-webkit-text-fill-color', '#f8fafc', 'important');
+      el.style.setProperty('opacity', '1', 'important');
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.setProperty('z-index', '2147483000', 'important');
+      el.style.setProperty('border-color', 'rgba(255,255,255,0.22)', 'important');
+      var nodes = el.querySelectorAll('*');
+      var i;
+      for (i = 0; i < nodes.length; i++) {
+        var child = nodes[i];
+        var slot = child.getAttribute ? String(child.getAttribute('data-slot') || '') : '';
+        if (slot === 'select-item-indicator' || (child.closest && child.closest('[data-slot="select-item-indicator"]'))) continue;
+        var tag = (child.tagName || '').toUpperCase();
+        if (tag === 'SVG' || tag === 'PATH' || tag === 'CIRCLE') continue;
+        child.style.setProperty('color', '#f8fafc', 'important');
+        child.style.setProperty('-webkit-text-fill-color', '#f8fafc', 'important');
+        child.style.setProperty('opacity', '1', 'important');
+        child.style.setProperty('visibility', 'visible', 'important');
+        if (child.getAttribute('role') === 'option' || slot === 'select-item' || tag === 'LI') {
+          var hi = child.getAttribute('data-highlighted') != null || child.getAttribute('data-state') === 'checked';
+          child.style.setProperty('background', hi ? 'rgba(255,255,255,0.14)' : 'transparent', 'important');
+          child.style.setProperty('background-color', hi ? 'rgba(255,255,255,0.14)' : 'transparent', 'important');
+        } else if (slot === 'select-viewport' || tag === 'DIV') {
+          var cls = String(child.className || '');
+          if (/bg-white|bg-popover|bg-background|bg-card/.test(cls) || child.getAttribute('data-radix-select-viewport') != null) {
+            child.style.setProperty('background', '#0f172a', 'important');
+            child.style.setProperty('background-color', '#0f172a', 'important');
+          }
+        }
+      }
+    });
+  }
+
+  function observeAdminMenus() {
+    if (window.__cmbAdminMenuObs || typeof MutationObserver === 'undefined') return;
+    window.__cmbAdminMenuObs = new MutationObserver(function () {
+      if (window.__cmbAdminMenuPaintT) clearTimeout(window.__cmbAdminMenuPaintT);
+      window.__cmbAdminMenuPaintT = setTimeout(paintOpenAdminMenus, 16);
+    });
+    window.__cmbAdminMenuObs.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
   function injectPortalCss() {
-    if (document.getElementById('cmb-admin-select-portal-css')) return;
-    var s = document.createElement('style');
-    s.id = 'cmb-admin-select-portal-css';
-    s.textContent =
+    var s = document.getElementById('cmb-admin-select-portal-css');
+    if (s && s.getAttribute('data-cmb-v') === '36') return;
+    if (!s) {
+      s = document.createElement('style');
+      s.id = 'cmb-admin-select-portal-css';
+      (document.head || document.documentElement).appendChild(s);
+    }
+    s.setAttribute('data-cmb-v', '36');
+      s.textContent =
+      'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui .cmb-admin,html.cmb-admin-ui select{color-scheme:dark}' +
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
       'html.cmb-admin-ui [data-state="closed"][data-radix-popper-content-wrapper],' +
       'html.cmb-admin-ui [data-state="closed"][data-radix-select-content],' +
       'html.cmb-admin-ui [data-state="closed"][role="listbox"]{display:none!important;pointer-events:none!important;visibility:hidden!important}' +
       'html.cmb-admin-ui [role="listbox"],html.cmb-admin-ui [data-slot="select-content"],html.cmb-admin-ui [data-radix-select-content],' +
-      'html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]){' +
-      'background:#1e293b!important;color:#f8fafc!important;border:1px solid rgba(255,255,255,0.2)!important;' +
-      'box-shadow:0 12px 40px rgba(0,0,0,0.5)!important;z-index:2147483000!important;opacity:1!important;' +
-      'pointer-events:auto!important;width:max-content!important;min-width:12rem!important;max-width:min(90vw,28rem)!important;' +
-      'white-space:nowrap!important;word-break:keep-all!important;overflow:auto!important;box-sizing:border-box!important}' +
+      'html.cmb-admin-ui [data-radix-select-viewport],html.cmb-admin-ui [data-radix-popper-content-wrapper]:not([data-state="closed"]),' +
+      'html.cmb-admin-ui .cmb-admin-listbox{' +
+      'background:#0f172a!important;background-color:#0f172a!important;color:#f8fafc!important;' +
+      '-webkit-text-fill-color:#f8fafc!important;border:1px solid rgba(255,255,255,0.22)!important;' +
+      'box-shadow:0 12px 40px rgba(0,0,0,0.55)!important;z-index:2147483000!important;opacity:1!important;visibility:visible!important;' +
+      'pointer-events:auto!important;min-width:12rem!important;max-width:min(90vw,28rem)!important;' +
+      'white-space:nowrap!important;word-break:keep-all!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box!important}' +
+      'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"],html.cmb-admin-ui [role="option"] span,' +
+      'html.cmb-admin-ui [role="option"] p,html.cmb-admin-ui [data-slot="select-item"] span,' +
+      'html.cmb-admin-ui [role="option"] [class*="text-"],html.cmb-admin-ui .cmb-admin-listbox [role="option"]{' +
+      'color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;opacity:1!important;visibility:visible!important;' +
+      'white-space:nowrap!important;word-break:keep-all!important}' +
       'html.cmb-admin-ui [role="option"],html.cmb-admin-ui [data-slot="select-item"]{' +
-      'color:#f8fafc!important;background:transparent!important;white-space:nowrap!important;word-break:keep-all!important;' +
-      'width:auto!important;min-width:100%!important;display:flex!important;flex-direction:row!important;align-items:center!important;' +
-      'padding:0.4rem 0.75rem!important}' +
+      'background:transparent!important;display:flex!important;flex-direction:row!important;align-items:center!important;' +
+      'min-width:100%!important;padding:0.45rem 0.8rem!important}' +
       'html.cmb-admin-ui [role="option"][data-highlighted],html.cmb-admin-ui [role="option"]:hover,' +
-      'html.cmb-admin-ui [data-slot="select-item"][data-highlighted]{background:rgba(255,255,255,0.12)!important;color:#fff!important}' +
+      'html.cmb-admin-ui [data-slot="select-item"][data-highlighted]{background:rgba(255,255,255,0.14)!important;color:#fff!important}' +
+      'html.cmb-admin-ui .cmb-admin [role="combobox"],html.cmb-admin-ui .cmb-admin-select-host button,' +
+      'html.cmb-admin-ui .cmb-admin-select-host [data-slot="trigger"]{' +
+      'color:#f8fafc!important;background:#1e293b!important;border-color:rgba(255,255,255,0.28)!important}' +
+      'html.cmb-admin-ui .cmb-admin [role="combobox"] *:not(svg):not(path),' +
+      'html.cmb-admin-ui .cmb-admin-select-host button *:not(svg):not(path){color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important;opacity:1!important}' +
+      'html.cmb-admin-ui select,html.cmb-admin-ui .cmb-admin-filter-native{color-scheme:dark;color:#f8fafc;background:#1e293b}' +
+      'html.cmb-admin-ui select option,html.cmb-admin-ui .cmb-admin-filter-native option{color:#0f172a;background:#f8fafc}' +
       '.cmb-admin-row-actions,.cmb-admin-row-actions a,.cmb-admin-row-actions button{position:relative;z-index:2;pointer-events:auto!important}';
-    (document.head || document.documentElement).appendChild(s);
   }
 
 
@@ -1037,7 +1113,9 @@
     bindRowActions();
     paintSettingsControls();
     observeAdminStatus();
+    observeAdminMenus();
     unlockAdminPointer();
+    paintOpenAdminMenus();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
@@ -1054,6 +1132,7 @@
       paintStatusButtons();
       ensureAdminFilterSelect();
       unlockAdminPointer();
+      paintOpenAdminMenus();
     }
   }, 700);
 })();
