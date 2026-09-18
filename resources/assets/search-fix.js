@@ -1,24 +1,50 @@
 (function () {
-  if (window.__cmbSearchFix2) return;
-  window.__cmbSearchFix2 = true;
+  if (window.__cmbSearchFix3) return;
+  window.__cmbSearchFix3 = true;
 
   function currentQ() {
     try { return new URL(location.href).searchParams.get('q') || ''; } catch (e) { return ''; }
   }
+  function currentSort() {
+    try { return new URL(location.href).searchParams.get('sort') || 'latest'; } catch (e) { return 'latest'; }
+  }
 
-  function go(q) {
+  function go(q, sort) {
     var url = new URL(location.href);
     q = String(q || '').trim();
     if (q) url.searchParams.set('q', q);
     else url.searchParams.delete('q');
     url.searchParams.set('page', '1');
-    var sortEl = document.querySelector('[data-cmb-sort-select], select[name="sort"]');
-    if (sortEl && sortEl.value) url.searchParams.set('sort', sortEl.value);
+    if (sort) url.searchParams.set('sort', sort);
     location.href = url.pathname + url.search;
   }
 
   function inputEl() {
     return document.querySelector('[data-cmb-search-free], [data-cmb-search-input], .cmb-search-input, input[name="q"]');
+  }
+
+  function addStatusOption() {
+    var sel = document.querySelector('[data-cmb-sort-select], select[name="sort"]');
+    if (!sel) return;
+    var exists = false;
+    Array.prototype.forEach.call(sel.options || [], function (o) {
+      if (o.value === 'status') exists = true;
+    });
+    if (!exists) {
+      var opt = document.createElement('option');
+      opt.value = 'status';
+      opt.textContent = '상태순';
+      sel.appendChild(opt);
+    }
+    var cur = currentSort();
+    if (cur) sel.value = cur;
+    if (!sel.getAttribute('data-cmb-sort-bound')) {
+      sel.setAttribute('data-cmb-sort-bound', '1');
+      sel.addEventListener('change', function () {
+        var inp = inputEl();
+        go(inp ? inp.value : currentQ(), sel.value);
+      });
+    }
   }
 
   function detach() {
@@ -52,28 +78,28 @@
     var inp = e.target && e.target.closest && e.target.closest('[data-cmb-search-free], [data-cmb-search-input], input[name="q"]');
     if (!inp || e.key !== 'Enter') return;
     e.preventDefault();
-    e.stopPropagation();
-    go(inp.value);
+    var sel = document.querySelector('[data-cmb-sort-select], select[name="sort"]');
+    go(inp.value, sel ? sel.value : currentSort());
   }, true);
 
   document.addEventListener('click', function (e) {
     if (e.target.closest && e.target.closest('[data-cmb-search-clear]')) {
       e.preventDefault();
-      e.stopPropagation();
       var inp = inputEl();
       if (inp) inp.value = '';
-      go('');
+      var sel = document.querySelector('[data-cmb-sort-select], select[name="sort"]');
+      go('', sel ? sel.value : currentSort());
       return;
     }
     if (e.target.closest && e.target.closest('[data-cmb-search-go], .cmb-search-go')) {
       e.preventDefault();
-      e.stopPropagation();
       var inp2 = inputEl();
-      go(inp2 ? inp2.value : '');
+      var sel2 = document.querySelector('[data-cmb-sort-select], select[name="sort"]');
+      go(inp2 ? inp2.value : '', sel2 ? sel2.value : currentSort());
     }
   }, true);
 
-  function boot() { detach(); }
+  function boot() { detach(); addStatusOption(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
   setTimeout(boot, 300);
