@@ -78,6 +78,18 @@ class BidController extends Controller
         return response()->json(ArrayPaginator::paginate($list, $request, 'page', 10));
     }
 
+    public function revisions(Request $request, int $id): JsonResponse
+    {
+        $user = $this->actor($request);
+        if (! $user) {
+            return response()->json(['message' => '로그인이 필요합니다.'], 401);
+        }
+        $admin = $this->jobs->isAdminActor($user);
+        $rows = $this->bids->listRevisions($id, (int) $user->id, $admin);
+
+        return response()->json(['data' => $rows]);
+    }
+
     public function store(StoreBidRequest $request, int $id): JsonResponse
     {
         $user = $this->actor($request);
