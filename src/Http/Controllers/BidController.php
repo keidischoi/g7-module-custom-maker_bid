@@ -87,7 +87,7 @@ class BidController extends Controller
         $admin = $this->jobs->isAdminActor($user);
         $rows = $this->bids->listRevisions($id, (int) $user->id, $admin);
 
-        return response()->json(['data' => $rows]);
+        return response()->json(ArrayPaginator::paginate($rows, $request, 'page', 20));
     }
 
     public function store(StoreBidRequest $request, int $id): JsonResponse
