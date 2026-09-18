@@ -99,7 +99,7 @@ class JobAdminController extends Controller
 
     private function setStatusDirect(int $id, string $status, ?string $audit = null, ?string $notice = null): JsonResponse
     {
-        $allowed = JobRules::STATUSES;
+        $allowed = array_values(array_unique(array_merge(JobRules::STATUSES, ['pending', 'disputed', 'quote_request', 'hold', 'cancelled', 'done', 'awarded', 'draft'])));
         if ($status === 'approved') {
             $status = 'quote_request';
         }
