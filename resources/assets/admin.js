@@ -174,14 +174,68 @@
     });
   }
 
-  function rememberEditId(id) {
+  var STICKY_ID_KEY = 'cmb-edit-company-id';
+  var STICKY_SNAP_KEY = 'cmb-edit-company-snap';
+
+  function cleanEditId(id) {
     id = id != null ? String(id).trim() : '';
     if (!id || id === '-' || id === 'undefined' || id === 'null') return '';
+    return id;
+  }
+
+  function readStickyId() {
+    var id = cleanEditId(window.__cmbEditCompanyId);
+    if (id) return id;
+    try { id = cleanEditId(sessionStorage.getItem(STICKY_ID_KEY)); } catch (e) {}
+    return id || '';
+  }
+
+  function writeStickySnap(snap) {
+    if (!snap || typeof snap !== 'object') return;
+    var copy = {};
+    Object.keys(snap).forEach(function (k) {
+      if (k === 'files_ready' || k === 'uploader_epoch') return;
+      copy[k] = snap[k];
+    });
+    window.__cmbEditSnapshot = copy;
+    try { sessionStorage.setItem(STICKY_SNAP_KEY, JSON.stringify(copy)); } catch (e) {}
+  }
+
+  function readStickySnap() {
+    if (window.__cmbEditSnapshot && typeof window.__cmbEditSnapshot === 'object') return window.__cmbEditSnapshot;
+    try {
+      var raw = sessionStorage.getItem(STICKY_SNAP_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          window.__cmbEditSnapshot = parsed;
+          return parsed;
+        }
+      }
+    } catch (e2) {}
+    return {};
+  }
+
+  function paintEditTitle(id) {
+    id = cleanEditId(id) || readStickyId();
+    document.querySelectorAll('[data-cmb-edit-title], [data-cmb-company-edit] .cmb-admin-card-title').forEach(function (el) {
+      if (!/선택 업체/.test(el.textContent || '')) return;
+      el.textContent = '선택 업체 관리 (#' + (id || '-') + ')';
+    });
+  }
+
+  function rememberEditId(id) {
+    id = cleanEditId(id);
+    if (!id) return '';
     window.__cmbEditCompanyId = id;
+    try { sessionStorage.setItem(STICKY_ID_KEY, id); } catch (e) {}
+    var snap = readStickySnap();
+    snap.id = id;
+    writeStickySnap(snap);
     var card = document.querySelector('[data-cmb-company-edit]');
     if (card) {
       card.setAttribute('data-cmb-edit-id', id);
-      var hid = card.querySelector('input[name="id"]');
+      var hid = card.querySelector('input[name="id"], [data-cmb-edit-id-input]');
       if (!hid) {
         hid = document.createElement('input');
         hid.type = 'hidden';
@@ -192,27 +246,37 @@
       hid.value = id;
     }
     markEditingRow(id);
+    paintEditTitle(id);
+    return id;
+  }
+
+  function restoreStickyEdit() {
+    var id = readStickyId();
+    if (!id) return '';
+    rememberEditId(id);
     return id;
   }
 
   function companyIdFromEdit() {
-    var id = '';
-    if (window.__cmbEditCompanyId) id = String(window.__cmbEditCompanyId);
+    var id = readStickyId();
     var card = document.querySelector('[data-cmb-company-edit]');
-    if (!id && card) id = String(card.getAttribute('data-cmb-edit-id') || '');
+    if (!id && card) id = cleanEditId(card.getAttribute('data-cmb-edit-id'));
     if (!id && card) {
-      var hid = card.querySelector('input[name="id"]');
-      if (hid && hid.value) id = String(hid.value);
+      var hid = card.querySelector('input[name="id"], [data-cmb-edit-id-input]');
+      if (hid) id = cleanEditId(hid.value);
     }
     if (!id) {
       try {
-        var v = g7Get('_local.edit.id');
-        if (v) id = String(v);
+        id = cleanEditId(g7Get('_local.edit.id'));
         if (!id) {
           var ed = g7Get('_local.edit') || {};
-          if (ed && ed.id) id = String(ed.id);
+          id = cleanEditId(ed && ed.id);
         }
       } catch (e) {}
+    }
+    if (!id) {
+      var snap = readStickySnap();
+      id = cleanEditId(snap && snap.id);
     }
     if (!id) {
       var text = '';
@@ -224,11 +288,43 @@
       var marked = document.querySelector('.cmb-admin-row.is-cmb-editing, .cmb-admin-row[data-cmb-editing="1"]');
       if (marked) id = idFromRow(marked);
     }
-    if (id && id !== '-' && id !== 'undefined' && id !== 'null') {
+    if (id) {
       if (String(window.__cmbEditCompanyId || '') !== id) window.__cmbEditCompanyId = id;
       return id;
     }
     return '';
+  }
+
+  function patchG7EditMerge() {
+    if (!window.G7Core || typeof window.G7Core.dispatch !== 'function') return;
+    if (window.G7Core.__cmbEditMergePatch) return;
+    var orig = window.G7Core.dispatch.bind(window.G7Core);
+    window.G7Core.__cmbEditMergePatch = true;
+    window.G7Core.dispatch = function (action) {
+      try {
+        if (action && action.handler === 'setState' && action.params) {
+          var keys = Object.keys(action.params);
+          var touches = keys.some(function (k) { return k === 'edit' || k.indexOf('edit.') === 0; });
+          if (touches) {
+            var snap = readStickySnap();
+            keys.forEach(function (k) {
+              if (k.indexOf('edit.') === 0) snap[k.slice(5)] = action.params[k];
+            });
+            if (action.params.edit && typeof action.params.edit === 'object') {
+              Object.keys(action.params.edit).forEach(function (k) { snap[k] = action.params.edit[k]; });
+            }
+            var id = cleanEditId(snap.id) || readStickyId();
+            if (id) snap.id = id;
+            writeStickySnap(snap);
+            Object.keys(snap).forEach(function (k) {
+              action.params['edit.' + k] = snap[k];
+            });
+            if (id) rememberEditId(id);
+          }
+        }
+      } catch (ePatch) {}
+      return orig.apply(this, arguments);
+    };
   }
 
   function readAuthToken() {
@@ -920,6 +1016,11 @@
     for (key in map) {
       if (Object.prototype.hasOwnProperty.call(map, key)) params[key] = map[key];
     }
+    var id = readStickyId();
+    if (id) {
+      var touches = Object.keys(params).some(function (k) { return k === 'edit' || k.indexOf('edit.') === 0; });
+      if (touches && params['edit.id'] == null) params['edit.id'] = id;
+    }
     dispatch('setState', params);
   }
   function g7Get(path) {
@@ -1203,7 +1304,7 @@
       if (toolbar && !entity) entity = inferEntity(toolbar, statusFromRow(toolbar));
       if (inCompanyForm || inCoSave) {
         entity = 'company';
-        id = id || companyIdFromEdit();
+        id = id || restoreStickyEdit() || companyIdFromEdit();
       } else if (inJobForm || inJobSave || jobIdFromPath()) {
         if (!row) {
           entity = 'job';
@@ -1240,6 +1341,13 @@
         edit.id = id;
         fireUpload('upload:maker_bids_admin_logo');
         adminFetch('/api/modules/custom-maker_bids/admin/companies/' + encodeURIComponent(id), 'PATCH', '저장했습니다.', edit);
+        return;
+      }
+      if (!id && inCompanyForm) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        alert('먼저 목록에서 업체를 불러오세요.');
         return;
       }
       if (!id) return;
@@ -1653,6 +1761,8 @@
     hideLegacySizes();
     bindStatusPress();
     try { paintStatusButtons(); } catch (ePaint) {}
+    patchG7EditMerge();
+    restoreStickyEdit();
     ensureAdminFilterSelect();
     ensureEditNativeSelects();
     ensureFormNativeSelects();
@@ -1688,6 +1798,8 @@
   setInterval(function () {
     if (document.querySelector('.cmb-admin')) {
       try { paintStatusButtons(); } catch (ePaint2) {}
+      patchG7EditMerge();
+      restoreStickyEdit();
       ensureAdminFilterSelect();
       ensureEditNativeSelects();
       ensureFormNativeSelects();

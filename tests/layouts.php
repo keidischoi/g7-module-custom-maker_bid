@@ -478,8 +478,9 @@ expectTrue('admin.js binds detail toolbar and job save', str_contains($adminJs, 
 expectTrue('admin.js paint ignores non-status kinds', str_contains($adminJs, 'out[k] && out[k].indexOf'));
 expectTrue('admin.js native job form selects', str_contains($adminJs, 'function ensureFormNativeSelects') && str_contains($adminJs, 'data-cmb-form-host') && str_contains($adminJs, "['disputed', '분쟁조정']"));
 expectTrue('admin.js keeps company edit id', str_contains($adminJs, 'function rememberEditId') && str_contains($adminJs, '__cmbEditCompanyId') && str_contains($adminJs, 'is-cmb-editing'));
+expectTrue('admin.js merges company edit snapshot', str_contains($adminJs, 'function patchG7EditMerge') && str_contains($adminJs, 'cmb-edit-company-snap') && str_contains($adminJs, 'function restoreStickyEdit'));
 expectTrue('admin job detail marks form hosts', str_contains($adminJobsShow, 'data-cmb-job-edit') && str_contains($adminJobsShow, 'data-cmb-form-host') && str_contains($adminJobsShow, 'data-cmb-kind": "save'));
-expectTrue('admin company edit keeps hidden id', str_contains($adminCos, '"name": "id"') && str_contains($adminCos, 'data-cmb-edit-id') && str_contains($adminCos, 'data-cmb-load'));
+expectTrue('admin company edit keeps hidden id', str_contains($adminCos, '"name": "id"') && str_contains($adminCos, 'data-cmb-edit-title') && str_contains($adminCos, 'data-cmb-load') && str_contains($adminCos, '"trackChanges": false'));
 expectTrue('listener does not bind job fields onto jobs_index filters', str_contains($nav, "'jobs_show'") && ! str_contains($nav, "['jobs_show', 'jobs_index']"));
 expectTrue('admin jobs rows expose status for 승인/보류 paint', str_contains($adminJobs, 'data-cmb-status') && str_contains($adminJobs, 'cmb-status-{{$item.status}}') && str_contains($adminJobs, 'cmb-entity-job') && str_contains($adminJobs, 'data-cmb-kind'));
 expectTrue('admin companies rows expose status for 승인/보류 paint', str_contains($adminCos, 'data-cmb-status') && str_contains($adminCos, 'cmb-status-{{$co.status}}') && str_contains($adminCos, 'cmb-entity-company') && str_contains($adminCos, 'data-cmb-kind'));

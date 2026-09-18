@@ -166,11 +166,19 @@
     setLocal(extra);
     if (copy.id) {
       try { window.__cmbEditCompanyId = String(copy.id); } catch (eId) {}
+      try { window.__cmbEditSnapshot = copy; } catch (eSnap) {}
+      try {
+        sessionStorage.setItem('cmb-edit-company-id', String(copy.id));
+        sessionStorage.setItem('cmb-edit-company-snap', JSON.stringify(copy));
+      } catch (eStore) {}
       var card = document.querySelector('[data-cmb-company-edit]');
       if (card) {
         card.setAttribute('data-cmb-edit-id', String(copy.id));
         fillNamed('id', copy.id);
       }
+      document.querySelectorAll('[data-cmb-edit-title], [data-cmb-company-edit] .cmb-admin-card-title').forEach(function (el) {
+        if (/선택 업체/.test(el.textContent || '')) el.textContent = '선택 업체 관리 (#' + copy.id + ')';
+      });
       document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
         var title = row.querySelector('.cmb-admin-row-title, a');
         var on = !!(title && String(title.textContent || '').indexOf('#' + copy.id) >= 0);

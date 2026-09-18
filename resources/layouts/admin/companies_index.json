@@ -217,9 +217,8 @@
                     "props": {
                       "className": "cmb-admin-card cmb-admin-company-edit space-y-3",
                       "dataKey": "edit",
-                      "trackChanges": true,
-                      "data-cmb-company-edit": "1",
-                      "data-cmb-edit-id": "{{_local.edit.id || ''}}"
+                      "trackChanges": false,
+                      "data-cmb-company-edit": "1"
                     },
                     "children": [
                       {
@@ -227,9 +226,10 @@
                         "type": "basic",
                         "name": "P",
                         "props": {
-                          "className": "cmb-admin-card-title"
+                          "className": "cmb-admin-card-title",
+                          "data-cmb-edit-title": "1"
                         },
-                        "text": "선택 업체 관리 (#{{_local.edit.id || '-'}})"
+                        "text": "선택 업체 관리 (#-)"
                       },
                       {
                         "id": "ehelp",
@@ -247,7 +247,7 @@
                         "props": {
                           "type": "hidden",
                           "name": "id",
-                          "value": "{{_local.edit.id || ''}}"
+                          "data-cmb-edit-id-input": "1"
                         }
                       },
                       {
