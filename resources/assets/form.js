@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.32';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.34';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -599,7 +599,7 @@
     if (!me || !me.status) {
       return;
     }
-    var fields = ['kind', 'name', 'business_no', 'bio', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail'];
+    var fields = ['kind', 'name', 'business_no', 'bio', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail', 'bank_name', 'account_no', 'account_holder', 'deposit_percent', 'deposit_terms'];
     var map = {};
     var i;
     var field;
@@ -2165,6 +2165,9 @@
       'form.manager_name': '이담당',
       'form.manager_phone': '010-9876-5432',
       'form.manager_email': 'manager@example.com',
+      'form.refund_bank_name': '국민은행',
+      'form.refund_account_holder': '김테스트',
+      'form.refund_account_no': '110-123-456789',
       'form.requires_address': '0',
       'form.includes_modeling': '1',
       'form.terms_agreed': true
@@ -2237,6 +2240,11 @@
       'company.zipcode': '04147',
       'company.address': '서울특별시 마포구 월드컵북로 396',
       'company.address_detail': '누리꿈스퀘어 비즈니스타워 5층',
+      'company.bank_name': '국민은행',
+      'company.account_no': '123-45-678901',
+      'company.account_holder': '메이커랩코리아',
+      'company.deposit_percent': 30,
+      'company.deposit_terms': '계약금 입금 확인 후 제작을 시작합니다. 잔금은 납품 전입니다.',
       'company.job_type_print_3d': true,
       'company.job_type_modeling_3d': true
     };
@@ -2252,6 +2260,11 @@
     fillNamed('zipcode', map['company.zipcode']);
     fillNamed('address', map['company.address']);
     fillNamed('address_detail', map['company.address_detail']);
+    fillNamed('bank_name', map['company.bank_name']);
+    fillNamed('account_no', map['company.account_no']);
+    fillNamed('account_holder', map['company.account_holder']);
+    fillNamed('deposit_percent', String(map['company.deposit_percent']));
+    fillNamed('deposit_terms', map['company.deposit_terms']);
     fillCheckboxNamed('job_type_print_3d', true);
     fillCheckboxNamed('job_type_modeling_3d', true);
     if (typeof setG7Select === 'function') {

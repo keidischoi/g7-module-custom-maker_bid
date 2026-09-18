@@ -66,7 +66,12 @@
       "logo_hash": "",
       "logo_url": "",
       "files_ready": false,
-      "uploader_epoch": 0
+      "uploader_epoch": 0,
+      "bank_name": "",
+      "account_no": "",
+      "account_holder": "",
+      "deposit_percent": 30,
+      "deposit_terms": ""
     }
   },
   "data_sources": [
@@ -380,6 +385,209 @@
                               "placeholder": "보류 이유",
                               "className": "cmb-admin-w-full"
                             }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "epay_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-fields"
+                        },
+                        "children": [
+                          {
+                            "id": "ebank_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "ebank_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "은행명"
+                              },
+                              {
+                                "id": "ebank",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "bank_name",
+                                  "placeholder": "은행명",
+                                  "value": "{{_local.edit.bank_name}}",
+                                  "className": "cmb-admin-w-full"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.bank_name": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eacct_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "eacct_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "계좌번호"
+                              },
+                              {
+                                "id": "eacct",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "account_no",
+                                  "placeholder": "계좌번호",
+                                  "value": "{{_local.edit.account_no}}",
+                                  "className": "cmb-admin-w-full"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.account_no": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "eholder_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "eholder_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "예금주"
+                              },
+                              {
+                                "id": "eholder",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "account_holder",
+                                  "placeholder": "예금주",
+                                  "value": "{{_local.edit.account_holder}}",
+                                  "className": "cmb-admin-w-full"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.account_holder": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "edeposit_wrap",
+                            "type": "basic",
+                            "name": "Div",
+                            "children": [
+                              {
+                                "id": "edeposit_l",
+                                "type": "basic",
+                                "name": "P",
+                                "props": {
+                                  "className": "cmb-admin-label"
+                                },
+                                "text": "계약금 비율 (%)"
+                              },
+                              {
+                                "id": "edeposit",
+                                "type": "basic",
+                                "name": "Input",
+                                "props": {
+                                  "name": "deposit_percent",
+                                  "type": "number",
+                                  "min": "0",
+                                  "max": "100",
+                                  "placeholder": "30",
+                                  "value": "{{_local.edit.deposit_percent}}",
+                                  "className": "cmb-admin-w-xs"
+                                },
+                                "actions": [
+                                  {
+                                    "type": "change",
+                                    "event": "change",
+                                    "handler": "setState",
+                                    "params": {
+                                      "target": "local",
+                                      "edit.deposit_percent": "{{$event.target.value}}"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "edeposit_terms_block",
+                        "type": "basic",
+                        "name": "Div",
+                        "children": [
+                          {
+                            "id": "edeposit_terms_l",
+                            "type": "basic",
+                            "name": "P",
+                            "props": {
+                              "className": "cmb-admin-label"
+                            },
+                            "text": "계약금 조건"
+                          },
+                          {
+                            "id": "edeposit_terms",
+                            "type": "basic",
+                            "name": "Input",
+                            "props": {
+                              "name": "deposit_terms",
+                              "placeholder": "계약금 입금 확인 후 제작 시작",
+                              "value": "{{_local.edit.deposit_terms}}",
+                              "className": "cmb-admin-w-full"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "edit.deposit_terms": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
                           }
                         ]
                       },
@@ -961,7 +1169,7 @@
                                 "props": {
                                   "className": "cmb-admin-row-title"
                                 },
-                                "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}"
+                                "text": "#{{$co.id}} {{$co.name}} · {{$co.kind_label || $co.kind}}{{$co.deposit_label ? (' · 계약금 ' + $co.deposit_label) : ''}}"
                               },
                               {
                                 "id": "cmeta",
@@ -1022,7 +1230,12 @@
                                       "edit.logo_hash": "{{$co.logo_hash || ''}}",
                                       "edit.logo_url": "{{$co.logo_url || ''}}",
                                       "edit.files_ready": false,
-                                      "edit.uploader_epoch": "{{Date.now()}}"
+                                      "edit.uploader_epoch": "{{Date.now()}}",
+                                      "edit.bank_name": "{{$co.bank_name || ''}}",
+                                      "edit.account_no": "{{$co.account_no || ''}}",
+                                      "edit.account_holder": "{{$co.account_holder || ''}}",
+                                      "edit.deposit_percent": "{{$co.deposit_percent ?? 30}}",
+                                      "edit.deposit_terms": "{{$co.deposit_terms || ''}}"
                                     }
                                   },
                                   {

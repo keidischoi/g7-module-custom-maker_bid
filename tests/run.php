@@ -14,6 +14,9 @@ $files = [
     __DIR__.'/type_ext_coerce.php',
     __DIR__.'/admin_actor.php',
     __DIR__.'/job_lifecycle.php',
+    __DIR__.'/dispute_rules.php',
+    __DIR__.'/payment_rules.php',
+    __DIR__.'/notice_rules.php',
 ];
 
 

@@ -1,0 +1,315 @@
+{
+  "version": "1.0.0",
+  "layout_name": "jobs_disputes",
+  "extends": "_user_base",
+  "meta": {
+    "title": "분쟁"
+  },
+  "errorHandling": {
+    "401": {
+      "handler": "toast",
+      "params": {
+        "type": "warning",
+        "message": "로그인이 필요합니다."
+      }
+    },
+    "403": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "422": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    },
+    "default": {
+      "handler": "toast",
+      "params": {
+        "type": "error",
+        "message": "{{error.message}}"
+      }
+    }
+  },
+  "data_sources": [
+    {
+      "id": "disputes",
+      "type": "api",
+      "endpoint": "/api/modules/custom-maker_bids/disputes",
+      "method": "GET",
+      "auto_fetch": true,
+      "refetchOnMount": true,
+      "auth_required": true,
+      "errorHandling": {
+        "401": {
+          "handler": "suppress"
+        },
+        "503": {
+          "handler": "suppress"
+        }
+      },
+      "fallback": {
+        "data": []
+      },
+      "params": {
+        "page": "{{query.page || 1}}",
+        "per_page": "{{query.per_page || 10}}"
+      }
+    }
+  ],
+  "slots": {
+    "content": [
+      {
+        "id": "page",
+        "type": "basic",
+        "name": "Div",
+        "props": {
+          "className": "cmb-page"
+        },
+        "children": [
+          {
+            "id": "head",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-page-head"
+            },
+            "children": [
+              {
+                "id": "h",
+                "type": "basic",
+                "name": "H1",
+                "props": {
+                  "className": "cmb-page-title text-2xl font-semibold text-gray-900 dark:text-white"
+                },
+                "text": "분쟁"
+              },
+              {
+                "id": "tabs",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-maker-subnav flex items-center justify-end gap-1 flex-nowrap ml-auto",
+                  "data-cmb-subnav": "1"
+                },
+                "children": [
+                  {
+                    "id": "t1",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/new",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "의뢰서 작성"
+                  },
+                  {
+                    "id": "t2",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "의뢰목록"
+                  },
+                  {
+                    "id": "t3",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/bids",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰현황"
+                  },
+                  {
+                    "id": "t4",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/history",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "이력"
+                  },
+                  {
+                    "id": "t_notices",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/notices",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "알림"
+                  },
+                  {
+                    "id": "t_payments",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/payments",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "결제"
+                  },
+                  {
+                    "id": "t5",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/company",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 등록"
+                  },
+                  {
+                    "id": "t6",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/companies",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "입찰자 목록"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "disputes_card",
+            "type": "basic",
+            "name": "Div",
+            "props": {
+              "className": "cmb-section-card"
+            },
+            "children": [
+              {
+                "id": "nh_row",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-section-head"
+                },
+                "children": [
+                  {
+                    "id": "nh",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-section-title"
+                    },
+                    "text": "내 분쟁·신고"
+                  }
+                ]
+              },
+              {
+                "id": "nempty",
+                "type": "basic",
+                "name": "P",
+                "if": "{{!(disputes?.data?.data ?? disputes?.data ?? []).length}}",
+                "props": {
+                  "className": "cmb-page-guide mt-2"
+                },
+                "text": "접수한 분쟁·신고가 없습니다. 낙찰된 의뢰의 작업실에서 사유를 골라 접수하세요."
+              },
+              {
+                "id": "nlist",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-card-list mt-3"
+                },
+                "children": [
+                  {
+                    "id": "nrow",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "cmb-bid-card cmb-list-item"
+                    },
+                    "iteration": {
+                      "source": "{{disputes?.data?.data ?? disputes?.data ?? []}}",
+                      "item_var": "$d"
+                    },
+                    "children": [
+                      {
+                        "id": "nt",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-job-card-title"
+                        },
+                        "text": "{{$d.kind_label}} · {{$d.factor_label}} · {{$d.job_title}}"
+                      },
+                      {
+                        "id": "nm",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-page-guide mt-1"
+                        },
+                        "text": "{{$d.status_label}} · {{$d.reason}} · {{$d.created_at}}"
+                      },
+                      {
+                        "id": "nacts",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-job-card-actions mt-2"
+                        },
+                        "children": [
+                          {
+                            "id": "njob",
+                            "type": "basic",
+                            "name": "A",
+                            "if": "{{$d.job_id}}",
+                            "props": {
+                              "href": "/maker-bids/{{$d.job_id}}",
+                              "className": "cmb-btn cmb-btn-secondary"
+                            },
+                            "text": "의뢰 보기"
+                          },
+                          {
+                            "id": "nread",
+                            "type": "basic",
+                            "name": "A",
+                            "text": "작업실",
+                            "if": "{{$d.job_id}}",
+                            "props": {
+                              "href": "/maker-bids/{{$d.job_id}}/work",
+                              "className": "cmb-btn cmb-btn-primary"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "disputes_pager",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-pager",
+                  "data-cmb-pager": "1",
+                  "data-param": "page",
+                  "data-page": "{{disputes?.data?.meta?.page || 1}}",
+                  "data-total": "{{disputes?.data?.meta?.total || 0}}",
+                  "data-last-page": "{{disputes?.data?.meta?.last_page || 1}}",
+                  "data-per-page": "{{disputes?.data?.meta?.per_page || 10}}"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -8,24 +8,26 @@ use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class UserMenuListener implements HookListenerInterface
 {
-    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.32';
-    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.32';
-    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.32';
-    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.32';
-    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.32';
-    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.32';
+    private const NAV_SRC = '/api/modules/custom-maker_bids/assets/nav.js?v=0.10.34';
+    private const FORM_SRC = '/api/modules/custom-maker_bids/assets/form.js?v=0.10.34';
+    private const PAGE_SRC = '/api/modules/custom-maker_bids/assets/page.js?v=0.10.34';
+    private const FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.34';
+    private const ADMIN_CSS = '/api/modules/custom-maker_bids/assets/admin.css?v=0.10.34';
+    private const ADMIN_JS = '/api/modules/custom-maker_bids/assets/admin.js?v=0.10.34';
 
     private const JOB_FIELDS = [
         'title', 'type', 'status', 'audience', 'budget_min', 'budget_max', 'description',
         'closes_at', 'rush_deadline', 'size_w', 'size_d', 'size_h', 'sizes_json',
         'contact_name', 'contact_phone', 'contact_hours', 'contact_email',
         'zipcode', 'address', 'address_detail', 'manager_name', 'manager_phone', 'manager_email',
+        'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         'revision_count', 'revision_cost',
     ];
 
     private const COMPANY_FIELDS = [
         'kind', 'name', 'business_no', 'bio', 'homepage_url', 'portfolio_url',
         'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
+        'bank_name', 'account_no', 'account_holder', 'deposit_percent', 'deposit_terms',
     ];
 
     public static function getSubscribedHooks(): array
@@ -72,7 +74,7 @@ class UserMenuListener implements HookListenerInterface
             $scripts = $this->upsertScript($scripts, 'cmb_maker_page', self::PAGE_SRC);
             $publicLayouts = [
                 'jobs_form', 'jobs_list', 'jobs_show', 'jobs_bids', 'jobs_history', 'jobs_notices',
-                'jobs_workspace', 'company_apply', 'company_list',
+                'jobs_workspace', 'jobs_disputes', 'jobs_payments', 'company_apply', 'company_list',
             ];
             if (in_array($name, $publicLayouts, true)) {
                 $styles = is_array($layout['styles'] ?? null) ? $layout['styles'] : [];
@@ -155,7 +157,7 @@ class UserMenuListener implements HookListenerInterface
 
 
     /**
-     * Shared admin chrome: one 7-link nav (includes ops). Layouts keep an empty
+     * Shared admin chrome: one 9-link nav (includes ops·분쟁조정·결제). Layouts keep an empty
      * #cmb_admin_nav / .cmb-admin-nav stub; this fills children so pages stop
      * duplicating the link list.
      *
@@ -185,6 +187,8 @@ class UserMenuListener implements HookListenerInterface
             ['cmb_an_bids', '/admin/maker-bids/bids', '입찰 관리'],
             ['cmb_an_cos', '/admin/maker-bids/companies', '회사 목록'],
             ['cmb_an_ops', '/admin/maker-bids/ops', '운영'],
+            ['cmb_an_disputes', '/admin/maker-bids/disputes', '분쟁조정'],
+            ['cmb_an_pay', '/admin/maker-bids/payments', '결제'],
             ['cmb_an_act', '/admin/maker-bids/activity', '회원 활동'],
             ['cmb_an_set', '/admin/maker-bids/settings', '설정'],
         ];

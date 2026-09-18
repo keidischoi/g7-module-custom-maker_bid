@@ -63,8 +63,19 @@
       "guests_see_list": true,
       "bid_allow": "all",
       "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+      "notify_email": true,
+      "notify_system": true,
       "companies_enabled": false,
-      "companies_body": ""
+      "companies_body": "",
+      "method": "bank_transfer",
+      "destination": "platform",
+      "bank_name": "",
+      "account_no": "",
+      "account_holder": "",
+      "transfer_note": "의뢰 #{job_id}",
+      "instructions": "낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.",
+      "require_confirmed": true,
+      "default_deposit_percent": 30
     }
   },
   "data_sources": [
@@ -102,8 +113,19 @@
           "guests_see_list": true,
           "bid_allow": "all",
           "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+          "notify_email": true,
+          "notify_system": true,
           "companies_enabled": false,
-          "companies_body": ""
+          "companies_body": "",
+          "method": "bank_transfer",
+          "destination": "platform",
+          "bank_name": "",
+          "account_no": "",
+          "account_holder": "",
+          "transfer_note": "의뢰 #{job_id}",
+          "instructions": "낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.",
+          "require_confirmed": true,
+          "default_deposit_percent": 30
         }
       },
       "onSuccess": [
@@ -134,8 +156,19 @@
             "form.guests_see_list": "{{response.data.guests_see_list ?? settings.data.guests_see_list}}",
             "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}",
             "form.provided_extensions": "{{response.data.provided_extensions || settings.data.provided_extensions || 'STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG'}}",
+            "form.notify_email": "{{response.data.notify_email ?? settings.data.notify_email}}",
+            "form.notify_system": "{{response.data.notify_system ?? settings.data.notify_system}}",
             "form.companies_enabled": "{{response.data.companies_enabled ?? settings.data.companies_enabled}}",
-            "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}"
+            "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}",
+            "form.method": "{{response.data.method || settings.data.method || 'bank_transfer'}}",
+            "form.destination": "{{response.data.destination || settings.data.destination || 'platform'}}",
+            "form.bank_name": "{{response.data.bank_name || settings.data.bank_name || ''}}",
+            "form.account_no": "{{response.data.account_no || settings.data.account_no || ''}}",
+            "form.account_holder": "{{response.data.account_holder || settings.data.account_holder || ''}}",
+            "form.transfer_note": "{{response.data.transfer_note || settings.data.transfer_note || '의뢰 #{job_id}'}}",
+            "form.instructions": "{{response.data.instructions || settings.data.instructions || ''}}",
+            "form.require_confirmed": "{{response.data.require_confirmed ?? settings.data.require_confirmed}}",
+            "form.default_deposit_percent": "{{response.data.default_deposit_percent ?? settings.data.default_deposit_percent ?? 30}}"
           }
         }
       ]
@@ -681,6 +714,535 @@
                             "text": "의뢰 작성/수정의 「제공 확장자」 체크 목록입니다. 쉼표·공백·줄바꿈으로 구분 (예: STL, 3MF, PDF). 비우면 기본 목록으로 돌아갑니다."
                           }
                         ]
+                      },
+                      {
+                        "id": "notify_h",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "알림"
+                      },
+                      {
+                        "id": "notify_email_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "notify_email",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "notify_email",
+                              "checked": "{{_local.form.notify_email}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.notify_email": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "notify_email_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "이메일 알림"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "notify_system_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "notify_system",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "notify_system",
+                              "checked": "{{_local.form.notify_system}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.notify_system": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "notify_system_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "사이트 알림 (홈페이지 벨)"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "notify_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "입찰·낙찰·결제·분쟁 등 이벤트를 보냅니다. 사이트 알림은 G7 기본 알림(상단 벨)에 쌓입니다. 모듈 「알림」 페이지(/maker-bids/notices)는 별도로 항상 기록됩니다."
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "pay_box",
+                "type": "basic",
+                "name": "Div",
+                "props": {
+                  "className": "cmb-admin-card space-y-3"
+                },
+                "children": [
+                  {
+                    "id": "pay_h",
+                    "type": "basic",
+                    "name": "H2",
+                    "props": {
+                      "className": "cmb-admin-card-title"
+                    },
+                    "text": "결제 · 계좌이체"
+                  },
+                  {
+                    "id": "pay_help",
+                    "type": "basic",
+                    "name": "P",
+                    "props": {
+                      "className": "cmb-admin-muted"
+                    },
+                    "text": "기본 결제 수단은 계좌이체입니다. 낙찰되면 의뢰자에게 아래 계좌가 안내되고, 입금 신고 후 관리자(또는 제작자 계좌일 때 낙찰자)가 확인합니다. 입금 확인 전에는 완료할 수 없습니다."
+                  },
+                  {
+                    "id": "pay_method_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "pay_method_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "결제 수단"
+                      },
+                      {
+                        "id": "pay_method_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-md"
+                        },
+                        "children": [
+                          {
+                            "id": "method",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "method",
+                              "value": "{{_local.form.method}}",
+                              "className": "cmb-admin-select cmb-admin-w-md rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "bank_transfer",
+                                  "label": "계좌이체"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.method": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "pay_dest_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "pay_dest_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "입금 계좌"
+                      },
+                      {
+                        "id": "pay_dest_host",
+                        "type": "basic",
+                        "name": "Div",
+                        "props": {
+                          "className": "cmb-admin-select-host cmb-admin-select-host-lg"
+                        },
+                        "children": [
+                          {
+                            "id": "destination",
+                            "type": "basic",
+                            "name": "Select",
+                            "props": {
+                              "name": "destination",
+                              "value": "{{_local.form.destination}}",
+                              "className": "cmb-admin-select cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                              "options": [
+                                {
+                                  "value": "platform",
+                                  "label": "플랫폼 계좌 (아래 계좌)"
+                                },
+                                {
+                                  "value": "maker",
+                                  "label": "제작자 계좌 (없으면 아래 계좌)"
+                                }
+                              ]
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.destination": "{{$event.target.value}}"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "bank_name_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "bank_name_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "은행명"
+                      },
+                      {
+                        "id": "bank_name",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "bank_name",
+                          "value": "{{_local.form.bank_name}}",
+                          "placeholder": "예: 국민은행",
+                          "className": "cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.bank_name": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "account_no_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "account_no_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "계좌번호"
+                      },
+                      {
+                        "id": "account_no",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "account_no",
+                          "value": "{{_local.form.account_no}}",
+                          "placeholder": "예: 123-456-789012",
+                          "className": "cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.account_no": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "account_holder_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "account_holder_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "예금주"
+                      },
+                      {
+                        "id": "account_holder",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "account_holder",
+                          "value": "{{_local.form.account_holder}}",
+                          "placeholder": "예: 홍길동",
+                          "className": "cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.account_holder": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "transfer_note_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "transfer_note_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "입금 메모"
+                      },
+                      {
+                        "id": "transfer_note",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "transfer_note",
+                          "value": "{{_local.form.transfer_note}}",
+                          "placeholder": "의뢰 #{job_id}",
+                          "className": "cmb-admin-w-lg rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.transfer_note": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "instructions_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "instructions_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "이체 안내"
+                      },
+                      {
+                        "id": "instructions",
+                        "type": "basic",
+                        "name": "Textarea",
+                        "props": {
+                          "name": "instructions",
+                          "value": "{{_local.form.instructions}}",
+                          "placeholder": "입금 방법 안내",
+                          "className": "cmb-admin-w-xl min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm",
+                          "rows": 3
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.instructions": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "deposit_pct_wrap",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-1"
+                    },
+                    "children": [
+                      {
+                        "id": "deposit_pct_l",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label text-xs text-gray-500"
+                        },
+                        "text": "기본 계약금 비율 (%)"
+                      },
+                      {
+                        "id": "default_deposit_percent",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "default_deposit_percent",
+                          "type": "number",
+                          "min": "0",
+                          "max": "100",
+                          "value": "{{_local.form.default_deposit_percent}}",
+                          "placeholder": "30",
+                          "className": "cmb-admin-w-xs rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2 text-sm"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.default_deposit_percent": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "require_wrap",
+                    "type": "basic",
+                    "name": "Label",
+                    "props": {
+                      "className": "cmb-admin-check"
+                    },
+                    "children": [
+                      {
+                        "id": "require_confirmed",
+                        "type": "basic",
+                        "name": "Checkbox",
+                        "props": {
+                          "name": "require_confirmed",
+                          "checked": "{{_local.form.require_confirmed}}"
+                        },
+                        "actions": [
+                          {
+                            "type": "change",
+                            "event": "change",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.require_confirmed": "{{$event.target.checked}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "require_txt",
+                        "type": "basic",
+                        "name": "Span",
+                        "props": {
+                          "className": "cmb-admin-check-text"
+                        },
+                        "text": "입금 확인 후에만 완료 가능"
                       }
                     ]
                   }

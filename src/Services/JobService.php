@@ -160,6 +160,9 @@ class JobService
             'contact_phone' => $payload['contact_phone'] ?? null,
             'contact_email' => $payload['contact_email'] ?? null,
             'contact_hours' => JobRules::contactHours($payload['contact_hours_from'] ?? null, $payload['contact_hours_to'] ?? null, $payload['contact_hours'] ?? null),
+            'refund_bank_name' => isset($payload['refund_bank_name']) ? mb_substr(trim((string) $payload['refund_bank_name']), 0, 80) : null,
+            'refund_account_holder' => isset($payload['refund_account_holder']) ? mb_substr(trim((string) $payload['refund_account_holder']), 0, 80) : null,
+            'refund_account_no' => isset($payload['refund_account_no']) ? mb_substr(trim((string) $payload['refund_account_no']), 0, 80) : null,
             'zipcode' => $payload['zipcode'] ?? null,
             'address' => $payload['address'] ?? null,
             'address_detail' => $payload['address_detail'] ?? null,
@@ -184,6 +187,9 @@ class JobService
             'title' => $payload['title'] ?? null,
             'description' => $payload['description'] ?? null,
             'status' => isset($payload['status']) ? JobRules::normalizeListingStatus($payload['status']) : null,
+            'refund_bank_name' => $this->optionalTrim($payload, 'refund_bank_name', 80),
+            'refund_account_holder' => $this->optionalTrim($payload, 'refund_account_holder', 80),
+            'refund_account_no' => $this->optionalTrim($payload, 'refund_account_no', 80),
         ], static fn ($v) => $v !== null));
         $job->save();
         return $this->present(MakerJob::query()->with(['jobType', 'files'])->withCount('bids')->findOrFail($job->id), $this->ownerContext($userId), true, true);
@@ -197,6 +203,12 @@ class JobService
         }
         if (isset($payload['title'])) {
             $job->title = $payload['title'];
+        }
+        foreach (['refund_bank_name', 'refund_account_holder', 'refund_account_no'] as $key) {
+            $val = $this->optionalTrim($payload, $key, 80);
+            if ($val !== null) {
+                $job->{$key} = $val;
+            }
         }
         $job->save();
         return $this->findAdmin($id);
@@ -254,6 +266,19 @@ class JobService
     {
         $open = $job->isOpen();
         $isOwner = BidRules::isOwnJob($userId, $job->user_id);
+        $isWinner = false;
+        if ($userId > 0 && $job->awarded_bid_id) {
+            try {
+                $bid = $job->relationLoaded('awardedBid') ? $job->awardedBid : MakerBid::query()->find($job->awarded_bid_id);
+                $isWinner = $bid && (int) $bid->user_id === $userId;
+            } catch (\Throwable) {
+                $isWinner = false;
+            }
+        }
+        $isParty = $isOwner || $isWinner;
+        $status = (string) $job->status;
+        $canWork = ($isParty || $isAdmin) && in_array($status, ['awarded', 'disputed', 'done'], true);
+
         return [
             'authenticated' => $userId > 0,
             'is_owner' => $isOwner,
@@ -263,7 +288,9 @@ class JobService
             'can_update_bid' => false,
             'can_edit' => $isOwner && JobRules::isListingStatus((string) $job->status),
             'can_view_privacy' => $isOwner || $isAdmin,
-            'can_workspace' => false,
+            'can_workspace' => $canWork,
+            'can_dispute' => $isParty && DisputeRules::canOpen($status),
+            'can_pay' => $isOwner && in_array($status, ['awarded', 'disputed', 'done'], true),
             'my_bid' => null,
             'privacy' => null,
         ];
@@ -394,7 +421,18 @@ class JobService
     private function present(MakerJob $job, array $ctx, bool $includeBids, bool $includeFiles): array
     {
         $files = $includeFiles ? ($job->relationLoaded('files') ? $job->files : $this->files->forJob((int) $job->id)) : [];
-        return JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        $payload = JobPresenter::present($job, (bool) ($ctx['isAdmin'] ?? false) || (($ctx['userId'] ?? 0) === (int) $job->user_id), true, $files, $includeBids);
+        try {
+            $payload['payment'] = app(PaymentService::class)->forJob(
+                (int) $job->id,
+                (int) ($ctx['userId'] ?? 0),
+                (bool) ($ctx['isAdmin'] ?? false)
+            );
+        } catch (\Throwable) {
+            $payload['payment'] = null;
+        }
+
+        return $payload;
     }
 
     private function ownerContext(int $userId): array
@@ -420,5 +458,17 @@ class JobService
     private function settingBool(string $key, bool $default = false): bool
     {
         return SettingsRules::boolish($this->setting($key, $default));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function optionalTrim(array $payload, string $key, int $max): ?string
+    {
+        if (! array_key_exists($key, $payload) || $payload[$key] === null || $payload[$key] === '') {
+            return null;
+        }
+
+        return mb_substr(trim((string) $payload[$key]), 0, $max);
     }
 }

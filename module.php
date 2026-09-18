@@ -60,8 +60,10 @@ class Module extends AbstractModule
                     $this->adminMenuChild('입찰 관리', 'Bids', 'bids', '/admin/maker-bids/bids', 'fa-gavel', 3, 'custom-maker_bids.bids.read'),
                     $this->adminMenuChild('회사 목록', 'Companies', 'companies', '/admin/maker-bids/companies', 'fa-building', 4, 'custom-maker_bids.companies.read'),
                     $this->adminMenuChild('운영', 'Ops', 'ops', '/admin/maker-bids/ops', 'fa-clipboard-list', 5, 'custom-maker_bids.jobs.read'),
-                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 6, 'custom-maker_bids.jobs.read'),
-                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 7, 'custom-maker_bids.settings.read'),
+                    $this->adminMenuChild('분쟁조정', 'Disputes', 'disputes', '/admin/maker-bids/disputes', 'fa-balance-scale', 6, 'custom-maker_bids.jobs.update'),
+                    $this->adminMenuChild('결제', 'Payments', 'payments', '/admin/maker-bids/payments', 'fa-won-sign', 7, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('회원 활동', 'Member activity', 'activity', '/admin/maker-bids/activity', 'fa-user', 8, 'custom-maker_bids.jobs.read'),
+                    $this->adminMenuChild('설정', 'Settings', 'settings', '/admin/maker-bids/settings', 'fa-cog', 9, 'custom-maker_bids.settings.read'),
                 ],
             ],
         ];
@@ -96,6 +98,8 @@ class Module extends AbstractModule
                 'custom-maker_bids-companies',
                 'custom-maker_bids-activity',
                 'custom-maker_bids-ops',
+                'custom-maker_bids-disputes',
+                'custom-maker_bids-payments',
                 'custom-maker_bids-settings',
                 'custom-maker_bid-jobs',
                 'custom-maker_bid-types',
@@ -113,6 +117,46 @@ class Module extends AbstractModule
                 ->delete();
         } catch (\Throwable) {
         }
+    }
+
+    /**
+     * G7 homepage bell type + database template (synced on module activate/update).
+     * Sending still writes subject/body directly so already-installed sites work
+     * before this definition is synced.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getNotificationDefinitions(): array
+    {
+        return [
+            [
+                'type' => 'maker_bids.notice',
+                'hook_prefix' => 'custom-maker_bids',
+                'name' => ['ko' => '의뢰/입찰 알림', 'en' => 'Maker bid notice'],
+                'description' => [
+                    'ko' => '입찰·낙찰·결제·분쟁 등 의뢰/입찰 이벤트',
+                    'en' => 'Job, bid, payment, and dispute events',
+                ],
+                'channels' => ['database'],
+                'hooks' => [],
+                'variables' => [
+                    ['key' => 'title', 'description' => '알림 제목'],
+                    ['key' => 'body', 'description' => '알림 본문'],
+                    ['key' => 'job_id', 'description' => '의뢰 ID'],
+                    ['key' => 'click_url', 'description' => '클릭 URL'],
+                    ['key' => 'event', 'description' => '이벤트 종류'],
+                ],
+                'templates' => [
+                    [
+                        'channel' => 'database',
+                        'recipients' => [['type' => 'trigger_user']],
+                        'subject' => ['ko' => '{title}', 'en' => '{title}'],
+                        'body' => ['ko' => '{body}', 'en' => '{body}'],
+                        'click_url' => '{click_url}',
+                    ],
+                ],
+            ],
+        ];
     }
 
     public function getSchedules(): array
@@ -145,6 +189,7 @@ class Module extends AbstractModule
             'maker_reviews',
             'maker_claims',
             'maker_reports',
+            'maker_payments',
             'maker_audits',
             'maker_file_logs',
         ];

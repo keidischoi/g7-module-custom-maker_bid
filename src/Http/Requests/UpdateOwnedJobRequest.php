@@ -27,6 +27,7 @@ class UpdateOwnedJobRequest extends FormRequest
             'contact_name', 'contact_phone', 'contact_hours', 'contact_email',
             'zipcode', 'address', 'address_detail',
             'manager_name', 'manager_phone', 'manager_email',
+            'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         ]);
         $this->coerceBooleanFields([
             'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',
@@ -42,6 +43,7 @@ class UpdateOwnedJobRequest extends FormRequest
             'contact_name', 'contact_phone', 'contact_email',
             'zipcode', 'address', 'address_detail', 'upload_token',
             'manager_name', 'manager_phone', 'manager_email', 'sizes_json',
+            'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         ]);
         $this->normalizeJobStatusAndExtensions();
 

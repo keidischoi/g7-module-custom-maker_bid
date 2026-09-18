@@ -82,7 +82,7 @@ class BidService
 
     public function listMine(int $userId): Collection
     {
-        $items = MakerBid::query()->with('job')->where('user_id', $userId)->limit(200)->get();
+        $items = MakerBid::query()->with(['job', 'company'])->where('user_id', $userId)->limit(200)->get();
         $seen = [];
         $out = new Collection;
         foreach ($items as $bid) {

@@ -175,7 +175,15 @@ class JobController extends Controller
     public function award(AwardJobRequest $request, int $id): JsonResponse
     {
         try {
-            $this->awards->award((int) $request->user()->id, $id, (int) $request->validated()['bid_id']);
+            $this->awards->award(
+                (int) $request->user()->id,
+                $id,
+                (int) $request->validated()['bid_id'],
+                [
+                    'deposit_percent' => $request->validated()['deposit_percent'] ?? $request->input('deposit_percent'),
+                    'deposit_terms' => $request->validated()['deposit_terms'] ?? $request->input('deposit_terms'),
+                ]
+            );
         } catch (DomainException $e) {
             return $this->domainError($e);
         }

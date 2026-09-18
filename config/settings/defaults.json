@@ -5,7 +5,8 @@
     "categories": [
       "menu",
       "notices",
-      "general"
+      "general",
+      "payment"
     ]
   },
   "defaults": {
@@ -36,7 +37,20 @@
       "default_job_status": "quote_request",
       "guests_see_list": true,
       "bid_allow": "all",
-      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG"
+      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+      "notify_email": true,
+      "notify_system": true
+    },
+    "payment": {
+      "method": "bank_transfer",
+      "destination": "platform",
+      "bank_name": "",
+      "account_no": "",
+      "account_holder": "",
+      "transfer_note": "의뢰 #{job_id}",
+      "instructions": "낙찰 후 안내된 계좌로 이체하고, 작업실에서 입금자명을 적어 신고해 주세요. 입금이 확인되면 완료 처리할 수 있습니다.",
+      "require_confirmed": true,
+      "default_deposit_percent": 30
     }
   },
   "frontend_schema": {
@@ -120,6 +134,44 @@
           "expose": true
         },
         "provided_extensions": {
+          "expose": true
+        },
+        "notify_email": {
+          "expose": false
+        },
+        "notify_system": {
+          "expose": false
+        }
+      }
+    },
+    "payment": {
+      "expose": true,
+      "fields": {
+        "method": {
+          "expose": true
+        },
+        "destination": {
+          "expose": true
+        },
+        "bank_name": {
+          "expose": true
+        },
+        "account_no": {
+          "expose": true
+        },
+        "account_holder": {
+          "expose": true
+        },
+        "transfer_note": {
+          "expose": true
+        },
+        "instructions": {
+          "expose": true
+        },
+        "require_confirmed": {
+          "expose": true
+        },
+        "default_deposit_percent": {
           "expose": true
         }
       }

@@ -4,6 +4,8 @@
     { "path": "*/admin/maker-bids", "layout": "jobs_index", "auth_required": true, "meta": { "title": "의뢰 목록" } },
     { "path": "*/admin/maker-bids/types", "layout": "types_index", "auth_required": true, "meta": { "title": "유형 관리" } },
     { "path": "*/admin/maker-bids/ops", "layout": "ops_index", "auth_required": true, "meta": { "title": "운영" } },
+    { "path": "*/admin/maker-bids/disputes", "layout": "disputes_index", "auth_required": true, "meta": { "title": "분쟁조정" } },
+    { "path": "*/admin/maker-bids/payments", "layout": "payments_index", "auth_required": true, "meta": { "title": "결제" } },
     { "path": "*/admin/maker-bids/jobs/:id", "layout": "jobs_show", "auth_required": true, "meta": { "title": "의뢰 상세" } },
     { "path": "*/admin/maker-bids/bids", "layout": "bids_index", "auth_required": true, "meta": { "title": "입찰 관리" } },
     { "path": "*/admin/maker-bids/bids/:id", "layout": "bids_show", "auth_required": true, "meta": { "title": "입찰 수정" } },

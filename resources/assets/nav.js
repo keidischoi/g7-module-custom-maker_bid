@@ -131,6 +131,8 @@
     { href: '/maker-bids', label: '의뢰목록' },
     { href: '/maker-bids/bids', label: '입찰현황' },
     { href: '/maker-bids/history', label: '이력' },
+    { href: '/maker-bids/disputes', label: '분쟁' },
+    { href: '/maker-bids/payments', label: '결제' },
     { href: '/maker-bids/company', label: '입찰자 등록' },
     { href: '/maker-bids/companies', label: '입찰자 목록' }
   ];
@@ -155,6 +157,8 @@
     if (/\/maker-bids\/new$/.test(p)) return '/maker-bids/new';
     if (/\/maker-bids\/bids$/.test(p)) return '/maker-bids/bids';
     if (/\/maker-bids\/history$/.test(p)) return '/maker-bids/history';
+    if (/\/maker-bids\/disputes$/.test(p)) return '/maker-bids/disputes';
+    if (/\/maker-bids\/payments$/.test(p)) return '/maker-bids/payments';
     if (/\/maker-bids\/notices$/.test(p)) return '/maker-bids/notices';
     if (/\/maker-bids\/companies$/.test(p)) return '/maker-bids/companies';
     if (/\/maker-bids\/company$/.test(p)) return '/maker-bids/company';

@@ -40,6 +40,10 @@
       "amount": "",
       "days": "",
       "message": ""
+    },
+    "award": {
+      "deposit_percent": 30,
+      "deposit_terms": ""
     }
   },
   "data_sources": [
@@ -73,7 +77,9 @@
           "can_award": false,
           "can_update_bid": false,
           "can_workspace": false,
-          "my_bid": null
+          "can_dispute": false,
+          "my_bid": null,
+          "can_pay": false
         }
       },
       "auth_mode": "optional"
@@ -175,6 +181,26 @@
                   "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                 },
                 "text": "이력"
+              },
+              {
+                "id": "t_disputes",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/disputes",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "분쟁"
+              },
+              {
+                "id": "t_payments",
+                "type": "basic",
+                "name": "A",
+                "props": {
+                  "href": "/maker-bids/payments",
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                },
+                "text": "결제"
               },
               {
                 "id": "t5",
@@ -313,8 +339,69 @@
                       "className": "cmb-btn cmb-btn-primary"
                     },
                     "text": "작업실"
+                  },
+                  {
+                    "id": "dispute_link",
+                    "type": "basic",
+                    "name": "A",
+                    "if": "{{viewer.data?.can_dispute}}",
+                    "props": {
+                      "href": "/maker-bids/{{route.id}}/work",
+                      "className": "cmb-btn cmb-btn-secondary"
+                    },
+                    "text": "분쟁 접수"
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "id": "pay_card",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{job.data.payment}}",
+            "props": {
+              "className": "cmb-section-card space-y-2"
+            },
+            "children": [
+              {
+                "id": "pay_card_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "결제 · 계좌이체"
+              },
+              {
+                "id": "pay_card_m",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "{{job.data.payment.status_label}} · {{job.data.payment.kind_label || '전액'}} {{job.data.payment.amount_label}}{{job.data.payment.split ? (' · 계약금 ' + job.data.payment.deposit_percent + '%') : ''}} · {{job.data.payment.bank_name}} {{job.data.payment.account_no}} {{job.data.payment.account_holder}}"
+              },
+              {
+                "id": "pay_card_refund",
+                "type": "basic",
+                "name": "P",
+                "if": "{{job.data.payment.refund_account_label}}",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "환불 계좌 {{job.data.payment.refund_account_label}}"
+              },
+              {
+                "id": "pay_card_a",
+                "type": "basic",
+                "name": "A",
+                "if": "{{viewer.data?.can_workspace}}",
+                "props": {
+                  "href": "/maker-bids/{{route.id}}/work",
+                  "className": "cmb-btn cmb-btn-secondary"
+                },
+                "text": "작업실에서 입금 신고"
               }
             ]
           },
@@ -482,6 +569,101 @@
             "text": "내 의뢰입니다. 열린 상태에서는 견적을 낙찰할 수 있습니다. 보류/의뢰/견적요청은 수정 화면에서 바꿀 수 있습니다."
           },
           {
+            "id": "award_terms",
+            "type": "basic",
+            "name": "Div",
+            "if": "{{viewer.data?.can_award}}",
+            "props": {
+              "className": "cmb-section-card space-y-2",
+              "dataKey": "award",
+              "trackChanges": true
+            },
+            "children": [
+              {
+                "id": "award_terms_h",
+                "type": "basic",
+                "name": "H2",
+                "props": {
+                  "className": "cmb-section-title"
+                },
+                "text": "낙찰 계약금"
+              },
+              {
+                "id": "award_terms_g",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-page-guide"
+                },
+                "text": "입찰 카드의 계약금 비율이 업체 기본값입니다. 아래에서 이번 낙찰 비율·조건을 바꿀 수 있습니다. 0% 또는 100%면 전액 한 건입니다."
+              },
+              {
+                "id": "award_pct_l",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-label text-xs text-gray-500"
+                },
+                "text": "계약금 비율 (%)"
+              },
+              {
+                "id": "award_pct",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "deposit_percent",
+                  "type": "number",
+                  "min": "0",
+                  "max": "100",
+                  "value": "{{_local.award.deposit_percent}}",
+                  "className": "cmb-order-field w-full rounded-lg border px-3 py-2 text-sm"
+                },
+                "actions": [
+                  {
+                    "type": "change",
+                    "event": "change",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "award.deposit_percent": "{{$event.target.value}}"
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "award_note_l",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "cmb-admin-label text-xs text-gray-500"
+                },
+                "text": "계약금 조건 (선택)"
+              },
+              {
+                "id": "award_note",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "deposit_terms",
+                  "placeholder": "예: 계약금 확인 후 제작 시작",
+                  "value": "{{_local.award.deposit_terms}}",
+                  "className": "cmb-order-field w-full rounded-lg border px-3 py-2 text-sm"
+                },
+                "actions": [
+                  {
+                    "type": "change",
+                    "event": "change",
+                    "handler": "setState",
+                    "params": {
+                      "target": "local",
+                      "award.deposit_terms": "{{$event.target.value}}"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "id": "bids_h",
             "type": "basic",
             "name": "H2",
@@ -528,7 +710,7 @@
                     "props": {
                       "className": "cmb-job-card-title"
                     },
-                    "text": "{{$bid.amount_label || ($bid.amount + '원')}} · {{$bid.days ?? '-'}}일"
+                    "text": "{{$bid.amount_label || ($bid.amount + '원')}} · {{$bid.days ?? '-'}}일{{$bid.deposit_label ? (' · 계약금 ' + $bid.deposit_label) : ''}}"
                   },
                   {
                     "id": "bidst_{{idx}}",
@@ -579,13 +761,15 @@
                     "handler": "apiCall",
                     "auth_mode": "optional",
                     "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
+                    "confirm": "이 견적으로 낙찰할까요? 나머지 입찰은 거절됩니다. 위에서 정한 계약금 비율로 입금 안내가 생성됩니다.",
                     "params": {
                       "method": "POST",
                       "body": {
-                        "bid_id": "{{$bid.id}}"
+                        "bid_id": "{{$bid.id}}",
+                        "deposit_percent": "{{_local.award.deposit_percent}}",
+                        "deposit_terms": "{{_local.award.deposit_terms}}"
                       }
                     },
-                    "confirm": "이 견적으로 낙찰할까요? 나머지 입찰은 거절됩니다.",
                     "onSuccess": [
                       {
                         "handler": "toast",
@@ -719,7 +903,7 @@
                         "props": {
                           "className": "cmb-job-card-title"
                         },
-                        "text": "{{$bid.amount_label || ($bid.amount + '원')}} · {{$bid.days ?? '-'}}일 · {{$bid.status}}"
+                        "text": "{{$bid.amount_label || ($bid.amount + '원')}} · {{$bid.days ?? '-'}}일 · {{$bid.status}}{{$bid.deposit_label ? (' · 계약금 ' + $bid.deposit_label) : ''}}"
                       },
                       {
                         "id": "cmp_msg",
@@ -753,13 +937,15 @@
                                 "handler": "apiCall",
                                 "auth_mode": "optional",
                                 "target": "/api/modules/custom-maker_bids/jobs/{{route.id}}/award",
+                                "confirm": "이 입찰로 낙찰할까요? 위에서 정한 계약금 비율이 적용됩니다.",
                                 "params": {
                                   "method": "POST",
                                   "body": {
-                                    "bid_id": "{{$bid.id}}"
+                                    "bid_id": "{{$bid.id}}",
+                                    "deposit_percent": "{{_local.award.deposit_percent}}",
+                                    "deposit_terms": "{{_local.award.deposit_terms}}"
                                   }
                                 },
-                                "confirm": "이 입찰로 낙찰할까요?",
                                 "onSuccess": [
                                   {
                                     "handler": "toast",

@@ -7,9 +7,14 @@ use Illuminate\Support\Facades\Schema;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Notifications\MakerBidsDatabaseNotification;
 use Modules\Custom\MakerBids\Support\BiddingRules;
+use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\DisputeRules;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\NoticeRules;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class MarketplaceService
 {
@@ -123,18 +128,50 @@ class MarketplaceService
             ]);
         }
         $this->trySendEmail($userId, $title, $body);
+        $this->trySendSystemNotification($userId, $type, $title, $body, $jobId);
         $this->trySendMemo($userId, $title, $body, $jobId);
+    }
+
+    private function noticeChannelEnabled(string $channel): bool
+    {
+        try {
+            $key = $channel === 'email' ? 'notify_email' : 'notify_system';
+            $value = app(MakerBidSettingsService::class)->getSetting('general.'.$key, true);
+
+            return SettingsRules::boolish($value);
+        } catch (\Throwable) {
+            return true;
+        }
+    }
+
+    private function findUser(int $userId): ?object
+    {
+        try {
+            if (class_exists(\App\Models\User::class)) {
+                $user = \App\Models\User::query()->find($userId);
+                if (is_object($user)) {
+                    return $user;
+                }
+            }
+            if (Schema::hasTable('users')) {
+                $row = DB::table('users')->where('id', $userId)->first();
+                if (is_object($row)) {
+                    return $row;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
+        return null;
     }
 
     private function trySendEmail(int $userId, string $title, ?string $body): void
     {
+        if (! $this->noticeChannelEnabled('email')) {
+            return;
+        }
         try {
-            $user = null;
-            if (class_exists(\App\Models\User::class)) {
-                $user = \App\Models\User::query()->find($userId);
-            } elseif (Schema::hasTable('users')) {
-                $user = DB::table('users')->where('id', $userId)->first();
-            }
+            $user = $this->findUser($userId);
             $email = is_object($user) ? (string) ($user->email ?? '') : '';
             if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return;
@@ -151,6 +188,91 @@ class MarketplaceService
         } catch (\Throwable) {
             // Optional: core mail may be unconfigured.
         }
+    }
+
+    /**
+     * G7 homepage bell: Laravel `notifications` table (database channel).
+     * Email already goes out via Mail::raw; this is the in-app channel that was missing.
+     */
+    private function trySendSystemNotification(int $userId, string $type, string $title, ?string $body, ?int $jobId): void
+    {
+        if (! $this->noticeChannelEnabled('system')) {
+            return;
+        }
+        try {
+            $user = $this->findUser($userId);
+            if (! is_object($user)) {
+                return;
+            }
+            $payload = NoticeRules::databasePayload($type, $title, $body, $jobId);
+            if (method_exists($user, 'notify')) {
+                try {
+                    $user->notify(new MakerBidsDatabaseNotification($payload));
+
+                    return;
+                } catch (\Throwable) {
+                    // Fall through to a direct insert (uuid morph / queue quirks).
+                }
+            }
+            $this->insertDatabaseNotification($user, $payload);
+        } catch (\Throwable) {
+            // Optional: core notification table may be absent.
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function insertDatabaseNotification(object $user, array $payload): void
+    {
+        if (! Schema::hasTable('notifications')) {
+            return;
+        }
+        $cols = Schema::getColumnListing('notifications');
+        if (! in_array('notifiable_id', $cols, true) || ! in_array('data', $cols, true)) {
+            return;
+        }
+        $id = class_exists(\Illuminate\Support\Str::class)
+            ? (string) \Illuminate\Support\Str::uuid()
+            : bin2hex(random_bytes(16));
+        $userId = (int) ($user->id ?? 0);
+        $uuid = (string) ($user->uuid ?? '');
+        $notifiableId = $userId > 0 ? $userId : $uuid;
+        try {
+            $colType = Schema::getColumnType('notifications', 'notifiable_id');
+            if ($uuid !== '' && ! in_array($colType, ['bigint', 'integer', 'int'], true)) {
+                $notifiableId = $uuid;
+            }
+        } catch (\Throwable) {
+        }
+        if ($notifiableId === '' || $notifiableId === 0 || $notifiableId === '0') {
+            return;
+        }
+        $notifiableType = $user instanceof \Illuminate\Database\Eloquent\Model
+            ? $user->getMorphClass()
+            : 'App\\Models\\User';
+        $row = [
+            'id' => $id,
+            'type' => MakerBidsDatabaseNotification::class,
+            'notifiable_type' => $notifiableType,
+            'notifiable_id' => $notifiableId,
+            'data' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        ];
+        if (in_array('created_at', $cols, true)) {
+            $row['created_at'] = now();
+        }
+        if (in_array('updated_at', $cols, true)) {
+            $row['updated_at'] = now();
+        }
+        if (in_array('read_at', $cols, true)) {
+            $row['read_at'] = null;
+        }
+        foreach (array_keys($row) as $key) {
+            if (! in_array($key, $cols, true)) {
+                unset($row[$key]);
+            }
+        }
+        DB::table('notifications')->insert($row);
     }
 
     private function trySendMemo(int $userId, string $title, ?string $body, ?int $jobId): void
@@ -284,6 +406,12 @@ class MarketplaceService
         if ((int) $job->user_id !== $userId) {
             throw new DomainException('의뢰자만 완료할 수 있습니다.', 403);
         }
+        try {
+            app(PaymentService::class)->assertCompleteAllowed($job);
+        } catch (DomainException $e) {
+            throw $e;
+        } catch (\Throwable) {
+        }
         $job->status = 'done';
         $job->work_status = 'done';
         $job->save();
@@ -413,40 +541,98 @@ class MarketplaceService
         })->all();
     }
 
-    public function claim(int $userId, int $jobId, string $reason): array
+    public function claim(int $userId, int $jobId, string $reason, string $factor = 'other'): array
     {
         if (! Schema::hasTable('maker_claims')) {
-            throw new DomainException('클레임 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
+            throw new DomainException('분쟁 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
         }
-        $id = DB::table('maker_claims')->insertGetId([
+        $job = MakerJob::query()->findOrFail($jobId);
+        $party = $this->disputeParty($userId, $job);
+        if (! $party['is_party']) {
+            throw new DomainException('의뢰 당사자만 분쟁을 접수할 수 있습니다.', 403);
+        }
+        if (! DisputeRules::canOpen((string) $job->status)) {
+            throw new DomainException('낙찰 이후 의뢰만 분쟁 접수할 수 있습니다.', 422);
+        }
+        $factor = DisputeRules::normalizeFactor($factor !== '' ? $factor : $reason);
+        $stored = DisputeRules::composeReason($factor, $reason);
+        $row = [
             'job_id' => $jobId,
             'user_id' => $userId,
-            'reason' => mb_substr($reason, 0, 2000),
+            'reason' => $stored,
             'status' => 'open',
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
-        $this->audit($userId, 'claim.open', 'job', $jobId);
+        ];
+        if (Schema::hasColumn('maker_claims', 'factor')) {
+            $row['factor'] = $factor;
+        }
+        $id = DB::table('maker_claims')->insertGetId($row);
+        $job->status = DisputeRules::STATUS;
+        $job->save();
+        $this->touchCompanyClaim($job, $stored);
+        $other = $party['is_owner'] ? (int) $party['winner_id'] : (int) $job->user_id;
+        if ($other > 0 && $other !== $userId) {
+            $this->notify($other, 'dispute.open', '분쟁이 접수되었습니다.', DisputeRules::factorLabel($factor).' · '.(string) $job->title, $jobId);
+        }
+        $this->audit($userId, 'claim.open', 'job', $jobId, ['factor' => $factor, 'claim_id' => $id]);
 
-        return ['id' => $id];
+        return $this->presentDisputeRow((object) array_merge($row, [
+            'id' => $id,
+            'job_title' => (string) $job->title,
+            'job_status' => (string) $job->status,
+        ]), 'claim');
     }
 
-    public function report(int $userId, int $jobId, string $reason): array
+    public function report(int $userId, int $jobId, string $reason, string $factor = 'fraud'): array
     {
         if (! Schema::hasTable('maker_reports')) {
             throw new DomainException('신고 기능을 사용할 수 없습니다. 마이그레이션을 적용하세요.', 503);
         }
-        $id = DB::table('maker_reports')->insertGetId([
+        if ($userId < 1) {
+            throw new DomainException('로그인이 필요합니다.', 401);
+        }
+        $job = MakerJob::query()->findOrFail($jobId);
+        $factor = DisputeRules::normalizeFactor($factor !== '' ? $factor : $reason);
+        $stored = DisputeRules::composeReason($factor, $reason);
+        $row = [
             'job_id' => $jobId,
             'user_id' => $userId,
-            'reason' => mb_substr($reason, 0, 2000),
+            'reason' => $stored,
             'status' => 'open',
             'created_at' => now(),
             'updated_at' => now(),
-        ]);
-        $this->audit($userId, 'report.open', 'job', $jobId);
+        ];
+        if (Schema::hasColumn('maker_reports', 'factor')) {
+            $row['factor'] = $factor;
+        }
+        $id = DB::table('maker_reports')->insertGetId($row);
+        $this->audit($userId, 'report.open', 'job', $jobId, ['factor' => $factor, 'report_id' => $id]);
+        $this->notify((int) $job->user_id, 'report.open', '신고가 접수되었습니다.', DisputeRules::factorLabel($factor).' · '.(string) $job->title, $jobId);
 
-        return ['id' => $id];
+        return $this->presentDisputeRow((object) array_merge($row, [
+            'id' => $id,
+            'job_title' => (string) $job->title,
+            'job_status' => (string) $job->status,
+        ]), 'report');
+    }
+
+    public function listMineDisputes(int $userId): array
+    {
+        $items = [];
+        if (Schema::hasTable('maker_claims')) {
+            foreach ($this->disputeQuery('maker_claims')->where('c.user_id', $userId)->orderByDesc('c.id')->limit(100)->get() as $row) {
+                $items[] = $this->presentDisputeRow($row, 'claim');
+            }
+        }
+        if (Schema::hasTable('maker_reports')) {
+            foreach ($this->disputeQuery('maker_reports')->where('c.user_id', $userId)->orderByDesc('c.id')->limit(100)->get() as $row) {
+                $items[] = $this->presentDisputeRow($row, 'report');
+            }
+        }
+        usort($items, static fn (array $a, array $b) => ((int) ($b['id'] ?? 0)) <=> ((int) ($a['id'] ?? 0)));
+
+        return array_values($items);
     }
 
     public function exportJob(int $jobId, string $doc = 'all'): array
@@ -640,25 +826,62 @@ class MarketplaceService
 
     public function adminBundle(): array
     {
+        $claims = [];
+        if (Schema::hasTable('maker_claims')) {
+            foreach ($this->disputeQuery('maker_claims')->orderByDesc('c.id')->limit(100)->get() as $row) {
+                $claims[] = $this->presentDisputeRow($row, 'claim');
+            }
+        }
+        $reports = [];
+        if (Schema::hasTable('maker_reports')) {
+            foreach ($this->disputeQuery('maker_reports')->orderByDesc('c.id')->limit(100)->get() as $row) {
+                $reports[] = $this->presentDisputeRow($row, 'report');
+            }
+        }
+
         return [
-            'claims' => Schema::hasTable('maker_claims') ? DB::table('maker_claims')->orderByDesc('id')->limit(100)->get() : [],
-            'reports' => Schema::hasTable('maker_reports') ? DB::table('maker_reports')->orderByDesc('id')->limit(100)->get() : [],
+            'claims' => $claims,
+            'reports' => $reports,
+            'factors' => DisputeRules::factorOptions(),
             'audits' => Schema::hasTable('maker_audits') ? DB::table('maker_audits')->orderByDesc('id')->limit(100)->get() : [],
             'file_logs' => Schema::hasTable('maker_file_logs') ? DB::table('maker_file_logs')->orderByDesc('id')->limit(100)->get() : [],
             'closed' => $this->closeExpired(),
         ];
     }
 
-    public function resolveClaim(int $id, string $status, ?string $note): void
+    public function resolveClaim(int $id, string $status, ?string $note, ?string $jobStatus = null): void
     {
         if (! Schema::hasTable('maker_claims')) {
             return;
         }
+        $open = $status !== 'closed';
         DB::table('maker_claims')->where('id', $id)->update([
-            'status' => $status === 'closed' ? 'closed' : 'open',
+            'status' => $open ? 'open' : 'closed',
             'admin_note' => $note,
             'updated_at' => now(),
         ]);
+        $row = DB::table('maker_claims')->where('id', $id)->first();
+        $jobId = (int) ($row->job_id ?? 0);
+        if ($jobId < 1) {
+            return;
+        }
+        $job = MakerJob::query()->find($jobId);
+        if ($job === null) {
+            return;
+        }
+        if ($open) {
+            $job->status = DisputeRules::STATUS;
+            $job->save();
+            $this->notify((int) $job->user_id, 'dispute.reopen', '분쟁이 다시 열렸습니다.', (string) $job->title, $jobId);
+            return;
+        }
+        $resolveTo = DisputeRules::normalizeResolveTo($jobStatus);
+        if ($resolveTo !== null) {
+            $job->status = $resolveTo;
+            $job->save();
+        }
+        $this->notify((int) $job->user_id, 'dispute.closed', '분쟁이 종결되었습니다.', JobRules::statusLabel((string) $job->status).' · '.(string) $job->title, $jobId);
+        $this->audit(null, 'claim.closed', 'job', $jobId, ['claim_id' => $id, 'job_status' => (string) $job->status]);
     }
     public function reviewsForJob(int $jobId): array
     {
@@ -694,6 +917,88 @@ class MarketplaceService
     public function notifyJobEvent(MakerJob $job, string $type, string $title, ?string $body = null): void
     {
         $this->notify((int) $job->user_id, $type, $title, $body, (int) $job->id);
+    }
+
+    /**
+     * @return array{is_owner: bool, is_winner: bool, is_party: bool, winner_id: int}
+     */
+    public function disputeParty(int $userId, MakerJob $job): array
+    {
+        $isOwner = $userId > 0 && (int) $job->user_id === $userId;
+        $winnerId = 0;
+        if ($job->awarded_bid_id) {
+            try {
+                $bid = $job->relationLoaded('awardedBid') ? $job->awardedBid : MakerBid::query()->find($job->awarded_bid_id);
+                $winnerId = $bid ? (int) $bid->user_id : 0;
+            } catch (\Throwable) {
+                $winnerId = 0;
+            }
+        }
+        $isWinner = $userId > 0 && $winnerId === $userId;
+
+        return [
+            'is_owner' => $isOwner,
+            'is_winner' => $isWinner,
+            'is_party' => $isOwner || $isWinner,
+            'winner_id' => $winnerId,
+        ];
+    }
+
+    private function disputeQuery(string $table)
+    {
+        return DB::table($table.' as c')
+            ->leftJoin('maker_jobs as j', 'j.id', '=', 'c.job_id')
+            ->select('c.*', 'j.title as job_title', 'j.status as job_status');
+    }
+
+    public function presentDisputeRow(object $row, string $kind): array
+    {
+        $factor = DisputeRules::normalizeFactor($row->factor ?? '');
+
+        return [
+            'id' => (int) ($row->id ?? 0),
+            'kind' => $kind,
+            'kind_label' => DisputeRules::kindLabel($kind),
+            'job_id' => (int) ($row->job_id ?? 0),
+            'job_title' => (string) ($row->job_title ?? ''),
+            'job_status' => (string) ($row->job_status ?? ''),
+            'job_status_label' => JobRules::statusLabel((string) ($row->job_status ?? '')),
+            'user_id' => (int) ($row->user_id ?? 0),
+            'factor' => $factor,
+            'factor_label' => DisputeRules::factorLabel($factor),
+            'reason' => (string) ($row->reason ?? ''),
+            'status' => (string) ($row->status ?? 'open'),
+            'status_label' => DisputeRules::statusLabel($row->status ?? 'open'),
+            'admin_note' => (string) ($row->admin_note ?? ''),
+            'created_at' => (string) ($row->created_at ?? ''),
+            'updated_at' => (string) ($row->updated_at ?? ''),
+            'job_href' => '/maker-bids/'.(int) ($row->job_id ?? 0),
+            'work_href' => '/maker-bids/'.(int) ($row->job_id ?? 0).'/work',
+        ];
+    }
+
+    private function touchCompanyClaim(MakerJob $job, string $text): void
+    {
+        if (! $job->awarded_bid_id) {
+            return;
+        }
+        try {
+            $bid = MakerBid::query()->find($job->awarded_bid_id);
+            $companyId = $bid?->company_id;
+            if (! $companyId) {
+                return;
+            }
+            $company = MakerCompany::query()->find($companyId);
+            if ($company === null) {
+                return;
+            }
+            $company->claim_count = max(0, (int) $company->claim_count) + 1;
+            $history = CompanyRules::normalizeClaimHistory($company->claim_history ?? []);
+            $history[] = ['at' => date('Y-m-d H:i:s'), 'text' => mb_substr($text, 0, 2000)];
+            $company->claim_history = $history;
+            $company->save();
+        } catch (\Throwable) {
+        }
     }
 
 }

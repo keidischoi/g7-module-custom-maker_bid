@@ -6,6 +6,7 @@ use Modules\Custom\MakerBids\Http\Controllers\Admin\CompanyAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\JobAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\JobTypeAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\MarketplaceAdminController;
+use Modules\Custom\MakerBids\Http\Controllers\Admin\PaymentAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\Admin\SettingsAdminController;
 use Modules\Custom\MakerBids\Http\Controllers\AssetController;
 use Modules\Custom\MakerBids\Http\Controllers\BidController;
@@ -14,6 +15,7 @@ use Modules\Custom\MakerBids\Http\Controllers\JobController;
 use Modules\Custom\MakerBids\Http\Controllers\JobFileController;
 use Modules\Custom\MakerBids\Http\Controllers\JobTypeController;
 use Modules\Custom\MakerBids\Http\Controllers\MarketplaceController;
+use Modules\Custom\MakerBids\Http\Controllers\PaymentController;
 use Modules\Custom\MakerBids\Http\Controllers\SettingsController;
 
 Route::get('assets/nav.js', [AssetController::class, 'nav'])->middleware(['throttle:600,1'])->name('assets.nav');
@@ -61,6 +63,11 @@ Route::middleware(['auth:sanctum', 'throttle:300,1'])->group(function () {
     Route::post('jobs/{id}/messages', [MarketplaceController::class, 'postMessage'])->whereNumber('id')->name('jobs.messages.store');
     Route::post('jobs/{id}/claim', [MarketplaceController::class, 'claim'])->whereNumber('id')->name('jobs.claim');
     Route::post('jobs/{id}/report', [MarketplaceController::class, 'report'])->whereNumber('id')->name('jobs.report');
+    Route::get('disputes', [MarketplaceController::class, 'myDisputes'])->name('disputes.mine');
+    Route::get('payments', [PaymentController::class, 'mine'])->name('payments.mine');
+    Route::get('jobs/{id}/payment', [PaymentController::class, 'show'])->whereNumber('id')->name('jobs.payment.show');
+    Route::post('jobs/{id}/payment/report', [PaymentController::class, 'report'])->whereNumber('id')->name('jobs.payment.report');
+    Route::post('jobs/{id}/payment/confirm', [PaymentController::class, 'confirm'])->whereNumber('id')->name('jobs.payment.confirm');
     Route::get('jobs/{id}/export', [MarketplaceController::class, 'export'])->whereNumber('id')->name('jobs.export');
     Route::get('jobs/{id}/reviews', [MarketplaceController::class, 'reviews'])->whereNumber('id')->name('jobs.reviews');
     Route::get('companies/{id}/reviews', [MarketplaceController::class, 'companyReviews'])->whereNumber('id')->name('companies.reviews');
@@ -100,4 +107,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:600,1'])->group(fu
     Route::get('ops', [MarketplaceAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.ops');
     Route::post('claims/{id}', [MarketplaceAdminController::class, 'resolveClaim'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.claims.resolve');
     Route::post('reports/{id}', [MarketplaceAdminController::class, 'resolveReport'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.reports.resolve');
+    Route::get('payments', [PaymentAdminController::class, 'index'])->middleware('permission:admin,custom-maker_bids.jobs.read')->name('admin.payments.index');
+    Route::post('payments/{id}/confirm', [PaymentAdminController::class, 'confirm'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.payments.confirm');
+    Route::post('payments/{id}/refund', [PaymentAdminController::class, 'refund'])->whereNumber('id')->middleware('permission:admin,custom-maker_bids.jobs.update')->name('admin.payments.refund');
 });

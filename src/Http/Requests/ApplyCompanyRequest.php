@@ -24,12 +24,14 @@ class ApplyCompanyRequest extends FormRequest
             'name', 'kind', 'type', 'bio', 'note', 'business_no',
             'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email',
             'zipcode', 'address', 'address_detail',
+            'bank_name', 'account_no', 'account_holder', 'deposit_terms',
         ]);
         // Profile PATCH (incl. logo-only): blank = unchanged, not clear.
         $this->dropBlankKeys([
             'name', 'kind', 'type', 'note', 'bio', 'business_no', 'homepage_url', 'portfolio_url',
             'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail',
             'upload_token',
+            'bank_name', 'account_no', 'account_holder', 'deposit_terms', 'deposit_percent',
         ]);
         if ($this->exists('kind')) {
             $this->merge(['kind' => CompanyRules::normalizeKind($this->input('kind'))]);

@@ -332,6 +332,11 @@ class CompanyRules
             'address' => $payload['address'] ?? null,
             'address_detail' => $payload['address_detail'] ?? null,
             'upload_token' => $payload['upload_token'] ?? null,
+            'bank_name' => isset($payload['bank_name']) ? mb_substr(trim((string) $payload['bank_name']), 0, 80) : null,
+            'account_no' => isset($payload['account_no']) ? mb_substr(trim((string) $payload['account_no']), 0, 80) : null,
+            'account_holder' => isset($payload['account_holder']) ? mb_substr(trim((string) $payload['account_holder']), 0, 80) : null,
+            'deposit_percent' => PaymentRules::normalizeDepositPercent($payload['deposit_percent'] ?? PaymentRules::DEFAULT_DEPOSIT_PERCENT),
+            'deposit_terms' => isset($payload['deposit_terms']) ? mb_substr(trim((string) $payload['deposit_terms']), 0, 500) : null,
         ];
     }
 
@@ -348,6 +353,7 @@ class CompanyRules
         $scalarKeys = [
             'name', 'business_no', 'homepage_url', 'portfolio_url', 'manager_name',
             'zipcode', 'address', 'address_detail', 'upload_token',
+            'bank_name', 'account_no', 'account_holder', 'deposit_terms',
         ];
         foreach ($scalarKeys as $key) {
             if (! array_key_exists($key, $payload)) {
@@ -358,6 +364,9 @@ class CompanyRules
                 continue;
             }
             $attrs[$key] = $val;
+        }
+        if (array_key_exists('deposit_percent', $payload) && $payload['deposit_percent'] !== null && $payload['deposit_percent'] !== '') {
+            $attrs['deposit_percent'] = PaymentRules::normalizeDepositPercent($payload['deposit_percent']);
         }
         if (array_key_exists('kind', $payload) && $payload['kind'] !== null && $payload['kind'] !== '') {
             $attrs['kind'] = self::normalizeKind($payload['kind']);
@@ -543,6 +552,11 @@ class CompanyRules
             'zipcode' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'address_detail' => ['nullable', 'string', 'max:255'],
+            'bank_name' => ['nullable', 'string', 'max:80'],
+            'account_no' => ['nullable', 'string', 'max:80'],
+            'account_holder' => ['nullable', 'string', 'max:80'],
+            'deposit_percent' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'deposit_terms' => ['nullable', 'string', 'max:500'],
         ];
     }
 

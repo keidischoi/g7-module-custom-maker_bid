@@ -27,12 +27,14 @@ class StoreJobRequest extends FormRequest
             'contact_name', 'contact_phone', 'contact_hours', 'contact_email',
             'zipcode', 'address', 'address_detail',
             'manager_name', 'manager_phone', 'manager_email',
+            'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         ]);
         $this->nullBlankFields([
             'description', 'budget', 'budget_min', 'budget_max', 'closes_at', 'rush_deadline',
             'size_w', 'size_d', 'size_h', 'revision_count', 'revision_cost', 'contact_hours',
             'zipcode', 'address', 'address_detail', 'upload_token',
             'manager_name', 'manager_phone', 'manager_email',
+            'refund_bank_name', 'refund_account_holder', 'refund_account_no',
         ]);
         $this->coerceBooleanFields([
             'rush_fee_enabled', 'schedule_premium_enabled', 'revision_enabled', 'ownership_requested',

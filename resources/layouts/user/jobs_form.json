@@ -56,6 +56,9 @@
       "manager_name": "",
       "manager_phone": "",
       "manager_email": "",
+      "refund_bank_name": "",
+      "refund_account_holder": "",
+      "refund_account_no": "",
       "ext_stl": false,
       "ext_3mf": false,
       "ext_obj": false,
@@ -130,6 +133,9 @@
             "form.manager_name": "{{response.data.manager_name || ''}}",
             "form.manager_phone": "{{response.data.manager_phone || ''}}",
             "form.manager_email": "{{response.data.manager_email || ''}}",
+            "form.refund_bank_name": "{{response.data.refund_bank_name || ''}}",
+            "form.refund_account_holder": "{{response.data.refund_account_holder || ''}}",
+            "form.refund_account_no": "{{response.data.refund_account_no || ''}}",
             "form.upload_token": "{{response.data.upload_token || _local.form.upload_token || defaults.data.upload_token || ''}}",
             "form.includes_modeling": "{{response.data.type_includes_modeling ? '1' : '0'}}",
             "form.ownership_requested": "{{response.data.ownership_requested}}",
@@ -203,6 +209,9 @@
           "manager_name": "",
           "manager_phone": "",
           "manager_email": "",
+          "refund_bank_name": "",
+          "refund_account_holder": "",
+          "refund_account_no": "",
           "provided_extensions": [
             "STL",
             "OBJ",
@@ -322,6 +331,26 @@
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
                     "text": "이력"
+                  },
+                  {
+                    "id": "t_disputes",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/disputes",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "분쟁"
+                  },
+                  {
+                    "id": "t_payments",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/payments",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "결제"
                   },
                   {
                     "id": "t5",
@@ -2438,6 +2467,127 @@
                             "params": {
                               "target": "local",
                               "form.manager_email": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "refund_box",
+                    "type": "basic",
+                    "name": "Div",
+                    "props": {
+                      "className": "space-y-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-4"
+                    },
+                    "children": [
+                      {
+                        "id": "refund_h",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "환불 계좌 (선택)"
+                      },
+                      {
+                        "id": "refund_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-xs text-gray-500 dark:text-gray-400"
+                        },
+                        "text": "취소·환불 시 받을 계좌입니다. 낙찰된 제작자와 관리자에게만 보입니다."
+                      },
+                      {
+                        "id": "refund_bank_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "환불 은행"
+                      },
+                      {
+                        "id": "refund_bank_name",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "refund_bank_name",
+                          "value": "{{_local.form.refund_bank_name}}",
+                          "placeholder": "예: 국민은행",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.refund_bank_name": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "refund_holder_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "계좌 소유자명"
+                      },
+                      {
+                        "id": "refund_account_holder",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "refund_account_holder",
+                          "value": "{{_local.form.refund_account_holder}}",
+                          "placeholder": "예금주",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.refund_account_holder": "{{$event.target.value}}"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "refund_no_label",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "text-sm font-medium text-gray-700 dark:text-gray-300"
+                        },
+                        "text": "계좌번호"
+                      },
+                      {
+                        "id": "refund_account_no",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "name": "refund_account_no",
+                          "value": "{{_local.form.refund_account_no}}",
+                          "placeholder": "환불 받을 계좌번호",
+                          "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
+                        },
+                        "actions": [
+                          {
+                            "type": "input",
+                            "event": "input",
+                            "handler": "setState",
+                            "params": {
+                              "target": "local",
+                              "form.refund_account_no": "{{$event.target.value}}"
                             }
                           }
                         ]

@@ -75,6 +75,9 @@ class PrivacyRules
             'manager_name',
             'manager_phone',
             'manager_email',
+            'refund_bank_name',
+            'refund_account_holder',
+            'refund_account_no',
         ];
     }
 }

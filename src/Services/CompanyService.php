@@ -155,7 +155,7 @@ class CompanyService
     {
         $row = MakerCompany::query()->findOrFail($id);
         $attrs = $this->adminOnlyAttributes($payload, false);
-        foreach (['name', 'kind', 'business_no', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail', 'bio', 'note'] as $key) {
+        foreach (['name', 'kind', 'business_no', 'homepage_url', 'portfolio_url', 'manager_name', 'phone', 'email', 'zipcode', 'address', 'address_detail', 'bio', 'note', 'bank_name', 'account_no', 'account_holder', 'deposit_terms'] as $key) {
             if (! array_key_exists($key, $payload)) {
                 continue;
             }
@@ -164,6 +164,9 @@ class CompanyService
                 continue; // blank/null means unchanged on partial admin update
             }
             $attrs[$key] = $val;
+        }
+        if (array_key_exists('deposit_percent', $payload) && $payload['deposit_percent'] !== null && $payload['deposit_percent'] !== '') {
+            $attrs['deposit_percent'] = \Modules\Custom\MakerBids\Support\PaymentRules::normalizeDepositPercent($payload['deposit_percent']);
         }
         if (array_key_exists('job_types', $payload) || $this->hasJobTypeFlags($payload)) {
             $jobTypes = CompanyRules::collectJobTypes($payload);

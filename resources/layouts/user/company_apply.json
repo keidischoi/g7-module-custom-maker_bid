@@ -50,6 +50,11 @@
       "zipcode": "",
       "address": "",
       "address_detail": "",
+      "bank_name": "",
+      "account_no": "",
+      "account_holder": "",
+      "deposit_percent": 30,
+      "deposit_terms": "",
       "upload_token": "",
       "logo_count": 0,
       "logo_files": [],
@@ -235,6 +240,26 @@
                       "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
                     },
                     "text": "이력"
+                  },
+                  {
+                    "id": "t_disputes",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/disputes",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "분쟁"
+                  },
+                  {
+                    "id": "t_payments",
+                    "type": "basic",
+                    "name": "A",
+                    "props": {
+                      "href": "/maker-bids/payments",
+                      "className": "px-3 py-1.5 text-sm rounded-lg text-gray-600 dark:text-gray-300"
+                    },
+                    "text": "결제"
                   },
                   {
                     "id": "t5",
@@ -807,6 +832,122 @@
                   "name": "address_detail",
                   "placeholder": "상세 주소",
                   "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                }
+              },
+              {
+                "id": "pay_h",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium mt-3"
+                },
+                "text": "결제 · 계약금"
+              },
+              {
+                "id": "pay_help",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-xs text-gray-500 dark:text-gray-400"
+                },
+                "text": "계좌는 낙찰 후 의뢰자·관리자에게만 안내됩니다. 계약금 비율은 낙찰 시 기본값입니다."
+              },
+              {
+                "id": "bank_name_label",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium"
+                },
+                "text": "은행명"
+              },
+              {
+                "id": "bank_name",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "bank_name",
+                  "placeholder": "예: 국민은행",
+                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                }
+              },
+              {
+                "id": "account_no_label",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium"
+                },
+                "text": "계좌번호"
+              },
+              {
+                "id": "account_no",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "account_no",
+                  "placeholder": "입금 계좌번호",
+                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                }
+              },
+              {
+                "id": "account_holder_label",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium"
+                },
+                "text": "예금주"
+              },
+              {
+                "id": "account_holder",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "account_holder",
+                  "placeholder": "예금주명",
+                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                }
+              },
+              {
+                "id": "deposit_percent_label",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium"
+                },
+                "text": "계약금 비율 (%)"
+              },
+              {
+                "id": "deposit_percent",
+                "type": "basic",
+                "name": "Input",
+                "props": {
+                  "name": "deposit_percent",
+                  "type": "number",
+                  "min": "0",
+                  "max": "100",
+                  "placeholder": "30",
+                  "className": "cmb-order-field w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
+                }
+              },
+              {
+                "id": "deposit_terms_label",
+                "type": "basic",
+                "name": "P",
+                "props": {
+                  "className": "text-sm font-medium"
+                },
+                "text": "계약금 조건"
+              },
+              {
+                "id": "deposit_terms",
+                "type": "basic",
+                "name": "Textarea",
+                "props": {
+                  "name": "deposit_terms",
+                  "placeholder": "예: 계약금 입금 확인 후 제작 시작, 잔금은 납품 전",
+                  "className": "cmb-order-field w-full min-h-[72px] rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm"
                 }
               },
               {

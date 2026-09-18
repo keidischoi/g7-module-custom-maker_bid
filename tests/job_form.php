@@ -90,6 +90,7 @@ expectTrue('create requires contact_email', in_array('required', $create['contac
 expectTrue('create budget_min nullable', in_array('nullable', $create['budget_min'], true));
 expectTrue('create sizes optional', in_array('nullable', $create['sizes'], true));
 expectTrue('create manager_name optional', in_array('nullable', $create['manager_name'], true));
+expectTrue('create refund account optional', in_array('nullable', $create['refund_account_holder'], true) && in_array('nullable', $create['refund_account_no'], true));
 expectTrue('create manager_phone optional', in_array('nullable', $create['manager_phone'], true));
 expectTrue('create manager_email optional', in_array('nullable', $create['manager_email'], true));
 expectTrue('listing status includes hold', in_array('hold', JobRules::LISTING_STATUSES, true));
@@ -159,6 +160,7 @@ expect('status sort alias', JobRules::normalizeListSort('상태순'), JobRules::
 expect('latest sort default', JobRules::normalizeListSort(''), JobRules::LIST_SORT_LATEST);
 
 expectTrue('personal keys include manager fields', in_array('manager_name', PrivacyRules::personalKeys(), true) && in_array('manager_phone', PrivacyRules::personalKeys(), true) && in_array('manager_email', PrivacyRules::personalKeys(), true));
+expectTrue('personal keys include refund account', in_array('refund_account_holder', PrivacyRules::personalKeys(), true) && in_array('refund_account_no', PrivacyRules::personalKeys(), true) && in_array('refund_bank_name', PrivacyRules::personalKeys(), true));
 expectTrue('owner sees personal', PrivacyRules::canViewPersonal(7, 7, 'quote_request', null, false));
 expectTrue('admin sees personal', PrivacyRules::canViewPersonal(1, 9, 'quote_request', null, true));
 expectFalse('stranger masked before award', PrivacyRules::canViewPersonal(3, 9, 'quote_request', null, false));

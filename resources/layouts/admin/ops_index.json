@@ -168,7 +168,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.status}} · 회원 {{$item.user_id}} · {{$item.reason}}"
+                            "text": "{{$item.factor_label || $item.status}} · {{$item.status_label || $item.status}} · {{$item.reason}}"
                           }
                         ]
                       },
@@ -360,7 +360,7 @@
                             "props": {
                               "className": "cmb-admin-muted"
                             },
-                            "text": "{{$item.status || 'open'}} · 회원 {{$item.user_id}} · {{$item.reason}}"
+                            "text": "{{$item.factor_label || $item.status}} · {{$item.status_label || $item.status}} · {{$item.reason}}"
                           }
                         ]
                       },
