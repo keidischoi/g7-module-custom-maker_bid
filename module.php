@@ -5,6 +5,7 @@ namespace Modules\Custom\MakerBids;
 use App\Extension\AbstractModule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Modules\Custom\MakerBids\Listeners\LayoutFileFixListener;
 use Modules\Custom\MakerBids\Listeners\UserMenuListener;
 
 class Module extends AbstractModule
@@ -66,7 +67,6 @@ class Module extends AbstractModule
         ];
     }
 
-
     public function install(): bool
     {
         $this->purgeOrphanAdminMenus();
@@ -81,10 +81,6 @@ class Module extends AbstractModule
         return parent::uninstall();
     }
 
-    /**
-     * Remove leftover admin menu rows from prior custom-maker_bid / broken installs
-     * so g7_menus.slug unique does not fail on reinstall.
-     */
     private function purgeOrphanAdminMenus(): void
     {
         try {
@@ -116,10 +112,8 @@ class Module extends AbstractModule
                 })
                 ->delete();
         } catch (\Throwable) {
-            // Install must continue even if cleanup fails on odd schemas.
         }
     }
-
 
     public function getSchedules(): array
     {
@@ -134,7 +128,7 @@ class Module extends AbstractModule
 
     public function getHookListeners(): array
     {
-        return [UserMenuListener::class];
+        return [UserMenuListener::class, LayoutFileFixListener::class];
     }
 
     public function getDynamicTables(): array
@@ -167,9 +161,6 @@ class Module extends AbstractModule
         return $routes;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     private function adminMenuChild(
         string $nameKo,
         string $nameEn,
@@ -189,11 +180,6 @@ class Module extends AbstractModule
         ];
     }
 
-    /**
-     * @param  list<array{0:string,1:string,2:string}>  $actions
-     * @param  list<string>  $deleteRoles
-     * @return array<string, mixed>
-     */
     private function permissionCategory(
         string $identifier,
         string $nameKo,
@@ -223,4 +209,3 @@ class Module extends AbstractModule
         ];
     }
 }
-
