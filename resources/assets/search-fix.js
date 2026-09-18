@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbSearchFix12) return;
-  window.__cmbSearchFix12 = true;
+  if (window.__cmbSearchFix13) return;
+  window.__cmbSearchFix13 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
   var lastRows = [];
@@ -137,6 +137,51 @@
     return out;
   }
 
+  function viewerLooksAdmin() {
+    try {
+      var g = window.G7Core || {};
+      var auth = g.auth || g.AuthManager;
+      if (!auth && window.AuthManager && typeof window.AuthManager.getInstance === 'function') {
+        auth = window.AuthManager.getInstance();
+      }
+      if (auth) {
+        if (typeof auth.getAuthType === 'function' && auth.getAuthType() === 'admin') return true;
+        if (auth.state && auth.state.type === 'admin') return true;
+        var user = typeof auth.getUser === 'function' ? auth.getUser() : (auth.state && auth.state.user);
+        if (user && (user.is_super === true || user.is_admin === true || user.isAdmin === true)) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function adminChipFlags() {
+    return viewerLooksAdmin() ? { hold: true, draft: true, disputed: true } : {};
+  }
+
+  function authHeaders() {
+    var h = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+    var token = null;
+    try {
+      if (window.G7Core && G7Core.api && typeof G7Core.api.getToken === 'function') {
+        token = G7Core.api.getToken();
+      }
+    } catch (e) {}
+    if (!token) {
+      try { token = localStorage.getItem('auth_token'); } catch (e2) {}
+    }
+    if (token && token !== 'undefined' && token !== 'null') {
+      h.Authorization = 'Bearer ' + token;
+    }
+    return h;
+  }
+
+  function fetchJobs(url) {
+    if (window.G7Core && G7Core.api && typeof G7Core.api.get === 'function') {
+      return G7Core.api.get(url);
+    }
+    return fetch(url, { credentials: 'include', headers: authHeaders() }).then(function (r) { return r.json(); });
+  }
+
   function paintSelfChips(flags) {
     selfChips = flags || selfChips;
     var labels = { hold: '보류', draft: '임시저장', disputed: '분쟁조정' };
@@ -165,17 +210,14 @@
     if (state.status) p.set('status', state.status);
     p.set('page', String(state.page || 1));
     p.set('per_page', '24');
-    fetch('/api/modules/custom-maker_bids/jobs?' + p.toString(), {
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-    }).then(function (r) { return r.json(); }).then(function (j) {
+    fetchJobs('/api/modules/custom-maker_bids/jobs?' + p.toString()).then(function (j) {
       var payload = j && j.data && !Array.isArray(j.data) ? j.data : j;
       var rows = Array.isArray(payload) ? payload : (payload && payload.data) || (j && j.data) || [];
       if (!Array.isArray(rows)) rows = [];
       var meta = (payload && payload.meta) || (j && j.meta) || {};
       paint(rows);
       updatePager(meta);
-      paintSelfChips(chipsFromRows(rows, meta.viewer_status_chips || {}));
+      paintSelfChips(chipsFromRows(rows, Object.assign(adminChipFlags(), meta.viewer_status_chips || {})));
       markChips();
     }).catch(function () {});
   }
@@ -346,7 +388,7 @@
         appendChip(stRow, it[0], it[1], it[0]);
       });
     }
-    paintSelfChips(selfChips);
+    paintSelfChips(Object.assign(adminChipFlags(), selfChips));
   }
 
   function chipType(el) {
@@ -405,7 +447,7 @@
     ensureSearch();
     ensureChips();
     markChips();
-    paintSelfChips(selfChips);
+    paintSelfChips(Object.assign(adminChipFlags(), selfChips));
     if (lastRows.length) paint(lastRows);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

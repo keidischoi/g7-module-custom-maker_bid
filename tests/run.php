@@ -12,6 +12,7 @@ $files = [
     __DIR__.'/layouts.php',
     __DIR__.'/settings.php',
     __DIR__.'/type_ext_coerce.php',
+    __DIR__.'/admin_actor.php',
 ];
 
 
@@ -29,6 +30,13 @@ echo "== ext_normalize_js.mjs ==\n";
 passthru('node '.escapeshellarg(__DIR__.'/ext_normalize_js.mjs'), $jsCode);
 echo "\n";
 if ($jsCode !== 0) {
+    $failed++;
+}
+
+echo "== search_fix_admin.mjs ==\n";
+passthru('node '.escapeshellarg(__DIR__.'/search_fix_admin.mjs'), $searchJsCode);
+echo "\n";
+if ($searchJsCode !== 0) {
     $failed++;
 }
 

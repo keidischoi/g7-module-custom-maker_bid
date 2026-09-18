@@ -4,6 +4,14 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.30] - 2026-09-18
+
+### Fixed
+- **관리자 보류**: 의뢰목록을 본인 의뢰가 아닌 관리자가 볼 때도 **보류** 칩과 보류 카드가 보입니다. 목록 재조회에 G7 Bearer 토큰을 붙이고, `isAdmin()`/`is_super`/`admin` 역할을 관리자로 인정합니다. 게스트·다른 회원에게는 그대로 숨깁니다.
+
+### Changed
+- 버전·캐시 버스트 **0.10.30**.
+
 ## [0.10.29] - 2026-09-18
 
 ### Changed
