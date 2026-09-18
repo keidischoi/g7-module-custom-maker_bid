@@ -6,6 +6,8 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
+    private const BID_SRC = '/api/modules/custom-maker_bids/assets/bid-submit.js?v=0.10.21';
+
     public static function getSubscribedHooks(): array
     {
         return [
@@ -22,9 +24,32 @@ class LayoutFileFixListener implements HookListenerInterface
         if (! is_array($layout)) {
             return $layout;
         }
+        $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->scrub($layout);
+        $layout = $this->injectListThumbs($this->bindUploaders($layout));
+        if (in_array($name, ['jobs_show', 'jobs_bids'], true)) {
+            $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
+            $found = false;
+            foreach ($scripts as $i => $script) {
+                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'bid-submit.js')) {
+                    $scripts[$i]['src'] = self::BID_SRC;
+                    $found = true;
+                }
+            }
+            if (! $found) {
+                $scripts[] = [
+                    'id' => 'cmb_bid_submit',
+                    'src' => self::BID_SRC,
+                    'async' => true,
+                    'optional' => true,
+                    'required' => false,
+                    'failOnError' => false,
+                ];
+            }
+            $layout['scripts'] = $scripts;
+        }
 
-        return $this->injectListThumbs($this->bindUploaders($layout));
+        return $layout;
     }
 
     private function bindUploaders(array $node): array
