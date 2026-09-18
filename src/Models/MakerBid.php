@@ -2,6 +2,7 @@
 
 namespace Modules\Custom\MakerBids\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +19,13 @@ class MakerBid extends Model
         'amount' => 'integer',
         'days' => 'integer',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope('newest_first', function (Builder $q) {
+            $q->orderByDesc('id');
+        });
+    }
 
     public function job(): BelongsTo
     {
