@@ -22,6 +22,11 @@ class AssetController extends Controller
         return $this->asset('existing-files.js', 'application/javascript; charset=UTF-8');
     }
 
+    public function bidSubmit(): Response
+    {
+        return $this->asset('bid-submit.js', 'application/javascript; charset=UTF-8');
+    }
+
     public function page(): Response
     {
         return $this->asset('page.js', 'application/javascript; charset=UTF-8');
