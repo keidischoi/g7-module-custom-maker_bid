@@ -4,6 +4,12 @@
 형식은 [Keep a Changelog](https://keepachangelog.com/ko/1.1.0/)를 따르며,
 [Semantic Versioning](https://semver.org/lang/ko/)을 준수합니다.
 
+## [0.10.35] - 2026-09-18
+
+### Changed
+- **의뢰서 유형**: 작성 화면에서 유형 목록 **첫 행**을 기본 선택합니다. 수정 화면은 저장된 유형을 유지합니다.
+- 버전·캐시 버스트 **0.10.35**.
+
 ## [0.10.34] - 2026-09-18
 
 ### Added

@@ -38,9 +38,9 @@
   "state": {
     "form": {
       "title": "",
-      "type": "",
-      "requires_address": "1",
-      "includes_modeling": "0",
+      "type": "modeling_3d",
+      "requires_address": "0",
+      "includes_modeling": "1",
       "budget_min": "",
       "budget_max": "",
       "closes_at": "",
@@ -230,6 +230,7 @@
           "handler": "setState",
           "params": {
             "target": "local",
+            "form.type": "{{_local.form.type || 'modeling_3d'}}",
             "form.upload_token": "{{response.data.upload_token || _local.form.upload_token}}",
             "form.contact_name": "{{_local.form.contact_name || response.data.contact_name || ''}}",
             "form.contact_phone": "{{_local.form.contact_phone || response.data.contact_phone || ''}}",
@@ -525,8 +526,8 @@
                         "name": "Select",
                         "props": {
                           "name": "type",
-                          "value": "{{_local.form.type}}",
-                          "placeholder": "유형을 선택하세요",
+                          "value": "{{_local.form.type || 'modeling_3d'}}",
+                          "placeholder": "3D 모델링",
                           "disabled": false,
                           "options": "{{defaults.data?.types?.length ? defaults.data.types : (types.data?.length ? types.data : [{value:'modeling_3d',label:'3D 모델링'},{value:'print_3d',label:'3D 출력 대행'},{value:'full_package',label:'풀 패키지 제작 (모델링 + 출력 + 후가공)'},{value:'character_figure',label:'캐릭터·피규어 커미션'},{value:'design_mockup',label:'디자인 목업(Mock-up) 및 시제품'},{value:'working_prototype',label:'워킹 프로토타입(기능성 시제품)'}])}}",
                           "className": "cmb-order-field cmb-order-select w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-background dark:bg-gray-900 px-3 py-2.5 text-sm text-gray-900 dark:text-white"
