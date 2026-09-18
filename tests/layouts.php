@@ -478,7 +478,8 @@ expectTrue('admin.js binds detail toolbar and job save', str_contains($adminJs, 
 expectTrue('admin.js paint ignores non-status kinds', str_contains($adminJs, 'out[k] && out[k].indexOf'));
 expectTrue('admin.js native job form selects', str_contains($adminJs, 'function ensureFormNativeSelects') && str_contains($adminJs, 'data-cmb-form-host') && str_contains($adminJs, "['disputed', '분쟁조정']"));
 expectTrue('admin.js keeps company edit id', str_contains($adminJs, 'function rememberEditId') && str_contains($adminJs, '__cmbEditCompanyId') && str_contains($adminJs, 'is-cmb-editing'));
-expectTrue('admin.js merges company edit snapshot', str_contains($adminJs, 'function patchG7EditMerge') && str_contains($adminJs, 'cmb-edit-company-snap') && str_contains($adminJs, 'function restoreStickyEdit'));
+expectTrue('admin.js merges company edit snapshot', str_contains($adminJs, 'function patchG7EditMerge') && str_contains($adminJs, 'cmb-edit-company-snap') && str_contains($adminJs, 'function restoreStickyEdit') && str_contains($adminJs, 'logo_files'));
+expectTrue('admin.js sticky title is not G7 owned', str_contains($adminJs, 'data-cmb-sticky-title') && str_contains($adminJs, 'function observeEditTitle'));
 expectTrue('admin job detail marks form hosts', str_contains($adminJobsShow, 'data-cmb-job-edit') && str_contains($adminJobsShow, 'data-cmb-form-host') && str_contains($adminJobsShow, 'data-cmb-kind": "save'));
 expectTrue('admin company edit keeps hidden id', str_contains($adminCos, '"name": "id"') && str_contains($adminCos, 'data-cmb-edit-title') && str_contains($adminCos, 'data-cmb-load') && str_contains($adminCos, '"trackChanges": false'));
 expectTrue('listener does not bind job fields onto jobs_index filters', str_contains($nav, "'jobs_show'") && ! str_contains($nav, "['jobs_show', 'jobs_index']"));

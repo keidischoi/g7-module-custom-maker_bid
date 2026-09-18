@@ -166,10 +166,19 @@
     setLocal(extra);
     if (copy.id) {
       try { window.__cmbEditCompanyId = String(copy.id); } catch (eId) {}
-      try { window.__cmbEditSnapshot = copy; } catch (eSnap) {}
       try {
+        var snap = {};
+        Object.keys(copy).forEach(function (k) {
+          if (k === 'logo_files' || k === 'logo_url' || k === 'logo_hash' || k === 'files_ready' || k === 'uploader_epoch' || k === 'claim_history') return;
+          var v = copy[k];
+          if (v && typeof v === 'object' && !Array.isArray(v)) return;
+          if (Array.isArray(v) && k !== 'job_types') return;
+          snap[k] = v;
+        });
+        snap.id = copy.id;
+        window.__cmbEditSnapshot = snap;
         sessionStorage.setItem('cmb-edit-company-id', String(copy.id));
-        sessionStorage.setItem('cmb-edit-company-snap', JSON.stringify(copy));
+        sessionStorage.setItem('cmb-edit-company-snap', JSON.stringify(snap));
       } catch (eStore) {}
       var card = document.querySelector('[data-cmb-company-edit]');
       if (card) {

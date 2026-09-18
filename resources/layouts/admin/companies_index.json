@@ -436,7 +436,7 @@
                             "id": "cmb_admin_logo_existing",
                             "type": "basic",
                             "name": "Div",
-                            "if": "{{_local.edit.logo_files && _local.edit.logo_files.length}}",
+                            "if": "{{Array.isArray(_local.edit.logo_files) && _local.edit.logo_files.length}}",
                             "props": {
                               "className": "cmb-existing-files cmb-existing-in-uploader",
                               "data-cmb-existing-files": "logo"

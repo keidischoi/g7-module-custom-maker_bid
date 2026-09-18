@@ -190,12 +190,20 @@
     return id || '';
   }
 
+  var EDIT_SKIP = {
+    files_ready: 1, uploader_epoch: 1, logo_files: 1, logo_url: 1, logo_hash: 1,
+    claim_history: 1, image_files: 1, archive_files: 1
+  };
+
   function writeStickySnap(snap) {
     if (!snap || typeof snap !== 'object') return;
     var copy = {};
     Object.keys(snap).forEach(function (k) {
-      if (k === 'files_ready' || k === 'uploader_epoch') return;
-      copy[k] = snap[k];
+      if (EDIT_SKIP[k]) return;
+      var v = snap[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) return;
+      if (Array.isArray(v) && k !== 'job_types') return;
+      copy[k] = v;
     });
     window.__cmbEditSnapshot = copy;
     try { sessionStorage.setItem(STICKY_SNAP_KEY, JSON.stringify(copy)); } catch (e) {}
@@ -218,10 +226,37 @@
 
   function paintEditTitle(id) {
     id = cleanEditId(id) || readStickyId();
-    document.querySelectorAll('[data-cmb-edit-title], [data-cmb-company-edit] .cmb-admin-card-title').forEach(function (el) {
-      if (!/선택 업체/.test(el.textContent || '')) return;
-      el.textContent = '선택 업체 관리 (#' + (id || '-') + ')';
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card) return;
+    card.querySelectorAll('[data-cmb-edit-title], .cmb-admin-card-title').forEach(function (el) {
+      if (el.getAttribute('data-cmb-sticky-title') === '1') return;
+      el.setAttribute('data-cmb-g7-title', '1');
+      el.style.setProperty('display', 'none', 'important');
     });
+    var ours = card.querySelector('[data-cmb-sticky-title]');
+    if (!ours) {
+      ours = document.createElement('p');
+      ours.className = 'cmb-admin-card-title';
+      ours.setAttribute('data-cmb-sticky-title', '1');
+      card.insertBefore(ours, card.firstChild);
+    }
+    var want = '선택 업체 관리 (#' + (id || '-') + ')';
+    if (ours.textContent !== want) ours.textContent = want;
+  }
+
+  function observeEditTitle() {
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card || typeof MutationObserver === 'undefined') return;
+    if (window.__cmbEditTitleObsEl === card) return;
+    if (window.__cmbEditTitleObs) {
+      try { window.__cmbEditTitleObs.disconnect(); } catch (eObs) {}
+    }
+    window.__cmbEditTitleObs = new MutationObserver(function () {
+      if (window.__cmbEditTitleT) clearTimeout(window.__cmbEditTitleT);
+      window.__cmbEditTitleT = setTimeout(function () { paintEditTitle(readStickyId()); }, 20);
+    });
+    window.__cmbEditTitleObs.observe(card, { childList: true, subtree: true, characterData: true });
+    window.__cmbEditTitleObsEl = card;
   }
 
   function rememberEditId(id) {
@@ -317,9 +352,13 @@
             if (id) snap.id = id;
             writeStickySnap(snap);
             Object.keys(snap).forEach(function (k) {
+              if (EDIT_SKIP[k]) return;
               action.params['edit.' + k] = snap[k];
             });
-            if (id) rememberEditId(id);
+            if (id) {
+              action.params['edit.id'] = id;
+              window.__cmbEditCompanyId = id;
+            }
           }
         }
       } catch (ePatch) {}
@@ -1638,35 +1677,25 @@
   function nestExistingIntoUploader() {
     document.querySelectorAll('.cmb-admin-uploader, [data-cmb-admin-uploader], .cmb-admin .cmb-order-uploader').forEach(function (box) {
       box.classList.add('cmb-admin-uploader-compact');
-      var gallery = box.querySelector('.cmb-existing-files');
       var dashed = box.querySelector('[class*="border-dashed"]');
-      if (gallery && dashed && gallery.parentElement !== dashed) {
-        dashed.insertBefore(gallery, dashed.firstChild);
-      }
       if (dashed) {
-        var node = dashed;
-        while (node && node !== box.parentElement) {
-          node.style.setProperty('min-height', '0', 'important');
-          node.style.setProperty('height', 'auto', 'important');
-          node = node.parentElement;
-        }
+        dashed.style.setProperty('min-height', '0', 'important');
+        dashed.style.setProperty('height', 'auto', 'important');
         dashed.style.setProperty('padding', '0.3rem 0.45rem', 'important');
+        dashed.querySelectorAll('svg').forEach(function (el) {
+          el.style.setProperty('display', 'none', 'important');
+        });
+        var hints = dashed.querySelectorAll('p');
+        hints.forEach(function (p, i) {
+          if (p.closest && p.closest('.cmb-existing-files')) return;
+          if (i === 0) {
+            p.style.setProperty('margin', '0', 'important');
+            p.style.setProperty('font-size', '12px', 'important');
+          } else {
+            p.style.setProperty('display', 'none', 'important');
+          }
+        });
       }
-      box.querySelectorAll('svg').forEach(function (el) {
-        if (el.closest && el.closest('.cmb-existing-files')) return;
-        el.style.setProperty('display', 'none', 'important');
-      });
-      var seenHint = false;
-      box.querySelectorAll('p').forEach(function (p) {
-        if (p.closest && p.closest('.cmb-existing-files')) return;
-        if (!seenHint) {
-          seenHint = true;
-          p.style.setProperty('margin', '0', 'important');
-          p.style.setProperty('font-size', '12px', 'important');
-          return;
-        }
-        p.style.setProperty('display', 'none', 'important');
-      });
     });
   }
 
@@ -1763,6 +1792,7 @@
     try { paintStatusButtons(); } catch (ePaint) {}
     patchG7EditMerge();
     restoreStickyEdit();
+    observeEditTitle();
     ensureAdminFilterSelect();
     ensureEditNativeSelects();
     ensureFormNativeSelects();
@@ -1800,6 +1830,7 @@
       try { paintStatusButtons(); } catch (ePaint2) {}
       patchG7EditMerge();
       restoreStickyEdit();
+      observeEditTitle();
       ensureAdminFilterSelect();
       ensureEditNativeSelects();
       ensureFormNativeSelects();
