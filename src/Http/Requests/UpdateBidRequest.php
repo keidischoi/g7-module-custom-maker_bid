@@ -11,19 +11,15 @@ class UpdateBidRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     protected function prepareForValidation(): void
     {
         $this->liftNestedFormFields(['form', 'bid', 'edit']);
-        // Partial bid update: blank days/message keep existing.
         $this->dropBlankKeys(['days', 'message', 'amount']);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return [

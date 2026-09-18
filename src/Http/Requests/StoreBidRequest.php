@@ -12,7 +12,7 @@ class StoreBidRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     protected function prepareForValidation(): void
@@ -20,9 +20,6 @@ class StoreBidRequest extends FormRequest
         $this->nullBlankFields(['days', 'message']);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     public function rules(): array
     {
         return BidRules::writeRules();
