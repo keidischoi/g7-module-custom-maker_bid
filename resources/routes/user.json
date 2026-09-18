@@ -45,7 +45,7 @@
     },
     {
       "path": "*/maker-bids/:id/edit",
-      "layout": "jobs_edit",
+      "layout": "jobs_form",
       "auth_required": true,
       "meta": { "title": "의뢰서 수정" }
     },
