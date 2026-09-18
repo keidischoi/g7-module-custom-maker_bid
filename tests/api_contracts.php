@@ -50,7 +50,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.29', ($moduleMeta['version'] ?? null) === '0.10.29');
+expectTrue('module version is 0.10.30', ($moduleMeta['version'] ?? null) === '0.10.30');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -59,7 +59,7 @@ expectTrue(
 );
 $composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
 expectTrue('composer name is custom/maker-bids', ($composer['name'] ?? null) === 'custom/maker-bids');
-expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.29');
+expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.30');
 expectTrue(
     'psr-4 is Modules\\Custom\\MakerBids\\ not MakerBid',
     isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\'])
@@ -93,8 +93,10 @@ expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($j
 expectTrue('listPublic uses listStatusFilter', str_contains($jobService, 'listStatusFilter'));
 expectTrue('listPublic keeps optional owner visibility 0.6.1', str_contains($jobService, "orWhere('user_id', \$uid)") && str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
 expectTrue('listPublic exposes self-only draft/dispute chips', str_contains($jobService, 'viewerSelfStatusChips') && str_contains((string) file_get_contents($root.'/src/Http/Controllers/JobController.php'), 'viewer_status_chips'));
-expectTrue('listPublic resolves web session user', str_contains($jobService, "Auth::guard('web')") && str_contains($jobService, 'actorFromRequest'));
+expectTrue('listPublic resolves web session user', str_contains($jobService, "Auth::guard") && str_contains($jobService, 'actorFromRequest') && str_contains($jobService, "'web'"));
 expectTrue('listPublic self chips include hold', str_contains($jobService, "'hold' => \$isAdmin || \$uid > 0"));
+expectTrue('isAdminActor checks is_super hasRole isAdmin', str_contains($jobService, 'function isAdminActor') && str_contains($jobService, 'is_super') && str_contains($jobService, 'hasRole') && str_contains($jobService, 'isSuperAdmin'));
+expectTrue('actorFromRequest prefers admin actor', str_contains($jobService, 'actorCandidates') && str_contains($jobService, "'admin'") && str_contains($jobService, 'isAdminActor($user)'));
 expectTrue('admin update uses normalizeStatus', str_contains($jobService, 'normalizeStatus($payload[\'status\'])'));
 expectTrue('listPublic includes disputed awarded bidder', str_contains($jobService, 'awarded_bid_id') && str_contains($jobService, 'DisputeRules::STATUS'));
 expectTrue('viewerContext uses bidAllowMode', str_contains($jobService, 'bidAllowMode') && str_contains($jobService, 'isDesignated'));

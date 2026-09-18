@@ -276,11 +276,7 @@ class JobService
                 $company = null;
             }
         }
-        $isAdmin = is_object($user) && (
-            (method_exists($user, 'isAdmin') && $user->isAdmin())
-            || (method_exists($user, 'isSuperAdmin') && $user->isSuperAdmin())
-            || (bool) ($user->is_admin ?? false)
-        );
+        $isAdmin = $this->isAdminActor($user);
         return [
             'userId' => $userId,
             'isAdmin' => $isAdmin,
@@ -293,19 +289,78 @@ class JobService
 
     public function actorFromRequest(Request $request): mixed
     {
-        try {
-            return $request->user()
-                ?? Auth::guard('web')->user()
-                ?? Auth::guard('sanctum')->user()
-                ?? (function_exists('auth') ? auth()->user() : null);
-        } catch (\Throwable) {
-            return $request->user();
+        $found = [];
+        foreach ($this->actorCandidates($request) as $user) {
+            if (! is_object($user)) {
+                continue;
+            }
+            $found[] = $user;
         }
+        foreach ($found as $user) {
+            if ($this->isAdminActor($user)) {
+                return $user;
+            }
+        }
+
+        return $found[0] ?? null;
     }
 
     public function isAdminActor(mixed $user): bool
     {
-        return is_object($user) && ((method_exists($user, 'isAdmin') && $user->isAdmin()) || (bool) ($user->is_admin ?? false));
+        if (! is_object($user)) {
+            return false;
+        }
+        foreach (['isAdmin', 'isSuperAdmin'] as $method) {
+            try {
+                if (method_exists($user, $method) && $user->{$method}()) {
+                    return true;
+                }
+            } catch (\Throwable) {
+            }
+        }
+        foreach (['admin', 'superadmin', 'super_admin'] as $role) {
+            try {
+                if (method_exists($user, 'hasRole') && $user->hasRole($role)) {
+                    return true;
+                }
+            } catch (\Throwable) {
+            }
+        }
+        try {
+            if (method_exists($user, 'hasPermission') && $user->hasPermission('custom-maker_bids.jobs.read')) {
+                return true;
+            }
+        } catch (\Throwable) {
+        }
+        try {
+            if ((bool) ($user->is_super ?? false) || (bool) ($user->is_admin ?? false) || (bool) ($user->isAdmin ?? false)) {
+                return true;
+            }
+        } catch (\Throwable) {
+        }
+
+        return false;
+    }
+
+    private function actorCandidates(Request $request): array
+    {
+        $out = [];
+        try {
+            $out[] = $request->user();
+        } catch (\Throwable) {
+        }
+        foreach (['web', 'sanctum', 'admin'] as $guard) {
+            try {
+                $out[] = Auth::guard($guard)->user();
+            } catch (\Throwable) {
+            }
+        }
+        try {
+            $out[] = Auth::user();
+        } catch (\Throwable) {
+        }
+
+        return $out;
     }
 
     public function providedExtensionAllowList(): array

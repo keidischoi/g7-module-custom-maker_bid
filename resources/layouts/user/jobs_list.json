@@ -104,7 +104,7 @@
             ]
           },
           { "id": "cmb_notice", "type": "basic", "name": "Div", "props": { "className": "cmb-notice hidden", "data-cmb-notice": "list" } },
-          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "cmb-page-guide" }, "text": "등록된 의뢰서입니다. 보류는 다른 회원에게 공개되지 않고, 로그인하면 내 보류 의뢰는 이 목록과 이력에 보입니다." },
+          { "id": "guide", "type": "basic", "name": "P", "props": { "className": "cmb-page-guide" }, "text": "등록된 의뢰서입니다. 보류는 다른 회원에게 공개되지 않고, 본인과 관리자에게만 이 목록과 이력에 보입니다." },
           {
             "id": "filter_stack",
             "type": "basic",
