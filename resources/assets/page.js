@@ -162,7 +162,38 @@
     extra['edit.job_types'] = copy.job_types || [];
     extra['edit.files_ready'] = false;
     extra['edit.uploader_epoch'] = Date.now();
+    if (copy.id) extra['edit.id'] = copy.id;
     setLocal(extra);
+    if (copy.id) {
+      try { window.__cmbEditCompanyId = String(copy.id); } catch (eId) {}
+      try {
+        var snap = {};
+        Object.keys(copy).forEach(function (k) {
+          if (k === 'logo_files' || k === 'logo_url' || k === 'logo_hash' || k === 'files_ready' || k === 'uploader_epoch' || k === 'claim_history') return;
+          var v = copy[k];
+          if (v && typeof v === 'object' && !Array.isArray(v)) return;
+          if (Array.isArray(v) && k !== 'job_types') return;
+          snap[k] = v;
+        });
+        snap.id = copy.id;
+        window.__cmbEditSnapshot = snap;
+        sessionStorage.setItem('cmb-edit-company-id', String(copy.id));
+        sessionStorage.setItem('cmb-edit-company-snap', JSON.stringify(snap));
+      } catch (eStore) {}
+      var card = document.querySelector('[data-cmb-company-edit]');
+      if (card) {
+        card.setAttribute('data-cmb-edit-id', String(copy.id));
+        fillNamed('id', copy.id);
+      }
+      document.querySelectorAll('[data-cmb-edit-title], [data-cmb-company-edit] .cmb-admin-card-title').forEach(function (el) {
+        if (/선택 업체/.test(el.textContent || '')) el.textContent = '선택 업체 관리 (#' + copy.id + ')';
+      });
+      document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+        var title = row.querySelector('.cmb-admin-row-title, a');
+        var on = !!(title && String(title.textContent || '').indexOf('#' + copy.id) >= 0);
+        row.classList.toggle('is-cmb-editing', on);
+      });
+    }
     fillNamed('job_types', copy.job_types_json || (Array.isArray(copy.job_types) ? JSON.stringify(copy.job_types) : ''));
     document.querySelectorAll('[data-cmb-company-edit] [data-cmb-job-type]').forEach(function (box) {
       var slug = box.getAttribute('data-cmb-job-type');
@@ -215,7 +246,16 @@
       if (Array.isArray(list)) {
         list.forEach(function (c) { if (c && String(c.id) === m[1]) rowd = c; });
       }
+      try { window.__cmbEditCompanyId = m[1]; } catch (eKeep) {}
       if (rowd) applyAdminCompany(rowd);
+      else {
+        var cardOnly = document.querySelector('[data-cmb-company-edit]');
+        if (cardOnly) {
+          cardOnly.setAttribute('data-cmb-edit-id', m[1]);
+          fillNamed('id', m[1]);
+        }
+        setLocal({ 'edit.id': m[1] });
+      }
     }, true);
   }
 
@@ -1742,13 +1782,13 @@
 
 /* cmb-list-cards: ensure form.css + visible card classes on list rows */
 (function () {
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.37';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.38';
   var ITEM_RE = /(^|\s)(cmb-job-card|cmb-bid-card|cmb-company-card|cmb-list-item|cmb-section-card|cmb-empty|cmb-pager)(\s|$)/;
 
   function ensureFormCss() {
     var existing = document.querySelector('link[href*="custom-maker_bids/assets/form.css"]');
     if (existing) {
-      if (existing.href && existing.href.indexOf('v=0.10.37') < 0) {
+      if (existing.href && existing.href.indexOf('v=0.10.38') < 0) {
         existing.href = FORM_CSS;
       }
       return;

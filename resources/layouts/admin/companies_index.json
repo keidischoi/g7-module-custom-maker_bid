@@ -217,7 +217,7 @@
                     "props": {
                       "className": "cmb-admin-card cmb-admin-company-edit space-y-3",
                       "dataKey": "edit",
-                      "trackChanges": true,
+                      "trackChanges": false,
                       "data-cmb-company-edit": "1"
                     },
                     "children": [
@@ -226,9 +226,10 @@
                         "type": "basic",
                         "name": "P",
                         "props": {
-                          "className": "cmb-admin-card-title"
+                          "className": "cmb-admin-card-title",
+                          "data-cmb-edit-title": "1"
                         },
-                        "text": "선택 업체 관리 (#{{_local.edit.id || '-'}})"
+                        "text": "선택 업체 관리 (#-)"
                       },
                       {
                         "id": "ehelp",
@@ -238,6 +239,16 @@
                           "className": "cmb-admin-muted"
                         },
                         "text": "목록에서 불러오기 후 왼쪽에서 수정하고 저장합니다. 업체명·연락처·주소·로고까지 한 화면에 보입니다."
+                      },
+                      {
+                        "id": "eid",
+                        "type": "basic",
+                        "name": "Input",
+                        "props": {
+                          "type": "hidden",
+                          "name": "id",
+                          "data-cmb-edit-id-input": "1"
+                        }
                       },
                       {
                         "id": "eprofile",
@@ -425,7 +436,7 @@
                             "id": "cmb_admin_logo_existing",
                             "type": "basic",
                             "name": "Div",
-                            "if": "{{_local.edit.logo_files && _local.edit.logo_files.length}}",
+                            "if": "{{Array.isArray(_local.edit.logo_files) && _local.edit.logo_files.length}}",
                             "props": {
                               "className": "cmb-existing-files cmb-existing-in-uploader",
                               "data-cmb-existing-files": "logo"
@@ -2103,7 +2114,8 @@
                                 "name": "Button",
                                 "text": "불러오기",
                                 "props": {
-                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                                  "className": "px-3 py-1 text-sm rounded-lg border border-gray-300 dark:border-gray-600",
+                                  "data-cmb-load": "1"
                                 },
                                 "actions": [
                                   {

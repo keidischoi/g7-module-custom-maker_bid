@@ -329,7 +329,8 @@
             "props": {
               "className": "cmb-admin-toolbar cmb-entity-job cmb-status-{{job.data.status}}",
               "data-cmb-status": "{{job.data.status}}",
-              "data-cmb-entity": "job"
+              "data-cmb-entity": "job",
+              "data-cmb-job-id": "{{route.id}}"
             },
             "children": [
               {
@@ -476,7 +477,8 @@
                 "name": "Button",
                 "text": "취소",
                 "props": {
-                  "className": "px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+                  "className": "px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600",
+                  "data-cmb-kind": "cancel"
                 },
                 "actions": [
                   {
@@ -521,7 +523,8 @@
                 "name": "Button",
                 "text": "삭제",
                 "props": {
-                  "className": "px-3 py-1.5 text-sm rounded-lg text-red-600"
+                  "className": "px-3 py-1.5 text-sm rounded-lg text-red-600",
+                  "data-cmb-kind": "delete"
                 },
                 "actions": [
                   {
@@ -569,7 +572,8 @@
             "props": {
               "className": "cmb-admin-stack space-y-4",
               "dataKey": "form",
-              "trackChanges": true
+              "trackChanges": true,
+              "data-cmb-job-edit": "1"
             },
             "children": [
               {
@@ -656,7 +660,8 @@
                         "type": "basic",
                         "name": "Div",
                         "props": {
-                          "className": "cmb-admin-select-host cmb-admin-select-host-md"
+                          "className": "cmb-admin-select-host cmb-admin-select-host-md",
+                          "data-cmb-form-host": "status"
                         },
                         "children": [
                           {
@@ -734,7 +739,8 @@
                         "type": "basic",
                         "name": "Div",
                         "props": {
-                          "className": "cmb-admin-select-host cmb-admin-select-host-sm"
+                          "className": "cmb-admin-select-host cmb-admin-select-host-sm",
+                          "data-cmb-form-host": "audience"
                         },
                         "children": [
                           {
@@ -1933,7 +1939,7 @@
                       "maxSize": 10,
                       "accept": ".jpg,.jpeg,.png,.gif,.webp",
                       "autoUpload": true,
-                      "className": "cmb-order-uploader mt-1",
+                      "className": "cmb-order-uploader cmb-admin-uploader mt-1",
                       "uploadTriggerEvent": "upload:maker_bids_admin_images",
                       "apiEndpoints": {
                         "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
@@ -2087,7 +2093,7 @@
                       "maxSize": 50,
                       "accept": ".zip,.rar,.7z,.stl,.3mf,.obj,.step,.stp,.gcode,.fbx,.dwg,.pdf",
                       "autoUpload": true,
-                      "className": "cmb-order-uploader mt-1",
+                      "className": "cmb-order-uploader cmb-admin-uploader mt-1",
                       "uploadTriggerEvent": "upload:maker_bids_admin_archives",
                       "apiEndpoints": {
                         "upload": "/api/modules/custom-maker_bids/jobs/{{route.id}}/files",
@@ -2120,7 +2126,8 @@
                     "name": "Button",
                     "text": "의뢰 저장",
                     "props": {
-                      "className": "px-4 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                      "className": "px-4 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900",
+                      "data-cmb-kind": "save"
                     },
                     "actions": [
                       {

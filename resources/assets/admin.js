@@ -1,6 +1,6 @@
 (function () {
-  if (window.__cmbAdminJs37) return;
-  window.__cmbAdminJs37 = true;
+  if (window.__cmbAdminJs38) return;
+  window.__cmbAdminJs38 = true;
   var CLS = 'cmb-order-field rounded-lg border border-gray-300 dark:border-gray-600 bg-background px-3 py-2.5 text-sm';
   var ACTIVE_SUFFIX = ' · 현재';
   var painting = false;
@@ -144,7 +144,7 @@
     if (!root || !root.querySelectorAll) return out;
     root.querySelectorAll('button, [role="button"], .cmb-btn-approve, .cmb-btn-hold, .cmb-btn-reject, [data-cmb-kind]').forEach(function (b) {
       var k = kindFromEl(b);
-      if (k && out[k].indexOf(b) < 0) out[k].push(b);
+      if (k && out[k] && out[k].indexOf(b) < 0) out[k].push(b);
     });
     return out;
   }
@@ -156,9 +156,250 @@
     btns.reject.forEach(function (b) { paintBtn(b, st === 'rejected', 'reject'); });
   }
 
+  function jobIdFromPath() {
+    var m = String((location && location.pathname) || '').match(/\/admin\/maker-bids\/jobs\/(\d+)/);
+    if (m) return m[1];
+    var bar = document.querySelector('.cmb-admin-toolbar[data-cmb-job-id]');
+    if (bar && bar.getAttribute('data-cmb-job-id')) return String(bar.getAttribute('data-cmb-job-id'));
+    return '';
+  }
+
+  function markEditingRow(id) {
+    document.querySelectorAll('.cmb-admin-row').forEach(function (row) {
+      var title = row.querySelector('.cmb-admin-row-title, a');
+      var on = !!(id && title && String(title.textContent || '').indexOf('#' + id) >= 0);
+      row.classList.toggle('is-cmb-editing', on);
+      if (on) row.setAttribute('data-cmb-editing', '1');
+      else row.removeAttribute('data-cmb-editing');
+    });
+  }
+
+  var STICKY_ID_KEY = 'cmb-edit-company-id';
+  var STICKY_SNAP_KEY = 'cmb-edit-company-snap';
+
+  function cleanEditId(id) {
+    id = id != null ? String(id).trim() : '';
+    if (!id || id === '-' || id === 'undefined' || id === 'null') return '';
+    return id;
+  }
+
+  function readStickyId() {
+    var id = cleanEditId(window.__cmbEditCompanyId);
+    if (id) return id;
+    try { id = cleanEditId(sessionStorage.getItem(STICKY_ID_KEY)); } catch (e) {}
+    return id || '';
+  }
+
+  var EDIT_SKIP = {
+    files_ready: 1, uploader_epoch: 1, logo_files: 1, logo_url: 1, logo_hash: 1,
+    claim_history: 1, image_files: 1, archive_files: 1
+  };
+
+  function writeStickySnap(snap) {
+    if (!snap || typeof snap !== 'object') return;
+    var copy = {};
+    Object.keys(snap).forEach(function (k) {
+      if (EDIT_SKIP[k]) return;
+      var v = snap[k];
+      if (v && typeof v === 'object' && !Array.isArray(v)) return;
+      if (Array.isArray(v) && k !== 'job_types') return;
+      copy[k] = v;
+    });
+    window.__cmbEditSnapshot = copy;
+    try { sessionStorage.setItem(STICKY_SNAP_KEY, JSON.stringify(copy)); } catch (e) {}
+  }
+
+  function readStickySnap() {
+    if (window.__cmbEditSnapshot && typeof window.__cmbEditSnapshot === 'object') return window.__cmbEditSnapshot;
+    try {
+      var raw = sessionStorage.getItem(STICKY_SNAP_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          window.__cmbEditSnapshot = parsed;
+          return parsed;
+        }
+      }
+    } catch (e2) {}
+    return {};
+  }
+
+  function paintEditTitle(id) {
+    id = cleanEditId(id) || readStickyId();
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card) return;
+    card.querySelectorAll('[data-cmb-edit-title], .cmb-admin-card-title').forEach(function (el) {
+      if (el.getAttribute('data-cmb-sticky-title') === '1') return;
+      el.setAttribute('data-cmb-g7-title', '1');
+      el.style.setProperty('display', 'none', 'important');
+    });
+    var ours = card.querySelector('[data-cmb-sticky-title]');
+    if (!ours) {
+      ours = document.createElement('p');
+      ours.className = 'cmb-admin-card-title';
+      ours.setAttribute('data-cmb-sticky-title', '1');
+      card.insertBefore(ours, card.firstChild);
+    }
+    var want = '선택 업체 관리 (#' + (id || '-') + ')';
+    if (ours.textContent !== want) ours.textContent = want;
+  }
+
+  function observeEditTitle() {
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!card || typeof MutationObserver === 'undefined') return;
+    if (window.__cmbEditTitleObsEl === card) return;
+    if (window.__cmbEditTitleObs) {
+      try { window.__cmbEditTitleObs.disconnect(); } catch (eObs) {}
+    }
+    window.__cmbEditTitleObs = new MutationObserver(function () {
+      if (window.__cmbEditTitleT) clearTimeout(window.__cmbEditTitleT);
+      window.__cmbEditTitleT = setTimeout(function () { paintEditTitle(readStickyId()); }, 20);
+    });
+    window.__cmbEditTitleObs.observe(card, { childList: true, subtree: true, characterData: true });
+    window.__cmbEditTitleObsEl = card;
+  }
+
+  function rememberEditId(id) {
+    id = cleanEditId(id);
+    if (!id) return '';
+    window.__cmbEditCompanyId = id;
+    try { sessionStorage.setItem(STICKY_ID_KEY, id); } catch (e) {}
+    var snap = readStickySnap();
+    snap.id = id;
+    writeStickySnap(snap);
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (card) {
+      card.setAttribute('data-cmb-edit-id', id);
+      var hid = card.querySelector('input[name="id"], [data-cmb-edit-id-input]');
+      if (!hid) {
+        hid = document.createElement('input');
+        hid.type = 'hidden';
+        hid.name = 'id';
+        hid.setAttribute('data-cmb-edit-id-input', '1');
+        card.insertBefore(hid, card.firstChild);
+      }
+      hid.value = id;
+    }
+    markEditingRow(id);
+    paintEditTitle(id);
+    return id;
+  }
+
+  function restoreStickyEdit() {
+    var id = readStickyId();
+    if (!id) return '';
+    rememberEditId(id);
+    return id;
+  }
+
   function companyIdFromEdit() {
-    var h = document.body.innerText.match(/선택 업체 관리 \(#(\d+)/);
-    return h ? h[1] : '';
+    var id = readStickyId();
+    var card = document.querySelector('[data-cmb-company-edit]');
+    if (!id && card) id = cleanEditId(card.getAttribute('data-cmb-edit-id'));
+    if (!id && card) {
+      var hid = card.querySelector('input[name="id"], [data-cmb-edit-id-input]');
+      if (hid) id = cleanEditId(hid.value);
+    }
+    if (!id) {
+      try {
+        id = cleanEditId(g7Get('_local.edit.id'));
+        if (!id) {
+          var ed = g7Get('_local.edit') || {};
+          id = cleanEditId(ed && ed.id);
+        }
+      } catch (e) {}
+    }
+    if (!id) {
+      var snap = readStickySnap();
+      id = cleanEditId(snap && snap.id);
+    }
+    if (!id) {
+      var text = '';
+      try { text = (document.body && document.body.innerText) || ''; } catch (e2) {}
+      var h = String(text).match(/선택 업체 관리 \(#(\d+)/);
+      if (h) id = h[1];
+    }
+    if (!id) {
+      var marked = document.querySelector('.cmb-admin-row.is-cmb-editing, .cmb-admin-row[data-cmb-editing="1"]');
+      if (marked) id = idFromRow(marked);
+    }
+    if (id) {
+      if (String(window.__cmbEditCompanyId || '') !== id) window.__cmbEditCompanyId = id;
+      return id;
+    }
+    return '';
+  }
+
+  function patchG7EditMerge() {
+    if (!window.G7Core || typeof window.G7Core.dispatch !== 'function') return;
+    if (window.G7Core.__cmbEditMergePatch) return;
+    var orig = window.G7Core.dispatch.bind(window.G7Core);
+    window.G7Core.__cmbEditMergePatch = true;
+    window.G7Core.dispatch = function (action) {
+      try {
+        if (action && action.handler === 'setState' && action.params) {
+          var keys = Object.keys(action.params);
+          var touches = keys.some(function (k) { return k === 'edit' || k.indexOf('edit.') === 0; });
+          if (touches) {
+            var snap = readStickySnap();
+            keys.forEach(function (k) {
+              if (k.indexOf('edit.') === 0) snap[k.slice(5)] = action.params[k];
+            });
+            if (action.params.edit && typeof action.params.edit === 'object') {
+              Object.keys(action.params.edit).forEach(function (k) { snap[k] = action.params.edit[k]; });
+            }
+            var id = cleanEditId(snap.id) || readStickyId();
+            if (id) snap.id = id;
+            writeStickySnap(snap);
+            Object.keys(snap).forEach(function (k) {
+              if (EDIT_SKIP[k]) return;
+              action.params['edit.' + k] = snap[k];
+            });
+            if (id) {
+              action.params['edit.id'] = id;
+              window.__cmbEditCompanyId = id;
+            }
+          }
+        }
+      } catch (ePatch) {}
+      return orig.apply(this, arguments);
+    };
+  }
+
+  function readAuthToken() {
+    var token = '';
+    try {
+      if (window.G7Core && window.G7Core.api && typeof window.G7Core.api.getToken === 'function') {
+        token = window.G7Core.api.getToken();
+      }
+    } catch (e) {}
+    if (!token) {
+      try {
+        if (window.AuthManager && typeof window.AuthManager.getInstance === 'function') {
+          var auth = window.AuthManager.getInstance();
+          if (auth && typeof auth.getToken === 'function') token = auth.getToken();
+          if (!token && auth && auth.state && auth.state.token) token = auth.state.token;
+        }
+      } catch (e2) {}
+    }
+    var keys = ['auth_token', 'g7_token', 'access_token', 'token'];
+    var i;
+    var v;
+    if (!token) {
+      for (i = 0; i < keys.length; i++) {
+        try { v = localStorage.getItem(keys[i]); } catch (e3) { v = ''; }
+        if (v && v !== 'undefined' && v !== 'null') { token = v; break; }
+      }
+    }
+    if (!token) {
+      for (i = 0; i < keys.length; i++) {
+        try { v = sessionStorage.getItem(keys[i]); } catch (e4) { v = ''; }
+        if (v && v !== 'undefined' && v !== 'null') { token = v; break; }
+      }
+    }
+    if (token && typeof token === 'string' && token.indexOf('Bearer ') === 0) token = token.slice(7);
+    if (token && token !== 'undefined' && token !== 'null') return String(token);
+    return '';
   }
 
   function csrfHeaderMap() {
@@ -168,6 +409,8 @@
       headers['X-CSRF-TOKEN'] = token;
       headers['X-XSRF-TOKEN'] = token;
     }
+    var bearer = readAuthToken();
+    if (bearer) headers.Authorization = 'Bearer ' + bearer;
     return headers;
   }
 
@@ -186,7 +429,7 @@
     }
     fetch('/api/modules/custom-maker_bids/admin/companies/' + id + '/' + action, {
       method: 'POST',
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: headers,
       body: body
     }).then(function () {
@@ -314,8 +557,8 @@
 
   function hideVisually(el) {
     if (!el || el.nodeType !== 1) return;
-    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-filter-wrap') || el.getAttribute('data-cmb-filter-host'))) return;
-    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('select[data-cmb-filter-free]'))) return;
+    if (el.getAttribute && (el.getAttribute('data-cmb-filter-free') === '1' || el.getAttribute('data-cmb-form-free') === '1' || el.getAttribute('data-cmb-filter-wrap') || el.getAttribute('data-cmb-filter-host') || el.getAttribute('data-cmb-form-host'))) return;
+    if (el.closest && (el.closest('[data-cmb-filter-free]') || el.closest('select[data-cmb-filter-free]') || el.closest('select[data-cmb-form-free]') || el.closest('[data-cmb-form-free]'))) return;
     el.style.setProperty('position', 'absolute', 'important');
     el.style.setProperty('width', '1px', 'important');
     el.style.setProperty('height', '1px', 'important');
@@ -563,7 +806,10 @@
       'background:rgb(220,38,38)!important;background-color:rgb(220,38,38)!important;color:#fff!important;border-color:rgb(185,28,28)!important}' +
       '.cmb-admin-filter-field.cmb-admin-select-host select.cmb-admin-filter-native,' +
       '.cmb-admin-filter select[data-cmb-filter-free]{display:block!important;appearance:auto!important;-webkit-appearance:menulist!important;' +
-      'width:12rem!important;min-width:12rem!important;max-width:14rem!important;height:2.25rem!important;opacity:1!important;pointer-events:auto!important}';
+      'width:12rem!important;min-width:12rem!important;max-width:14rem!important;height:2.25rem!important;opacity:1!important;pointer-events:auto!important}' +
+      '.cmb-admin-uploader [class*="border-dashed"],.cmb-admin-uploader-compact [class*="border-dashed"],' +
+      '.cmb-admin .cmb-order-uploader-inner [class*="border-dashed"]{min-height:0!important;height:auto!important;padding:0.3rem 0.45rem!important}' +
+      '.cmb-admin-uploader [class*="border-dashed"] svg,.cmb-admin-uploader-compact [class*="border-dashed"] svg{display:none!important}';
     (document.head || document.documentElement).appendChild(s);
   }
 
@@ -756,13 +1002,13 @@
 
   function injectPortalCss() {
     var s = document.getElementById('cmb-admin-select-portal-css');
-    if (s && s.getAttribute('data-cmb-v') === '37') return;
+    if (s && s.getAttribute('data-cmb-v') === '38') return;
     if (!s) {
       s = document.createElement('style');
       s.id = 'cmb-admin-select-portal-css';
       (document.head || document.documentElement).appendChild(s);
     }
-    s.setAttribute('data-cmb-v', '37');
+    s.setAttribute('data-cmb-v', '38');
       s.textContent =
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui .cmb-admin,html.cmb-admin-ui select{color-scheme:dark}' +
       'html.cmb-admin-ui,html.cmb-admin-ui body,html.cmb-admin-ui body[data-scroll-locked]{pointer-events:auto!important}' +
@@ -808,6 +1054,11 @@
     var key;
     for (key in map) {
       if (Object.prototype.hasOwnProperty.call(map, key)) params[key] = map[key];
+    }
+    var id = readStickyId();
+    if (id) {
+      var touches = Object.keys(params).some(function (k) { return k === 'edit' || k.indexOf('edit.') === 0; });
+      if (touches && params['edit.id'] == null) params['edit.id'] = id;
     }
     dispatch('setState', params);
   }
@@ -869,6 +1120,11 @@
         }
       }
       map[prefix + '.job_types'] = jobTypes;
+    }
+    if (prefix === 'edit') {
+      var keepId = companyIdFromEdit();
+      if (!map['edit.id'] && keepId) map['edit.id'] = keepId;
+      else if (map['edit.id']) rememberEditId(map['edit.id']);
     }
     return map;
   }
@@ -966,31 +1222,89 @@
     return m ? m[1] : '';
   }
 
-  function adminFetch(url, method, okMsg) {
-    var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
-    var token = csrfToken();
-    if (token) {
-      headers['X-CSRF-TOKEN'] = token;
-      headers['X-XSRF-TOKEN'] = token;
-    }
-    return fetch(url, { method: method || 'POST', credentials: 'same-origin', headers: headers }).then(function (res) {
-      if (!res.ok) {
-        return res.json().catch(function () { return {}; }).then(function (j) {
-          var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
-          if (window.G7Core && window.G7Core.dispatch) {
-            window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
-          }
-          throw new Error(msg);
-        });
+  function adminFetch(url, method, okMsg, body, extra) {
+    method = method || 'POST';
+    extra = extra || {};
+    var headers = csrfHeaderMap();
+    if (body != null) headers['Content-Type'] = 'application/json';
+    var payload = body == null ? undefined : (typeof body === 'string' ? body : JSON.stringify(body));
+    function onOk() {
+      if (extra.navigate) {
+        if (okMsg && window.G7Core && window.G7Core.dispatch) {
+          window.G7Core.dispatch({ handler: 'toast', params: { type: 'success', message: okMsg } });
+        }
+        location.href = extra.navigate;
+        return;
       }
       if (window.G7Core && window.G7Core.dispatch) {
         if (okMsg) window.G7Core.dispatch({ handler: 'toast', params: { type: 'success', message: okMsg } });
+        window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'job' } });
         window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'jobs' } });
         window.G7Core.dispatch({ handler: 'refetchDataSource', params: { dataSourceId: 'companies' } });
       } else {
         location.reload();
       }
+    }
+    function onErr(msg) {
+      if (window.G7Core && window.G7Core.dispatch) {
+        window.G7Core.dispatch({ handler: 'toast', params: { type: 'error', message: msg } });
+      }
+    }
+    function rawFetch() {
+      return fetch(url, {
+        method: method,
+        credentials: 'include',
+        headers: headers,
+        body: payload
+      }).then(function (res) {
+        if (!res.ok) {
+          return res.json().catch(function () { return {}; }).then(function (j) {
+            var msg = (j && (j.message || (j.error && j.error.message))) || '처리에 실패했습니다.';
+            if (res.status === 401) msg = '로그인이 필요합니다. 새로고침 후 다시 시도해 주세요.';
+            onErr(msg);
+            throw new Error(msg);
+          });
+        }
+        onOk();
+      });
+    }
+    try {
+      var api = window.G7Core && window.G7Core.api;
+      var m = String(method).toLowerCase();
+      if (api) {
+        var via = null;
+        if (m === 'delete' && typeof api.delete === 'function') via = api.delete(url);
+        else if (m === 'post' && typeof api.post === 'function') via = api.post(url, body && typeof body === 'object' ? body : {});
+        else if (m === 'patch' && typeof api.patch === 'function') via = api.patch(url, body && typeof body === 'object' ? body : {});
+        if (via && typeof via.then === 'function') {
+          return via.then(function () { onOk(); }).catch(function () { return rawFetch(); });
+        }
+      }
+    } catch (eApi) {}
+    return rawFetch();
+  }
+
+  function mergeHarvest(prefix, map) {
+    var cur = g7Get('_local.' + prefix) || {};
+    var out = {};
+    var k;
+    if (cur && typeof cur === 'object') {
+      for (k in cur) {
+        if (Object.prototype.hasOwnProperty.call(cur, k)) out[k] = cur[k];
+      }
+    }
+    Object.keys(map || {}).forEach(function (key) {
+      if (key.indexOf(prefix + '.') === 0) out[key.slice(prefix.length + 1)] = map[key];
     });
+    return out;
+  }
+
+  function fireUpload(name) {
+    try {
+      if (window.G7Core && typeof window.G7Core.dispatch === 'function') {
+        window.G7Core.dispatch({ handler: 'fireEvent', params: { event: name } });
+      }
+    } catch (eUp) {}
   }
 
   function bindRowActions() {
@@ -1001,15 +1315,80 @@
       unlockAdminPointer();
       var t = e.target;
       if (!t || !t.closest) return;
-      var row = t.closest('.cmb-admin-row');
-      if (!row || !row.closest('.cmb-admin')) return;
+      if (!t.closest('.cmb-admin')) return;
       if (t.closest('a')) return;
       var btn = t.closest('button, [role="button"]');
-      if (!btn || !row.contains(btn)) return;
+      if (!btn) return;
+      if (btn.getAttribute('data-cmb-existing-delete') || btn.closest('.cmb-existing-item, .cmb-existing-files, .cmb-existing-del')) return;
       var label = (btn.textContent || '').replace(/\s+/g, ' ').trim();
       var kind = kindFromEl(btn);
-      var entity = inferEntity(row, statusFromRow(row));
-      var id = idFromRow(row);
+      if (label.indexOf('불러오기') >= 0) {
+        var loadId = idFromRow(btn.closest('.cmb-admin-row'));
+        if (loadId) rememberEditId(loadId);
+        return;
+      }
+      var row = btn.closest('.cmb-admin-row');
+      var toolbar = btn.closest('.cmb-admin-toolbar, [data-cmb-company-edit], [data-cmb-job-edit]');
+      var inCompanyForm = !!(btn.closest('[data-cmb-company-edit], .cmb-admin-company-toolbar'));
+      var inJobForm = !!(btn.closest('[data-cmb-job-edit], .cmb-admin-toolbar.cmb-entity-job'));
+      var inJobSave = label.indexOf('의뢰 저장') >= 0 || kind === 'save';
+      var inCoSave = label.indexOf('선택 업체 저장') >= 0;
+      if (!row && !toolbar && !inJobSave && !inCoSave) return;
+      var entity = '';
+      var id = '';
+      if (row) {
+        entity = inferEntity(row, statusFromRow(row));
+        id = idFromRow(row);
+      }
+      if (toolbar && !entity) entity = inferEntity(toolbar, statusFromRow(toolbar));
+      if (inCompanyForm || inCoSave) {
+        entity = 'company';
+        id = id || restoreStickyEdit() || companyIdFromEdit();
+      } else if (inJobForm || inJobSave || jobIdFromPath()) {
+        if (!row) {
+          entity = 'job';
+          id = id || jobIdFromPath();
+        }
+      }
+      if (inJobSave) {
+        entity = 'job';
+        id = id || jobIdFromPath();
+        if (!id) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        var jobMap = harvestNamedInto('form');
+        if (Object.keys(jobMap).length) setLocal(jobMap);
+        fireUpload('upload:maker_bids_admin_images');
+        fireUpload('upload:maker_bids_admin_archives');
+        adminFetch('/api/modules/custom-maker_bids/admin/jobs/' + encodeURIComponent(id), 'PATCH', '의뢰를 저장했습니다.', mergeHarvest('form', jobMap));
+        return;
+      }
+      if (inCoSave) {
+        id = id || companyIdFromEdit();
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        if (!id) {
+          alert('먼저 목록에서 업체를 불러오세요.');
+          return;
+        }
+        rememberEditId(id);
+        var coMap = harvestNamedInto('edit');
+        if (Object.keys(coMap).length) setLocal(coMap);
+        var edit = mergeHarvest('edit', coMap);
+        edit.id = id;
+        fireUpload('upload:maker_bids_admin_logo');
+        adminFetch('/api/modules/custom-maker_bids/admin/companies/' + encodeURIComponent(id), 'PATCH', '저장했습니다.', edit);
+        return;
+      }
+      if (!id && inCompanyForm) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        alert('먼저 목록에서 업체를 불러오세요.');
+        return;
+      }
       if (!id) return;
       var action = '';
       var method = 'POST';
@@ -1030,14 +1409,18 @@
         action = 'reject';
         confirmMsg = '이 업체를 거절할까요?';
         okMsg = '거절했습니다.';
-      } else if (/^취소/.test(label) && entity !== 'company') {
+      } else if (kind === 'dispute' || /^분쟁/.test(label)) {
+        action = 'dispute';
+        confirmMsg = '이 의뢰를 분쟁조정 상태로 바꿀까요?';
+        okMsg = '분쟁조정 상태입니다.';
+      } else if ((kind === 'cancel' || /^취소/.test(label)) && entity !== 'company') {
         action = 'cancel';
-        confirmMsg = '취소할까요?';
+        confirmMsg = '이 의뢰를 취소할까요?';
         okMsg = '취소했습니다.';
-      } else if (/^삭제/.test(label)) {
+      } else if (kind === 'delete' || /^삭제/.test(label)) {
         action = '';
         method = 'DELETE';
-        confirmMsg = '삭제할까요?';
+        confirmMsg = entity === 'job' && !row ? '의뢰와 입찰을 삭제할까요?' : '삭제할까요?';
         okMsg = '삭제했습니다.';
       } else {
         return;
@@ -1046,7 +1429,20 @@
       e.stopPropagation();
       if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
       if (!confirm(confirmMsg)) return;
-      adminFetch(base + encodeURIComponent(id) + (action ? '/' + action : ''), method, okMsg);
+      var body = null;
+      if (entity === 'company' && (action === 'hold' || action === 'reject')) {
+        var harvested = harvestNamedInto('edit');
+        if (Object.keys(harvested).length) setLocal(harvested);
+        var editBody = mergeHarvest('edit', harvested);
+        body = {
+          hold_reason: editBody.hold_reason || '',
+          rejected_reason: editBody.rejected_reason || '',
+          admin_memo: editBody.admin_memo || ''
+        };
+      }
+      var extra = {};
+      if (method === 'DELETE' && entity === 'job' && !row) extra.navigate = '/admin/maker-bids';
+      adminFetch(base + encodeURIComponent(id) + (action ? '/' + action : ''), method, okMsg, body, extra);
     }, true);
   }
 
@@ -1056,6 +1452,8 @@
     document.documentElement.setAttribute('data-cmb-co-harvest', '1');
     function pushDom() {
       var map = harvestNamedInto('edit');
+      var keepId = companyIdFromEdit();
+      if (keepId) map['edit.id'] = keepId;
       if (Object.keys(map).length) setLocal(map);
     }
     document.addEventListener(
@@ -1081,6 +1479,8 @@
         var map = {};
         if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
         else map['edit.' + name] = el.value;
+        var keepId = companyIdFromEdit();
+        if (keepId) map['edit.id'] = keepId;
         setLocal(map);
       },
       true
@@ -1099,12 +1499,16 @@
             slugs.push(b.getAttribute('data-cmb-job-type'));
           });
           map['edit.job_types'] = slugs;
+          var keepJobId = companyIdFromEdit();
+          if (keepJobId) map['edit.id'] = keepJobId;
           setLocal(map);
           return;
         }
         if (!name || name.indexOf('cmb_filter_') === 0) return;
         if (el.type === 'checkbox') map['edit.' + name] = !!el.checked;
         else map['edit.' + name] = el.value;
+        var keepId = companyIdFromEdit();
+        if (keepId) map['edit.id'] = keepId;
         setLocal(map);
       },
       true
@@ -1154,6 +1558,67 @@
     }
     mount('kind', [['company', '업체'], ['individual', '개인']]);
     mount('status', [['pending', '보류'], ['approved', '승인'], ['rejected', '거절']]);
+  }
+
+  var FORM_STATUS_OPTS = [
+    ['hold', '보류'],
+    ['draft', '임시저장'],
+    ['request', '의뢰'],
+    ['quote_request', '견적요청'],
+    ['open', '견적요청(open)'],
+    ['awarded', '낙찰'],
+    ['disputed', '분쟁조정'],
+    ['done', '완료'],
+    ['cancelled', '취소']
+  ];
+  var FORM_AUDIENCE_OPTS = [
+    ['all', '전체'],
+    ['company', '업체만'],
+    ['individual', '개인만'],
+    ['admin', '관리자']
+  ];
+
+  function currentFormValue(key) {
+    try {
+      var v = g7Get('_local.form.' + key);
+      if (v != null && v !== '') return String(v);
+      var form = g7Get('_local.form') || {};
+      if (form && form[key] != null && form[key] !== '') return String(form[key]);
+    } catch (e) {}
+    var el = document.querySelector('[data-cmb-job-edit] [name="' + key + '"], .cmb-admin [name="' + key + '"]');
+    return el && el.value ? String(el.value) : '';
+  }
+
+  function bindFormNative(sel, key) {
+    if (!sel || sel.getAttribute('data-cmb-form-bound') === '1') return;
+    sel.setAttribute('data-cmb-form-bound', '1');
+    sel.addEventListener('change', function () {
+      unlockAdminPointer();
+      var map = {};
+      map['form.' + key] = sel.value;
+      setLocal(map);
+    });
+  }
+
+  function ensureFormNativeSelects() {
+    if (!/\/admin\/maker-bids\/jobs\/\d+/.test(location.pathname || '') && !document.querySelector('[data-cmb-job-edit], [data-cmb-form-host]')) return;
+    function mount(key, opts) {
+      var host = document.querySelector('[data-cmb-form-host="' + key + '"]');
+      if (!host) return;
+      host.querySelectorAll('[role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"], [aria-haspopup="listbox"]').forEach(hideVisually);
+      var sel = host.querySelector('select[data-cmb-form-free]');
+      if (!sel) {
+        sel = document.createElement('select');
+        sel.setAttribute('data-cmb-form-free', '1');
+        sel.setAttribute('name', key);
+        sel.className = 'cmb-admin-filter-native cmb-admin-edit-native cmb-admin-form-native';
+        host.appendChild(sel);
+      }
+      fillSelect(sel, opts, currentFormValue(key) || sel.value);
+      bindFormNative(sel, key);
+    }
+    mount('status', FORM_STATUS_OPTS);
+    mount('audience', FORM_AUDIENCE_OPTS);
   }
 
   function renderCompanyEditJobTypes() {
@@ -1210,12 +1675,26 @@
   }
 
   function nestExistingIntoUploader() {
-    document.querySelectorAll('.cmb-admin-uploader, [data-cmb-admin-uploader]').forEach(function (box) {
-      var gallery = box.querySelector('.cmb-existing-files');
-      if (!gallery) return;
+    document.querySelectorAll('.cmb-admin-uploader, [data-cmb-admin-uploader], .cmb-admin .cmb-order-uploader').forEach(function (box) {
+      box.classList.add('cmb-admin-uploader-compact');
       var dashed = box.querySelector('[class*="border-dashed"]');
-      if (dashed && gallery.parentElement !== dashed) {
-        dashed.insertBefore(gallery, dashed.firstChild);
+      if (dashed) {
+        dashed.style.setProperty('min-height', '0', 'important');
+        dashed.style.setProperty('height', 'auto', 'important');
+        dashed.style.setProperty('padding', '0.3rem 0.45rem', 'important');
+        dashed.querySelectorAll('svg').forEach(function (el) {
+          el.style.setProperty('display', 'none', 'important');
+        });
+        var hints = dashed.querySelectorAll('p');
+        hints.forEach(function (p, i) {
+          if (p.closest && p.closest('.cmb-existing-files')) return;
+          if (i === 0) {
+            p.style.setProperty('margin', '0', 'important');
+            p.style.setProperty('font-size', '12px', 'important');
+          } else {
+            p.style.setProperty('display', 'none', 'important');
+          }
+        });
       }
     });
   }
@@ -1310,9 +1789,13 @@
     enhanceSizes();
     hideLegacySizes();
     bindStatusPress();
-    paintStatusButtons();
+    try { paintStatusButtons(); } catch (ePaint) {}
+    patchG7EditMerge();
+    restoreStickyEdit();
+    observeEditTitle();
     ensureAdminFilterSelect();
     ensureEditNativeSelects();
+    ensureFormNativeSelects();
     renderCompanyEditJobTypes();
     nestExistingIntoUploader();
     ensureCompanyEditButtons();
@@ -1321,6 +1804,7 @@
     bindCompanyHarvest();
     bindFilterGo();
     bindRowActions();
+    if (companyIdFromEdit()) markEditingRow(companyIdFromEdit());
     paintSettingsControls();
     observeAdminStatus();
     observeAdminMenus();
@@ -1334,6 +1818,7 @@
   setTimeout(paintStatusButtons, 1600);
   setTimeout(ensureAdminFilterSelect, 500);
   setTimeout(ensureEditNativeSelects, 500);
+  setTimeout(ensureFormNativeSelects, 550);
   setTimeout(renderCompanyEditJobTypes, 600);
   setTimeout(nestExistingIntoUploader, 800);
   setTimeout(ensureListBoxes, 800);
@@ -1342,13 +1827,18 @@
   setTimeout(unlockAdminPointer, 300);
   setInterval(function () {
     if (document.querySelector('.cmb-admin')) {
-      paintStatusButtons();
+      try { paintStatusButtons(); } catch (ePaint2) {}
+      patchG7EditMerge();
+      restoreStickyEdit();
+      observeEditTitle();
       ensureAdminFilterSelect();
       ensureEditNativeSelects();
+      ensureFormNativeSelects();
       renderCompanyEditJobTypes();
       nestExistingIntoUploader();
       unlockAdminPointer();
       paintOpenAdminMenus();
+      if (companyIdFromEdit()) markEditingRow(companyIdFromEdit());
     }
   }, 700);
 })();

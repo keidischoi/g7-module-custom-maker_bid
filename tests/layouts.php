@@ -214,12 +214,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.10.37', str_contains($nav, 'nav.js?v=0.10.37'));
-expectTrue('form.js cache bust 0.10.37', str_contains($nav, 'form.js?v=0.10.37'));
-expectTrue('form.css cache bust 0.10.37', str_contains($nav, 'form.css?v=0.10.37'));
-expectTrue('admin.css cache bust 0.10.37', str_contains($nav, 'admin.css?v=0.10.37'));
-expectTrue('admin.js cache bust 0.10.37', str_contains($nav, 'admin.js?v=0.10.37'));
-expectTrue('cmb_maker_nav cache bust 0.10.37', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.37'));
+expectTrue('nav cache bust 0.10.38', str_contains($nav, 'nav.js?v=0.10.38'));
+expectTrue('form.js cache bust 0.10.38', str_contains($nav, 'form.js?v=0.10.38'));
+expectTrue('form.css cache bust 0.10.38', str_contains($nav, 'form.css?v=0.10.38'));
+expectTrue('admin.css cache bust 0.10.38', str_contains($nav, 'admin.css?v=0.10.38'));
+expectTrue('admin.js cache bust 0.10.38', str_contains($nav, 'admin.js?v=0.10.38'));
+expectTrue('cmb_maker_nav cache bust 0.10.38', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.38'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -288,7 +288,7 @@ expectTrue('form.css can collapse company form until 등록', str_contains($css,
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
 expectTrue('form.js syncAudienceSection always show', str_contains($formJs, 'syncAudienceSection') && ! str_contains($formJs, 'admin_only') && str_contains($formJs, 'syncProvidedExtOptions'));
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.37'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.38'));
 
 $history = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
 expectTrue('jobs_history notices section card', str_contains($history, 'notices_card') && str_contains($history, 'cmb-section-card'));
@@ -321,7 +321,7 @@ expectTrue('form.css pager styles', str_contains($formCss, '.cmb-pager') && str_
 expectTrue('subnav right aligned in css', str_contains($formCss, '.cmb-maker-subnav') && str_contains($formCss, 'justify-content: flex-end !important'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
-expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.37'));
+expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.38'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
 expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
@@ -466,13 +466,22 @@ expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, 'rgba(255, 255, 255, 0.06)') && (str_contains($adminCss, 'rgba(255, 255, 255, 0.14)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.12)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.16)')));
 expectTrue('admin.css dark covers data-theme and cmb-admin-dark', str_contains($adminCss, 'html[data-theme="dark"]') && str_contains($adminCss, 'html.cmb-admin-dark') && str_contains($adminCss, 'html.cmb-dark-boot'));
 expectTrue('admin.css dark chrome border is translucent', str_contains($adminCss, '--cmb-admin-border: rgba(255, 255, 255, 0.12)') || str_contains($adminCss, '--cmb-admin-border: rgb(148 163 184)') || str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.37'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.37'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.38'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.38'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin.js unlocks Radix pointer lock', str_contains($adminJs, 'function unlockAdminPointer') && str_contains($adminJs, 'data-scroll-locked') && str_contains($adminJs, 'pointer-events'));
 expectTrue('admin.js native type+status filters', str_contains($adminJs, "cmb_filter_") && str_contains($adminJs, "['disputed', '분쟁조정']") && str_contains($adminJs, 'data-cmb-filter-key'));
 expectTrue('admin.js binds list row actions', str_contains($adminJs, 'function bindRowActions') && str_contains($adminJs, '/admin/jobs/'));
+expectTrue('admin.js row actions send bearer token', str_contains($adminJs, 'function readAuthToken') && str_contains($adminJs, "headers.Authorization = 'Bearer '") && str_contains($adminJs, "credentials: 'include'"));
+expectTrue('admin.js binds detail toolbar and job save', str_contains($adminJs, 'cmb-admin-toolbar') && str_contains($adminJs, '의뢰 저장') && str_contains($adminJs, "action = 'dispute'") && str_contains($adminJs, 'function jobIdFromPath'));
+expectTrue('admin.js paint ignores non-status kinds', str_contains($adminJs, 'out[k] && out[k].indexOf'));
+expectTrue('admin.js native job form selects', str_contains($adminJs, 'function ensureFormNativeSelects') && str_contains($adminJs, 'data-cmb-form-host') && str_contains($adminJs, "['disputed', '분쟁조정']"));
+expectTrue('admin.js keeps company edit id', str_contains($adminJs, 'function rememberEditId') && str_contains($adminJs, '__cmbEditCompanyId') && str_contains($adminJs, 'is-cmb-editing'));
+expectTrue('admin.js merges company edit snapshot', str_contains($adminJs, 'function patchG7EditMerge') && str_contains($adminJs, 'cmb-edit-company-snap') && str_contains($adminJs, 'function restoreStickyEdit') && str_contains($adminJs, 'logo_files'));
+expectTrue('admin.js sticky title is not G7 owned', str_contains($adminJs, 'data-cmb-sticky-title') && str_contains($adminJs, 'function observeEditTitle'));
+expectTrue('admin job detail marks form hosts', str_contains($adminJobsShow, 'data-cmb-job-edit') && str_contains($adminJobsShow, 'data-cmb-form-host') && str_contains($adminJobsShow, 'data-cmb-kind": "save'));
+expectTrue('admin company edit keeps hidden id', str_contains($adminCos, '"name": "id"') && str_contains($adminCos, 'data-cmb-edit-title') && str_contains($adminCos, 'data-cmb-load') && str_contains($adminCos, '"trackChanges": false'));
 expectTrue('listener does not bind job fields onto jobs_index filters', str_contains($nav, "'jobs_show'") && ! str_contains($nav, "['jobs_show', 'jobs_index']"));
 expectTrue('admin jobs rows expose status for 승인/보류 paint', str_contains($adminJobs, 'data-cmb-status') && str_contains($adminJobs, 'cmb-status-{{$item.status}}') && str_contains($adminJobs, 'cmb-entity-job') && str_contains($adminJobs, 'data-cmb-kind'));
 expectTrue('admin companies rows expose status for 승인/보류 paint', str_contains($adminCos, 'data-cmb-status') && str_contains($adminCos, 'cmb-status-{{$co.status}}') && str_contains($adminCos, 'cmb-entity-company') && str_contains($adminCos, 'data-cmb-kind'));
@@ -661,6 +670,7 @@ expectTrue('admin company edit loads profile fields', str_contains($adminCos, 'e
 expectTrue('admin company logo sits in uploader box', str_contains($adminCos, 'cmb-admin-uploader') && str_contains($adminCos, 'cmb-existing-in-uploader') && str_contains($adminCos, 'cmb_admin_logo_existing') && str_contains($adminCos, 'cmb_admin_logo_uploader'));
 expectTrue('admin company approve/hold/reject sit with save', str_contains($adminCos, 'cmb-admin-company-toolbar') && str_contains($adminCos, '선택 업체 저장') && str_contains($adminCos, '"id": "eapprove"') && str_contains($adminCos, '"id": "eholdbtn"') && str_contains($adminCos, '"id": "erejectbtn"'));
 expectTrue('admin company edit harvests named fields', str_contains($adminJs, 'data-cmb-company-edit') && str_contains($adminJs, 'function harvestNamedInto') && str_contains($adminJs, 'nestExistingIntoUploader'));
+expectTrue('admin uploader box is compact', str_contains($adminCss, 'cmb-admin-uploader-compact') && str_contains($adminCss, 'width: 40px') && str_contains($adminJs, 'cmb-admin-uploader-compact') && str_contains($adminCss, 'is-cmb-editing'));
 expectTrue('page.js admin company fills profile', str_contains($pageJs, 'homepage_url') && str_contains($pageJs, 'applyAdminCompany') && str_contains($pageJs, 'formatClaimHistory'));
 expectTrue('jobs_form uploader_epoch', str_contains($form, 'uploader_epoch'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
