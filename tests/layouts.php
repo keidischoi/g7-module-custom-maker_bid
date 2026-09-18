@@ -120,7 +120,8 @@ expectTrue('create rush checkbox', str_contains($create, 'rush_fee_enabled'));
 expectTrue('create rush calendar under checkbox', str_contains($create, '"type": "datetime-local"') && str_contains($create, '적용 조건 시각') && str_contains($create, 'rush_date_wrap') && str_contains($create, 'cmb-cond-rush'));
 expectTrue('create rush calendar nested in rush_row', preg_match('/"id": "rush_row"[\s\S]*"id": "rush_date_wrap"[\s\S]*"id": "premium_row"/', $create) === 1);
 expectTrue('create rush calendar not gated only by if', ! str_contains($create, '"id": "rush_date_wrap"') || ! preg_match('/"id": "rush_date_wrap"[\s\S]{0,200}"if": "{{_local.form.rush_fee_enabled}}"/', $create));
-expectTrue('create Select is value-controlled', str_contains($create, '"value": "{{_local.form.type}}"') && str_contains($create, '"value": "{{_local.form.status}}"') && str_contains($create, 'form.type') && str_contains($create, 'cmb-order-select'));
+expectTrue('create Select is value-controlled', str_contains($create, '"value": "{{_local.form.type || \'modeling_3d\'}}"') && str_contains($create, '"value": "{{_local.form.status}}"') && str_contains($create, 'form.type') && str_contains($create, 'cmb-order-select'));
+expectTrue('create type defaults to first catalog row', str_contains($create, '"type": "modeling_3d"') && str_contains($create, '"form.type": "{{_local.form.type || \'modeling_3d\'}}"'));
 expectTrue('create Select options use length fallback', str_contains($create, 'defaults.data?.types?.length') || str_contains($create, 'types.data?.length'));
 expectTrue('create extension checkbox labels are explicit text', str_contains($create, '"text": "STL"') && str_contains($create, '"text": "3MF"') && str_contains($create, '"text": "GCODE"') && str_contains($create, '"text": "FBX"') && str_contains($create, '"text": "DWG"'));
 expectTrue('create checkbox labels use contrast classes', str_contains($create, 'cmb-order-check-label') && str_contains($create, 'cmb-order-check-text') && str_contains($create, 'dark:text-gray-100'));
@@ -214,12 +215,12 @@ expectTrue('admin company designated toggle', str_contains($adminCos, 'is_design
 expectTrue('admin company delete', str_contains($adminCos, '/admin/companies/{{$co.id}}'));
 
 $nav = (string) file_get_contents($root.'/src/Listeners/UserMenuListener.php');
-expectTrue('nav cache bust 0.10.34', str_contains($nav, 'nav.js?v=0.10.34'));
-expectTrue('form.js cache bust 0.10.34', str_contains($nav, 'form.js?v=0.10.34'));
-expectTrue('form.css cache bust 0.10.34', str_contains($nav, 'form.css?v=0.10.34'));
-expectTrue('admin.css cache bust 0.10.34', str_contains($nav, 'admin.css?v=0.10.34'));
-expectTrue('admin.js cache bust 0.10.34', str_contains($nav, 'admin.js?v=0.10.34'));
-expectTrue('cmb_maker_nav cache bust 0.10.34', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.34'));
+expectTrue('nav cache bust 0.10.35', str_contains($nav, 'nav.js?v=0.10.35'));
+expectTrue('form.js cache bust 0.10.35', str_contains($nav, 'form.js?v=0.10.35'));
+expectTrue('form.css cache bust 0.10.35', str_contains($nav, 'form.css?v=0.10.35'));
+expectTrue('admin.css cache bust 0.10.35', str_contains($nav, 'admin.css?v=0.10.35'));
+expectTrue('admin.js cache bust 0.10.35', str_contains($nav, 'admin.js?v=0.10.35'));
+expectTrue('cmb_maker_nav cache bust 0.10.35', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), 'nav.js?v=0.10.35'));
 expectTrue('listener injects admin form.css via _admin_base', str_contains($nav, "=== '_admin_base'"));
 expectTrue('listener strips extension nav by settings', str_contains($nav, 'maker_bids_user_nav') && str_contains($nav, 'extension_user_base'));
 
@@ -233,7 +234,7 @@ expectTrue('edit extension checkbox labels are explicit text', str_contains($edi
 expectTrue('edit daytime helper 주간만', str_contains($edit, '주간만') && str_contains($edit, 'data-cmb-daytime'));
 expectTrue('edit rush calendar is datetime-local', str_contains($edit, '"type": "datetime-local"') && str_contains($edit, '적용 조건 시각') && str_contains($edit, 'cmb-cond-rush'));
 expectTrue('edit revision min count and cost per revision', str_contains($edit, '최소 횟수') && str_contains($edit, '회당 / 최대 수정비용') && str_contains($edit, 'cmb-cond-rev'));
-expectTrue('edit Select is value-controlled', str_contains($edit, '"value": "{{_local.form.type}}"') && str_contains($edit, 'cmb-order-select'));
+expectTrue('edit Select is value-controlled', str_contains($edit, '"value": "{{_local.form.type || \'modeling_3d\'}}"') && str_contains($edit, 'cmb-order-select'));
 expectTrue('edit profile name helper 회원정보 사용', str_contains($edit, '회원정보 사용') && str_contains($edit, 'data-cmb-profile-name'));
 expectTrue('edit extensions hidden unless modeling', str_contains($edit, 'cmb-cond-ext') && str_contains($edit, 'data-cmb-ext'));
 expectTrue('edit size rows add and delete', str_contains($edit, 'data-cmb-size-add') && str_contains($edit, '"text": "추가"') && str_contains($edit, 'data-cmb-sizes-list'));
@@ -288,7 +289,8 @@ expectTrue('form.css can collapse company form until 등록', str_contains($css,
 
 $formJs = (string) file_get_contents($root.'/resources/assets/form.js');
 expectTrue('form.js syncAudienceSection always show', str_contains($formJs, 'syncAudienceSection') && ! str_contains($formJs, 'admin_only') && str_contains($formJs, 'syncProvidedExtOptions'));
-expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.34'));
+expectTrue('form.js injects form.css', str_contains($formJs, 'form.css?v=0.10.35'));
+expectTrue('form.js defaults create type to first catalog row', str_contains($formJs, 'function firstCatalogTypeSlug') && str_contains($formJs, 'function ensureCreateTypeDefault') && str_contains($formJs, 'function jobFormRouteId'));
 
 $history = (string) file_get_contents($root.'/resources/layouts/user/jobs_history.json');
 expectTrue('jobs_history notices section card', str_contains($history, 'notices_card') && str_contains($history, 'cmb-section-card'));
@@ -321,7 +323,7 @@ expectTrue('form.css pager styles', str_contains($formCss, '.cmb-pager') && str_
 expectTrue('subnav right aligned in css', str_contains($formCss, '.cmb-maker-subnav') && str_contains($formCss, 'justify-content: flex-end !important'));
 $pageJs = (string) file_get_contents($root.'/resources/assets/page.js');
 expectTrue('page.js renders cmb-pager', str_contains($pageJs, 'data-cmb-pager') && str_contains($pageJs, 'cmb-pager-btn'));
-expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.34'));
+expectTrue('page.js ensures list card classes', str_contains($pageJs, 'cmb-list-item') && str_contains($pageJs, 'ensureFormCss') && str_contains($pageJs, 'form.css?v=0.10.35'));
 $navJs = (string) file_get_contents($root.'/resources/assets/nav.js');
 expectTrue('nav.js soft in-module navigation', str_contains($navJs, 'function softGo') && str_contains($navJs, 'function bindSoftNav'));
 expectTrue('cmb_maker_nav layout async false', str_contains((string) file_get_contents($root.'/resources/layouts/user/cmb_maker_nav.json'), '"async": false'));
@@ -466,8 +468,8 @@ expectTrue('admin list/detail Selects use cmb-admin-select-host', str_contains($
 expectTrue('admin.css dark row border is high contrast', str_contains($adminCss, 'rgba(255, 255, 255, 0.06)') && (str_contains($adminCss, 'rgba(255, 255, 255, 0.14)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.12)') || str_contains($adminCss, 'rgba(255, 255, 255, 0.16)')));
 expectTrue('admin.css dark covers data-theme and cmb-admin-dark', str_contains($adminCss, 'html[data-theme="dark"]') && str_contains($adminCss, 'html.cmb-admin-dark') && str_contains($adminCss, 'html.cmb-dark-boot'));
 expectTrue('admin.css dark chrome border is translucent', str_contains($adminCss, '--cmb-admin-border: rgba(255, 255, 255, 0.12)') || str_contains($adminCss, '--cmb-admin-border: rgb(148 163 184)') || str_contains($adminCss, '--cmb-admin-border: rgb(107 114 128)'));
-expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.34'));
-expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.34'));
+expectTrue('listener injects admin.css via _admin_base', str_contains($nav, 'cmb_maker_admin_css') && str_contains($nav, 'admin.css?v=0.10.35'));
+expectTrue('listener injects admin.js via _admin_base', str_contains($nav, 'cmb_maker_admin_js') && str_contains($nav, 'admin.js?v=0.10.35'));
 $adminJs = (string) file_get_contents($root.'/resources/assets/admin.js');
 expectTrue('admin.js injects portal CSS on html.cmb-admin-ui', str_contains($adminJs, 'injectPortalCss') && str_contains($adminJs, 'cmb-admin-select-portal-css') && str_contains($adminJs, 'html.cmb-admin-ui'));
 expectTrue('admin jobs rows expose status for 승인/보류 paint', str_contains($adminJobs, 'data-cmb-status') && str_contains($adminJobs, 'cmb-status-{{$item.status}}') && str_contains($adminJobs, 'cmb-entity-job') && str_contains($adminJobs, 'data-cmb-kind'));

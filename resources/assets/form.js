@@ -1,7 +1,7 @@
 (function () {
   var DAUM_SRC = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
   var TYPES_URL = '/api/modules/custom-maker_bids/job-types';
-  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.34';
+  var FORM_CSS = '/api/modules/custom-maker_bids/assets/form.css?v=0.10.35';
   var DAY_FROM = '09:00';
   var DAY_TO = '17:00';
   var EXT_KEYS = ['ext_stl', 'ext_obj', 'ext_3mf', 'ext_fbx', 'ext_pdf', 'ext_step', 'ext_stp', 'ext_gcode', 'ext_dwg'];
@@ -401,6 +401,9 @@
     var status = normalizeStatusSlug(form.status || readNamedValue('status') || 'quote_request');
     var audience = normalizeAudienceSlug(form.audience || readNamedValue('audience') || 'all');
     var type = asTypeSlug(form.type) || asTypeSlug(readNamedValue('type')) || '';
+    if (!type && !jobFormRouteId()) {
+      type = firstCatalogTypeSlug();
+    }
     var typeRow = findTypeRow(type);
     if (typeRow) {
       type = asTypeSlug(typeRow.value || typeRow.slug) || type;
@@ -729,6 +732,63 @@
       out.push(row);
     }
   }
+  function jobFormRouteId() {
+    var id = g7Get('route.id') || g7Get('_route.id');
+    if (id != null && String(id).trim() !== '' && String(id) !== 'undefined' && String(id) !== 'null') {
+      return String(id);
+    }
+    var path = String((typeof location !== 'undefined' && location.pathname) || '');
+    var hash = String((typeof location !== 'undefined' && location.hash) || '');
+    var m = (path + ' ' + hash).match(/\/maker-bids\/(\d+)\/edit/);
+    return m ? m[1] : '';
+  }
+
+  function firstCatalogTypeSlug() {
+    var list = catalogTypes();
+    var i;
+    var slug;
+    for (i = 0; i < list.length; i++) {
+      slug = asTypeSlug(list[i] && (list[i].value || list[i].slug));
+      if (slug) {
+        return slug;
+      }
+    }
+    return asTypeSlug(TYPE_FALLBACK[0] && TYPE_FALLBACK[0].value) || 'modeling_3d';
+  }
+
+  function ensureCreateTypeDefault() {
+    if (jobFormRouteId() || !document.querySelector('.cmb-order-card, [data-cmb-job-form], [name="type"]')) {
+      return;
+    }
+    loadTypes(function () {
+      if (jobFormRouteId()) {
+        return;
+      }
+      var slug = firstCatalogTypeSlug();
+      var current = asTypeSlug(readNamedValue('type') || g7Get('_local.form.type') || '');
+      var locked = document.documentElement.getAttribute('data-cmb-type-defaulted') === '1';
+      if (locked && current) {
+        applyTypeFlags(current);
+        paintSelectTrigger('type', current, optionLabelFor('type', current));
+        return;
+      }
+      if (current && current !== 'modeling_3d' && current !== slug) {
+        document.documentElement.setAttribute('data-cmb-type-defaulted', '1');
+        applyTypeFlags(current);
+        paintSelectTrigger('type', current, optionLabelFor('type', current));
+        return;
+      }
+      if (!slug) {
+        return;
+      }
+      document.documentElement.setAttribute('data-cmb-type-defaulted', '1');
+      setLocal({ 'form.type': slug });
+      fillNamed('type', slug);
+      paintSelectTrigger('type', slug, optionLabelFor('type', slug));
+      applyTypeFlags(slug);
+    });
+  }
+
   function catalogTypes() {
     var out = [];
     var seen = {};
@@ -1556,11 +1616,16 @@
       );
     }
     var current = asTypeSlug(readNamedValue('type') || g7Get('_local.form.type'));
-    if (current) {
-      setLocal({ 'form.type': current });
-      loadTypes(function () {
-        applyTypeFlags(current);
-      });
+    if (jobFormRouteId()) {
+      if (current) {
+        setLocal({ 'form.type': current });
+        loadTypes(function () {
+          applyTypeFlags(current);
+          paintSelectTrigger('type', current, optionLabelFor('type', current));
+        });
+      }
+    } else {
+      ensureCreateTypeDefault();
     }
     if (!document.documentElement.getAttribute('data-cmb-type-opt-bound')) {
       document.documentElement.setAttribute('data-cmb-type-opt-bound', '1');
@@ -1823,6 +1888,12 @@
       } catch (e2) {}
       // Re-paint current select values so empty triggers recover
       var curType = asTypeSlug(readNamedValue('type') || g7Get('_local.form.type') || '');
+      if (!jobFormRouteId()) {
+        if (!curType) {
+          curType = firstCatalogTypeSlug();
+        }
+        ensureCreateTypeDefault();
+      }
       var curStatus = normalizeStatusSlug(readNamedValue('status') || g7Get('_local.form.status') || 'quote_request');
       var curAud = normalizeAudienceSlug(readNamedValue('audience') || g7Get('_local.form.audience') || 'all');
       if (curType) {
