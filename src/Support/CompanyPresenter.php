@@ -36,6 +36,11 @@ class CompanyPresenter
             'updated_at' => optional($row->updated_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('updated_at'),
         ];
 
+        $logos = self::logoFilesFor($row);
+        if ($logos) {
+            $payload['logo_url'] = $payload['logo_url'] ?: ($logos[0]['url'] ?? $logos[0]['download_url'] ?? null);
+        }
+
         if ($audience === 'owner' || $audience === 'admin') {
             $payload['manager_name'] = $row->manager_name;
             $payload['phone'] = $row->phone;
@@ -48,7 +53,7 @@ class CompanyPresenter
             $payload['reviewed_at'] = optional($row->reviewed_at)?->format('Y-m-d H:i:s') ?? $row->getRawOriginal('reviewed_at');
             $payload['note'] = $row->note;
             $payload['upload_token'] = $row->upload_token;
-            $payload['logo_files'] = self::logoFilesFor($row);
+            $payload['logo_files'] = $logos;
         }
 
         if ($audience === 'admin') {
@@ -64,7 +69,7 @@ class CompanyPresenter
     public static function presentBid(MakerBid $bid): array
     {
         $company = $bid->relationLoaded('company') ? $bid->company : null;
-        $payload = [
+        return [
             'id' => (int) $bid->id,
             'job_id' => (int) $bid->job_id,
             'user_id' => (int) $bid->user_id,
@@ -83,8 +88,6 @@ class CompanyPresenter
             'company' => $company ? self::present($company, 'public') : null,
             'created_at' => optional($bid->created_at)?->format('Y-m-d H:i:s') ?? $bid->getRawOriginal('created_at'),
         ];
-
-        return $payload;
     }
 
     public static function logoUrl(?string $hash): ?string
@@ -92,7 +95,6 @@ class CompanyPresenter
         if ($hash === null || $hash === '') {
             return null;
         }
-
         return '/api/modules/custom-maker_bids/files/'.$hash;
     }
 
@@ -120,7 +122,6 @@ class CompanyPresenter
         if ($found->isEmpty()) {
             return [];
         }
-
         return $found->map(static fn ($f) => $f->toAttachmentArray())->values()->all();
     }
 
@@ -134,7 +135,6 @@ class CompanyPresenter
         if ($row) {
             return [$row->toAttachmentArray()];
         }
-
         return [UploadRules::toUploaderFile([
             'id' => $hash,
             'hash' => $hash,
