@@ -136,7 +136,9 @@
                   { "id": "st_quote", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=quote_request", "className": "cmb-chip", "data-cmb-status": "quote_request" }, "text": "견적요청" },
                   { "id": "st_awarded", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=awarded", "className": "cmb-chip", "data-cmb-status": "awarded" }, "text": "낙찰" },
                   { "id": "st_done", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=done", "className": "cmb-chip", "data-cmb-status": "done" }, "text": "완료" },
-                  { "id": "st_cancel", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=cancelled", "className": "cmb-chip", "data-cmb-status": "cancelled" }, "text": "취소" }
+                  { "id": "st_cancel", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=cancelled", "className": "cmb-chip", "data-cmb-status": "cancelled" }, "text": "취소" },
+                  { "id": "st_draft", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=draft", "className": "cmb-chip cmb-chip-self-only", "data-cmb-status": "draft", "data-cmb-self-status": "draft", "hidden": true }, "text": "임시저장" },
+                  { "id": "st_dispute", "type": "basic", "name": "A", "props": { "href": "/maker-bids?status=disputed", "className": "cmb-chip cmb-chip-self-only", "data-cmb-status": "disputed", "data-cmb-self-status": "disputed", "hidden": true }, "text": "분쟁조정" }
                 ]
               }
             ]

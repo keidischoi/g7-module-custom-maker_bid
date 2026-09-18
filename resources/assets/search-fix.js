@@ -1,14 +1,14 @@
 (function () {
-  if (window.__cmbSearchFix9) return;
-  window.__cmbSearchFix9 = true;
+  if (window.__cmbSearchFix11) return;
+  window.__cmbSearchFix11 = true;
 
   var state = { q: '', sort: 'latest', type: '', status: '', page: 1 };
-  var typing = false;
   var lastRows = [];
   var lastMeta = {};
-  var debounceT = null;
+  var selfChips = { draft: false, disputed: false };
+  var typedQ = null;
 
-  var STATUS_CHIPS = [
+  var PUBLIC_STATUS_CHIPS = [
     ['', '전체'],
     ['pending', '승인대기'],
     ['hold', '보류'],
@@ -17,6 +17,10 @@
     ['awarded', '낙찰'],
     ['done', '완료'],
     ['cancelled', '취소']
+  ];
+  var SELF_STATUS_CHIPS = [
+    ['draft', '임시저장'],
+    ['disputed', '분쟁조정']
   ];
 
   function listPath() {
@@ -118,6 +122,25 @@
     el.setAttribute('data-per-page', String(meta.per_page || 10));
   }
 
+  function paintSelfChips(flags) {
+    selfChips = flags || selfChips;
+    var labels = { draft: '임시저장', disputed: '분쟁조정' };
+    document.querySelectorAll('[data-cmb-self-status]').forEach(function (a) {
+      var key = a.getAttribute('data-cmb-self-status');
+      var on = !!(selfChips && selfChips[key]);
+      if (!(a.textContent || '').trim() && labels[key]) a.textContent = labels[key];
+      if (on) {
+        a.removeAttribute('hidden');
+        a.classList.remove('is-hidden');
+        a.style.setProperty('display', 'inline-flex', 'important');
+      } else {
+        a.setAttribute('hidden', '');
+        a.classList.add('is-hidden');
+        a.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
   function load() {
     if (!listPath()) return;
     var p = new URLSearchParams();
@@ -137,13 +160,16 @@
       var meta = (payload && payload.meta) || (j && j.meta) || {};
       paint(rows);
       updatePager(meta);
+      paintSelfChips(meta.viewer_status_chips || {});
       markChips();
     }).catch(function () {});
   }
 
   function apply(resetPage) {
+    rememberTyped();
     var inp = document.querySelector('[data-cmb-free]');
     if (inp) state.q = String(inp.value || '').trim();
+    typedQ = state.q;
     writeUrl(resetPage !== false);
     load();
   }
@@ -175,79 +201,95 @@
     });
   }
 
-  function bindNativeInput(inp) {
-    if (inp.getAttribute('data-cmb-bound') === '1') return;
-    inp.setAttribute('data-cmb-bound', '1');
-    inp.addEventListener('focus', function () { typing = true; }, true);
-    inp.addEventListener('blur', function () { typing = false; }, true);
+  function rememberTyped() {
+    var free = document.querySelector('[data-cmb-native-host] [data-cmb-free], [data-cmb-native-bar] [data-cmb-free]');
+    if (free) typedQ = String(free.value || '');
+  }
+
+  function bindSearchSubmit(inp) {
+    if (!inp || inp.getAttribute('data-cmb-enter') === '1') return;
+    inp.setAttribute('data-cmb-enter', '1');
     inp.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
       e.stopPropagation();
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        typing = false;
-        apply(true);
-      }
-    }, true);
-    inp.addEventListener('keyup', function (e) { e.stopPropagation(); }, true);
-    inp.addEventListener('input', function (e) {
-      e.stopPropagation();
-      typing = true;
-      state.q = inp.value;
-      if (debounceT) clearTimeout(debounceT);
-      debounceT = setTimeout(function () { apply(true); }, 280);
-    }, true);
+      rememberTyped();
+      apply(true);
+    });
+  }
+
+  function neutralizeG7(bar) {
+    if (!bar) return;
+    hideVisually(bar);
+    bar.querySelectorAll('input, textarea, select, button, [role="combobox"], [data-slot="trigger"]').forEach(function (el) {
+      hideVisually(el);
+      try { el.disabled = true; } catch (e) {}
+      try { el.readOnly = true; } catch (e2) {}
+      el.tabIndex = -1;
+      if (el.getAttribute && el.getAttribute('name') === 'q') el.removeAttribute('name');
+      if (el.tagName === 'INPUT' && !state.q) el.value = '';
+    });
   }
 
   function ensureSearch() {
-    var bar = document.querySelector('[data-cmb-search-bar], .cmb-search-bar');
-    if (!bar) return;
-    var native = bar.querySelector('[data-cmb-native-bar]');
+    rememberTyped();
+    var g7 = document.querySelector('[data-cmb-search-bar]:not([data-cmb-native-host])')
+      || document.querySelector('.cmb-search-bar:not([data-cmb-native-host])');
+    if (!g7 || !g7.parentNode) return;
+    var host = document.querySelector('[data-cmb-native-host]');
+    if (!host) {
+      host = document.createElement('div');
+      host.setAttribute('data-cmb-native-host', '1');
+      host.className = 'cmb-section-card cmb-search-bar cmb-native-search-host mb-3';
+      g7.parentNode.insertBefore(host, g7);
+    }
+    var native = host.querySelector('[data-cmb-native-bar]');
     if (!native) {
       native = document.createElement('div');
       native.setAttribute('data-cmb-native-bar', '1');
       native.className = 'cmb-native-search-bar';
       native.innerHTML =
-        '<input type="text" data-cmb-free="1" class="cmb-search-input cmb-search-free" placeholder="검색어" autocomplete="off">' +
+        '<input type="text" data-cmb-free="1" class="cmb-search-free" placeholder="검색어" autocomplete="off" spellcheck="false">' +
         '<select data-cmb-sort-free="1" class="cmb-search-sort-free" aria-label="정렬">' +
         '<option value="latest">최신순</option><option value="created">등록순</option>' +
         '<option value="views">조회순</option><option value="status">상태순</option></select>' +
         '<button type="button" class="cmb-btn cmb-btn-primary cmb-search-go" data-cmb-search-go="1">검색</button>';
-      bar.insertBefore(native, bar.firstChild);
+      host.appendChild(native);
       var inp0 = native.querySelector('[data-cmb-free]');
-      inp0.value = state.q || '';
-      bar.querySelectorAll('input').forEach(function (el) {
-        if (el.getAttribute('data-cmb-free') === '1') return;
-        if (!state.q) el.value = '';
-      });
-      bindNativeInput(inp0);
+      inp0.value = typedQ != null ? typedQ : (state.q || '');
+      bindSearchSubmit(inp0);
       native.querySelector('[data-cmb-sort-free]').addEventListener('change', function (e) {
         state.sort = e.target.value;
         apply(true);
       });
     }
+    neutralizeG7(g7);
     var free = native.querySelector('[data-cmb-free]');
-    bindNativeInput(free);
-    if (!typing && document.activeElement !== free && state.q && !String(free.value || '').trim()) free.value = state.q;
+    bindSearchSubmit(free);
+    if (document.activeElement !== free) {
+      if (typedQ != null) {
+        if (String(free.value || '') !== typedQ) free.value = typedQ;
+      } else if (state.q && !String(free.value || '').trim()) {
+        free.value = state.q;
+      }
+    }
     var sort = native.querySelector('[data-cmb-sort-free]');
     if (sort && document.activeElement !== sort) sort.value = state.sort || 'latest';
-    Array.prototype.slice.call(bar.children).forEach(function (n) {
-      if (n === native) return;
-      hideVisually(n);
-    });
-    bar.querySelectorAll('input, [role="combobox"], [data-slot="trigger"], [data-slot="select-trigger"]').forEach(function (el) {
-      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
-      hideVisually(el);
-    });
-    document.querySelectorAll('[name="q"], [data-cmb-search-input], .cmb-search-input').forEach(function (el) {
-      if (el.closest && el.closest('[data-cmb-native-bar]')) return;
-      hideVisually(el);
-      if (el.tagName === 'INPUT' && !state.q) el.value = '';
-    });
     return free;
   }
 
-  function ensureSort() {
-    ensureSearch();
+  function appendChip(row, value, label, selfKey) {
+    var a = document.createElement('a');
+    a.href = value ? '/maker-bids?status=' + encodeURIComponent(value) : '/maker-bids';
+    a.className = selfKey ? 'cmb-chip cmb-chip-self-only' : 'cmb-chip';
+    a.textContent = label;
+    a.setAttribute('data-cmb-status', value);
+    if (selfKey) {
+      a.setAttribute('data-cmb-self-status', selfKey);
+      a.hidden = true;
+    }
+    row.appendChild(a);
+    return a;
   }
 
   function ensureChips() {
@@ -280,16 +322,16 @@
       slab.className = 'cmb-filter-label';
       slab.textContent = '의뢰상태';
       stRow.appendChild(slab);
-      STATUS_CHIPS.forEach(function (it) {
-        var a = document.createElement('a');
-        a.href = it[0] ? '/maker-bids?status=' + encodeURIComponent(it[0]) : '/maker-bids';
-        a.className = 'cmb-chip';
-        a.textContent = it[1];
-        a.setAttribute('data-cmb-status', it[0]);
-        stRow.appendChild(a);
-      });
+      PUBLIC_STATUS_CHIPS.forEach(function (it) { appendChip(stRow, it[0], it[1]); });
+      SELF_STATUS_CHIPS.forEach(function (it) { appendChip(stRow, it[0], it[1], it[0]); });
       stack.appendChild(stRow);
+    } else {
+      SELF_STATUS_CHIPS.forEach(function (it) {
+        if (stRow.querySelector('[data-cmb-self-status="' + it[0] + '"]')) return;
+        appendChip(stRow, it[0], it[1], it[0]);
+      });
     }
+    paintSelfChips(selfChips);
   }
 
   function chipType(el) {
@@ -310,18 +352,8 @@
     if (!listPath()) return;
     var t = e.target;
     if (!t || !t.closest) return;
-    if (t.closest('[data-cmb-search-clear]')) {
-      e.preventDefault(); e.stopPropagation();
-      var inp = document.querySelector('[data-cmb-free]');
-      if (inp) inp.value = '';
-      state.q = '';
-      typing = false;
-      apply(true);
-      return;
-    }
     if (t.closest('[data-cmb-search-go], .cmb-search-go')) {
       e.preventDefault(); e.stopPropagation();
-      typing = false;
       apply(true);
       return;
     }
@@ -342,20 +374,10 @@
     }
   }, true);
 
-  document.addEventListener('keydown', function (e) {
-    var inp = e.target && e.target.closest && e.target.closest('[data-cmb-free]');
-    if (!inp) return;
-    e.stopPropagation();
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      typing = false;
-      apply(true);
-    }
-  }, true);
-
   window.addEventListener('popstate', function () {
     if (!listPath()) return;
     readUrl();
+    typedQ = state.q || '';
     var inp = document.querySelector('[data-cmb-free]');
     if (inp && document.activeElement !== inp) inp.value = state.q;
     load();
@@ -366,9 +388,9 @@
     if (!listPath()) return;
     readUrl();
     ensureSearch();
-    ensureSort();
     ensureChips();
     markChips();
+    paintSelfChips(selfChips);
     if (lastRows.length) paint(lastRows);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
@@ -376,9 +398,13 @@
   setTimeout(boot, 200);
   setTimeout(function () { boot(); load(); }, 400);
   setTimeout(boot, 1000);
-  if (!window.__cmbSearchObs9) {
-    window.__cmbSearchObs9 = new MutationObserver(function () {
+  if (!window.__cmbTypedPoll11) {
+    window.__cmbTypedPoll11 = setInterval(rememberTyped, 120);
+  }
+  if (!window.__cmbSearchObs11) {
+    window.__cmbSearchObs11 = new MutationObserver(function () {
       if (!listPath()) return;
+      rememberTyped();
       ensureSearch();
       ensureChips();
       if (lastRows.length) {
@@ -387,7 +413,7 @@
       }
     });
     try {
-      window.__cmbSearchObs9.observe(document.documentElement, { childList: true, subtree: true });
+      window.__cmbSearchObs11.observe(document.documentElement, { childList: true, subtree: true });
     } catch (e) {}
   }
 })();

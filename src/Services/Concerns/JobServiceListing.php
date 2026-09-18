@@ -37,7 +37,12 @@ trait JobServiceListing
                         });
                 });
                 if ($ctx['userId'] > 0) {
-                    $outer->orWhere('user_id', $ctx['userId']);
+                    $uid = (int) $ctx['userId'];
+                    $outer->orWhere('user_id', $uid);
+                    $outer->orWhere(function ($d) use ($uid) {
+                        $d->where('status', 'disputed')
+                            ->whereIn('awarded_bid_id', \Modules\Custom\MakerBids\Models\MakerBid::query()->withoutGlobalScopes()->where('user_id', $uid)->select('id'));
+                    });
                 }
             });
         }

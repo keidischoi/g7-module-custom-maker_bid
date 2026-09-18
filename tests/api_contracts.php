@@ -50,7 +50,7 @@ expectTrue('admin job patch route', str_contains($api, "Route::patch('jobs/{id}'
 $moduleMeta = json_decode($moduleJson, true);
 expectTrue('module.json parses', is_array($moduleMeta));
 expectTrue('jobs edit owner route', str_contains($api, "jobs/{id}/edit") || str_contains($api, 'jobs.edit'));
-expectTrue('module version is 0.10.26', ($moduleMeta['version'] ?? null) === '0.10.26');
+expectTrue('module version is 0.10.27', ($moduleMeta['version'] ?? null) === '0.10.27');
 expectTrue('module identifier is exactly custom-maker_bids', ($moduleMeta['identifier'] ?? null) === 'custom-maker_bids');
 expectTrue('module identifier is not custom-maker_bid', ($moduleMeta['identifier'] ?? null) !== 'custom-maker_bid');
 expectTrue(
@@ -59,7 +59,7 @@ expectTrue(
 );
 $composer = json_decode((string) file_get_contents($root.'/composer.json'), true);
 expectTrue('composer name is custom/maker-bids', ($composer['name'] ?? null) === 'custom/maker-bids');
-expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.26');
+expectTrue('composer version matches module', ($composer['version'] ?? null) === '0.10.27');
 expectTrue(
     'psr-4 is Modules\\Custom\\MakerBids\\ not MakerBid',
     isset($composer['autoload']['psr-4']['Modules\\Custom\\MakerBids\\'])
@@ -89,9 +89,11 @@ expectTrue('job store envelopes id for layout navigate', str_contains($jobContro
 $jobService = (string) file_get_contents($root.'/src/Services/JobService.php');
 expectTrue('findPublic maps missing id to domain 404', str_contains($jobService, 'function denyPublic') && str_contains($jobService, '->find($id)'));
 expectTrue('findPublic keeps same 404 copy for hidden jobs', str_contains($jobService, '의뢰를 찾을 수 없습니다.'));
-expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])"));
+expectTrue('listPublic includes owner jobs via orWhere user_id', str_contains($jobService, "orWhere('user_id', \$uid)"));
 expectTrue('listPublic uses listStatusFilter', str_contains($jobService, 'listStatusFilter'));
-expectTrue('listPublic keeps optional owner visibility 0.6.1', str_contains($jobService, "orWhere('user_id', \$ctx['userId'])") && str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
+expectTrue('listPublic keeps optional owner visibility 0.6.1', str_contains($jobService, "orWhere('user_id', \$uid)") && str_contains((string) file_get_contents($root.'/src/routes/api.php'), 'optional.sanctum'));
+expectTrue('listPublic exposes self-only draft/dispute chips', str_contains($jobService, 'viewerSelfStatusChips') && str_contains((string) file_get_contents($root.'/src/Http/Controllers/JobController.php'), 'viewer_status_chips'));
+expectTrue('listPublic includes disputed awarded bidder', str_contains($jobService, 'awarded_bid_id') && str_contains($jobService, 'DisputeRules::STATUS'));
 expectTrue('viewerContext uses bidAllowMode', str_contains($jobService, 'bidAllowMode') && str_contains($jobService, 'isDesignated'));
 $bidService = (string) file_get_contents($root.'/src/Services/BidService.php');
 expectTrue('bid create/update uses denyMessage', str_contains($bidService, 'BidRules::denyMessage') && str_contains($bidService, 'assertEligible'));

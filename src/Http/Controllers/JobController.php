@@ -40,8 +40,10 @@ class JobController extends Controller
     {
         try { app(MarketplaceService::class)->closeExpired(); } catch (\Throwable) {}
         $data = $this->attachListThumbs($this->jobs->listPublic($request));
+        $payload = ArrayPaginator::paginate($data, $request, 'page', 10);
+        $payload['meta']['viewer_status_chips'] = $this->jobs->viewerSelfStatusChips($request);
 
-        return response()->json(ArrayPaginator::paginate($data, $request, 'page', 10));
+        return response()->json($payload);
     }
 
     public function show(Request $request, int $id): JsonResponse

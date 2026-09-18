@@ -8,6 +8,7 @@ use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
 use Modules\Custom\MakerBids\Support\BidRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
+use Modules\Custom\MakerBids\Support\DisputeRules;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobPresenter;
 use Modules\Custom\MakerBids\Support\JobRules;
@@ -33,7 +34,12 @@ class JobService
             $q->where(function ($outer) use ($ctx) {
                 $outer->whereNotIn('status', JobRules::HIDDEN_PUBLIC_STATUSES);
                 if ($ctx['userId'] > 0) {
-                    $outer->orWhere('user_id', $ctx['userId']);
+                    $uid = (int) $ctx['userId'];
+                    $outer->orWhere('user_id', $uid);
+                    $outer->orWhere(function ($d) use ($uid) {
+                        $d->where('status', DisputeRules::STATUS)
+                            ->whereIn('awarded_bid_id', MakerBid::query()->withoutGlobalScopes()->where('user_id', $uid)->select('id'));
+                    });
                 }
             });
         }
@@ -65,7 +71,7 @@ class JobService
         }
         $sortRaw = strtolower(trim((string) $request->query('sort', $request->input('sort'))));
         if (in_array($sortRaw, ['status', '상태', '상태순'], true)) {
-            $q->orderByRaw("CASE status WHEN 'draft' THEN 1 WHEN 'hold' THEN 2 WHEN 'quote_request' THEN 3 WHEN 'open' THEN 3 WHEN 'request' THEN 3 WHEN 'awarded' THEN 4 WHEN 'done' THEN 5 WHEN 'cancelled' THEN 6 WHEN 'pending' THEN 7 ELSE 8 END")->orderByDesc('id');
+            $q->orderByRaw("CASE status WHEN 'draft' THEN 1 WHEN 'hold' THEN 2 WHEN 'quote_request' THEN 3 WHEN 'open' THEN 3 WHEN 'request' THEN 3 WHEN 'awarded' THEN 4 WHEN 'disputed' THEN 4 WHEN 'done' THEN 5 WHEN 'cancelled' THEN 6 WHEN 'pending' THEN 7 ELSE 8 END")->orderByDesc('id');
         } else {
             $sort = JobRules::normalizeListSort($sortRaw);
             if ($sort === JobRules::LIST_SORT_CREATED) {
@@ -215,6 +221,22 @@ class JobService
     {
         MakerBid::query()->where('job_id', $id)->delete();
         MakerJob::query()->where('id', $id)->delete();
+    }
+
+    public function viewerSelfStatusChips(Request $request): array
+    {
+        $ctx = $this->viewerFromRequest($request);
+        $uid = (int) ($ctx['userId'] ?? 0);
+        if ($uid <= 0) {
+            return ['draft' => false, 'disputed' => false];
+        }
+        $hasDraft = MakerJob::query()->where('user_id', $uid)->where('status', 'draft')->exists();
+        $hasDispute = MakerJob::query()->where('status', DisputeRules::STATUS)->where(function ($q) use ($uid) {
+            $q->where('user_id', $uid)
+                ->orWhereIn('awarded_bid_id', MakerBid::query()->withoutGlobalScopes()->where('user_id', $uid)->select('id'));
+        })->exists();
+
+        return ['draft' => $hasDraft, 'disputed' => $hasDispute];
     }
 
     public function viewerContext(int $userId, MakerJob $job, bool $isAdmin = false, array $ctx = []): array
