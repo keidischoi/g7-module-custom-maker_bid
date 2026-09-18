@@ -59,16 +59,43 @@ class LayoutFileFixListener implements HookListenerInterface
             return $layout;
         }
         $kids = is_array($content[0]['children'] ?? null) ? $content[0]['children'] : [];
-        foreach ($kids as $child) {
+        $replaced = false;
+        foreach ($kids as $i => $child) {
             if (($child['id'] ?? '') === 'cmb_bid_compose') {
-                return $layout;
+                $kids[$i] = $this->composeForm();
+                $replaced = true;
             }
         }
-        array_splice($kids, 1, 0, [$this->composeForm()]);
+        if (! $replaced) {
+            array_splice($kids, 1, 0, [$this->composeForm()]);
+        }
         $content[0]['children'] = $kids;
         $layout['slots']['content'] = $content;
 
         return $layout;
+    }
+
+    private function bind(string $id, string $name, string $widget, string $placeholder, string $extraClass = ''): array
+    {
+        $key = 'bid.'.$name;
+
+        return [
+            'id' => $id,
+            'type' => 'basic',
+            'name' => $widget,
+            'props' => [
+                'name' => $name,
+                'type' => $name === 'amount' || $name === 'days' ? 'number' : 'text',
+                'placeholder' => $placeholder,
+                'className' => trim('cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm '.$extraClass),
+                'value' => '{{_local.'.$key.'}}',
+                'rows' => $widget === 'Textarea' ? '8' : null,
+            ],
+            'actions' => [
+                ['type' => 'input', 'event' => 'input', 'handler' => 'setState', 'params' => ['target' => 'local', $key => '{{$event.target.value}}']],
+                ['type' => 'change', 'event' => 'change', 'handler' => 'setState', 'params' => ['target' => 'local', $key => '{{$event.target.value}}']],
+            ],
+        ];
     }
 
     private function composeForm(): array
@@ -81,22 +108,26 @@ class LayoutFileFixListener implements HookListenerInterface
             'props' => ['className' => 'cmb-section-card cmb-form-stack cmb-bid-form space-y-4 rounded-xl border p-5 mb-6', 'dataKey' => 'bid', 'trackChanges' => true],
             'children' => [
                 ['id' => 'cmb_bid_h', 'type' => 'basic', 'name' => 'H2', 'props' => ['text' => '견적서 작성', 'className' => 'text-xl font-semibold']],
-                ['id' => 'cmb_bid_job', 'type' => 'basic', 'name' => 'P', 'props' => ['className' => 'text-sm text-gray-500', 'text' => '{{job.data.title || "의뢰 #" + query.job}}']],
+                ['id' => 'cmb_bid_job', 'type' => 'basic', 'name' => 'P', 'props' => ['className' => 'text-sm text-gray-500', 'text' => '{{job.data.title || query.job}}']],
                 ['id' => 'cmb_bid_amt_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '견적 금액 (원) *']],
-                ['id' => 'cmb_bid_amt', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'amount', 'type' => 'number', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: 150000', 'value' => '{{_local.bid.amount}}']],
+                $this->bind('cmb_bid_amt', 'amount', 'Input', '예: 150000'),
                 ['id' => 'cmb_bid_days_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '제작 기간 (일)']],
-                ['id' => 'cmb_bid_days', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'days', 'type' => 'number', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: 7', 'value' => '{{_local.bid.days}}']],
+                $this->bind('cmb_bid_days', 'days', 'Input', '예: 7'),
                 ['id' => 'cmb_bid_mat_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '소재 / 공정']],
-                ['id' => 'cmb_bid_mat', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'material', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: PLA, 0.2mm', 'value' => '{{_local.bid.material}}']],
+                $this->bind('cmb_bid_mat', 'material', 'Input', '예: PLA, 0.2mm'),
                 ['id' => 'cmb_bid_msg_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '견적 설명']],
-                ['id' => 'cmb_bid_msg', 'type' => 'basic', 'name' => 'Textarea', 'props' => ['name' => 'message', 'rows' => '8', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm min-h-[160px]', 'placeholder' => '포함 범위, 후가공, 배송, 수정 횟수', 'value' => '{{_local.bid.message}}']],
+                $this->bind('cmb_bid_msg', 'message', 'Textarea', '포함 범위, 후가공, 배송', 'min-h-[160px]'),
                 [
                     'id' => 'cmb_bid_go', 'type' => 'basic', 'name' => 'Button', 'text' => '견적 제출',
                     'props' => ['className' => 'cmb-btn cmb-btn-primary', 'type' => 'button'],
                     'actions' => [[
                         'type' => 'click', 'handler' => 'apiCall', 'auth_required' => true,
                         'target' => '/api/modules/custom-maker_bids/jobs/{{query.job}}/bids',
-                        'params' => ['method' => 'POST', 'body' => ['amount' => '{{_local.bid.amount}}', 'days' => '{{_local.bid.days}}', 'message' => '{{_local.bid.message}}']],
+                        'params' => ['method' => 'POST', 'body' => [
+                            'amount' => '{{_local.bid.amount}}',
+                            'days' => '{{_local.bid.days}}',
+                            'message' => '{{(_local.bid.material ? ("[” + _local.bid.material + "] ") : "") + _local.bid.message}}',
+                        ]],
                         'onSuccess' => [
                             ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
                             ['handler' => 'navigate', 'params' => ['url' => '/maker-bids/bids']],
@@ -152,10 +183,9 @@ class LayoutFileFixListener implements HookListenerInterface
         if (! is_array($node)) {
             return false;
         }
-        $id = (string) ($node['id'] ?? '');
-        $cls = (string) ($node['props']['className'] ?? '');
 
-        return str_contains($cls, 'cmb-open-bid-panel') || $id === 'obid_panel';
+        return str_contains((string) ($node['props']['className'] ?? ''), 'cmb-open-bid-panel')
+            || ($node['id'] ?? '') === 'obid_panel';
     }
 
     private function touch(array $node, string $layoutName): array
@@ -188,48 +218,9 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($node['actions'], $props['type']);
         }
 
-        if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
-            $props['className'] = trim($cls.' cmb-company-gallery');
-            $props['style'] = 'display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:12px;align-items:start';
-        }
         $node['props'] = $props;
-        if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
-            $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64', false);
-        }
-        if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top'))) {
-            $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '120', true);
-        }
 
         return $node;
-    }
-
-    private function ensureChild(array $node, string $id, string $src, string $size, bool $round): array
-    {
-        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $i => $child) {
-            if (is_array($child) && ($child['id'] ?? '') === $id) {
-                $kids[$i] = $this->thumb($id, $src, $size, $round);
-                $node['children'] = $kids;
-
-                return $node;
-            }
-        }
-        array_unshift($kids, $this->thumb($id, $src, $size, $round));
-        $node['children'] = $kids;
-
-        return $node;
-    }
-
-    private function thumb(string $id, string $src, string $size, bool $round): array
-    {
-        $style = 'width:'.$size.'px;height:'.$size.'px;max-width:100%;object-fit:cover;flex-shrink:0;';
-        $style .= $round ? 'border-radius:9999px;border:1px solid rgba(255,255,255,0.18);' : 'border-radius:8px;';
-
-        return ['id' => $id, 'type' => 'basic', 'name' => 'Img', 'props' => [
-            'src' => $src, 'alt' => '{{$item.name || $item.title || ""}}',
-            'className' => $round ? 'cmb-list-thumb cmb-list-thumb-round' : 'cmb-list-thumb',
-            'width' => $size, 'height' => $size, 'style' => $style,
-        ]];
     }
 
     private function scrub(mixed $node): mixed
