@@ -20,16 +20,25 @@ final class HistoryLayout
                     'props' => [
                         'className' => 'text-sm rounded-lg border px-3 py-2 cmb-list-item cmb-job-card',
                         'iteration' => [
-                            'source' => '{{bid_revisions?.data?.data ?? bid_revisions?.data ?? []}}',
+                            'source' => '{{bid_revisions.data.data || []}}',
                             'item_var' => '$item',
                         ],
                     ],
                     'children' => [
-                        ['id' => 'cmb_bid_hist_line', 'type' => 'basic', 'name' => 'P', 'text' => '{{$item.event_label || "제출"}} · {{$item.amount}}원 · {{$item.days || "-"}}일'],
-                        ['id' => 'cmb_bid_hist_meta', 'type' => 'basic', 'name' => 'P', 'props' => [
-                            'className' => 'text-xs text-gray-500',
-                            'text' => '{{$item.created_at}} {{$item.message || ""}}',
-                        ]],
+                        [
+                            'id' => 'cmb_bid_hist_line',
+                            'type' => 'basic',
+                            'name' => 'P',
+                            'text' => '{{$item.amount}}원 / {{$item.days || "-"}}일 · {{$item.created_at}}',
+                            'props' => ['text' => '{{$item.amount}}원 / {{$item.days || "-"}}일 · {{$item.created_at}}'],
+                        ],
+                        [
+                            'id' => 'cmb_bid_hist_msg',
+                            'type' => 'basic',
+                            'name' => 'P',
+                            'text' => '{{$item.message || ""}}',
+                            'props' => ['className' => 'text-xs text-gray-500', 'text' => '{{$item.message || ""}}'],
+                        ],
                     ],
                 ],
             ],
