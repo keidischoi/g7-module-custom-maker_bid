@@ -118,7 +118,7 @@ $marketSrc = (string) file_get_contents($root.'/src/Services/MarketplaceService.
 expectTrue('closeExpired notifies owner', str_contains($marketSrc, 'deadline_closed') && str_contains($marketSrc, 'function closeExpired'));
 expectTrue('notifyDeadlineSoon exists', str_contains($marketSrc, 'function notifyDeadlineSoon'));
 expectTrue('runSchedule closes and notices', str_contains($marketSrc, 'function runSchedule') && str_contains($marketSrc, 'notifyDeadlineSoon'));
-expectTrue('notify tries email and memo', str_contains($marketSrc, 'trySendEmail') && str_contains($marketSrc, 'trySendMemo'));
+expectTrue('notify tries email memo and g7 system', str_contains($marketSrc, 'trySendEmail') && str_contains($marketSrc, 'trySendMemo') && str_contains($marketSrc, 'trySendSystemNotification'));
 expectTrue('work statuses include printing', str_contains($marketSrc, "'printing'") && str_contains($marketSrc, "'shipping'"));
 expectTrue('shipping requires tracking', str_contains($marketSrc, '발송 상태에는 송장번호가 필요합니다'));
 expectTrue('reviewsForJob API helper', str_contains($marketSrc, 'function reviewsForJob'));
@@ -133,6 +133,7 @@ expectTrue('hold notifies', str_contains($adminJob, "'hold'"));
 
 $mod = (string) file_get_contents($root.'/module.php');
 expectTrue('getSchedules registers maker-bids:run-schedule', str_contains($mod, 'function getSchedules') && str_contains($mod, 'maker-bids:run-schedule'));
+expectTrue('module declares g7 notification definition', str_contains($mod, 'function getNotificationDefinitions') && str_contains($mod, 'maker_bids.notice'));
 expectTrue('schedule command file exists', is_file($root.'/src/Console/Commands/RunMarketplaceScheduleCommand.php'));
 expectTrue('service provider registers command', is_file($root.'/src/Providers/MakerBidsServiceProvider.php'));
 expectTrue('seed-dummy-bids command file exists', is_file($root.'/src/Console/Commands/SeedDummyBidsCommand.php'));

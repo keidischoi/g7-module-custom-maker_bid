@@ -37,7 +37,9 @@
       "default_job_status": "quote_request",
       "guests_see_list": true,
       "bid_allow": "all",
-      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG"
+      "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+      "notify_email": true,
+      "notify_system": true
     },
     "payment": {
       "method": "bank_transfer",
@@ -133,6 +135,12 @@
         },
         "provided_extensions": {
           "expose": true
+        },
+        "notify_email": {
+          "expose": false
+        },
+        "notify_system": {
+          "expose": false
         }
       }
     },

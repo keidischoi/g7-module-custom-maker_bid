@@ -58,6 +58,8 @@ class SettingsRules
                 'guests_see_list' => true,
                 'bid_allow' => BidRules::ALLOW_ALL,
                 'provided_extensions' => implode(',', UploadRules::PROVIDED_EXTENSIONS),
+                'notify_email' => true,
+                'notify_system' => true,
             ],
             'payment' => [
                 'method' => PaymentRules::METHOD_BANK,
@@ -238,6 +240,8 @@ class SettingsRules
                 'provided_extensions' => self::normalizeProvidedExtensionsSetting(
                     $general['provided_extensions'] ?? implode(',', UploadRules::PROVIDED_EXTENSIONS)
                 ),
+                'notify_email' => self::boolish($general['notify_email'] ?? true),
+                'notify_system' => self::boolish($general['notify_system'] ?? true),
             ],
             'payment' => [
                 'method' => PaymentRules::normalizeMethod($paymentIn['method'] ?? PaymentRules::METHOD_BANK),
@@ -367,6 +371,8 @@ class SettingsRules
             'guests_see_list' => ['nullable'],
             'bid_allow' => ['nullable', 'string', 'in:'.implode(',', BidRules::ALLOW_MODES)],
             'provided_extensions' => ['nullable', 'string', 'max:500'],
+            'notify_email' => ['nullable'],
+            'notify_system' => ['nullable'],
             'method' => ['nullable', 'string', 'max:40'],
             'destination' => ['nullable', 'string', 'max:40'],
             'bank_name' => ['nullable', 'string', 'max:80'],

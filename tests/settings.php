@@ -15,6 +15,8 @@ expectTrue('default guests see list', $defaults['general']['guests_see_list'] ==
 expectTrue('default job status quote_request', $defaults['general']['default_job_status'] === 'quote_request');
 expectTrue('default bid allow all', $defaults['general']['bid_allow'] === 'all');
 expectTrue('default provided extensions csv', is_string($defaults['general']['provided_extensions']) && str_contains($defaults['general']['provided_extensions'], 'STL'));
+expectTrue('default notify email on', $defaults['general']['notify_email'] === true);
+expectTrue('default notify system on', $defaults['general']['notify_system'] === true);
 expectTrue('list notice off by default', $defaults['notices']['list_enabled'] === false);
 
 $pages = SettingsRules::pages();
@@ -30,6 +32,8 @@ $saved = SettingsRules::fromInput([
     'default_job_status' => 'hold',
     'guests_see_list' => 'false',
     'bid_allow' => '지정업체',
+    'notify_email' => '0',
+    'notify_system' => false,
 ]);
 expectTrue('fromInput turns off nav js', $saved['menu']['nav_js_enabled'] === false);
 expectTrue('fromInput nav insert after_shop', $saved['menu']['nav_insert'] === 'after_shop');
@@ -38,6 +42,8 @@ expectTrue('fromInput strips script', ! str_contains($saved['notices']['list_bod
 expectTrue('fromInput default status hold', $saved['general']['default_job_status'] === 'hold');
 expectTrue('fromInput guests false string is false', $saved['general']['guests_see_list'] === false);
 expectTrue('fromInput Korean designated mode', $saved['general']['bid_allow'] === 'designated');
+expectTrue('fromInput notify email off', $saved['general']['notify_email'] === false);
+expectTrue('fromInput notify system off', $saved['general']['notify_system'] === false);
 expectTrue('bad bid_allow falls back to all', SettingsRules::fromInput(['bid_allow' => 'nope'])['general']['bid_allow'] === 'all');
 expectTrue('legacy members maps to all', SettingsRules::fromInput(['bid_allow' => 'members'])['general']['bid_allow'] === 'all');
 expectTrue('union Korean maps', SettingsRules::fromInput(['bid_allow' => '모든 등록된 업체 & 등록된 개인회원'])['general']['bid_allow'] === 'approved_bidders');

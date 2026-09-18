@@ -119,6 +119,46 @@ class Module extends AbstractModule
         }
     }
 
+    /**
+     * G7 homepage bell type + database template (synced on module activate/update).
+     * Sending still writes subject/body directly so already-installed sites work
+     * before this definition is synced.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function getNotificationDefinitions(): array
+    {
+        return [
+            [
+                'type' => 'maker_bids.notice',
+                'hook_prefix' => 'custom-maker_bids',
+                'name' => ['ko' => '의뢰/입찰 알림', 'en' => 'Maker bid notice'],
+                'description' => [
+                    'ko' => '입찰·낙찰·결제·분쟁 등 의뢰/입찰 이벤트',
+                    'en' => 'Job, bid, payment, and dispute events',
+                ],
+                'channels' => ['database'],
+                'hooks' => [],
+                'variables' => [
+                    ['key' => 'title', 'description' => '알림 제목'],
+                    ['key' => 'body', 'description' => '알림 본문'],
+                    ['key' => 'job_id', 'description' => '의뢰 ID'],
+                    ['key' => 'click_url', 'description' => '클릭 URL'],
+                    ['key' => 'event', 'description' => '이벤트 종류'],
+                ],
+                'templates' => [
+                    [
+                        'channel' => 'database',
+                        'recipients' => [['type' => 'trigger_user']],
+                        'subject' => ['ko' => '{title}', 'en' => '{title}'],
+                        'body' => ['ko' => '{body}', 'en' => '{body}'],
+                        'click_url' => '{click_url}',
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function getSchedules(): array
     {
         return [

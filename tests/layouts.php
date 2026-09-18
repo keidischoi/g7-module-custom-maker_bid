@@ -422,6 +422,7 @@ expectTrue('admin settings put', str_contains($adminSettings, '/admin/settings')
 expectTrue('admin settings menu fields', str_contains($adminSettings, 'nav_js_enabled') && str_contains($adminSettings, 'nav_insert') && str_contains($adminSettings, 'extension_user_base'));
 expectTrue('admin settings notices', str_contains($adminSettings, 'list_body') && str_contains($adminSettings, 'create_body') && str_contains($adminSettings, '의뢰목록 안내문'));
 expectTrue('admin settings general', str_contains($adminSettings, 'default_job_status') && str_contains($adminSettings, 'guests_see_list'));
+expectTrue('admin settings notify toggles', str_contains($adminSettings, 'notify_email') && str_contains($adminSettings, 'notify_system') && str_contains($adminSettings, '사이트 알림'));
 expectTrue('admin settings bid_allow', str_contains($adminSettings, 'bid_allow') && str_contains($adminSettings, '지정업체') && str_contains($adminSettings, '"value": "all"') && str_contains($adminSettings, '모든 등록된 업체') && str_contains($adminSettings, '등록된 개인회원') && str_contains($adminSettings, '일반회원') && str_contains($adminSettings, 'approved_bidders'));
 expectTrue('admin settings bid_allow drops old short list', ! str_contains($adminSettings, '"value": "members"') && ! str_contains($adminSettings, '"value": "company"') && ! str_contains($adminSettings, '"value": "individual"'));
 expectTrue('admin settings permission', str_contains($adminSettings, 'custom-maker_bids.settings.read'));

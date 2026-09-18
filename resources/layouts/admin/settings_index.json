@@ -63,6 +63,8 @@
       "guests_see_list": true,
       "bid_allow": "all",
       "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+      "notify_email": true,
+      "notify_system": true,
       "companies_enabled": false,
       "companies_body": "",
       "method": "bank_transfer",
@@ -111,6 +113,8 @@
           "guests_see_list": true,
           "bid_allow": "all",
           "provided_extensions": "STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG",
+          "notify_email": true,
+          "notify_system": true,
           "companies_enabled": false,
           "companies_body": "",
           "method": "bank_transfer",
@@ -152,6 +156,8 @@
             "form.guests_see_list": "{{response.data.guests_see_list ?? settings.data.guests_see_list}}",
             "form.bid_allow": "{{response.data.bid_allow || settings.data.bid_allow || 'all'}}",
             "form.provided_extensions": "{{response.data.provided_extensions || settings.data.provided_extensions || 'STL,3MF,OBJ,STEP,STP,GCODE,FBX,DWG'}}",
+            "form.notify_email": "{{response.data.notify_email ?? settings.data.notify_email}}",
+            "form.notify_system": "{{response.data.notify_system ?? settings.data.notify_system}}",
             "form.companies_enabled": "{{response.data.companies_enabled ?? settings.data.companies_enabled}}",
             "form.companies_body": "{{response.data.companies_body || settings.data.companies_body || ''}}",
             "form.method": "{{response.data.method || settings.data.method || 'bank_transfer'}}",
@@ -708,6 +714,102 @@
                             "text": "의뢰 작성/수정의 「제공 확장자」 체크 목록입니다. 쉼표·공백·줄바꿈으로 구분 (예: STL, 3MF, PDF). 비우면 기본 목록으로 돌아갑니다."
                           }
                         ]
+                      },
+                      {
+                        "id": "notify_h",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-label"
+                        },
+                        "text": "알림"
+                      },
+                      {
+                        "id": "notify_email_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "notify_email",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "notify_email",
+                              "checked": "{{_local.form.notify_email}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.notify_email": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "notify_email_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "이메일 알림"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "notify_system_wrap",
+                        "type": "basic",
+                        "name": "Label",
+                        "props": {
+                          "className": "cmb-admin-check-label"
+                        },
+                        "children": [
+                          {
+                            "id": "notify_system",
+                            "type": "basic",
+                            "name": "Checkbox",
+                            "props": {
+                              "name": "notify_system",
+                              "checked": "{{_local.form.notify_system}}"
+                            },
+                            "actions": [
+                              {
+                                "type": "change",
+                                "event": "change",
+                                "handler": "setState",
+                                "params": {
+                                  "target": "local",
+                                  "form.notify_system": "{{$event.target.checked}}"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "id": "notify_system_txt",
+                            "type": "basic",
+                            "name": "Span",
+                            "props": {
+                              "className": "cmb-admin-check-text"
+                            },
+                            "text": "사이트 알림 (홈페이지 벨)"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "notify_help",
+                        "type": "basic",
+                        "name": "P",
+                        "props": {
+                          "className": "cmb-admin-muted"
+                        },
+                        "text": "입찰·낙찰·결제·분쟁 등 이벤트를 보냅니다. 사이트 알림은 G7 기본 알림(상단 벨)에 쌓입니다. 모듈 「알림」 페이지(/maker-bids/notices)는 별도로 항상 기록됩니다."
                       }
                     ]
                   }

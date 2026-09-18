@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Schema;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerCompany;
 use Modules\Custom\MakerBids\Models\MakerJob;
+use Modules\Custom\MakerBids\Notifications\MakerBidsDatabaseNotification;
 use Modules\Custom\MakerBids\Support\BiddingRules;
 use Modules\Custom\MakerBids\Support\CompanyRules;
 use Modules\Custom\MakerBids\Support\DisputeRules;
 use Modules\Custom\MakerBids\Support\DomainException;
 use Modules\Custom\MakerBids\Support\JobRules;
+use Modules\Custom\MakerBids\Support\NoticeRules;
+use Modules\Custom\MakerBids\Support\SettingsRules;
 
 class MarketplaceService
 {
@@ -125,18 +128,50 @@ class MarketplaceService
             ]);
         }
         $this->trySendEmail($userId, $title, $body);
+        $this->trySendSystemNotification($userId, $type, $title, $body, $jobId);
         $this->trySendMemo($userId, $title, $body, $jobId);
+    }
+
+    private function noticeChannelEnabled(string $channel): bool
+    {
+        try {
+            $key = $channel === 'email' ? 'notify_email' : 'notify_system';
+            $value = app(MakerBidSettingsService::class)->getSetting('general.'.$key, true);
+
+            return SettingsRules::boolish($value);
+        } catch (\Throwable) {
+            return true;
+        }
+    }
+
+    private function findUser(int $userId): ?object
+    {
+        try {
+            if (class_exists(\App\Models\User::class)) {
+                $user = \App\Models\User::query()->find($userId);
+                if (is_object($user)) {
+                    return $user;
+                }
+            }
+            if (Schema::hasTable('users')) {
+                $row = DB::table('users')->where('id', $userId)->first();
+                if (is_object($row)) {
+                    return $row;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
+        return null;
     }
 
     private function trySendEmail(int $userId, string $title, ?string $body): void
     {
+        if (! $this->noticeChannelEnabled('email')) {
+            return;
+        }
         try {
-            $user = null;
-            if (class_exists(\App\Models\User::class)) {
-                $user = \App\Models\User::query()->find($userId);
-            } elseif (Schema::hasTable('users')) {
-                $user = DB::table('users')->where('id', $userId)->first();
-            }
+            $user = $this->findUser($userId);
             $email = is_object($user) ? (string) ($user->email ?? '') : '';
             if ($email === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 return;
@@ -153,6 +188,91 @@ class MarketplaceService
         } catch (\Throwable) {
             // Optional: core mail may be unconfigured.
         }
+    }
+
+    /**
+     * G7 homepage bell: Laravel `notifications` table (database channel).
+     * Email already goes out via Mail::raw; this is the in-app channel that was missing.
+     */
+    private function trySendSystemNotification(int $userId, string $type, string $title, ?string $body, ?int $jobId): void
+    {
+        if (! $this->noticeChannelEnabled('system')) {
+            return;
+        }
+        try {
+            $user = $this->findUser($userId);
+            if (! is_object($user)) {
+                return;
+            }
+            $payload = NoticeRules::databasePayload($type, $title, $body, $jobId);
+            if (method_exists($user, 'notify')) {
+                try {
+                    $user->notify(new MakerBidsDatabaseNotification($payload));
+
+                    return;
+                } catch (\Throwable) {
+                    // Fall through to a direct insert (uuid morph / queue quirks).
+                }
+            }
+            $this->insertDatabaseNotification($user, $payload);
+        } catch (\Throwable) {
+            // Optional: core notification table may be absent.
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function insertDatabaseNotification(object $user, array $payload): void
+    {
+        if (! Schema::hasTable('notifications')) {
+            return;
+        }
+        $cols = Schema::getColumnListing('notifications');
+        if (! in_array('notifiable_id', $cols, true) || ! in_array('data', $cols, true)) {
+            return;
+        }
+        $id = class_exists(\Illuminate\Support\Str::class)
+            ? (string) \Illuminate\Support\Str::uuid()
+            : bin2hex(random_bytes(16));
+        $userId = (int) ($user->id ?? 0);
+        $uuid = (string) ($user->uuid ?? '');
+        $notifiableId = $userId > 0 ? $userId : $uuid;
+        try {
+            $colType = Schema::getColumnType('notifications', 'notifiable_id');
+            if ($uuid !== '' && ! in_array($colType, ['bigint', 'integer', 'int'], true)) {
+                $notifiableId = $uuid;
+            }
+        } catch (\Throwable) {
+        }
+        if ($notifiableId === '' || $notifiableId === 0 || $notifiableId === '0') {
+            return;
+        }
+        $notifiableType = $user instanceof \Illuminate\Database\Eloquent\Model
+            ? $user->getMorphClass()
+            : 'App\\Models\\User';
+        $row = [
+            'id' => $id,
+            'type' => MakerBidsDatabaseNotification::class,
+            'notifiable_type' => $notifiableType,
+            'notifiable_id' => $notifiableId,
+            'data' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+        ];
+        if (in_array('created_at', $cols, true)) {
+            $row['created_at'] = now();
+        }
+        if (in_array('updated_at', $cols, true)) {
+            $row['updated_at'] = now();
+        }
+        if (in_array('read_at', $cols, true)) {
+            $row['read_at'] = null;
+        }
+        foreach (array_keys($row) as $key) {
+            if (! in_array($key, $cols, true)) {
+                unset($row[$key]);
+            }
+        }
+        DB::table('notifications')->insert($row);
     }
 
     private function trySendMemo(int $userId, string $title, ?string $body, ?int $jobId): void
