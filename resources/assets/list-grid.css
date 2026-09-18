@@ -30,3 +30,30 @@
   white-space: normal !important;
   overflow-wrap: anywhere;
 }
+
+.cmb-search-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.cmb-search-bar .cmb-search-input,
+.cmb-search-bar [data-cmb-free] {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.cmb-search-sort,
+[data-cmb-sort-wrap] {
+  flex: 0 0 auto !important;
+  width: 8.5rem !important;
+  min-width: 8.5rem !important;
+}
+
+.cmb-search-sort select,
+[data-cmb-sort-free],
+[data-cmb-sort-select] {
+  width: 8.5rem !important;
+  min-width: 8.5rem !important;
+  height: 2.5rem !important;
+}
