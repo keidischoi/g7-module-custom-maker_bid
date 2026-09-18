@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const BID_SRC = '/api/modules/custom-maker_bids/assets/bid-submit.js?v=0.10.21';
+    private const EXTRA_SRC = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21b';
 
     public static function getSubscribedHooks(): array
     {
@@ -27,19 +27,19 @@ class LayoutFileFixListener implements HookListenerInterface
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->scrub($layout);
         $layout = $this->injectListThumbs($this->bindUploaders($layout));
-        if (in_array($name, ['jobs_show', 'jobs_bids'], true)) {
+        if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show', 'jobs_edit', 'jobs_bids'], true)) {
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $found = false;
             foreach ($scripts as $i => $script) {
-                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'bid-submit.js')) {
-                    $scripts[$i]['src'] = self::BID_SRC;
+                if (is_array($script) && str_contains((string) ($script['src'] ?? ''), 'existing-files.js')) {
+                    $scripts[$i]['src'] = self::EXTRA_SRC;
                     $found = true;
                 }
             }
             if (! $found) {
                 $scripts[] = [
-                    'id' => 'cmb_bid_submit',
-                    'src' => self::BID_SRC,
+                    'id' => 'cmb_maker_existing',
+                    'src' => self::EXTRA_SRC,
                     'async' => true,
                     'optional' => true,
                     'required' => false,
@@ -112,11 +112,11 @@ class LayoutFileFixListener implements HookListenerInterface
     private function injectListThumbs(array $node): array
     {
         $cls = (string) (($node['props']['className'] ?? ''));
-        $name = (string) ($node['name'] ?? '');
-        if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
+        $nm = (string) ($node['name'] ?? '');
+        if ($nm === 'A' && str_contains($cls, 'cmb-job-card')) {
             $node = $this->prependThumb($node, '{{$item.thumbnail_url || ""}}', 'cmb_job_thumb');
         }
-        if ($name === 'A' && str_contains($cls, 'cmb-company-card')) {
+        if ($nm === 'A' && str_contains($cls, 'cmb-company-card')) {
             $node = $this->prependThumb($node, '{{$item.logo_url || ""}}', 'cmb_co_thumb');
         }
         foreach (['children', 'injections', 'components'] as $key) {
@@ -153,7 +153,13 @@ class LayoutFileFixListener implements HookListenerInterface
             $props['className'] = trim($cls.' cmb-card-with-thumb');
         }
         $node['props'] = $props;
-        $thumb = [
+        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
+        foreach ($kids as $child) {
+            if (is_array($child) && ($child['id'] ?? '') === $id) {
+                return $node;
+            }
+        }
+        array_unshift($kids, [
             'id' => $id,
             'type' => 'basic',
             'name' => 'Img',
@@ -164,14 +170,7 @@ class LayoutFileFixListener implements HookListenerInterface
                 'width' => '64',
                 'height' => '64',
             ],
-        ];
-        $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-        foreach ($kids as $child) {
-            if (is_array($child) && ($child['id'] ?? '') === $id) {
-                return $node;
-            }
-        }
-        array_unshift($kids, $thumb);
+        ]);
         $node['children'] = $kids;
 
         return $node;
