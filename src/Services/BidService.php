@@ -4,6 +4,8 @@ namespace Modules\Custom\MakerBids\Services;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Modules\Custom\MakerBids\Models\MakerBid;
 use Modules\Custom\MakerBids\Models\MakerBidRevision;
 use Modules\Custom\MakerBids\Models\MakerCompany;
@@ -24,7 +26,6 @@ class BidService
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $this->assertCanWrite($userId, $job, $isAdmin);
-
         $company = $this->approvedCompany($userId);
         $this->assertEligible($userId, $job, $company, $isAdmin);
 
@@ -76,17 +77,13 @@ class BidService
     {
         $job = MakerJob::query()->findOrFail($jobId);
         $bid = MakerBid::query()->where('job_id', $job->id)->findOrFail($bidId);
-
         if ((int) $bid->user_id !== $userId && ! $isAdmin) {
             throw new DomainException('본인 입찰만 수정할 수 있습니다.', 403);
         }
-
         $this->jobs->assertOpen($job);
-
         if (! BidRules::canUpdateOwn($userId, (int) $bid->user_id, true, (string) $bid->status) && ! $isAdmin) {
             throw new DomainException('수정할 수 없는 입찰입니다.', 422);
         }
-
         $company = $this->approvedCompany($userId);
         $this->assertEligible($userId, $job, $company, $isAdmin);
         $bid->fill($this->writeAttributes($payload, $company, true));
@@ -99,10 +96,12 @@ class BidService
 
     public function listRevisions(int $jobId, int $userId, bool $isAdmin = false): array
     {
+        $this->ensureRevisionTable();
         $q = MakerBidRevision::query()->where('job_id', $jobId)->latest();
         if (! $isAdmin) {
             $q->where('user_id', $userId);
         }
+
         return $q->limit(50)->get()->map(fn (MakerBidRevision $row) => [
             'id' => (int) $row->id,
             'event' => (string) $row->event,
@@ -117,12 +116,7 @@ class BidService
 
     public function listMine(int $userId): Collection
     {
-        return MakerBid::query()
-            ->with('job')
-            ->where('user_id', $userId)
-            ->latest()
-            ->limit(100)
-            ->get();
+        return MakerBid::query()->with('job')->where('user_id', $userId)->latest()->limit(100)->get();
     }
 
     public function listAdmin(Request $request): array
@@ -143,9 +137,7 @@ class BidService
 
     public function findAdmin(int $id): array
     {
-        return $this->presentAdmin(
-            MakerBid::query()->with(['job', 'company'])->findOrFail($id)
-        );
+        return $this->presentAdmin(MakerBid::query()->with(['job', 'company'])->findOrFail($id));
     }
 
     public function updateAdmin(int $id, array $payload): array
@@ -197,31 +189,51 @@ class BidService
             }
             $job->save();
         }
+        $this->ensureRevisionTable();
         MakerBidRevision::query()->where('bid_id', $bid->id)->delete();
         $bid->delete();
     }
 
     private function snapshot(MakerBid $bid, string $event): void
     {
-        try {
-            MakerBidRevision::query()->create([
-                'bid_id' => (int) $bid->id,
-                'job_id' => (int) $bid->job_id,
-                'user_id' => (int) $bid->user_id,
-                'event' => $event,
-                'amount' => (int) $bid->amount,
-                'days' => $bid->days,
-                'message' => $bid->message,
-                'status' => $bid->status,
-            ]);
-        } catch (\Throwable) {
+        $this->ensureRevisionTable();
+        MakerBidRevision::query()->create([
+            'bid_id' => (int) $bid->id,
+            'job_id' => (int) $bid->job_id,
+            'user_id' => (int) $bid->user_id,
+            'event' => $event,
+            'amount' => (int) $bid->amount,
+            'days' => $bid->days,
+            'message' => $bid->message,
+            'status' => (string) $bid->status,
+        ]);
+    }
+
+    private function ensureRevisionTable(): void
+    {
+        $table = (new MakerBidRevision)->getTable();
+        if (Schema::hasTable($table)) {
+            return;
         }
+        Schema::create($table, function (Blueprint $blueprint) {
+            $blueprint->id();
+            $blueprint->unsignedBigInteger('bid_id');
+            $blueprint->unsignedBigInteger('job_id');
+            $blueprint->unsignedBigInteger('user_id');
+            $blueprint->string('event', 16)->default('update');
+            $blueprint->unsignedInteger('amount');
+            $blueprint->unsignedInteger('days')->nullable();
+            $blueprint->text('message')->nullable();
+            $blueprint->string('status', 32)->nullable();
+            $blueprint->timestamps();
+            $blueprint->index(['bid_id', 'created_at']);
+            $blueprint->index(['job_id', 'user_id']);
+        });
     }
 
     private function assertCanWrite(int $userId, MakerJob $job, bool $isAdmin = false): void
     {
         $this->jobs->assertOpen($job);
-
         if (! $isAdmin && BidRules::isOwnJob($userId, $job->user_id)) {
             throw new DomainException('본인 의뢰에는 입찰할 수 없습니다.', 422);
         }
@@ -243,10 +255,7 @@ class BidService
 
     private function approvedCompany(int $userId): ?MakerCompany
     {
-        return MakerCompany::query()
-            ->where('user_id', $userId)
-            ->where('status', 'approved')
-            ->first();
+        return MakerCompany::query()->where('user_id', $userId)->where('status', 'approved')->first();
     }
 
     private function writeAttributes(array $payload, ?MakerCompany $company, bool $partial = false): array
