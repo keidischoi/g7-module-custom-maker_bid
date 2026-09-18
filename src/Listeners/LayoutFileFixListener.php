@@ -6,7 +6,7 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const EXTRA_SRC = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21b';
+    private const EXTRA_SRC = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21c';
 
     public static function getSubscribedHooks(): array
     {
@@ -27,7 +27,7 @@ class LayoutFileFixListener implements HookListenerInterface
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->scrub($layout);
         $layout = $this->injectListThumbs($this->bindUploaders($layout));
-        if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show', 'jobs_edit', 'jobs_bids'], true)) {
+        if (in_array($name, ['jobs_form', 'company_apply', 'jobs_show', 'jobs_edit', 'jobs_bids', 'company_list', 'jobs_list'], true)) {
             $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
             $found = false;
             foreach ($scripts as $i => $script) {
@@ -63,7 +63,7 @@ class LayoutFileFixListener implements HookListenerInterface
             } elseif ($collection === 'archives' || str_contains($id, 'archives')) {
                 $props['initialFiles'] = '{{job.data.archives || []}}';
             } elseif ($collection === 'logos' || str_contains($id, 'logo')) {
-                $props['initialFiles'] = '{{me.data.logo_files || me.data.logo_file || []}}';
+                $props['initialFiles'] = '{{me.data.logo_files || []}}';
             }
             unset($props['key']);
             $node['props'] = $props;
@@ -117,7 +117,7 @@ class LayoutFileFixListener implements HookListenerInterface
             $node = $this->prependThumb($node, '{{$item.thumbnail_url || ""}}', 'cmb_job_thumb');
         }
         if ($nm === 'A' && str_contains($cls, 'cmb-company-card')) {
-            $node = $this->prependThumb($node, '{{$item.logo_url || ""}}', 'cmb_co_thumb');
+            $node = $this->prependThumb($node, '{{$item.thumbnail_url || $item.logo_files[0].url || ""}}', 'cmb_co_thumb');
         }
         foreach (['children', 'injections', 'components'] as $key) {
             if (! isset($node[$key]) || ! is_array($node[$key])) {
