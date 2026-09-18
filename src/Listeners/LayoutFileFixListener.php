@@ -6,8 +6,6 @@ use App\Contracts\Extension\HookListenerInterface;
 
 class LayoutFileFixListener implements HookListenerInterface
 {
-    private const JS = '/api/modules/custom-maker_bids/assets/existing-files.js?v=0.10.21i';
-
     public static function getSubscribedHooks(): array
     {
         return [
@@ -26,20 +24,100 @@ class LayoutFileFixListener implements HookListenerInterface
         }
         $name = (string) ($layout['layout_name'] ?? '');
         $layout = $this->walk($this->scrub($layout), $name);
-        if (in_array($name, ['jobs_show', 'jobs_bids'], true)) {
-            $scripts = is_array($layout['scripts'] ?? null) ? $layout['scripts'] : [];
-            $scripts[] = [
-                'id' => 'cmb_maker_existing',
-                'src' => self::JS,
-                'async' => false,
-                'optional' => true,
-                'required' => false,
-                'failOnError' => false,
-            ];
-            $layout['scripts'] = $scripts;
+        if ($name === 'jobs_bids') {
+            $layout = $this->injectBidsPageForm($layout);
         }
 
         return $layout;
+    }
+
+    private function injectBidsPageForm(array $layout): array
+    {
+        $sources = is_array($layout['data_sources'] ?? null) ? $layout['data_sources'] : [];
+        $hasJob = false;
+        foreach ($sources as $src) {
+            if (($src['id'] ?? '') === 'job') {
+                $hasJob = true;
+            }
+        }
+        if (! $hasJob) {
+            $sources[] = [
+                'id' => 'job',
+                'type' => 'api',
+                'endpoint' => '/api/modules/custom-maker_bids/jobs/{{query.job || route.id}}',
+                'method' => 'GET',
+                'auto_fetch' => true,
+                'errorHandling' => ['404' => ['handler' => 'suppress'], 'default' => ['handler' => 'suppress']],
+            ];
+        }
+        $layout['data_sources'] = $sources;
+        $state = is_array($layout['state'] ?? null) ? $layout['state'] : [];
+        $state['bid'] = $state['bid'] ?? ['amount' => '', 'days' => '', 'material' => '', 'message' => ''];
+        $layout['state'] = $state;
+
+        $content = $layout['slots']['content'] ?? null;
+        if (! is_array($content) || ! isset($content[0]) || ! is_array($content[0])) {
+            return $layout;
+        }
+        $kids = is_array($content[0]['children'] ?? null) ? $content[0]['children'] : [];
+        foreach ($kids as $child) {
+            if (($child['id'] ?? '') === 'cmb_bid_compose') {
+                return $layout;
+            }
+        }
+        array_splice($kids, 1, 0, [$this->composeForm()]);
+        $content[0]['children'] = $kids;
+        $layout['slots']['content'] = $content;
+
+        return $layout;
+    }
+
+    private function composeForm(): array
+    {
+        return [
+            'id' => 'cmb_bid_compose',
+            'type' => 'basic',
+            'name' => 'Div',
+            'if' => '{{query.job || route.id}}',
+            'props' => ['className' => 'cmb-section-card cmb-form-stack cmb-bid-form space-y-4 rounded-xl border p-5 mb-6', 'dataKey' => 'bid', 'trackChanges' => true],
+            'children' => [
+                ['id' => 'cmb_bid_h', 'type' => 'basic', 'name' => 'H2', 'props' => ['className' => 'text-xl font-semibold', 'text' => '견적서 작성']],
+                ['id' => 'cmb_bid_job', 'type' => 'basic', 'name' => 'P', 'props' => ['className' => 'text-sm text-gray-500', 'text' => '{{job.data.title || "의뢰 " + (query.job || route.id)}}']],
+                ['id' => 'cmb_bid_amt_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '견적 금액 (원) *']],
+                ['id' => 'cmb_bid_amt', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'amount', 'type' => 'number', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: 150000', 'value' => '{{_local.bid.amount}}']],
+                ['id' => 'cmb_bid_days_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '제작 기간 (일)']],
+                ['id' => 'cmb_bid_days', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'days', 'type' => 'number', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: 7', 'value' => '{{_local.bid.days}}']],
+                ['id' => 'cmb_bid_mat_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '소재 / 공정']],
+                ['id' => 'cmb_bid_mat', 'type' => 'basic', 'name' => 'Input', 'props' => ['name' => 'material', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm', 'placeholder' => '예: PLA, 0.2mm', 'value' => '{{_local.bid.material}}']],
+                ['id' => 'cmb_bid_msg_l', 'type' => 'basic', 'name' => 'Label', 'props' => ['text' => '견적 설명']],
+                ['id' => 'cmb_bid_msg', 'type' => 'basic', 'name' => 'Textarea', 'props' => ['name' => 'message', 'rows' => '8', 'className' => 'cmb-order-field w-full rounded-lg border px-3 py-2.5 text-sm min-h-[160px]', 'placeholder' => '포함 범위, 후가공, 배송, 수정 횟수', 'value' => '{{_local.bid.message}}']],
+                [
+                    'id' => 'cmb_bid_go',
+                    'type' => 'basic',
+                    'name' => 'Button',
+                    'text' => '견적 제출',
+                    'props' => ['className' => 'cmb-btn cmb-btn-primary cmb-bid-page-submit', 'type' => 'button'],
+                    'actions' => [[
+                        'type' => 'click',
+                        'handler' => 'apiCall',
+                        'auth_required' => true,
+                        'target' => '/api/modules/custom-maker_bids/jobs/{{query.job || route.id}}/bids',
+                        'params' => [
+                            'method' => 'POST',
+                            'body' => [
+                                'amount' => '{{_local.bid.amount}}',
+                                'days' => '{{_local.bid.days}}',
+                                'message' => '{{_local.bid.message}}',
+                            ],
+                        ],
+                        'onSuccess' => [
+                            ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => '견적을 등록했습니다.']],
+                            ['handler' => 'navigate', 'params' => ['url' => '/maker-bids/bids']],
+                        ],
+                    ]],
+                ],
+            ],
+        ];
     }
 
     private function walk(mixed $node, string $layoutName): mixed
@@ -89,57 +167,12 @@ class LayoutFileFixListener implements HookListenerInterface
             unset($props['key']);
         }
 
-        if (str_contains($cls, 'cmb-bid-form')) {
-            $kids = is_array($node['children'] ?? null) ? $node['children'] : [];
-            $has = false;
-            foreach ($kids as $child) {
-                if (is_array($child) && ($child['id'] ?? '') === 'cmb_bid_token') {
-                    $has = true;
-                    break;
-                }
-            }
-            if (! $has) {
-                array_unshift($kids, [
-                    'id' => 'cmb_bid_token',
-                    'type' => 'basic',
-                    'name' => 'Input',
-                    'props' => [
-                        'type' => 'hidden',
-                        'name' => 'bid_token',
-                        'value' => '{{viewer.data.bid_token}}',
-                    ],
-                ]);
-                $node['children'] = $kids;
-            }
-        }
-
-        $isSubmit = $name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send') || str_contains($cls, 'cmb-bid-g7'));
-        $isUpdate = $name === 'Button' && (str_contains($cls, 'cmb-bid-update') || str_contains($cls, 'cmb-bid-send-update'));
-        if ($isSubmit || $isUpdate) {
-            $props['className'] = trim(str_replace(['cmb-bid-submit', 'cmb-bid-update', 'cmb-bid-send-update', 'cmb-bid-send'], 'cmb-bid-g7', $cls));
-            unset($props['data-cmb-bid-submit'], $props['data-cmb-bid-update']);
-            $node['actions'] = [[
-                'type' => 'click',
-                'handler' => 'apiCall',
-                'auth_mode' => 'optional',
-                'target' => $isUpdate
-                    ? '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids/{{viewer.data.my_bid.id}}'
-                    : '/api/modules/custom-maker_bids/jobs/{{route.id}}/bids',
-                'params' => [
-                    'method' => $isUpdate ? 'PATCH' : 'POST',
-                    'credentials' => 'include',
-                    'body' => [
-                        'amount' => '{{_local.bid.amount}}',
-                        'days' => '{{_local.bid.days}}',
-                        'message' => '{{_local.bid.message}}',
-                        'bid_token' => '{{_local.bid.bid_token || viewer.data.bid_token}}',
-                    ],
-                ],
-                'onSuccess' => [
-                    ['handler' => 'toast', 'params' => ['type' => 'success', 'message' => $isUpdate ? '견적을 수정했습니다.' : '견적을 등록했습니다.']],
-                    ['handler' => 'navigate', 'params' => ['url' => '{{route.path}}']],
-                ],
-            ]];
+        if ($layoutName === 'jobs_show' && $name === 'Button' && (str_contains($cls, 'cmb-bid-submit') || str_contains($cls, 'cmb-bid-send') || str_contains($cls, 'cmb-bid-g7'))) {
+            $node['name'] = 'A';
+            $node['text'] = '견적서 작성';
+            $props['href'] = '/maker-bids/bids?job={{route.id}}';
+            $props['className'] = 'cmb-btn cmb-btn-primary';
+            unset($node['actions'], $props['data-cmb-bid-submit'], $props['type']);
         }
 
         if ($layoutName === 'company_list' && str_contains($cls, 'cmb-card-list')) {
@@ -151,15 +184,11 @@ class LayoutFileFixListener implements HookListenerInterface
         }
 
         $node['props'] = $props;
-
         if ($name === 'A' && str_contains($cls, 'cmb-job-card')) {
             $node = $this->ensureChild($node, 'cmb_job_thumb', '{{$item.thumbnail_url || ""}}', '64', false);
         }
         if ($layoutName === 'company_list' && ($id === 'ctop' || str_contains($cls, 'cmb-company-card-top'))) {
             $node = $this->ensureChild($node, 'cmb_co_name_logo', '{{$item.thumbnail_url || ""}}', '120', true);
-            $p = is_array($node['props'] ?? null) ? $node['props'] : [];
-            $p['style'] = 'display:flex;flex-direction:column;align-items:center;gap:8px';
-            $node['props'] = $p;
         }
 
         return $node;
