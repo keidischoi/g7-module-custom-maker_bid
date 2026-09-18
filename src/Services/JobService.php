@@ -45,6 +45,17 @@ class JobService
                 });
             });
         }
+        $stRaw = (string) $request->query('status', $request->input('status', ''));
+        if (in_array($stRaw, ['입찰중', 'bidding'], true)) {
+            $stRaw = 'open';
+        }
+        $statuses = JobRules::listStatusFilter($stRaw);
+        if ($statuses !== null) {
+            if ($statuses === []) {
+                return [];
+            }
+            $q->whereIn('status', $statuses);
+        }
         $term = trim((string) $request->query('q', $request->input('q', '')));
         if ($term !== '') {
             $like = '%'.$term.'%';
@@ -54,7 +65,7 @@ class JobService
         }
         $sortRaw = strtolower(trim((string) $request->query('sort', $request->input('sort'))));
         if (in_array($sortRaw, ['status', '상태', '상태순'], true)) {
-            $q->orderByRaw("CASE status WHEN 'quote_request' THEN 1 WHEN 'open' THEN 1 WHEN 'request' THEN 2 WHEN 'pending' THEN 3 WHEN 'hold' THEN 4 WHEN 'awarded' THEN 5 WHEN 'done' THEN 6 WHEN 'cancelled' THEN 7 WHEN 'draft' THEN 8 ELSE 9 END")->orderByDesc('id');
+            $q->orderByRaw("CASE status WHEN 'draft' THEN 1 WHEN 'hold' THEN 2 WHEN 'quote_request' THEN 3 WHEN 'open' THEN 3 WHEN 'request' THEN 3 WHEN 'awarded' THEN 4 WHEN 'done' THEN 5 WHEN 'cancelled' THEN 6 WHEN 'pending' THEN 7 ELSE 8 END")->orderByDesc('id');
         } else {
             $sort = JobRules::normalizeListSort($sortRaw);
             if ($sort === JobRules::LIST_SORT_CREATED) {
